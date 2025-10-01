@@ -241,8 +241,10 @@ if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
     reader.setSllPredMode(True)
-    reader.parse('../../tests-nmr/mock-data-daother-10315/D_1000300420_mr-upload_P3.xplor-nih.V3',
-                 '../../tests-nmr/mock-data-daother-10315/D_800857_model_P1.cif.V3')
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-daother-10315/D_1000300420_mr-upload_P3.xplor-nih.V3',
+                     '../../tests-nmr/mock-data-daother-10315/D_800857_model_P1.cif.V3')
+    print(reader_listener.getReasonsForReparsing())
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)

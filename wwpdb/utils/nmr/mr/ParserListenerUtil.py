@@ -6225,7 +6225,7 @@ def extendCoordChainsForExactNoes(modelChainIdExt: dict,
     return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq, _authToStarSeq, _authToOrigSeq
 
 
-def isIdenticalRestraint(atoms: List[dict], nefT=None) -> bool:
+def isIdenticalRestraint(atoms: List[dict], nefT=None, assert_uniq_segment_id: bool = False) -> bool:
     """ Return whether restraint contains identical atom selection.
     """
 
@@ -6249,7 +6249,7 @@ def isIdenticalRestraint(atoms: List[dict], nefT=None) -> bool:
                             return True
             if 'segment_id' in a1 and 'segment_id' in a2:
                 if a1['segment_id'] == a2['segment_id']:
-                    if a1['chain_id'] != a2['chain_id']:
+                    if a1['chain_id'] != a2['chain_id'] and assert_uniq_segment_id:
                         return True
                 else:
                     if a1['chain_id'] == a2['chain_id']:

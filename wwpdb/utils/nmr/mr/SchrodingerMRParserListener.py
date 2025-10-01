@@ -2042,7 +2042,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                             self.reasonsForReParsing['label_seq_scheme']['dist'] = True
                             set_label_seq_scheme()
                         elif 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing:  # 2lml
-                            if 'assert_label_seq_scheme' not in self.reasonsForReParsing:  # 2m0k
+                            if 'assert_label_seq_scheme' not in self.reasonsForReParsing\
+                               and 'assert_uniq_segment_id' not in self.reasonsForReParsing:  # 2m0k
                                 self.reasonsForReParsing = {}
 
                     if any(f for f in self.__f if '[Sequence mismatch]' in f):
@@ -2200,7 +2201,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                             del self.reasonsForReParsing['global_auth_sequence_offset']
 
                 if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
-                    if 'assert_label_seq_scheme' not in self.reasonsForReParsing:
+                    if 'assert_label_seq_scheme' not in self.reasonsForReParsing\
+                       and 'assert_uniq_segment_id' not in self.reasonsForReParsing:
                         self.reasonsForReParsing = {}
 
             elif 'chain_id_remap' in self.reasonsForReParsing:
@@ -2211,7 +2213,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['global_auth_sequence_offset']  # 2lzs
 
                 if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
-                    if 'assert_label_seq_scheme' not in self.reasonsForReParsing:
+                    if 'assert_label_seq_scheme' not in self.reasonsForReParsing\
+                       and 'assert_uniq_segment_id' not in self.reasonsForReParsing:
                         self.reasonsForReParsing = {}
 
             if len(self.reasonsForReParsing) == 0 and self.__reasons is None\
@@ -2370,6 +2373,13 @@ class SchrodingerMRParserListener(ParseTreeListener):
                         or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                     memberId = 0
 
+            if self.__reasons is None\
+               and 'segment_id' in self.atomSelectionSet[0][0] and 'segment_id' in self.atomSelectionSet[1][0]\
+               and self.atomSelectionSet[0][0]['segment_id'] != self.atomSelectionSet[1][0]['segment_id']\
+               and 'assert_uniq_segment_id' not in self.reasonsForReParsing:
+                self.reasonsForReParsing['assert_uniq_segment_id'] = True
+            assert_uniq_segment_id = self.__reasons is not None and 'assert_uniq_segment_id' in self.__reasons
+
             for i in range(0, len(self.atomSelectionSet), 2):
                 if isinstance(combinationId, int):
                     combinationId += 1
@@ -2381,7 +2391,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
-                    if isIdenticalRestraint(atoms, self.__nefT):
+                    if isIdenticalRestraint(atoms, self.__nefT, assert_uniq_segment_id):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
                         star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
@@ -3207,6 +3217,13 @@ class SchrodingerMRParserListener(ParseTreeListener):
                         or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                     memberId = 0
 
+            if self.__reasons is None\
+               and 'segment_id' in self.atomSelectionSet[0][0] and 'segment_id' in self.atomSelectionSet[1][0]\
+               and self.atomSelectionSet[0][0]['segment_id'] != self.atomSelectionSet[1][0]['segment_id']\
+               and 'assert_uniq_segment_id' not in self.reasonsForReParsing:
+                self.reasonsForReParsing['has_uniq_seqment_id'] = True
+            assert_uniq_segment_id = self.__reasons is not None and 'assert_uniq_segment_id' in self.__reasons
+
             for i in range(0, len(self.atomSelectionSet), 2):
                 if isinstance(combinationId, int):
                     combinationId += 1
@@ -3218,7 +3235,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
-                    if isIdenticalRestraint(atoms, self.__nefT):
+                    if isIdenticalRestraint(atoms, self.__nefT, assert_uniq_segment_id):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
                         star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
@@ -6417,8 +6434,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId, 'is_poly': isPolySeq}
-                                        if 'segment_id' in _factor and not self.__cur_union_expr:
-                                            selection['segment_id'] = _factor['segment_id']
+                                        if 'alt_chain_id' in _factor and not self.__cur_union_expr and isPolySeq:
+                                            selection['segment_id'] = _factor['alt_chain_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if not atomSpecified or not seqSpecified:
@@ -6498,8 +6515,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                         continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
-                                        if 'segment_id' in _factor and not self.__cur_union_expr:
-                                            selection['segment_id'] = _factor['segment_id']
+                                        if 'alt_chain_id' in _factor and not self.__cur_union_expr and isPolySeq:
+                                            selection['segment_id'] = _factor['alt_chain_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
@@ -7007,6 +7024,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                         break
         if valid or checked:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] += 1
+            if len(altChainId) < 3 and chainId in altChainId:
+                self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] += 1
             if isPolymer is not None:
                 if isPolymer:
                     self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] += 1
@@ -7595,12 +7614,25 @@ class SchrodingerMRParserListener(ParseTreeListener):
                         self.factor['auth_chain_id'] = alt_pattern
                     elif self.__reasons is not None:
                         if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
-                            self.factor['atom_id'] = [None]
                             if 'segment_id_mismatch' in self.__reasons\
-                               and (chainId not in self.__reasons['segment_id_mismatch']
-                                    or self.__reasons['segment_id_mismatch'][chainId] is not None):
-                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                f"Couldn't specify {clauseName}:'{alt_pattern}' in the coordinates.")
+                               and chainId not in self.__reasons['segment_id_mismatch']:
+                                self.__reasons = None
+                                if 'segment_id_mismatch' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['segment_id_mismatch'] = {}
+                                    self.reasonsForReParsing['segment_id_match_stats'] = {}
+                                    self.reasonsForReParsing['segment_id_poly_type_stats'] = {}
+                                if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
+                                    self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
+                                    self.reasonsForReParsing['segment_id_match_stats'][chainId] = {}
+                                    self.reasonsForReParsing['segment_id_poly_type_stats'][chainId] = {'polymer': 0, 'non-poly': 0}
+                                self.factor['alt_chain_id'] = chainId
+                            else:
+                                self.factor['atom_id'] = [None]
+                                if 'segment_id_mismatch' in self.__reasons\
+                                   and (chainId not in self.__reasons['segment_id_mismatch']
+                                        or self.__reasons['segment_id_mismatch'][chainId] is not None):
+                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                    f"Couldn't specify {clauseName}:'{alt_pattern}' in the coordinates.")
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}

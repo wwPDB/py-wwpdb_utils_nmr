@@ -5332,7 +5332,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     return False
                 if stats['polymer'] >= stats['non-poly']\
                    and 'non_poly_remap' not in self.__reasons\
-                   and not any(any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.__polySeq) for np in self.__nonPoly):
+                   and (not self.__hasNonPoly or not any(any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.__polySeq) for np in self.__nonPoly)):
                     return False
 
         chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)])

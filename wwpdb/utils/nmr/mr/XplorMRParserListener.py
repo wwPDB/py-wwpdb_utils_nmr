@@ -11945,7 +11945,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if stats['polymer'] > 10 * stats['non-poly']:
                     return False
                 if stats['polymer'] >= stats['non-poly']\
-                   and 'np_seq_id_remap' not in self.__reasons and 'non_poly_remap' not in self.__reasons:
+                   and 'non_poly_remap' not in self.__reasons\
+                   and not any(any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.__polySeq) for np in self.__nonPoly):
                     return False
 
         chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)])
@@ -12704,7 +12705,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId, 'is_poly': isPolySeq}
-                                        if 'alt_chain_id' in _factor and not self.__cur_union_expr and isPolySeq:
+                                        if 'alt_chain_id' in _factor and not self.__cur_union_expr:
                                             selection['segment_id'] = _factor['alt_chain_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
@@ -12785,7 +12786,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
-                                        if 'alt_chain_id' in _factor and not self.__cur_union_expr and isPolySeq:
+                                        if 'alt_chain_id' in _factor and not self.__cur_union_expr:
                                             selection['segment_id'] = _factor['alt_chain_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
@@ -13305,7 +13306,7 @@ class XplorMRParserListener(ParseTreeListener):
                         break
         if valid or checked:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] += 1
-            if len(altChainId) < 3 and chainId in altChainId:
+            if len(altChainId) < 3 and altChainId.startswith(chainId):
                 self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] += 1
             if isPolymer is not None:
                 if isPolymer:

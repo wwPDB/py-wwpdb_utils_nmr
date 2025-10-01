@@ -6253,6 +6253,8 @@ def isIdenticalRestraint(atoms: List[dict], nefT=None, assert_uniq_segment_id: b
                         return True
                 else:
                     if a1['chain_id'] == a2['chain_id']:
+                        if 'is_poly' in a1 and 'is_poly' in a2 and a1['is_poly'] != a2['is_poly']:
+                            continue
                         return True
 
     except KeyError:

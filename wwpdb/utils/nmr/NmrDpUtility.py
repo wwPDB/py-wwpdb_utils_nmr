@@ -17122,7 +17122,7 @@ class NmrDpUtility:
 
                 original_file_path_list = []
 
-                manually_selected = False
+                distinct = False
                 ofh = ofh_w_sel = None
                 j = 0
 
@@ -17144,6 +17144,7 @@ class NmrDpUtility:
                             _dst_file = os.path.join(dir_path, g[2])
                             original_file_path_list.append(_dst_file)
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                            distinct = True
 
                         elif sel_mr_file_header_pattern.match(line)\
                                 or sel_pk_file_header_pattern.match(line):
@@ -17166,7 +17167,7 @@ class NmrDpUtility:
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             _dst_file_w_sel = _dst_file + f'-selected-as-{g[0][-7:]}'
                             ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
-                            manually_selected = True
+                            distinct = True
 
                         elif sel_cs_file_header_pattern.match(line):
                             g = sel_cs_file_header_pattern.search(line).groups()
@@ -17185,7 +17186,7 @@ class NmrDpUtility:
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             _dst_file_w_sel = _dst_file + '-ignored'
                             ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
-                            manually_selected = True
+                            distinct = True
 
                         elif not line.isspace() and not comment_pattern.match(line):
                             j += 1
@@ -17209,9 +17210,8 @@ class NmrDpUtility:
                     if ofh_w_sel is not None:
                         ofh_w_sel.close()
 
-                distict = True
                 if len(original_file_path_list) == 0:
-                    distict = False
+                    distinct = False
                     original_file_path_list.append(dst_file)
 
                 for dst_file in original_file_path_list:
@@ -17350,7 +17350,7 @@ class NmrDpUtility:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-pea-any'
 
-                        if manually_selected:
+                        if distinct:
                             _ar['original_file_name'] = os.path.basename(dst_file)
 
                         peak_file_list.append(_ar)
@@ -17402,7 +17402,7 @@ class NmrDpUtility:
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = 'nm-res-oth'
 
-                        if manually_selected:
+                        if distinct:
                             _ar['original_file_name'] = os.path.basename(dst_file)
 
                         split_file_list.append(_ar)
@@ -17424,7 +17424,7 @@ class NmrDpUtility:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = _file_type
 
-                            if manually_selected:
+                            if distinct:
                                 _ar['original_file_name'] = os.path.basename(dst_file)
 
                             split_file_list.append(_ar)
@@ -17457,7 +17457,7 @@ class NmrDpUtility:
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = settled_file_type
 
-                        if manually_selected:
+                        if distinct:
                             _ar['original_file_name'] = os.path.basename(dst_file)
 
                         peak_file_list.append(_ar)
@@ -17762,13 +17762,13 @@ class NmrDpUtility:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-pea-any'
 
-                            if manually_selected:
-                                _ar['original_file_name'] = os.path.basename(dst_file)
+                            if distinct:
+                                _ar['original_file_name'] = file_name
 
                             peak_file_list.append(_ar)
 
                             pk_list_paths.append({'nmr-peaks': _dst_file,
-                                                  'original_file_name': None if file_name.endswith('-noname.mr') else os.path.basename(file_name)})
+                                                  'original_file_name': None if file_name.endswith('-noname.mr') else file_name})
 
                             remediated = True
 
@@ -17786,13 +17786,13 @@ class NmrDpUtility:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = _file_type
 
-                                if manually_selected:
-                                    _ar['original_file_name'] = os.path.basename(dst_file)
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
 
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_file_type: _dst_file,
-                                                      'original_file_name': None if file_name.endswith('-noname.mr') else os.path.basename(file_name)})
+                                                      'original_file_name': None if file_name.endswith('-noname.mr') else file_name})
 
                                 designated = True
 
@@ -17807,13 +17807,13 @@ class NmrDpUtility:
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = 'nm-res-oth'
 
-                            if manually_selected:
-                                _ar['original_file_name'] = os.path.basename(dst_file)
+                            if distinct:
+                                _ar['original_file_name'] = file_name
 
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                  'original_file_name': None if file_name.endswith('-noname.mr') else os.path.basename(file_name)})
+                                                  'original_file_name': None if file_name.endswith('-noname.mr') else file_name})
 
                             continue
 
@@ -17828,7 +17828,7 @@ class NmrDpUtility:
                         if len_valid_types == 0 and len_possible_types == 0:
 
                             ins_msg = ''
-                            if not distict or len(original_file_path_list) == 1:
+                            if not distinct or len(original_file_path_list) == 1:
                                 if has_pdb_format and has_cs_str:
                                     ins_msg = 'unexpectedly contains PDB coordinates and assigned chemical shifts, but '
                                 elif has_pdb_format:
@@ -17836,7 +17836,7 @@ class NmrDpUtility:
                                 elif has_cs_str:
                                     ins_msg = 'unexpectedly contains assigned chemical shifts, but '
 
-                            _file_name = os.path.basename(dst_file)
+                            _file_name = file_name
                             if file_name != _file_name:
                                 _file_name = f'({_file_name}) '
                             else:
@@ -17863,84 +17863,72 @@ class NmrDpUtility:
                             if len_valid_types == 1:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = valid_types[0]
-                                if distict:
-                                    _ar['original_file_name'] = file_name
 
-                                if manually_selected:
-                                    _ar['original_file_name'] = os.path.basename(dst_file)
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
 
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
-                                if distict:
-                                    _ar['original_file_name'] = file_name
 
-                                if manually_selected:
-                                    _ar['original_file_name'] = os.path.basename(dst_file)
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
 
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
-                                if distict:
-                                    _ar['original_file_name'] = file_name
 
-                                if manually_selected:
-                                    _ar['original_file_name'] = os.path.basename(dst_file)
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
 
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 3\
                                     and (set(valid_types) == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}
                                          or set(valid_types) == {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
-                                if distict:
-                                    _ar['original_file_name'] = file_name
 
-                                if manually_selected:
-                                    _ar['original_file_name'] = os.path.basename(dst_file)
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
 
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 3\
                                     and set(valid_types) == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-cha'
-                                if distict:
-                                    _ar['original_file_name'] = file_name
 
-                                if manually_selected:
-                                    _ar['original_file_name'] = os.path.basename(dst_file)
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
 
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else os.path.basename(_dst_file)})
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
 
                             else:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = valid_types[0]
-                                if distict:
-                                    _ar['original_file_name'] = file_name
 
-                                if manually_selected:
-                                    _ar['original_file_name'] = os.path.basename(dst_file)
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
 
                                 err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                     "@todo: It needs to be split properly."
@@ -17957,11 +17945,9 @@ class NmrDpUtility:
 
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = possible_types[0]
-                            if distict:
-                                _ar['original_file_name'] = file_name
 
-                            if manually_selected:
-                                _ar['original_file_name'] = os.path.basename(dst_file)
+                            if distinct:
+                                _ar['original_file_name'] = file_name
 
                             err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                                 "@todo: It needs to be reviewed."
@@ -17978,11 +17964,9 @@ class NmrDpUtility:
 
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = valid_types[0]
-                            if distict:
-                                _ar['original_file_name'] = file_name
 
-                            if manually_selected:
-                                _ar['original_file_name'] = os.path.basename(dst_file)
+                            if distinct:
+                                _ar['original_file_name'] = file_name
 
                             err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                                 "@todo: It needs to be reviewed."

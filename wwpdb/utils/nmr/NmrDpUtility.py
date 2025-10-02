@@ -8393,6 +8393,9 @@ class NmrDpUtility:
                                 if '<!DOCTYPE noe_restraint_list SYSTEM' in line or '<noe_restraint_list>' in line:
                                     ar['file_type'] = 'nm-res-arx'
                                     break
+                                if '<!DOCTYPE data_set SYSTEM' in line or '<date_set>' in line:
+                                    ar['file_type'] = 'nm-res-arx'
+                                    break
                                 if idx >= self.mr_max_spacer_lines:
                                     break
 

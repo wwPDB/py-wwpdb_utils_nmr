@@ -871,7 +871,7 @@ class AriaMRParserListener(ParseTreeListener):
                         or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                     memberId = 0
 
-            for i in range(0, len(self.atomSelectionSet), 2):
+            for i in range(0, total * 2, 2):
                 if isinstance(combinationId, int):
                     combinationId += 1
                 if isinstance(memberId, int):

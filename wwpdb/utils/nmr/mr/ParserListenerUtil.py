@@ -45,6 +45,7 @@ try:
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID,
+                                           letterToDigit,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            getScoreOfSeqAlign)
@@ -60,6 +61,7 @@ except ImportError:
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID,
+                               letterToDigit,
                                alignPolymerSequence,
                                assignPolymerSequence,
                                getScoreOfSeqAlign)
@@ -6301,6 +6303,67 @@ def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None
 
             except Exception:
                 return True
+
+    return False
+
+
+def isDefinedInterChainRestraint(atoms: List[dict], keyword: str, symmetric: str, polySeq: Optional[List[dict]] = None) -> bool:
+    """ Return whether inter-chain restraint matches condition defined by a given keyword.
+        Supported keywords: 'intra', 'inter', and 'i_i+1', 'i_i+2', etc.
+    """
+
+    if keyword is None or len(keyword) == 0 or len(atoms) != 2:
+        return False
+
+    chainId1 = atoms[0]['chain_id']
+    chainId2 = atoms[1]['chain_id']
+
+    if 'intra' in keyword:
+        return chainId1 != chainId2
+
+    if 'inter' in keyword:
+        if chainId1 == chainId2:
+            return True
+
+        if 'i_i' in keyword:
+            chain_assign_pattern = re.compile(r'.*i_i([+-])(\d+).*')
+
+            if chain_assign_pattern.match(keyword):
+                g = chain_assign_pattern.search(keyword).groups()
+
+                offset = int(g[1])
+                if g[0] == '-':
+                    offset = -offset
+
+                if symmetric in ('linear', 'circular'):
+                    ps = next((ps for ps in polySeq if ps['auth_chain_id'] == chainId1 and 'identical_auth_chain_id' in ps), None)
+                    if ps is not None:
+                        chainIdSet = [chainId1]
+                        chainIdSet.extend(ps['identical_auth_chain_id'])
+                        chainIdSet.sort()
+
+                        if chainId1 in chainIdSet and chainId2 in chainIdSet:
+                            idx1 = chainIdSet.index(chainId1)
+                            idx2 = chainIdSet.index(chainId1)
+
+                            if symmetric == 'linear':
+                                return idx2 - idx1 != offset
+
+                            lenSymmetric = len(chainIdSet)
+
+                            _offset = (idx2 - idx1 + lenSymmetric) % lenSymmetric
+
+                            if offset >= 0:
+                                return _offset != offset
+
+                            _offset -= lenSymmetric
+
+                            return _offset != offset
+
+                idx1 = letterToDigit(chainId1)
+                idx2 = letterToDigit(chainId2)
+
+                return idx2 - idx1 != offset
 
     return False
 

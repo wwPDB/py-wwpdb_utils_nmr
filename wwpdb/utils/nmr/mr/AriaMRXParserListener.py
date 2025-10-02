@@ -15,6 +15,7 @@ __version__ = "1.0.0"
 import sys
 import re
 import itertools
+import numpy
 import copy
 import collections
 
@@ -31,12 +32,20 @@ try:
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       translateToLigandName,
                                                        isIdenticalRestraint,
+                                                       isLongRangeRestraint,
+                                                       isDefinedInterChainRestraint,
                                                        hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
                                                        isStructConn,
+                                                       getStructConnPtnrAtom,
                                                        getAltProtonIdInBondConstraint,
+                                                       getTypeOfDihedralRestraint,
+                                                       fixBackboneAtomsOfDihedralRestraint,
+                                                       isLikePheOrTyr,
+                                                       getMetalCoordOf,
                                                        guessCompIdFromAtomId,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -46,6 +55,7 @@ try:
                                                        getLoop,
                                                        getRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
@@ -54,17 +64,29 @@ try:
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
+                                                       THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP,
                                                        DIST_AMBIG_MED,
                                                        DIST_AMBIG_UNCERT,
-                                                       CARTN_DATA_ITEMS)
+                                                       ANGLE_RESTRAINT_RANGE,
+                                                       ANGLE_RESTRAINT_ERROR,
+                                                       KNOWN_ANGLE_NAMES,
+                                                       KNOWN_ANGLE_ATOM_NAMES,
+                                                       KNOWN_ANGLE_SEQ_OFFSET,
+                                                       KNOWN_ANGLE_CARBO_ATOM_NAMES,
+                                                       KNOWN_ANGLE_CARBO_SEQ_OFFSET,
+                                                       CARTN_DATA_ITEMS,
+                                                       HEME_LIKE_RES_NAMES)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
+                                           MAX_MAG_IDENT_ASYM_ID,
                                            # trueValue,
                                            monDict3,
                                            emptyValue,
@@ -74,7 +96,9 @@ try:
                                            carboxylCode,
                                            zincIonCode,
                                            calciumIonCode,
+                                           indexToLetter,
                                            updatePolySeqRst,
+                                           revertPolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
                                            sortPolySeqRst,
@@ -95,7 +119,10 @@ try:
                                            retrieveOriginalSeqIdFromMRMap)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance,
-                                                dist_error)
+                                                dist_error,
+                                                angle_target_values,
+                                                dihedral_angle,
+                                                angle_error)
 except ImportError:
     from nmr.io.CifReader import (CifReader,
                                   SYMBOLS_ELEMENT)
@@ -104,12 +131,20 @@ except ImportError:
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           translateToLigandName,
                                            isIdenticalRestraint,
+                                           isLongRangeRestraint,
+                                           isDefinedInterChainRestraint,
                                            hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
                                            isStructConn,
+                                           getStructConnPtnrAtom,
                                            getAltProtonIdInBondConstraint,
+                                           getTypeOfDihedralRestraint,
+                                           fixBackboneAtomsOfDihedralRestraint,
+                                           isLikePheOrTyr,
+                                           getMetalCoordOf,
                                            guessCompIdFromAtomId,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -119,6 +154,7 @@ except ImportError:
                                            getLoop,
                                            getRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
@@ -127,17 +163,29 @@ except ImportError:
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
+                                           THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP,
                                            DIST_AMBIG_MED,
                                            DIST_AMBIG_UNCERT,
-                                           CARTN_DATA_ITEMS)
+                                           ANGLE_RESTRAINT_RANGE,
+                                           ANGLE_RESTRAINT_ERROR,
+                                           KNOWN_ANGLE_NAMES,
+                                           KNOWN_ANGLE_ATOM_NAMES,
+                                           KNOWN_ANGLE_SEQ_OFFSET,
+                                           KNOWN_ANGLE_CARBO_ATOM_NAMES,
+                                           KNOWN_ANGLE_CARBO_SEQ_OFFSET,
+                                           CARTN_DATA_ITEMS,
+                                           HEME_LIKE_RES_NAMES)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
+                               MAX_MAG_IDENT_ASYM_ID,
                                # trueValue,
                                monDict3,
                                emptyValue,
@@ -147,7 +195,9 @@ except ImportError:
                                carboxylCode,
                                zincIonCode,
                                calciumIonCode,
+                               indexToLetter,
                                updatePolySeqRst,
+                               revertPolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
                                sortPolySeqRst,
@@ -168,7 +218,10 @@ except ImportError:
                                retrieveOriginalSeqIdFromMRMap)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance,
-                                    dist_error)
+                                    dist_error,
+                                    angle_target_values,
+                                    dihedral_angle,
+                                    angle_error)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -176,6 +229,12 @@ DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
 
 DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
 DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
+
+ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
+ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
+
+ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
+ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
 
 
 # This class defines a complete listener for a parse tree produced by XMLParser.
@@ -214,6 +273,11 @@ class AriaMRXParserListener(ParseTreeListener):
     __cR = None
     __hasCoord = False
 
+    # experimental method
+    __exptlMethod = ''
+    # whether solid-state NMR is applied to symmetric samples such as fibrils
+    __symmetric = 'no'
+
     # data item name for model ID in 'atom_site' category
     __modelNumName = None
 
@@ -236,6 +300,8 @@ class AriaMRXParserListener(ParseTreeListener):
     __authToStarSeq = None
     __authToOrigSeq = None
     __authToInsCode = None
+    __modResidue = None
+    __splitLigand = None
 
     __uniqAtomIdToSeqKey = None
 
@@ -249,15 +315,20 @@ class AriaMRXParserListener(ParseTreeListener):
     __hasBranched = False
     __hasNonPolySeq = False
     __preferAuthSeq = True
+    __gapInAuthSeq = False
     __extendAuthSeq = False
 
     # chain number dictionary
     __chainNumberDict = None
 
+    # extended residue key
+    __extResKey = None
+
     # polymer sequence of MR file
     __polySeqRst = None
     __polySeqRstFailed = None
     __polySeqRstFailedAmbig = None
+    __polySeqRstRef = None
     __compIdMap = None
 
     __seqAlign = None
@@ -270,7 +341,7 @@ class AriaMRXParserListener(ParseTreeListener):
     __cur_contrib = []
 
     # current weight value
-    __cur_contrib_weight = 1.0
+    __cur_contrib_weight = None
 
     # whether to allow extended sequence temporary
     __allow_ext_seq = False
@@ -330,6 +401,11 @@ class AriaMRXParserListener(ParseTreeListener):
     __resid = None
     __name = None
 
+    __restraint_key = None
+    __target_value_uncertainty = None
+
+    # dataset
+
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
@@ -372,6 +448,16 @@ class AriaMRXParserListener(ParseTreeListener):
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+            self.__modResidue = ret['mod_residue']
+            self.__splitLigand = ret['split_ligand']
+
+            exptl = cR.getDictList('exptl')
+            if len(exptl) > 0:
+                for item in exptl:
+                    if 'method' in item:
+                        if 'NMR' in item['method']:
+                            self.__exptlMethod = item['method']
+                            break
 
         self.__offsetHolder = {}
 
@@ -387,6 +473,9 @@ class AriaMRXParserListener(ParseTreeListener):
                 self.__nonPolySeq = self.__nonPoly
             else:
                 self.__nonPolySeq = self.__branched
+
+        if self.__hasPolySeq:
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
         if self.__hasNonPoly:
             atom_list = []
@@ -428,6 +517,7 @@ class AriaMRXParserListener(ParseTreeListener):
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
         self.distRestraints = 0      # ARIA: Distance restraints
+        self.dihedRestraints = 0     # ARIA: Torsion angle restraints
 
         self.sfDict = {}
 
@@ -452,9 +542,12 @@ class AriaMRXParserListener(ParseTreeListener):
     def enterDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
         self.__cur_path = ''
 
+        self.__chainNumberDict = {}
+        self.__extResKey = []
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
         self.__polySeqRstFailedAmbig = []
+        self.__polySeqRstRef = []
         self.__compIdMap = {}
         self.__f = []
 
@@ -830,8 +923,10 @@ class AriaMRXParserListener(ParseTreeListener):
     def enterElement(self, ctx: XMLParser.ElementContext):
         self.__cur_path += '/' + str(ctx.Name(0))
 
+        # noe_restraint_list
         if self.__cur_path == '/noe_restraint_list':
             self.__cur_subtype = 'dist'
+            self.__restraint_key = None
 
         elif self.__cur_path == '/noe_restraint_list/peak':
             self.__weight = None
@@ -842,7 +937,7 @@ class AriaMRXParserListener(ParseTreeListener):
             self.__cur_contrib = []
 
         elif self.__cur_path == '/noe_restraint_list/peak/contribution':
-            self.__cur_contrib_weight = 1.0
+            self.__cur_contrib_weight = None
             self.__contribution_id += 1
             self.__spin_system_id = -1
             self.__cur_contrib.append([])
@@ -856,15 +951,55 @@ class AriaMRXParserListener(ParseTreeListener):
             self.__resid = None
             self.__name = None
 
+        # data_set
+        elif self.__cur_path == '/data_set/sequence':
+            self.__restraint_key = None
+
+        elif self.__cur_path == '/data_set/sequence/residue':
+            self.__resid = None
+            self.__name = None
+
+        elif self.__cur_path == '/data_set/restraint_list':
+            self.__cur_subtype = 'dist'
+            self.__restraint_key = None
+
+        elif self.__cur_path == '/data_set/restraint_list/restraint':
+            self.__weight = 1.0  # default
+            self.__target_value = None
+            self.__lower_limit = None
+            self.__upper_limit = None
+            self.__contribution_id = -1
+            self.__cur_contrib = []
+
+        elif self.__cur_path == '/data_set/restraint_list/restraint/contribution':
+            self.__cur_contrib_weight = 1.0  # default
+            self.__contribution_id += 1
+            self.__cur_contrib.append([])
+            self.__spin_system_id = -1
+
+        elif self.__cur_path == '/data_set/restraint_list/restraint/contribution/atom':
+            self.__segid = None
+            self.__resid = None
+            self.__name = None
+
+        elif self.__cur_path == '/data_set/torsion_angles':
+            self.__cur_subtype = 'dihed'
+            self.__restraint_key = None
+
+        elif self.__cur_path == '/data_set/torsion_angles/torsion_angle':
+            self.__weight = 1.0  # default
+            self.__segid = None
+            self.__resid = None
+            self.__name = None
+            self.__target_value = None
+            self.__target_value_uncertainty = None
+
     # Exit a parse tree produced by XMLParser#element.
     def exitElement(self, ctx: XMLParser.ElementContext):
 
         try:
 
-            if self.__cur_path == '/noe_restraint_list':
-                self.__cur_subtype = ''
-
-            elif self.__cur_path == '/noe_restraint_list/peak':
+            if self.__cur_path in ('/noe_restraint_list/peak', '/data_set/restraint_list/restraint'):
 
                 if self.__weight <= 0.0:
                     return
@@ -906,19 +1041,114 @@ class AriaMRXParserListener(ParseTreeListener):
                 self.exitDistance_restraint()
 
             elif self.__cur_path == '/noe_restraint_list/peak/contribution/spin_system/atom':
-                ass = {'weight': self.__cur_contrib_weight}
-                if self.__resid is not None:
-                    ass['seq_id'] = self.__resid
-                    if self.__name is not None:
-                        ass['atom_id'] = self.__name
-                        if self.__segid is not None:
-                            ass['chain_id'] = self.__segid
+                if self.__cur_contrib_weight is not None:
+                    atom = {'weight': self.__cur_contrib_weight}
+                    if self.__resid is not None:
+                        atom['seq_id'] = self.__resid
+                        if self.__name is not None:
+                            atom['atom_id'] = self.__name
+                            if self.__segid is not None:
+                                atom['chain_id'] = self.__segid
+                        else:
+                            atom = None
                     else:
-                        ass = None
+                        atom = None
                 else:
-                    ass = None
+                    atom = None
 
-                self.__cur_contrib[self.__contribution_id][self.__spin_system_id].append(ass)
+                self.__cur_contrib[self.__contribution_id][self.__spin_system_id].append(atom)
+
+            elif self.__cur_path == '/data_set/restraint_list/restraint/contribution/atom':
+                if self.__cur_contrib_weight is not None:
+                    atom = {'weight': self.__cur_contrib_weight}
+                    if self.__resid is not None:
+                        atom['seq_id'] = self.__resid
+                        if self.__name is not None:
+                            atom['atom_id'] = self.__name
+                            if self.__segid is not None:
+                                atom['chain_id'] = self.__segid
+                        else:
+                            atom = None
+                    else:
+                        atom = None
+                else:
+                    atom = None
+
+                self.__spin_system_id += 1
+                self.__cur_contrib[self.__contribution_id].append([])
+
+                self.__cur_contrib[self.__contribution_id][self.__spin_system_id].append(atom)
+
+            elif self.__cur_path == '/data_set/torsion_angles/torsion_angle':
+
+                if self.__weight <= 0.0 or None in (self.__resid, self.__name, self.__target_value):
+                    return
+
+                self.dihedRestraints += 1
+
+                self.atomSelectionSet.clear()
+
+                self.exitTorsion_angle_restraint()
+
+            elif self.__cur_path == '/data_set/sequence':
+                sortPolySeqRst(self.__polySeqRstRef)
+
+                seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstRef, resolvedMultimer=self.__reasons is not None)
+                chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRstRef, seqAlign)
+
+                if chainAssign is not None and len(chainAssign) > 0:
+                    for ca in chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
+
+                        sa = next(sa for sa in seqAlign
+                                  if sa['ref_chain_id'] == ref_chain_id
+                                  and sa['test_chain_id'] == test_chain_id)
+
+                        if sa['conflict'] != 0:
+                            continue
+
+                        poly_seq_model = next(ps for ps in self.__polySeq
+                                              if ps['auth_chain_id'] == ref_chain_id)
+                        poly_seq_rst = next(ps for ps in self.__polySeqRstRef
+                                            if ps['chain_id'] == test_chain_id)
+
+                        if 'auth_seq_id' in poly_seq_rst:
+                            continue
+
+                        seq_id_mapping = {}
+                        offset = None
+                        for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                            if test_seq_id is None:
+                                continue
+                            if mid_code == '|':
+                                try:
+                                    seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                       in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                       if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                    if offset is None:
+                                        offset = seq_id_mapping[test_seq_id] - test_seq_id
+                                except StopIteration:
+                                    pass
+                            elif mid_code == ' ' and test_seq_id in poly_seq_rst['seq_id']:
+                                idx = poly_seq_rst['seq_id'].index(test_seq_id)
+                                if poly_seq_rst['comp_id'][idx] == '.' and poly_seq_rst['auth_comp_id'][idx] not in emptyValue:
+                                    seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                       in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                       if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+
+                        if offset is not None and all(v - k == offset for k, v in seq_id_mapping.items()):
+                            poly_seq_rst['auth_seq_id'] = [seq_id + offset for seq_id in poly_seq_rst['seq_id']]
+
+            elif self.__cur_path == '/data_set/sequence/residue':
+
+                if self.__restraint_key is None:
+                    self.__restraint_key = indexToLetter(len(self.__polySeqRstRef))
+
+                if None in (self.__resid, self.__name):
+                    return
+
+                updatePolySeqRst(self.__polySeqRstRef, self.__restraint_key, self.__resid, self.__name)
 
         finally:
             self.__cur_path = self.__cur_path[:-(1 + len(str(ctx.Name(0))))]
@@ -938,35 +1168,75 @@ class AriaMRXParserListener(ParseTreeListener):
             name = str(ctx.Name())
             string = str(ctx.STRING())[1:-1].strip()
 
-            if self.__cur_path == '/noe_restraint_list/peak':
+            try:
 
-                if name == 'weight':
-                    self.__weight = float(string)
+                if self.__cur_path in ('/noe_restraint_list/peak', '/data_set/restraint_list/restraint'):
 
-                elif name == 'distance':
-                    self.__target_value = float(string)
+                    if name == 'weight':
+                        self.__weight = float(string)
 
-                elif name == 'lower_bound':
-                    self.__lower_limit = float(string)
+                    elif name == 'distance':
+                        self.__target_value = float(string)
 
-                elif name == 'upper_bound':
-                    self.__upper_limit = float(string)
+                    elif name in ('lower_bound', 'lower'):
+                        self.__lower_limit = float(string)
 
-            elif self.__cur_path == '/noe_restraint_list/peak/contribution':
+                    elif name in ('upper_bound', 'upper'):
+                        self.__upper_limit = float(string)
 
-                if name == 'weight':
-                    self.__cur_contrib_weight = float(string)
+                elif self.__cur_path == '/noe_restraint_list/peak/contribution':
 
-            elif self.__cur_path == '/noe_restraint_list/peak/contribution/spin_system/atom':
+                    if name == 'weight':
+                        self.__cur_contrib_weight = float(string)
 
-                if name == 'segid' and len(string) > 0:
-                    self.__segid = string
+                elif self.__cur_path in ('/noe_restraint_list/peak/contribution/spin_system/atom', '/data_set/restraint_list/restraint/contribution/atom'):
 
-                elif name == 'residue' and len(string) > 0 and string.isdigit():
-                    self.__resid = int(string)
+                    if name == 'segid' and len(string) > 0:
+                        self.__segid = string
 
-                elif name == 'name' and len(string) > 0:
-                    self.__name = string
+                    elif name == 'residue' and len(string) > 0 and string.isdigit():
+                        self.__resid = int(string)
+
+                    elif name == 'name' and len(string) > 0:
+                        self.__name = string
+
+                elif self.__cur_path in ('/data_set/restraint_list', '/data_set/torsion_angles'):
+
+                    if name == 'key' and len(string) > 0:
+                        self.__restraint_key = string
+
+                elif self.__cur_path == '/data_set/torsion_angles/torsion_angle':
+
+                    if name == 'segid' and len(string) > 0:
+                        self.__segid = string
+
+                    elif name == 'residue_number' and len(string) > 0 and string.isdigit():
+                        self.__resid = int(string)
+
+                    elif name == 'name' and len(string) > 0:
+                        self.__name = string
+
+                    elif name == 'value' and len(string) > 0:
+                        self.__target_value = float(string)
+
+                    elif name == 'error' and len(string) > 0:
+                        self.__target_value_uncertainty = float(string)
+
+                elif self.__cur_path == '/data_set/sequence':
+
+                    if name == 'name' and len(string) > 0:
+                        self.__restraint_key = string
+
+                elif self.__cur_path == '/data_set/sequence/residue':
+
+                    if name == 'number' and len(string) > 0 and string.isdigit():
+                        self.__resid = int(string)
+
+                    elif name == 'name' and len(string) > 0:
+                        self.__name = string
+
+            except ValueError:
+                pass
 
     # Exit a parse tree produced by XMLParser#attribute.
     def exitAttribute(self, ctx: XMLParser.AttributeContext):  # pylint: disable=unused-argument
@@ -1080,21 +1350,49 @@ class AriaMRXParserListener(ParseTreeListener):
                 seqId1 = atom_pair[0][0]['seq_id']
                 atomId1 = atom_pair[0][0]['atom_id']
 
-                chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
-                    if chainId1 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+                compId1 = None
+                if len(self.__polySeqRstRef) > 0:
+                    if chainId1 is None:
+                        chainId1 = self.__polySeqRstRef[0]['chain_id']
+                    ps = next((ps for ps in self.__polySeqRstRef if ps['chain_id'] == chainId1), None)
+                    if ps is not None and seqId1 in ps['seq_id']:
+                        compId1 = ps['comp_id'][ps['seq_id'].index(seqId1)]
+                        if 'auth_seq_id' in ps:
+                            seqId1 = ps['auth_seq_id'][ps['seq_id'].index(seqId1)]
+
+                if compId1 is not None:
+                    chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)\
+                        if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                else:
+                    chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                        if chainId1 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
 
                 chainId2 = atom_pair[1][0]['chain_id'] if 'chain_id' in atom_pair[1][0] else None
                 seqId2 = atom_pair[1][0]['seq_id']
                 atomId2 = atom_pair[1][0]['atom_id']
 
-                chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
-                    if chainId2 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+                compId2 = None
+                if len(self.__polySeqRstRef) > 0:
+                    if chainId2 is None:
+                        chainId2 = self.__polySeqRstRef[0]['chain_id']
+                    ps = next((ps for ps in self.__polySeqRstRef if ps['chain_id'] == chainId2), None)
+                    if ps is not None and seqId2 in ps['seq_id']:
+                        compId2 = ps['comp_id'][ps['seq_id'].index(seqId2)]
+                        if 'auth_seq_id' in ps:
+                            seqId2 = ps['auth_seq_id'][ps['seq_id'].index(seqId2)]
+
+                if compId2 is not None:
+                    chainAssign2, _ = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)\
+                        if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                else:
+                    chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                        if chainId2 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     continue
 
-                self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
-                self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
+                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
 
                 if len(self.atomSelectionSet) < (total + 1) * 2:
                     continue
@@ -1127,6 +1425,52 @@ class AriaMRXParserListener(ParseTreeListener):
             if total == 0:
                 return
 
+            if self.__restraint_key is not None and 'inter' in self.__restraint_key:
+                if self.__exptlMethod == 'SOLID-STATE NMR':
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId1 and 'identical_auth_chain_id' in ps), None)
+                    if ps is not None:
+                        chain_id_set = [chainId1]
+                        chain_id_set.extend(ps['identical_auth_chain_id'])
+                        chain_id_set.sort()
+                        if self.__symmetric != 'no':
+                            pass
+                        elif len(chain_id_set) > MAX_MAG_IDENT_ASYM_ID and chainId2 in chain_id_set:
+                            self.__symmetric = 'linear'
+
+                            try:
+
+                                _head =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    CARTN_DATA_ITEMS,
+                                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_set[0]},
+                                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId},
+                                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                                      'enum': (self.__representativeAltId,)}
+                                                                     ])
+
+                                _tail =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    CARTN_DATA_ITEMS,
+                                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_set[-1]},
+                                                                     {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                                     {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId},
+                                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                                      'enum': (self.__representativeAltId,)}
+                                                                     ])
+
+                                if len(_head) == 1 and len(_tail) == 1:
+                                    if distance(to_np_array(_head[0]), to_np_array(_tail[0])) < 10.0:
+                                        self.__symmetric = 'circular'
+
+                            except Exception as e:
+                                if self.__verbose:
+                                    self.__lfh.write(f"+{self.__class_name__}.exitDistance_restraint() ++ Error  - {str(e)}")
+
             combinationId = memberId = memberLogicCode = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
@@ -1140,7 +1484,7 @@ class AriaMRXParserListener(ParseTreeListener):
                         or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                     memberId = 0
 
-            for i in range(0, len(self.atomSelectionSet), 2):
+            for i in range(0, total * 2, 2):
                 if isinstance(combinationId, int):
                     combinationId += 1
                 if isinstance(memberId, int):
@@ -1151,6 +1495,8 @@ class AriaMRXParserListener(ParseTreeListener):
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
+                    if self.__restraint_key is not None and isDefinedInterChainRestraint(atoms, self.__restraint_key, self.__symmetric, self.__polySeq):
+                        continue
                     if isIdenticalRestraint(atoms, self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
@@ -1166,7 +1512,7 @@ class AriaMRXParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} comment={self.__restraint_key} id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -1311,6 +1657,658 @@ class AriaMRXParserListener(ParseTreeListener):
 
         return dstFunc
 
+    def exitTorsion_angle_restraint(self):
+
+        try:
+
+            seqId = self.__resid
+            angleName = self.__name.upper()
+
+            if self.__segid is None and len(self.__polySeqRstRef) > 0:
+                self.__segid = self.__polySeqRstRef[0]['chain_id']
+
+            ps = next((ps for ps in self.__polySeqRstRef if ps['chain_id'] == self.__segid), None)
+
+            if ps is None or seqId not in ps['seq_id']:
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'Residue number '{self.__resid}' is not defined in /data_set/sequence XML element.")
+                self.dihedRestraints -= 1
+                return
+
+            _compId = ps['comp_id'][ps['seq_id'].index(seqId)].upper()
+            compId = translateToStdResName(_compId, ccU=self.__ccU)
+            if _compId != compId:
+                _types = self.__csStat.getTypeOfCompId(_compId)
+                if any(t for t in _types) and _types != self.__csStat.getTypeOfCompId(compId):
+                    compId = _compId
+
+            if 'auth_seq_id' in ps:
+                seqId = ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+
+            target_value = self.__target_value
+            lower_limit = self.__target_value - self.__target_value_uncertainty
+            upper_limit = self.__target_value + self.__target_value_uncertainty
+
+            weight = self.__weight
+
+            if weight < 0.0:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
+                return
+            if weight == 0.0:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
+
+            dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            # support AMBER's dihedral angle naming convention for nucleic acids
+            # http://ambermd.org/tutorials/advanced/tutorial4/
+            if angleName in ('EPSILN', 'EPSLN'):
+                angleName = 'EPSILON'
+
+            # nucleic CHI angle
+            if angleName == 'CHIN':
+                angleName = 'CHI'
+
+            if angleName not in KNOWN_ANGLE_NAMES:
+                lenAngleName = len(angleName)
+                try:
+                    # For the case 'EPSIL' could be standard name 'EPSILON'
+                    angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
+                except StopIteration:
+                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                    f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}, "
+                                    "of which CYANA residue library should be uploaded.")
+                    return
+
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+
+            if carbohydrate:
+                chainAssign, _ = self.assignCoordPolymerSequence(seqId, compId, 'CA', False)
+                if len(chainAssign) > 0:
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainAssign[0][0]), None)
+                    if ps is not None and 'type' in ps and 'polypeptide' in ps['type']:
+                        peptide = True
+                        nucleotide = carbohydrate = False
+
+            if carbohydrate and angleName in KNOWN_ANGLE_CARBO_ATOM_NAMES:
+                atomNames = KNOWN_ANGLE_CARBO_ATOM_NAMES[angleName]
+                seqOffset = KNOWN_ANGLE_CARBO_SEQ_OFFSET[angleName]
+            else:
+                atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+            if angleName != 'PPA':
+
+                if isinstance(atomNames, list):
+                    atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
+                else:  # nucleic CHI angle
+                    atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
+
+                if not isinstance(atomId, str):
+                    self.__ccU.updateChemCompDict(compId)
+                    atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+                    if atomId is None and carbohydrate:
+                        atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                        seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                        if isinstance(atomNames, list):
+                            atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
+                        else:  # nucleic CHI angle
+                            atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
+
+                        if not isinstance(atomId, str):
+                            atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
+                            if atomId is None:
+                                resKey = (seqId, _compId)
+                                if resKey not in self.__extResKey:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId}:{_compId} is not present in the coordinates.")
+                                return
+
+                self.__retrieveLocalSeqScheme()
+
+                chainAssign, _ = self.assignCoordPolymerSequence(seqId, compId, atomId)
+
+                if len(chainAssign) == 0:
+                    resKey = (seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{_compId} is not present in the coordinates.")
+                    return
+
+                for chainId, cifSeqId, cifCompId, _ in chainAssign:
+                    ps = None
+
+                    if carbohydrate:
+                        if self.__branched is not None:
+                            ps = next((ps for ps in self.__branched if ps['auth_chain_id'] == chainId), None)
+                            if ps is None:
+                                ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                    else:
+                        ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+
+                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
+
+                    if peptide and angleName in ('PHI', 'PSI', 'OMEGA',
+                                                 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                                                 'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42'):
+                        pass
+                    elif nucleotide and angleName in ('ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
+                                                      'CHI', 'ETA', 'THETA', "ETA'", "THETA'",
+                                                      'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
+                                                      'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4'):
+                        pass
+                    elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
+                        pass
+                    else:
+                        self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                        f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}, "
+                                        "of which CYANA residue library should be uploaded.")
+                        return
+
+                    atomNames = None
+                    seqOffset = None
+
+                    if carbohydrate:
+                        atomNames = KNOWN_ANGLE_CARBO_ATOM_NAMES[angleName]
+                        seqOffset = KNOWN_ANGLE_CARBO_SEQ_OFFSET[angleName]
+                    elif nucleotide and angleName == 'CHI':
+                        if self.__ccU.updateChemCompDict(cifCompId):
+                            try:
+                                next(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == 'N9')
+                                atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['R']
+                                seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['R']
+                            except StopIteration:
+                                atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['Y']
+                                seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['Y']
+                    else:
+                        atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                        seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                    prevCifAtomId = None
+                    prevOffset = None
+
+                    for ord, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
+
+                        atomSelection = []
+
+                        if offset != 0 and ps is None:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                            f"of chain {chainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            return
+
+                        _cifSeqId = cifSeqId + offset
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.__hasCoord)
+
+                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                            idx = ps['auth_seq_id'].index(cifSeqId)
+                            try:
+                                _cifSeqId = ps['auth_seq_id'][idx + offset]
+                                _cifCompId = ps['comp_id'][idx + offset]
+
+                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.__hasCoord)
+                            except IndexError:
+                                pass
+
+                        if _cifCompId is None:
+                            # """
+                            # try:
+                            #     _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
+                            # except IndexError:
+                            #     pass
+                            # """
+                            if _cifCompId is None and not self.__allow_ext_seq:
+                                self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                                f"of chain {chainId} of the coordinates. "
+                                                "Please update the sequence in the Macromolecules page.")
+                                return
+                                # _cifCompId = '.'
+                            cifAtomId = atomId
+
+                        else:
+                            self.__ccU.updateChemCompDict(_cifCompId)
+
+                            if isinstance(atomId, str):
+                                cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                                if cifAtomId is None:
+                                    if ord == 0:
+                                        _cifSeqId += seqOffset[ord + 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.__cR, chainId, _cifSeqId, atomNames[ord + 1])
+                                        if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
+                                            cifAtomId = ptnr['atom_id']
+                                    elif ord == 3:
+                                        _cifSeqId += seqOffset[ord - 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.__cR, chainId, _cifSeqId, atomNames[ord - 1])
+                                        if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
+                                            cifAtomId = ptnr['atom_id']
+                            else:
+                                cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                              if atomId.match(cca[self.__ccU.ccaAtomId])
+                                              and (coordAtomSite is None
+                                                   or (coordAtomSite is not None and cca[self.__ccU.ccaAtomId] in coordAtomSite['atom_id']))]
+
+                                if len(cifAtomIds) > 0:
+                                    if prevCifAtomId is not None and offset == prevOffset:
+                                        cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                          if any(b for b in self.__ccU.lastBonds
+                                                                 if ((b[self.__ccU.ccbAtomId1] == prevCifAtomId and b[self.__ccU.ccbAtomId2] == _cifAtomId)
+                                                                     or (b[self.__ccU.ccbAtomId1] == _cifAtomId and b[self.__ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                        if cifAtomId is None:
+                                            offset -= 1
+                                            _cifSeqId = cifSeqId + offset
+                                            _cifCompId = cifCompId if offset == 0\
+                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.__hasCoord)
+                                            if coordAtomSite is not None:
+                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+
+                                    else:
+                                        cifAtomId = cifAtomIds[0]
+                                else:
+                                    cifAtomId = None
+
+                            if cifAtomId is None:
+                                if _cifCompId is None and not self.__allow_ext_seq:
+                                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                    f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                                    f"of chain {chainId} of the coordinates. "
+                                                    "Please update the sequence in the Macromolecules page.")
+                                elif _compId in monDict3:
+                                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                                    f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
+                                else:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
+                                                    "is not present in the coordinates.")
+                                return
+
+                        prevCifAtomId = cifAtomId
+                        prevOffset = offset
+
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+
+                        self.testCoordAtomIdConsistency(chainId, _cifSeqId, _cifCompId, cifAtomId, seqKey, coordAtomSite, True)
+
+                        if self.__hasCoord and coordAtomSite is None:
+                            return
+
+                        if len(atomSelection) > 0:
+                            self.atomSelectionSet.append(atomSelection)
+
+                    if len(self.atomSelectionSet) < 4:
+                        return
+
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
+                        return
+
+                    len_f = len(self.__f)
+                    self.areUniqueCoordAtoms('a torsion angle',
+                                             allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+                    combinationId = '.' if len_f == len(self.__f) else 0
+
+                    atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
+                    if isinstance(combinationId, int):
+                        fixedAngleName = '.'
+                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                            self.atomSelectionSet[1],
+                                                                            self.atomSelectionSet[2],
+                                                                            self.atomSelectionSet[3]):
+                            _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                    [atom1, atom2, atom3, atom4],
+                                                                    'plane_like' in dstFunc)
+
+                            if _angleName is not None and _angleName.startswith('pseudo'):
+                                _angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(_angleName,
+                                                                                                    [atom1, atom2, atom3, atom4],
+                                                                                                    self.__getCurrentRestraint())
+                                self.__f.append(err)
+
+                            if _angleName in emptyValue and atomSelTotal != 4:
+                                continue
+
+                            fixedAngleName = _angleName
+                            break
+
+                    if self.__createSfDict:
+                        sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                        sf['id'] += 1
+
+                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                        self.atomSelectionSet[1],
+                                                                        self.atomSelectionSet[2],
+                                                                        self.atomSelectionSet[3]):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
+                            continue
+                        _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                [atom1, atom2, atom3, atom4],
+                                                                'plane_like' in dstFunc)
+
+                        if _angleName is not None and _angleName.startswith('pseudo'):
+                            _angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(_angleName,
+                                                                                                [atom1, atom2, atom3, atom4],
+                                                                                                self.__getCurrentRestraint())
+                            self.__f.append(err)
+
+                        if _angleName in emptyValue and atomSelTotal != 4:
+                            continue
+
+                        if isinstance(combinationId, int):
+                            if _angleName != fixedAngleName:
+                                continue
+                            combinationId += 1
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                            dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                              dstFunc)
+                        if self.__debug:
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         combinationId, None, angleName,
+                                         sf['list_id'], self.__entryId, dstFunc,
+                                         self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                         atom1, atom2, atom3, atom4)
+                            sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+            # phase angle of pseudorotation
+            else:
+
+                atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                atomId = next(name for name, offset in zip(atomNames, seqOffset) if offset == 0)
+
+                if not isinstance(atomId, str):
+                    self.__ccU.updateChemCompDict(compId)
+                    atomId = next(cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId]))
+
+                self.__retrieveLocalSeqScheme()
+
+                chainAssign, _ = self.assignCoordPolymerSequence(seqId, compId, atomId)
+
+                if len(chainAssign) == 0:
+                    resKey = (seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{_compId} is not present in the coordinates.")
+                    return
+
+                for chainId, cifSeqId, cifCompId, _ in chainAssign:
+                    ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+
+                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
+
+                    atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
+                    seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                    if nucleotide:
+                        pass
+                    else:
+                        self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                        f"The angle identifier {self.__name!r} did not match with residue {_compId!r}.")
+                        return
+
+                    for atomId, offset in zip(atomNames, seqOffset):
+
+                        atomSelection = []
+
+                        _cifSeqId = cifSeqId + offset
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+
+                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                            idx = ps['auth_seq_id'].index(cifSeqId)
+                            try:
+                                _cifSeqId = ps['auth_seq_id'][idx + offset]
+                                _cifCompId = ps['comp_id'][idx + offset]
+                            except IndexError:
+                                pass
+
+                        if _cifCompId is None:
+                            try:
+                                _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
+                            except IndexError:
+                                pass
+                            if _cifCompId is None and not self.__allow_ext_seq:
+                                self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                                f"of chain {chainId} of the coordinates. "
+                                                "Please update the sequence in the Macromolecules page.")
+                                return
+                                # _cifCompId = '.'
+                            cifAtomId = atomId
+
+                        else:
+                            self.__ccU.updateChemCompDict(_cifCompId)
+
+                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+
+                            if cifAtomId is None:
+                                if _cifCompId is None and not self.__allow_ext_seq:
+                                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                    f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                                    f"of chain {chainId} of the coordinates. "
+                                                    "Please update the sequence in the Macromolecules page.")
+                                elif _compId in monDict3:
+                                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                                    f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
+                                else:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
+                                                    "is not present in the coordinates.")
+                                return
+
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+
+                        if len(atomSelection) > 0:
+                            self.atomSelectionSet.append(atomSelection)
+
+                    if len(self.atomSelectionSet) < 5:
+                        return
+
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
+                        return
+
+                    len_f = len(self.__f)
+                    self.areUniqueCoordAtoms('a torsion angle',
+                                             allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+                    combinationId = '.' if len_f == len(self.__f) else 0
+
+                    if isinstance(combinationId, int):
+                        fixedAngleName = '.'
+                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                            self.atomSelectionSet[1],
+                                                                            self.atomSelectionSet[2],
+                                                                            self.atomSelectionSet[3]):
+                            _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                    [atom1, atom2, atom3, atom4],
+                                                                    False)
+
+                            if _angleName in emptyValue:
+                                continue
+
+                            fixedAngleName = _angleName
+                            break
+
+                    if self.__createSfDict:
+                        sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                        sf['id'] += 1
+
+                    for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
+                                                                               self.atomSelectionSet[1],
+                                                                               self.atomSelectionSet[2],
+                                                                               self.atomSelectionSet[3],
+                                                                               self.atomSelectionSet[4]):
+                        if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
+                            continue
+                        _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                [atom1, atom2, atom3, atom4],
+                                                                False)
+
+                        if isinstance(combinationId, int):
+                            if _angleName != fixedAngleName:
+                                continue
+                            combinationId += 1
+                        if self.__debug:
+                            print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                                  f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
+                        if self.__createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                         combinationId, None, angleName,
+                                         sf['list_id'], self.__entryId, dstFunc,
+                                         self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                         None, None, None, None, atom5)
+                            sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+        except ValueError:
+            self.dihedRestraints -= 1
+
+        finally:
+            self.numberSelection.clear()
+
+    def validateAngleRange(self, weight: float, target_value: Optional[float],
+                           lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+        """ Validate angle value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight}
+
+        if self.__correctCircularShift:
+            _array = numpy.array([target_value, lower_limit, upper_limit],
+                                 dtype=float)
+
+            shift = None
+            if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                shift = -(numpy.nanmax(_array) // 360) * 360
+            elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                shift = -(numpy.nanmin(_array) // 360) * 360
+            if shift is not None:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                "The target/limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
+                if target_value is not None:
+                    target_value += shift
+                if lower_limit is not None:
+                    lower_limit += shift
+                if upper_limit is not None:
+                    upper_limit += shift
+
+        if target_value is not None:
+            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value}"
+            else:
+                validRange = False
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+
+        if lower_limit is not None:
+            if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+            else:
+                validRange = False
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+
+        if upper_limit is not None:
+            if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+            else:
+                validRange = False
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if lower_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if upper_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
+        if None not in (upper_limit, lower_limit)\
+           and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
+
+        return dstFunc
+
+    def areUniqueCoordAtoms(self, subtype_name: str, allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
+        """ Check whether atom selection sets are uniquely assigned.
+        """
+
+        for _atomSelectionSet in self.atomSelectionSet:
+            _lenAtomSelectionSet = len(_atomSelectionSet)
+
+            if _lenAtomSelectionSet == 0:
+                return False  # raised error already
+
+            if _lenAtomSelectionSet == 1:
+                continue
+
+            for (atom1, atom2) in itertools.combinations(_atomSelectionSet, 2):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
+                if atom1['seq_id'] != atom2['seq_id']:
+                    continue
+                if allow_ambig:
+                    self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    f"{atom2['atom_id']}' found in {subtype_name} restraint.")
+                    continue
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
+                return False
+
+        return True
+
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
         _compId = compId
         refCompId = None
@@ -1385,6 +2383,1351 @@ class AriaMRXParserListener(ParseTreeListener):
             except ValueError:
                 pass
         return ps['auth_chain_id'], seqId, None
+
+    def assignCoordPolymerSequence(self, seqId: int, compId: str, atomId: str, enableWarning: bool = True
+                                   ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        chainAssign = set()
+        asis = preferNonPoly = False
+        _seqId = seqId
+        _compId = compId
+
+        fixedChainId = fixedSeqId = fixedCompId = None
+
+        if self.__hasNonPoly:
+
+            resolved = False
+
+            for np in self.__nonPoly:
+                if 'alt_comp_id' in np and 'alt_auth_seq_id' in np\
+                   and compId in np['alt_comp_id'] and seqId in np['alt_auth_seq_id']:
+                    npCompId = np['comp_id'][0]
+                    npSeqId = np['auth_seq_id'][0]
+                    for ps in self.__polySeq:
+                        if 'ambig_auth_seq_id' in ps and seqId in ps['ambig_auth_seq_id']:
+                            psCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(psCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _, _coordAtomSite = self.getCoordAtomSiteOf(ps['auth_chain_id'], seqId, psCompId, cifCheck=self.__hasCoord)
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = psCompId
+                                    resolved = True
+                                    break
+                            _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], npSeqId, npCompId, cifCheck=self.__hasCoord)
+                            if self.__mrAtomNameMapping is not None:
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, npSeqId, npCompId, atomId, _coordAtomSite)
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(npCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = npCompId
+                                    seqId = _seqId = npSeqId
+                                    preferNonPoly = resolved = True
+                                    break
+
+            if not resolved and compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
+               and atomId in zincIonCode:
+                znCount = 0
+                znSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'ZN':
+                        znSeqId = np['auth_seq_id'][0]
+                        znCount += 1
+                if znCount > 0:
+                    compId = _compId = 'ZN'
+                    if znCount == 1:
+                        seqId = _seqId = znSeqId
+                        atomId = 'ZN'
+                        resolved = True
+                    preferNonPoly = True
+
+            if not resolved and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+               and atomId in calciumIonCode:
+                caCount = 0
+                caSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'CA':
+                        caSeqId = np['auth_seq_id'][0]
+                        caCount += 1
+                if caCount > 0:
+                    compId = _compId = 'CA'
+                    if caCount == 1:
+                        seqId = _seqId = caSeqId
+                        atomId = 'CA'
+                        resolved = True
+                    preferNonPoly = True
+
+            if not resolved and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == atomId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        compId = _compId = atomId
+                        preferNonPoly = resolved = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == atomId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                compId = _compId = atomId
+                                preferNonPoly = resolved = True
+
+            if not resolved and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == compId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, compId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        atomId = _compId = compId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == compId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                atomId = _compId = compId
+                                preferNonPoly = True
+
+        if self.__splitLigand is not None and len(self.__splitLigand):
+            found = False
+            for (_, _seqId_, _compId_), ligList in self.__splitLigand.items():
+                if _seqId_ != seqId or _compId_ != compId:
+                    continue
+                for idx, lig in enumerate(ligList):
+                    _atomId = atomId
+                    if self.__mrAtomNameMapping is not None and compId not in monDict3:
+                        _, _, _atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
+
+                    if _atomId in lig['atom_ids']:
+                        seqId = _seqId = lig['auth_seq_id']
+                        compId = _compId = lig['comp_id']
+                        atomId = _atomId
+                        preferNonPoly = idx > 0
+                        found = True
+                        break
+                if found:
+                    break
+
+        if self.__mrAtomNameMapping is not None and compId not in monDict3:
+            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
+
+        compId = self.translateToStdResNameWrapper(_seqId, _compId, preferNonPoly)
+
+        if len(self.__modResidue) > 0:
+            modRes = next((modRes for modRes in self.__modResidue
+                           if modRes['auth_comp_id'] == compId
+                           and (compId != _compId or seqId in (modRes['auth_seq_id'], modRes['seq_id']))), None)
+            if modRes is not None:
+                compId = modRes['comp_id']
+
+        self.__allow_ext_seq = False
+
+        if self.__reasons is not None:
+            if 'ambig_atom_id_remap' in self.__reasons and _compId in self.__reasons['ambig_atom_id_remap']\
+               and atomId in self.__reasons['ambig_atom_id_remap'][_compId]:
+                return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][_compId][atomId])
+            if 'unambig_atom_id_remap' in self.__reasons and _compId in self.__reasons['unambig_atom_id_remap']\
+               and atomId in self.__reasons['unambig_atom_id_remap'][_compId]:
+                atomId = self.__reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
+            if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
+               and seqId in self.__reasons['non_poly_remap'][_compId]:
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, None, seqId, _compId)
+                preferNonPoly = True
+            if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+                preferNonPoly = True
+            if not preferNonPoly:
+                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                elif 'seq_id_remap' in self.__reasons\
+                        or 'chain_seq_id_remap' in self.__reasons\
+                        or 'ext_chain_seq_id_remap' in self.__reasons:
+                    if 'ext_chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId, fixedCompId =\
+                            retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], None, seqId,
+                                                           compId if compId in monDict3 else None)
+                        self.__allow_ext_seq = fixedCompId is not None
+                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId,
+                                                                         compId if compId in monDict3 else None)
+                    if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
+            if fixedSeqId is not None:
+                _seqId = fixedSeqId
+
+        if len(self.ambigAtomNameMapping) > 0:
+            if compId in self.ambigAtomNameMapping and atomId in self.ambigAtomNameMapping[compId]:
+                return self.atomIdListToChainAssign(self.ambigAtomNameMapping[compId][atomId])
+        if len(self.unambigAtomNameMapping) > 0:
+            if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
+                atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
+
+        pure_ambig = _compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId)
+
+        updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
+
+        types = self.__csStat.getTypeOfCompId(compId)
+        if all(not t for t in types) or compId in ('MTS', 'ORI'):
+            types = None
+        elif compId != _compId:
+            if types != self.__csStat.getTypeOfCompId(_compId):
+                types = None
+
+        def comp_id_unmatched_with(ps, cif_comp_id):
+            if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
+               and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+                revertPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
+
+            if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
+                return False
+            if compId not in monDict3 and cif_comp_id not in monDict3:
+                return False
+            return types != self.__csStat.getTypeOfCompId(cif_comp_id)
+
+        def comp_id_in_polymer(np):
+            return (_seqId == 1
+                    and ((compId.endswith('-N') and all(c in np['comp_id'][0] for c in compId.split('-')[0]))
+                         or (np['comp_id'][0] == 'PCA' and 'P' == compId[0] and ('GL' in compId or 'N' in compId))))\
+                or (compId in monDict3
+                    and any(compId in ps['comp_id'] for ps in self.__polySeq)
+                    and compId not in np['comp_id'])
+
+        for ps in self.__polySeq:
+            if preferNonPoly or pure_ambig:
+                continue
+            chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, compId)
+            if self.__reasons is not None:
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    if fixedSeqId is not None:
+                        seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    seqId = fixedSeqId
+            if seqId <= 0 and self.__shiftNonPosSeq is not None and chainId in self.__shiftNonPosSeq:
+                seqId -= 1
+            if seqId in ps['auth_seq_id'] or fixedCompId is not None:
+                if fixedCompId is not None:
+                    cifCompId = origCompId = fixedCompId
+                else:
+                    if cifCompId is not None:
+                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
+                    else:
+                        idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
+                    cifCompId = ps['comp_id'][idx]
+                    origCompId = ps['auth_comp_id'][idx]
+                    if comp_id_unmatched_with(ps, cifCompId):
+                        continue
+                if cifCompId != compId:
+                    if (self.__shiftNonPosSeq is None or chainId not in self.__shiftNonPosSeq)\
+                       and seqId <= 0 and seqId - 1 in ps['auth_seq_id']\
+                       and compId == ps['comp_id'][ps['auth_seq_id'].index(seqId - 1)]:
+                        seqId -= 1
+                        if self.__shiftNonPosSeq is None:
+                            self.__shiftNonPosSeq = {}
+                        self.__shiftNonPosSeq[chainId] = True
+                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                    if compId in compIds:
+                        cifCompId = compId
+                        origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                          if _seqId == seqId and _compId == compId)
+                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
+                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.add((chainId, seqId, cifCompId, True))
+                else:
+                    _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                    if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                        chainAssign.add((chainId, seqId, cifCompId, True))
+
+            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        _seqId_ = seqId + 1
+                        while _seqId_ <= max_auth_seq_id:
+                            if _seqId_ in ps['auth_seq_id']:
+                                break
+                            _seqId_ += 1
+                        if _seqId_ not in ps['auth_seq_id']:
+                            _seqId_ = seqId - 1
+                            while _seqId_ >= min_auth_seq_id:
+                                if _seqId_ in ps['auth_seq_id']:
+                                    break
+                                _seqId_ -= 1
+                        if _seqId_ in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
+                            try:
+                                seqId_ = ps['auth_seq_id'][idx]
+                                cifCompId = ps['comp_id'][idx]
+                                origCompId = ps['auth_comp_id'][idx]
+                                if comp_id_unmatched_with(ps, cifCompId):
+                                    continue
+                                if cifCompId != compId:
+                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                    if compId in compIds:
+                                        cifCompId = compId
+                                        origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                          if _seqId == seqId and _compId == compId)
+                                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCompId, cifCheck=self.__hasCoord)
+                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                        chainAssign.add((chainId, seqId_, cifCompId, True))
+                                    else:
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                                        if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                            chainAssign.add((chainId, seqId_, cifCompId, True))
+                            except IndexError:
+                                pass
+
+        if self.__hasNonPolySeq:
+            ligands = 0
+            if self.__hasNonPoly:
+                for np in self.__nonPoly:
+                    ligands += np['comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        ligands += np['comp_id'].count(compId)
+                    if ligands == 1:
+                        _compId = compId
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(compId)
+                    if ligands == 1:
+                        _compId = compId
+                if ligands == 0 and len(chainAssign) == 0:
+                    __compId = None
+                    for np in self.__nonPoly:
+                        for ligand in np['comp_id']:
+                            __compId = translateToLigandName(_compId, ligand, self.__ccU)
+                            if __compId == ligand:
+                                ligands += 1
+                    if ligands == 1:
+                        compId = _compId = __compId
+                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId, False):
+                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
+                            compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                            ligands = 1
+                        elif _compId == 'ION':
+                            if self.__nonPoly[0]['comp_id'][0] in SYMBOLS_ELEMENT:
+                                compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                                ligands = 1
+                if self.__reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
+                    seqKey = self.__uniqAtomIdToSeqKey[atomId]
+                    if _seqId != seqKey[1]:
+                        if 'non_poly_remap' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['non_poly_remap'] = {}
+                        if _compId not in self.reasonsForReParsing['non_poly_remap']:
+                            self.reasonsForReParsing['non_poly_remap'][_compId] = {}
+                        if _seqId not in self.reasonsForReParsing['non_poly_remap'][_compId]:
+                            self.reasonsForReParsing['non_poly_remap'][_compId][_seqId] =\
+                                {'chain_id': seqKey[0],
+                                 'seq_id': seqKey[1],
+                                 'original_chain_id': None}
+            for np in self.__nonPolySeq:
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
+                if self.__reasons is not None:
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                        if fixedSeqId is not None:
+                            seqId = fixedSeqId
+                    elif fixedSeqId is not None:
+                        seqId = fixedSeqId
+                if comp_id_in_polymer(np):
+                    continue
+                if pure_ambig:
+                    continue
+                if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
+                    try:
+                        seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
+                    except StopIteration:
+                        pass
+                if seqId in np['auth_seq_id']\
+                   or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
+                    if ligands == 1 and cifCompId is None:
+                        cifCompId = _compId
+                    idx = -1
+                    try:
+                        if cifCompId is not None:
+                            idx = next(_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
+                                       if (_seqId_ == seqId or ligands == 1) and _cifCompId_ == cifCompId)
+                            if ligands == 1:
+                                seqId = np['auth_seq_id'][idx]
+                    except StopIteration:
+                        pass
+                    if idx == -1:
+                        idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id']\
+                            else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
+                    cifCompId = np['comp_id'][idx]
+                    origCompId = np['auth_comp_id'][idx]
+                    seqId = np['auth_seq_id'][idx]
+                    if cifCompId in ('ZN', 'CA') and atomId[0] in protonBeginCode:  # 2loa
+                        continue
+                    if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
+                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
+                    if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                        if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
+                            chainAssign.add((chainId, seqId, cifCompId, False))
+                    else:
+                        _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                        if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
+                            chainAssign.add((chainId, seqId, cifCompId, False))
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                if preferNonPoly or pure_ambig:
+                    continue
+                chainId = ps['chain_id']
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        idx = ps['seq_id'].index(seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
+                        if cifCompId != compId:
+                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                            if compId in compIds:
+                                cifCompId = compId
+                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                  if _seqId == seqId and _compId == compId)
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+                        else:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+
+            if self.__hasNonPolySeq:
+                for np in self.__nonPolySeq:
+                    chainId = np['auth_chain_id']
+                    if fixedChainId is not None and fixedChainId != chainId:
+                        continue
+                    if comp_id_in_polymer(np):
+                        continue
+                    if pure_ambig:
+                        continue
+                    seqKey = (chainId, _seqId)
+                    if seqKey in self.__authToLabelSeq:
+                        _, seqId = self.__authToLabelSeq[seqKey]
+                        if seqId in np['seq_id']:
+                            idx = np['seq_id'].index(seqId)
+                            cifCompId = np['comp_id'][idx]
+                            origCompId = np['auth_comp_id'][idx]
+                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+                            else:
+                                _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                                if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                    chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                if preferNonPoly or pure_ambig:
+                    continue
+                chainId = ps['auth_chain_id']
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    if comp_id_unmatched_with(ps, cifCompId):
+                        continue
+                    if cifCompId != compId:
+                        if cifCompId in monDict3 and compId in monDict3:
+                            continue
+                        compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                        if compId in compIds:
+                            cifCompId = compId
+                    chainAssign.add((chainId, _seqId, cifCompId, True))
+
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
+            for ps in self.__polySeq:
+                if preferNonPoly or pure_ambig:
+                    continue
+                chainId = ps['chain_id']
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__labelToAuthSeq:
+                    _, seqId = self.__labelToAuthSeq[seqKey]
+                    if seqId in ps['auth_seq_id']:
+                        idx = ps['seq_id'].index(_seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
+                        if cifCompId != compId:
+                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                            if compId in compIds:
+                                cifCompId = compId
+                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                  if _seqId == seqId and _compId == compId)
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                if compId in (cifCompId, origCompId):
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__setLocalSeqScheme()
+                        else:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                self.__authSeqId = 'label_seq_id'
+                                self.__setLocalSeqScheme()
+
+        if len(chainAssign) == 0:
+            if pure_ambig:
+                if enableWarning:
+                    warn_title = 'Atom not found' if self.__reasons is None else 'Unsupported data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                    "Please attach ambiguous atom name mapping information generated "
+                                    "by 'makeDIST_RST' to the CYANA restraint file.")
+            elif seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
+                if atomId in aminoProtonCode and atomId != 'H1':
+                    return self.assignCoordPolymerSequence(seqId, compId, 'H1')
+            else:
+                auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
+                min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                if len(self.__polySeq) == 1\
+                   and (seqId < 1
+                        or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
+                        or (compId == 'NH2' and seqId == max_auth_seq_id + 1)
+                        or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
+                    refChainId = self.__polySeq[0]['auth_chain_id']
+                    if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
+                       or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
+                       or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                           and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                                or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                        if enableWarning:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                            f"of chain {refChainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
+                        chainAssign.add((refChainId, _seqId, compId, True))
+                        asis = True
+                    elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                        if enableWarning:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                            f"of chain {refChainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
+                    else:
+                        if enableWarning:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                            f"The residue number '{_seqId}' is not present in polymer sequence "
+                                            f"of chain {refChainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                else:
+                    ext_seq = False
+                    if (compId in monDict3 or compId in ('ACE', 'NH2')) and (self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                                                                             or len(atomId) == 1):
+                        refChainIds = []
+                        _auth_seq_id_list = auth_seq_id_list
+                        for idx, ps in enumerate(self.__polySeq):
+                            if idx > 0:
+                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                _auth_seq_id_list.extend(auth_seq_id_list)
+                            if len(auth_seq_id_list) > 0:
+                                if idx > 0:
+                                    min_auth_seq_id = min(auth_seq_id_list)
+                                    max_auth_seq_id = max(auth_seq_id_list)
+                                if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id\
+                                   and (compId in monDict3 or (compId == 'ACE' and seqId == min_auth_seq_id - 1)):
+                                    refChainIds.append(ps['auth_chain_id'])
+                                    ext_seq = True
+                                elif max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
+                                        and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                                    refChainIds.append(ps['auth_chain_id'])
+                                    ext_seq = True
+                                elif self.__reasons is None and compId in monDict3 and atomId == 'H' and seqId < min_auth_seq_id\
+                                        and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
+                                    refChainIds.append(ps['auth_chain_id'])
+                                    ext_seq = True
+                        if ext_seq and seqId in _auth_seq_id_list:
+                            ext_seq = False
+                    if ext_seq:
+                        refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
+                        if enableWarning:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                            f"of chain {refChainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
+                        if isinstance(refChainId, str):
+                            chainAssign.add((refChainId, _seqId, compId, True))
+                        else:
+                            for _refChainId in refChainIds:
+                                chainAssign.add((_refChainId, _seqId, compId, True))
+                        asis = True
+                    else:
+                        if enableWarning:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                    updatePolySeqRst(self.__polySeqRstFailed, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId,
+                                     _seqId, compId, _compId)
+
+        return list(chainAssign), asis
+
+    def assignCoordPolymerSequenceWithChainId(self, refChainId: str, seqId: int, compId: str, atomId: str, enableWarning: bool = True
+                                              ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        _refChainId = refChainId
+
+        chainAssign = set()
+        asis = preferNonPoly = False
+        _seqId = seqId
+        _compId = compId
+
+        fixedChainId = fixedSeqId = fixedCompId = None
+
+        if self.__hasNonPoly:
+
+            resolved = False
+
+            for np in self.__nonPoly:
+                if 'alt_comp_id' in np and 'alt_auth_seq_id' in np\
+                   and compId in np['alt_comp_id'] and seqId in np['alt_auth_seq_id']:
+                    npCompId = np['comp_id'][0]
+                    npSeqId = np['auth_seq_id'][0]
+                    for ps in self.__polySeq:
+                        if 'ambig_auth_seq_id' in ps and seqId in ps['ambig_auth_seq_id']:
+                            psCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(psCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _, _coordAtomSite = self.getCoordAtomSiteOf(ps['auth_chain_id'], seqId, psCompId, cifCheck=self.__hasCoord)
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = psCompId
+                                    resolved = True
+                                    break
+                            _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], npSeqId, npCompId, cifCheck=self.__hasCoord)
+                            if self.__mrAtomNameMapping is not None:
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, npSeqId, npCompId, atomId, _coordAtomSite)
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(npCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = npCompId
+                                    seqId = _seqId = npSeqId
+                                    preferNonPoly = resolved = True
+                                    break
+
+            if not resolved and compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
+               and atomId in zincIonCode:
+                znCount = 0
+                znSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'ZN':
+                        znSeqId = np['auth_seq_id'][0]
+                        znCount += 1
+                if znCount > 0:
+                    compId = _compId = 'ZN'
+                    if znCount == 1:
+                        seqId = _seqId = znSeqId
+                        atomId = 'ZN'
+                        resolved = True
+                    preferNonPoly = True
+
+            if not resolved and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+               and atomId in calciumIonCode:
+                caCount = 0
+                caSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'CA':
+                        caSeqId = np['auth_seq_id'][0]
+                        caCount += 1
+                if caCount > 0:
+                    compId = _compId = 'CA'
+                    if caCount == 1:
+                        seqId = _seqId = caSeqId
+                        atomId = 'CA'
+                        resolved = True
+                    preferNonPoly = True
+
+            if not resolved and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == atomId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        compId = _compId = atomId
+                        preferNonPoly = resolved = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == atomId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                compId = _compId = atomId
+                                preferNonPoly = resolved = True
+
+            if not resolved and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == compId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, compId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        atomId = _compId = compId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == compId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                atomId = _compId = compId
+                                preferNonPoly = True
+
+        if self.__splitLigand is not None and len(self.__splitLigand):
+            found = False
+            for (_, _seqId_, _compId_), ligList in self.__splitLigand.items():
+                if _seqId_ != seqId or _compId_ != compId:
+                    continue
+                for idx, lig in enumerate(ligList):
+                    _atomId = atomId
+                    if self.__mrAtomNameMapping is not None and compId not in monDict3:
+                        _, _, _atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
+
+                    if _atomId in lig['atom_ids']:
+                        seqId = _seqId = lig['auth_seq_id']
+                        compId = _compId = lig['comp_id']
+                        atomId = _atomId
+                        preferNonPoly = idx > 0
+                        found = True
+                        break
+                if found:
+                    break
+
+        if self.__mrAtomNameMapping is not None and compId not in monDict3:
+            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
+
+        compId = self.translateToStdResNameWrapper(_seqId, _compId, preferNonPoly)
+
+        if len(self.__modResidue) > 0:
+            modRes = next((modRes for modRes in self.__modResidue
+                           if modRes['auth_comp_id'] == compId
+                           and (compId != _compId or seqId in (modRes['auth_seq_id'], modRes['seq_id']))), None)
+            if modRes is not None:
+                compId = modRes['comp_id']
+
+        self.__allow_ext_seq = False
+
+        if self.__reasons is not None:
+            if 'ambig_atom_id_remap' in self.__reasons and _compId in self.__reasons['ambig_atom_id_remap']\
+               and atomId in self.__reasons['ambig_atom_id_remap'][_compId]:
+                return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][_compId][atomId])
+            if 'unambig_atom_id_remap' in self.__reasons and _compId in self.__reasons['unambig_atom_id_remap']\
+               and atomId in self.__reasons['unambig_atom_id_remap'][_compId]:
+                atomId = self.__reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
+            if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
+               and seqId in self.__reasons['non_poly_remap'][_compId]:
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, str(refChainId), seqId, _compId)
+                refChainId = fixedChainId
+                preferNonPoly = True
+            if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+                refChainId = fixedChainId
+                preferNonPoly = True
+            if not preferNonPoly:
+                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                    refChainId = fixedChainId
+                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                    refChainId = fixedChainId
+                elif 'seq_id_remap' in self.__reasons\
+                        or 'chain_seq_id_remap' in self.__reasons\
+                        or 'ext_chain_seq_id_remap' in self.__reasons:
+                    if 'ext_chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId, fixedCompId =\
+                            retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], str(refChainId), seqId,
+                                                           compId if compId in monDict3 else None)
+                        self.__allow_ext_seq = fixedCompId is not None
+                        if fixedSeqId is not None:
+                            refChainId = fixedChainId
+                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
+                                                                         compId if compId in monDict3 else None)
+                        if fixedSeqId is not None:
+                            refChainId = fixedChainId
+                    if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+            if fixedSeqId is not None:
+                _seqId = fixedSeqId
+
+        if len(self.ambigAtomNameMapping) > 0:
+            if compId in self.ambigAtomNameMapping and atomId in self.ambigAtomNameMapping[compId]:
+                return self.atomIdListToChainAssign(self.ambigAtomNameMapping[compId][atomId])
+        if len(self.unambigAtomNameMapping) > 0:
+            if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
+                atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
+
+        pure_ambig = _compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId)
+
+        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
+
+        types = self.__csStat.getTypeOfCompId(compId)
+        if all(not t for t in types) or compId in ('MTS', 'ORI'):
+            types = None
+        elif compId != _compId:
+            if types != self.__csStat.getTypeOfCompId(_compId):
+                types = None
+
+        def comp_id_unmatched_with(ps, cif_comp_id):
+            if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
+               and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+                revertPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
+
+            if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
+                return False
+            if compId not in monDict3 and cif_comp_id not in monDict3:
+                return False
+            return types != self.__csStat.getTypeOfCompId(cif_comp_id)
+
+        def comp_id_in_polymer(np):
+            return (_seqId == 1
+                    and ((compId.endswith('-N') and all(c in np['comp_id'][0] for c in compId.split('-')[0]))
+                         or (np['comp_id'][0] == 'PCA' and 'P' == compId[0] and ('GL' in compId or 'N' in compId))))\
+                or (compId in monDict3
+                    and any(compId in ps['comp_id'] for ps in self.__polySeq)
+                    and compId not in np['comp_id'])
+
+        if refChainId is not None or refChainId != _refChainId:
+            if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):
+                fixedChainId = _refChainId
+            elif self.__hasNonPolySeq:
+                if any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _refChainId):
+                    fixedChainId = _refChainId
+
+        for ps in self.__polySeq:
+            if preferNonPoly or pure_ambig:
+                continue
+            chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, compId)
+            if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                if chainId != self.__chainNumberDict[refChainId]:
+                    continue
+            if self.__reasons is not None:
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    if fixedSeqId is not None:
+                        seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    seqId = fixedSeqId
+            if seqId <= 0 and self.__shiftNonPosSeq is not None and chainId in self.__shiftNonPosSeq:
+                seqId -= 1
+            if seqId in ps['auth_seq_id'] or fixedCompId is not None:
+                if fixedCompId is not None:
+                    cifCompId = origCompId = fixedCompId
+                else:
+                    if cifCompId is not None:
+                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
+                    else:
+                        idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
+                    cifCompId = ps['comp_id'][idx]
+                    origCompId = ps['auth_comp_id'][idx]
+                    if comp_id_unmatched_with(ps, cifCompId):
+                        continue
+                if cifCompId != compId:
+                    if (self.__shiftNonPosSeq is None or chainId not in self.__shiftNonPosSeq)\
+                       and seqId <= 0 and seqId - 1 in ps['auth_seq_id']\
+                       and compId == ps['comp_id'][ps['auth_seq_id'].index(seqId - 1)]:
+                        seqId -= 1
+                        if self.__shiftNonPosSeq is None:
+                            self.__shiftNonPosSeq = {}
+                        self.__shiftNonPosSeq[chainId] = True
+                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                    if compId in compIds:
+                        cifCompId = compId
+                        origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                          if _seqId == seqId and _compId == compId)
+                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
+                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.add((chainId, seqId, cifCompId, True))
+                        if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                            self.__chainNumberDict[refChainId] = chainId
+                else:
+                    _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                    if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                        chainAssign.add((chainId, seqId, cifCompId, True))
+                        if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                            self.__chainNumberDict[refChainId] = chainId
+
+            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        _seqId_ = seqId + 1
+                        while _seqId_ <= max_auth_seq_id:
+                            if _seqId_ in ps['auth_seq_id']:
+                                break
+                            _seqId_ += 1
+                        if _seqId_ not in ps['auth_seq_id']:
+                            _seqId_ = seqId - 1
+                            while _seqId_ >= min_auth_seq_id:
+                                if _seqId_ in ps['auth_seq_id']:
+                                    break
+                                _seqId_ -= 1
+                        if _seqId_ in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
+                            try:
+                                seqId_ = ps['auth_seq_id'][idx]
+                                cifCompId = ps['comp_id'][idx]
+                                origCompId = ps['auth_comp_id'][idx]
+                                if comp_id_unmatched_with(ps, cifCompId):
+                                    continue
+                                if cifCompId != compId:
+                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                    if compId in compIds:
+                                        cifCompId = compId
+                                        origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                          if _seqId == seqId and _compId == compId)
+                                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCompId, cifCheck=self.__hasCoord)
+                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                        chainAssign.add((chainId, seqId_, cifCompId, True))
+                                    else:
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                                        if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                            chainAssign.add((chainId, seqId_, cifCompId, True))
+                            except IndexError:
+                                pass
+
+        if self.__hasNonPolySeq:
+            ligands = 0
+            if self.__hasNonPoly:
+                for np in self.__nonPoly:
+                    ligands += np['comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        ligands += np['comp_id'].count(compId)
+                    if ligands == 1:
+                        _compId = compId
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(compId)
+                    if ligands == 1:
+                        _compId = compId
+                if ligands == 0 and len(chainAssign) == 0:
+                    __compId = None
+                    for np in self.__nonPoly:
+                        for ligand in np['comp_id']:
+                            __compId = translateToLigandName(_compId, ligand, self.__ccU)
+                            if __compId == ligand:
+                                ligands += 1
+                    if ligands == 1:
+                        compId = _compId = __compId
+                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId, False):
+                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
+                            compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                            ligands = 1
+                        elif _compId == 'ION':
+                            if self.__nonPoly[0]['comp_id'][0] in SYMBOLS_ELEMENT:
+                                compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                                ligands = 1
+                if self.__reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
+                    seqKey = self.__uniqAtomIdToSeqKey[atomId]
+                    if _seqId != seqKey[1]:
+                        if 'non_poly_remap' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['non_poly_remap'] = {}
+                        if _compId not in self.reasonsForReParsing['non_poly_remap']:
+                            self.reasonsForReParsing['non_poly_remap'][_compId] = {}
+                        if _seqId not in self.reasonsForReParsing['non_poly_remap'][_compId]:
+                            self.reasonsForReParsing['non_poly_remap'][_compId][_seqId] =\
+                                {'chain_id': seqKey[0],
+                                 'seq_id': seqKey[1],
+                                 'original_chain_id': refChainId}
+            for np in self.__nonPolySeq:
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
+                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if self.__reasons is not None:
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                        if fixedSeqId is not None:
+                            seqId = fixedSeqId
+                    elif fixedSeqId is not None:
+                        seqId = fixedSeqId
+                if comp_id_in_polymer(np):
+                    continue
+                if pure_ambig:
+                    continue
+                if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
+                    try:
+                        seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
+                    except StopIteration:
+                        pass
+                if seqId in np['auth_seq_id']\
+                   or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
+                    if ligands == 1 and cifCompId is None:
+                        cifCompId = _compId
+                    idx = -1
+                    try:
+                        if cifCompId is not None:
+                            idx = next(_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
+                                       if (_seqId_ == seqId or ligands == 1) and _cifCompId_ == cifCompId)
+                            if ligands == 1:
+                                seqId = np['auth_seq_id'][idx]
+                    except StopIteration:
+                        pass
+                    if idx == -1:
+                        idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id']\
+                            else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
+                    cifCompId = np['comp_id'][idx]
+                    origCompId = np['auth_comp_id'][idx]
+                    seqId = np['auth_seq_id'][idx]
+                    if cifCompId in ('ZN', 'CA') and atomId[0] in protonBeginCode:  # 2loa
+                        continue
+                    if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
+                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
+                    if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                        if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
+                            chainAssign.add((chainId, seqId, cifCompId, False))
+                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                self.__chainNumberDict[refChainId] = chainId
+                    else:
+                        _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                        if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
+                            chainAssign.add((chainId, seqId, cifCompId, False))
+                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                self.__chainNumberDict[refChainId] = chainId
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                if preferNonPoly or pure_ambig:
+                    continue
+                chainId = ps['chain_id']
+                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        idx = ps['seq_id'].index(seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
+                        if cifCompId != compId:
+                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                            if compId in compIds:
+                                cifCompId = compId
+                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                  if _seqId == seqId and _compId == compId)
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                    self.__chainNumberDict[refChainId] = chainId
+                        else:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                    self.__chainNumberDict[refChainId] = chainId
+
+            if self.__hasNonPolySeq:
+                for np in self.__nonPolySeq:
+                    chainId = np['auth_chain_id']
+                    if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                        if chainId != self.__chainNumberDict[refChainId]:
+                            continue
+                    if fixedChainId is not None and fixedChainId != chainId:
+                        continue
+                    if comp_id_in_polymer(np):
+                        continue
+                    if pure_ambig:
+                        continue
+                    seqKey = (chainId, _seqId)
+                    if seqKey in self.__authToLabelSeq:
+                        _, seqId = self.__authToLabelSeq[seqKey]
+                        if seqId in np['seq_id']:
+                            idx = np['seq_id'].index(seqId)
+                            cifCompId = np['comp_id'][idx]
+                            origCompId = np['auth_comp_id'][idx]
+                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                        self.__chainNumberDict[refChainId] = chainId
+                            else:
+                                _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                                if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                    chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                        self.__chainNumberDict[refChainId] = chainId
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                if preferNonPoly or pure_ambig:
+                    continue
+                chainId = ps['auth_chain_id']
+                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    if fixedSeqId is not None:
+                        _seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    _seqId = fixedSeqId
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    if comp_id_unmatched_with(ps, cifCompId):
+                        continue
+                    if cifCompId != compId:
+                        if cifCompId in monDict3 and compId in monDict3:
+                            continue
+                        compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                        if compId in compIds:
+                            cifCompId = compId
+                    chainAssign.add((chainId, _seqId, cifCompId, True))
+                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                        self.__chainNumberDict[refChainId] = chainId
+
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
+            for ps in self.__polySeq:
+                if preferNonPoly or pure_ambig:
+                    continue
+                chainId = ps['chain_id']
+                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__labelToAuthSeq:
+                    _, seqId = self.__labelToAuthSeq[seqKey]
+                    if seqId in ps['auth_seq_id']:
+                        idx = ps['seq_id'].index(_seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
+                        if cifCompId != compId:
+                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                            if compId in compIds:
+                                cifCompId = compId
+                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                  if _seqId == seqId and _compId == compId)
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                if compId in (cifCompId, origCompId):
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__setLocalSeqScheme()
+                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                        self.__chainNumberDict[refChainId] = chainId
+                        else:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                self.__authSeqId = 'label_seq_id'
+                                self.__setLocalSeqScheme()
+                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                    self.__chainNumberDict[refChainId] = chainId
+
+        if len(chainAssign) == 0:
+            if pure_ambig:
+                if enableWarning:
+                    warn_title = 'Atom not found' if self.__reasons is None else 'Unsupported data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                    "Please attach ambiguous atom name mapping information generated "
+                                    "by 'makeDIST_RST' to the CYANA restraint file.")
+            elif seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
+                if atomId in aminoProtonCode and atomId != 'H1':
+                    return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
+            else:
+                auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
+                min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                if len(self.__polySeq) == 1\
+                   and (seqId < 1
+                        or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
+                        or (compId == 'NH2' and seqId == max_auth_seq_id + 1)
+                        or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
+                    refChainId = self.__polySeq[0]['auth_chain_id']
+                    if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
+                       or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
+                       or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                           and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                                or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                        if enableWarning:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                            f"of chain {refChainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
+                        chainAssign.add((refChainId, _seqId, compId, True))
+                        asis = True
+                    elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                        if enableWarning:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                            f"of chain {refChainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
+                    else:
+                        if enableWarning:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                            f"The residue number '{_seqId}' is not present in polymer sequence "
+                                            f"of chain {refChainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                else:
+                    ext_seq = False
+                    if (compId in monDict3 or compId in ('ACE', 'NH2')) and (self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                                                                             or len(atomId) == 1):
+                        refChainIds = []
+                        _auth_seq_id_list = auth_seq_id_list
+                        for idx, ps in enumerate(self.__polySeq):
+                            if idx > 0:
+                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                _auth_seq_id_list.extend(auth_seq_id_list)
+                            if len(auth_seq_id_list) > 0:
+                                if idx > 0:
+                                    min_auth_seq_id = min(auth_seq_id_list)
+                                    max_auth_seq_id = max(auth_seq_id_list)
+                                if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id\
+                                   and (compId in monDict3 or (compId == 'ACE' and seqId == min_auth_seq_id - 1)):
+                                    refChainIds.append(ps['auth_chain_id'])
+                                    ext_seq = True
+                                elif max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
+                                        and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                                    refChainIds.append(ps['auth_chain_id'])
+                                    ext_seq = True
+                                elif self.__reasons is None and compId in monDict3 and atomId == 'H' and seqId < min_auth_seq_id\
+                                        and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
+                                    refChainIds.append(ps['auth_chain_id'])
+                                    ext_seq = True
+                        if ext_seq and seqId in _auth_seq_id_list:
+                            ext_seq = False
+                    if ext_seq:
+                        refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
+                        if enableWarning:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                            f"of chain {refChainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
+                        if isinstance(refChainId, str):
+                            chainAssign.add((refChainId, _seqId, compId, True))
+                        else:
+                            for _refChainId in refChainIds:
+                                chainAssign.add((_refChainId, _seqId, compId, True))
+                        asis = True
+                    else:
+                        if enableWarning:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                    updatePolySeqRst(self.__polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
+
+        elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
+            _chainAssign = copy.copy(chainAssign)
+            for _ca in _chainAssign:
+                if _ca[0] != refChainId:
+                    chainAssign.remove(_ca)
+
+        return list(chainAssign), asis
 
     def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
@@ -2484,6 +4827,176 @@ class AriaMRXParserListener(ParseTreeListener):
 
         return atom1, atom2
 
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
+        """ Return realistic chi2 angle constraint taking into account the current coordinates.
+        """
+
+        if not self.__hasCoord:
+            return dst_func
+
+        try:
+
+            _p1 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom1['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p1) != 1:
+                return dst_func
+
+            p1 = to_np_array(_p1[0])
+
+            _p2 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom2['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p2) != 1:
+                return dst_func
+
+            p2 = to_np_array(_p2[0])
+
+            _p3 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom3['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom3['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom3['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p3) != 1:
+                return dst_func
+
+            p3 = to_np_array(_p3[0])
+
+            _p4 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom4['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom4['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': 'CD1'},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p4) != 1:
+                return dst_func
+
+            p4 = to_np_array(_p4[0])
+
+            chi2 = dihedral_angle(p1, p2, p3, p4)
+
+            _p4 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom4['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom4['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': 'CD2'},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p4) != 1:
+                return dst_func
+
+            alt_p4 = to_np_array(_p4[0])
+
+            alt_chi2 = dihedral_angle(p1, p2, p3, alt_p4)
+
+            target_value = dst_func.get('target_value')
+            if target_value is not None:
+                target_value = float(target_value)
+            target_value_uncertainty = dst_func.get('target_value_uncertainty')
+            if target_value_uncertainty is not None:
+                target_value_uncertainty = float(target_value_uncertainty)
+
+            lower_limit = dst_func.get('lower_limit')
+            if lower_limit is not None:
+                lower_limit = float(lower_limit)
+            upper_limit = dst_func.get('upper_limit')
+            if upper_limit is not None:
+                upper_limit = float(upper_limit)
+
+            lower_linear_limit = dst_func.get('lower_linear_limit')
+            if lower_linear_limit is not None:
+                lower_linear_limit = float(lower_linear_limit)
+            upper_linear_limit = dst_func.get('upper_linear_limit')
+            if upper_linear_limit is not None:
+                upper_linear_limit = float(upper_linear_limit)
+
+            target_value, lower_bound, upper_bound =\
+                angle_target_values(target_value, target_value_uncertainty,
+                                    lower_limit, upper_limit,
+                                    lower_linear_limit, upper_linear_limit)
+
+            if target_value is None:
+                return dst_func
+
+            if angle_error(lower_bound, upper_bound, target_value, chi2) > angle_error(lower_bound, upper_bound, target_value, alt_chi2):
+                target_value = dst_func.get('target_value')
+                if target_value is not None:
+                    target_value = float(target_value) + 180.0
+                lower_limit = dst_func.get('lower_limit')
+                if lower_limit is not None:
+                    lower_limit = float(lower_limit) + 180.0
+                upper_limit = dst_func.get('upper_limit')
+                if upper_limit is not None:
+                    upper_limit = float(upper_limit) + 180.0
+
+                if lower_linear_limit is not None:
+                    lower_linear_limit += 180.0
+                if upper_linear_limit is not None:
+                    upper_linear_limit += 180.0
+
+                _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
+                                     dtype=float)
+
+                shift = 0.0
+                if self.__correctCircularShift:
+                    if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                        shift = -(numpy.nanmax(_array) // 360) * 360
+                    elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                        shift = -(numpy.nanmin(_array) // 360) * 360
+                if target_value is not None:
+                    dst_func['target_value'] = str(target_value + shift)
+                if lower_limit is not None:
+                    dst_func['lower_limit'] = str(lower_limit + shift)
+                if upper_limit is not None:
+                    dst_func['upper_limit'] = str(upper_limit + shift)
+                if lower_linear_limit is not None:
+                    dst_func['lower_linear_limit'] = str(lower_linear_limit + shift)
+                if upper_linear_limit is not None:
+                    dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+
+        return dst_func
+
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
@@ -2519,6 +5032,14 @@ class AriaMRXParserListener(ParseTreeListener):
                         return seqKey, self.__coordAtomSite[seqKey]
         return seqKey, None
 
+    def atomIdListToChainAssign(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
+        chainAssign = set()
+        for item in atomIdList:
+            if 'atom_id_list' in item:
+                for atom_id in item['atom_id_list']:
+                    chainAssign.add((atom_id['chain_id'], atom_id['seq_id'], atom_id['comp_id']))
+        return list(chainAssign)
+
     def atomIdListToAtomSelection(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
         atomSelection = []
         for item in atomIdList:
@@ -2531,6 +5052,8 @@ class AriaMRXParserListener(ParseTreeListener):
     def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
+        if self.__cur_subtype == 'dihed':
+            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints, {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -2539,6 +5062,8 @@ class AriaMRXParserListener(ParseTreeListener):
         preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.__cur_subtype == 'dist':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = preferAuthSeq
+        elif self.__cur_subtype == 'dihed':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = preferAuthSeq
         if not preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
@@ -2559,6 +5084,8 @@ class AriaMRXParserListener(ParseTreeListener):
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)
+        elif self.__cur_subtype == 'dihed':
+            key = (self.__cur_subtype, self.dihedRestraints)
         else:
             return
 
@@ -2645,7 +5172,8 @@ class AriaMRXParserListener(ParseTreeListener):
         """ Return content subtype of ARIA MRX file.
         """
 
-        contentSubtype = {'dist_restraint': self.distRestraints
+        contentSubtype = {'dist_restraint': self.distRestraints,
+                          'dihed_restraint': self.dihedRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

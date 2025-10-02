@@ -220,5 +220,10 @@ class AriaMRXReader:
 if __name__ == "__main__":
     reader = AriaMRXReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2n7h/2n7h-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2n7h/2n7h.cif')
+
+    reader = AriaMRXReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6yhx/6yhx-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/6yhx/6yhx.cif')

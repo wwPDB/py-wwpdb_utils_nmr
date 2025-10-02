@@ -3231,7 +3231,20 @@ class NEFTranslator:
                                                         if entity_id_col != -1:
                                                             r[entity_id_col] = str(_entity_id)
                                                         break
-
+                                                if auth_seq_id_col != -1 and r[auth_seq_id_col].isdigit():  # DAOTHER-10324
+                                                    auth_seq_id = int(r[auth_seq_id_col])
+                                                    cif_ps_can = [_ps for _ps in cif_ps if _ps['auth_chain_id'] != ref_chain_id and auth_seq_id in _ps['auth_seq_id']]
+                                                    if len(cif_ps_can) == 1:
+                                                        _k = (cif_ps_can[0]['auth_chain_id'], auth_seq_id, r[comp_id_col])
+                                                        if _k in auth_to_star_seq:
+                                                            _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
+                                                            r[chain_id_col] = str(_entity_assembly_id)
+                                                            if seq_id_col != -1:
+                                                                r[seq_id_col] = str(_seq_id)
+                                                            if alt_seq_id_col != -1:
+                                                                r[alt_seq_id_col] = str(_seq_id)
+                                                            if entity_id_col != -1:
+                                                                r[entity_id_col] = str(_entity_id)
                                     else:
 
                                         valid = False

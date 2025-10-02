@@ -622,7 +622,7 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
 
     if fileType == 'nm-res-amb':
         return 'AMBER restraint'
-    if fileType == 'nm-res-ari':
+    if fileType in ('nm-res-ari', 'nm-res-arx'):
         return 'ARIA restraint'
     if fileType == 'nm-res-bio':
         return 'BIOSYM restraint'

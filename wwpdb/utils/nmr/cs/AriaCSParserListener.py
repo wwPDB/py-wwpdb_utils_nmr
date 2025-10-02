@@ -116,7 +116,7 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.__error = None
 
     # Exit a parse tree produced by XMLParser#element.
-    def exitElement(self, ctx: XMLParser.ElementContext):  # pylint: disable=unused-argument
+    def exitElement(self, ctx: XMLParser.ElementContext):
 
         try:
 

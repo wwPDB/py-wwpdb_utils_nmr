@@ -197,7 +197,7 @@
 # 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
 # 14-Nov-2024  M. Yokochi - add support for CHARMM extended CRD (topology) file. file type: 'nm-aux-cha'
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
-# 22-Nov-2024  M. Yokochi - add support for CYANA NOA (NOE Assignment) file. file type: 'nm-res-noa'
+# 22-Nov-2024  M. Yokochi - add support for CYANA NOA (NOE Assignment) file. file type: 'nm-res-noa' (DAOTHER-7829, 9785, NMR data remediation)
 # 27-Nov-2024  M. Yokochi - implement atom name mapping history as requirement of standalone NMR data conversion service
 # 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2
 # 16-Dec-2024  M. Yokochi - combine spectral peak lists written in software native formats into single NMR-STAR file (DAOTHER-8905, NMR data remediation Phase 2)
@@ -222,6 +222,7 @@
 # 22-Aug-2025  M. Yokochi - add support for OLIVIA spectral peak list (DAOTHER-8905, 9785)
 # 22-Aug-2025  M. Yokochi - add 'nm-shi-oli' file type for OLIVIA spectral peak list file (DAOTHER-9785)
 # 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for bare PDB file as AMBER/CHARMM/GROMACS topology (DAOTHER-7829, 9785, NMR data remediation)
+# 02-Oct-2025  M. Yokochi - add support for ARIA NOE restraint (XML) file. file type: 'nm-res-arx' (DAOTHER-7829, 9785, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -381,6 +382,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
+    from wwpdb.utils.nmr.mr.AriaMRXReader import AriaMRXReader
     from wwpdb.utils.nmr.mr.BarePDBReader import BarePDBReader
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
     from wwpdb.utils.nmr.mr.CharmmCRDReader import CharmmCRDReader
@@ -554,6 +556,7 @@ except ImportError:
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AriaMRReader import AriaMRReader
+    from nmr.mr.AriaMRXReader import AriaMRXReader
     from nmr.mr.BarePDBReader import BarePDBReader
     from nmr.mr.BiosymMRReader import BiosymMRReader
     from nmr.mr.CharmmCRDReader import CharmmCRDReader
@@ -724,22 +727,24 @@ default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'nea
 
 linear_mr_file_types = ('nm-res-bio', 'nm-res-cya', 'nm-res-ros', 'nm-res-syb')
 
-retrial_mr_file_types = ('nm-res-ari', 'nm-res-bio', 'nm-res-cns', 'nm-res-cha',
-                         'nm-res-cya', 'nm-res-dyn', 'nm-res-isd', 'nm-res-noa',
-                         'nm-res-ros', 'nm-res-sch', 'nm-res-syb', 'nm-res-xpl')
+retrial_mr_file_types = ('nm-res-ari', 'nm-res-arx', 'nm-res-bio', 'nm-res-cns',
+                         'nm-res-cha', 'nm-res-cya', 'nm-res-dyn', 'nm-res-isd',
+                         'nm-res-noa', 'nm-res-ros', 'nm-res-sch', 'nm-res-syb',
+                         'nm-res-xpl')
 
 parsable_mr_file_types = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
-                          'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
-                          'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
-                          'nm-res-isd', 'nm-res-noa', 'nm-res-sch', 'nm-res-syb',
-                          'nm-res-ros', 'nm-res-xpl')
+                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bio',
+                          'nm-res-cha', 'nm-res-cns', 'nm-res-cya', 'nm-res-dyn',
+                          'nm-res-gro', 'nm-res-isd', 'nm-res-noa', 'nm-res-sch',
+                          'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 archival_mr_file_types = ('nmr-star',
                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
-                          'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
-                          'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
-                          'nm-res-isd', 'nm-res-noa', 'nm-res-oth', 'nm-res-sax',
-                          'nm-res-sch', 'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
+                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bio',
+                          'nm-res-cha', 'nm-res-cns', 'nm-res-cya', 'nm-res-dyn',
+                          'nm-res-gro', 'nm-res-isd', 'nm-res-noa', 'nm-res-oth',
+                          'nm-res-sax', 'nm-res-sch', 'nm-res-syb', 'nm-res-ros',
+                          'nm-res-xpl')
 
 parsable_pk_file_types = ('nm-aux-xea',
                           'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
@@ -8380,6 +8385,17 @@ class NmrDpUtility:
                         if has_ext and atom_names > 0:
                             ar['file_type'] = 'nm-aux-cha'
 
+                    if ar['file_type'] in ('nm-res-ari', 'nm-res-oth'):
+
+                        with open(arPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+                            for idx, line in enumerate(ifh):
+                                if '<!DOCTYPE noe_restraint_list SYSTEM' in line or '<noe_restraint_list>' in line:
+                                    ar['file_type'] = 'nm-res-arx'
+                                    break
+                                if idx >= self.mr_max_spacer_lines:
+                                    braek
+
                     if ar['file_type'] in ('nm-res-cya', 'nm-res-oth'):
 
                         atom_names = 0
@@ -13332,6 +13348,10 @@ class NmrDpUtility:
             return AriaMRReader(verbose, self.__lfh, None, None, None, None, None,
                                 self.__ccU, self.__csStat, self.__nefT,
                                 reasons)
+        if file_type == 'nm-res-arx':
+            return AriaMRXReader(verbose, self.__lfh, None, None, None, None, None,
+                                 self.__ccU, self.__csStat, self.__nefT,
+                                 reasons)
         if file_type == 'nm-res-bio':
             return BiosymMRReader(verbose, self.__lfh, None, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
@@ -15478,6 +15498,18 @@ class NmrDpUtility:
         if (not is_valid or multiple_check) and file_type != 'nm-res-ari':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ari')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+                multiple_check = False
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-arx':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-arx')
 
             is_valid |= _is_valid
             err += _err
@@ -35713,6 +35745,74 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-arx':
+                reader = AriaMRXReader(self.__verbose, self.__lfh,
+                                       self.__representative_model_id,
+                                       self.__representative_alt_id,
+                                       self.__mr_atom_name_mapping,
+                                       self.__cR, self.__caC,
+                                       self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = AriaMRXReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__representative_alt_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,

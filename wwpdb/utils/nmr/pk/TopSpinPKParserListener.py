@@ -158,123 +158,126 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__annotation = None
 
     # Exit a parse tree produced by XMLParser#element.
-    def exitElement(self, ctx: XMLParser.ElementContext):  # pylint: disable=unused-argument
+    def exitElement(self, ctx: XMLParser.ElementContext):
 
-        if self.__cur_path == '/PeakList/PeakList2D/Peak2D':
+        try:
 
-            if None in (self.__f1_ppm, self.__f2_ppm)\
-               or (self.__intensity is None and self.__volume is None):
-                self.peaks2D -= 1
-                return
+            if self.__cur_path == '/PeakList/PeakList2D/Peak2D':
 
-            index = self.peaks2D
+                if None in (self.__f1_ppm, self.__f2_ppm)\
+                   or (self.__intensity is None and self.__volume is None):
+                    self.peaks2D -= 1
+                    return
 
-            dstFunc = self.validatePeak2D(index, self.__f1_ppm, self.__f2_ppm, None, None, None, None,
-                                          None, None, None, None, self.__intensity, None, self.__volume, None)
+                index = self.peaks2D
 
-            if dstFunc is None:
-                self.peaks2D -= 1
-                return
+                dstFunc = self.validatePeak2D(index, self.__f1_ppm, self.__f2_ppm, None, None, None, None,
+                                              None, None, None, None, self.__intensity, None, self.__volume, None)
 
-            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                if dstFunc is None:
+                    self.peaks2D -= 1
+                    return
 
-            cur_spectral_dim[1]['freq_hint'].append(self.__f1_ppm)
-            cur_spectral_dim[2]['freq_hint'].append(self.__f2_ppm)
+                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-            if self.debug:
-                print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
+                cur_spectral_dim[1]['freq_hint'].append(self.__f1_ppm)
+                cur_spectral_dim[2]['freq_hint'].append(self.__f2_ppm)
 
-            if self.createSfDict__:
-                sf = self.getSf()
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
 
-                if sf is not None:
-                    sf['id'] = index
-                    sf['index_id'] += 1
+                if self.createSfDict__:
+                    sf = self.getSf()
 
-                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                   sf['list_id'], self.entryId, dstFunc,
-                                   None, None, None,
-                                   details=self.__annotation)
-                    sf['loop'].add_data(row)
+                    if sf is not None:
+                        sf['id'] = index
+                        sf['index_id'] += 1
 
-        elif self.__cur_path == '/PeakList/PeakList3D/Peak3D':
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       None, None, None,
+                                       details=self.__annotation)
+                        sf['loop'].add_data(row)
 
-            if None in (self.__f1_ppm, self.__f2_ppm, self.__f3_ppm)\
-               or (self.__intensity is None and self.__volume is None):
-                self.peaks3D -= 1
-                return
+            elif self.__cur_path == '/PeakList/PeakList3D/Peak3D':
 
-            index = self.peaks3D
+                if None in (self.__f1_ppm, self.__f2_ppm, self.__f3_ppm)\
+                   or (self.__intensity is None and self.__volume is None):
+                    self.peaks3D -= 1
+                    return
 
-            dstFunc = self.validatePeak3D(index, self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, self.__intensity, None, self.__volume, None)
+                index = self.peaks3D
 
-            if dstFunc is None:
-                self.peaks3D -= 1
-                return
+                dstFunc = self.validatePeak3D(index, self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, None, None, None, None, None, None,
+                                              None, None, None, None, None, None, self.__intensity, None, self.__volume, None)
 
-            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                if dstFunc is None:
+                    self.peaks3D -= 1
+                    return
 
-            cur_spectral_dim[1]['freq_hint'].append(self.__f1_ppm)
-            cur_spectral_dim[2]['freq_hint'].append(self.__f2_ppm)
-            cur_spectral_dim[3]['freq_hint'].append(self.__f3_ppm)
+                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-            if self.debug:
-                print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
+                cur_spectral_dim[1]['freq_hint'].append(self.__f1_ppm)
+                cur_spectral_dim[2]['freq_hint'].append(self.__f2_ppm)
+                cur_spectral_dim[3]['freq_hint'].append(self.__f3_ppm)
 
-            if self.createSfDict__:
-                sf = self.getSf()
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
 
-                if sf is not None:
-                    sf['id'] = index
-                    sf['index_id'] += 1
+                if self.createSfDict__:
+                    sf = self.getSf()
 
-                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                   sf['list_id'], self.entryId, dstFunc,
-                                   None, None, None,
-                                   details=self.__annotation)
-                    sf['loop'].add_data(row)
+                    if sf is not None:
+                        sf['id'] = index
+                        sf['index_id'] += 1
 
-        elif self.__cur_path == '/PeakList/PeakList4D/Peak4D':
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       None, None, None,
+                                       details=self.__annotation)
+                        sf['loop'].add_data(row)
 
-            if None in (self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, self.__f4_ppm)\
-               or (self.__intensity is None and self.__volume is None):
-                self.peaks4D -= 1
-                return
+            elif self.__cur_path == '/PeakList/PeakList4D/Peak4D':
 
-            index = self.peaks4D
+                if None in (self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, self.__f4_ppm)\
+                   or (self.__intensity is None and self.__volume is None):
+                    self.peaks4D -= 1
+                    return
 
-            dstFunc = self.validatePeak4D(index, self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, self.__f4_ppm, None, None, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, None, None, self.__intensity, None, self.__volume, None)
+                index = self.peaks4D
 
-            if dstFunc is None:
-                self.peaks4D -= 1
-                return
+                dstFunc = self.validatePeak4D(index, self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, self.__f4_ppm, None, None, None, None, None, None, None, None,
+                                              None, None, None, None, None, None, None, None, self.__intensity, None, self.__volume, None)
 
-            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                if dstFunc is None:
+                    self.peaks4D -= 1
+                    return
 
-            cur_spectral_dim[1]['freq_hint'].append(self.__f1_ppm)
-            cur_spectral_dim[2]['freq_hint'].append(self.__f2_ppm)
-            cur_spectral_dim[3]['freq_hint'].append(self.__f3_ppm)
-            cur_spectral_dim[4]['freq_hint'].append(self.__f4_ppm)
+                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-            if self.debug:
-                print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
+                cur_spectral_dim[1]['freq_hint'].append(self.__f1_ppm)
+                cur_spectral_dim[2]['freq_hint'].append(self.__f2_ppm)
+                cur_spectral_dim[3]['freq_hint'].append(self.__f3_ppm)
+                cur_spectral_dim[4]['freq_hint'].append(self.__f4_ppm)
 
-            if self.createSfDict__:
-                sf = self.getSf()
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
 
-                if sf is not None:
-                    sf['id'] = index
-                    sf['index_id'] += 1
+                if self.createSfDict__:
+                    sf = self.getSf()
 
-                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                   sf['list_id'], self.entryId, dstFunc,
-                                   None, None, None,
-                                   details=self.__annotation)
-                    sf['loop'].add_data(row)
+                    if sf is not None:
+                        sf['id'] = index
+                        sf['index_id'] += 1
 
-        self.__cur_path = self.__cur_path[:-(1 + len(str(ctx.Name(0))))]
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       None, None, None,
+                                       details=self.__annotation)
+                        sf['loop'].add_data(row)
+
+        finally:
+            self.__cur_path = self.__cur_path[:-(1 + len(str(ctx.Name(0))))]
 
     # Enter a parse tree produced by XMLParser#reference.
     def enterReference(self, ctx: XMLParser.ReferenceContext):  # pylint: disable=unused-argument

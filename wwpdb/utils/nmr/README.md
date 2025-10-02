@@ -315,6 +315,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-aux-amb`|`nm-aux-amb`|`nmr-restraints` / `any`|Topology file in AMBER format
 `nm-res-amb`|`nm-res-amb`|`nmr-restraints` / `amber`|Restraint file in AMBER format
 `nm-res-ari`|`nm-res-ari`|`nmr-restraints` / `aria`|Restraint file in ARIA format
+`nm-res-arx`|`nm-res-ari`,<br/>`nm-res-oth`|`nmr-restraints` / `aria`|Restraint file in ARIA XML format
 `nm-res-bio`|`nm-res-bio`|`nmr-restraints` / `biosym`|Restraint file in BIOSYM format
 `nm-aux-cha`|`nm-aux-cha`|`nmr-restraints` / `any`|Topology file in CHARMM/CRD format
 `nm-res-cha`|`nm-res-cha`|`nmr-restraints` / `charmm`|Restraint file in CHARMM format
@@ -344,7 +345,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-pea-top`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in TOPSPIN format
 `nm-pea-vie`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in NMRVIEW format
 `nm-pea-vnm`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in VNMR format
-`nm-aux-xea`|`nm-pea-any`|`nmr-peaks` / `any`|Assignment file in XEASY format (aka. XEASY PROT)
+A`nm-aux-xea`|`nm-pea-any`|`nmr-peaks` / `any`|Assignment file in XEASY format (aka. XEASY PROT)
 `nm-pea-xea`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in XEASY format
 `nm-pea-xwi`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in XWINNMR format
 `nm-pea-any`|`nm-pea-any`|`nmr-peaks` / `any`|Any spectral peak list file

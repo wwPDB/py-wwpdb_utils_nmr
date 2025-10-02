@@ -1,9 +1,9 @@
 ##
-# NmrViewPKReader.py
+# AriaMRXReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing NMRVIEW PK files.
+""" A collection of classes for parsing ARIA MRX files.
 """
 __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
@@ -14,16 +14,17 @@ __version__ = "1.0.0"
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 from typing import IO, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.pk.NmrViewPKLexer import NmrViewPKLexer
-    from wwpdb.utils.nmr.pk.NmrViewPKParser import NmrViewPKParser
-    from wwpdb.utils.nmr.pk.NmrViewPKParserListener import NmrViewPKParserListener
+    from wwpdb.utils.nmr.pk.XMLLexer import XMLLexer
+    from wwpdb.utils.nmr.pk.XMLParser import XMLParser
+    from wwpdb.utils.nmr.mr.AriaMRXParserListener import AriaMRXParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       retrieveOriginalFileName,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -34,10 +35,11 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.pk.NmrViewPKLexer import NmrViewPKLexer
-    from nmr.pk.NmrViewPKParser import NmrViewPKParser
-    from nmr.pk.NmrViewPKParserListener import NmrViewPKParserListener
+    from nmr.pk.XMLLexer import XMLLexer
+    from nmr.pk.XMLParser import XMLParser
+    from nmr.mr.AriaMRXParserListener import AriaMRXParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           retrieveOriginalFileName,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -47,8 +49,8 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
-class NmrViewPKReader:
-    """ Accessor methods for parsing NMRVIEW PK files.
+class AriaMRXReader:
+    """ Accessor methods for parsing ARIA MRX files.
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -64,8 +66,6 @@ class NmrViewPKReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
-        self.__enforce_peak_row_format = False
-        self.__internal = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -98,24 +98,17 @@ class NmrViewPKReader:
     def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def enforcePeakRowFormat(self, enforce_peak_row_format: bool):
-        self.__enforce_peak_row_format = enforce_peak_row_format
-
-    def setInternalMode(self, internal: bool):
-        self.__internal = internal
-
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, pkFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
-              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
-              reservedListIds: Optional[dict] = None, entryId: Optional[str] = None, csLoops: Optional[List[dict]] = None
-              ) -> Tuple[Optional[NmrViewPKParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
-        """ Parse NMRVIEW PK file.
-            @return: NmrViewPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+    def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
+              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None, entryId: Optional[str] = None
+              ) -> Tuple[Optional[AriaMRXParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
+        """ Parse ARIA MRX file.
+            @return: AriaMRXParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -123,25 +116,25 @@ class NmrViewPKReader:
         try:
 
             if isFilePath:
-                pkString = None
+                mrString = None
 
-                if not os.access(pkFilePath, os.R_OK):
+                if not os.access(mrFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() {pkFilePath} is not accessible.\n")
+                        self.__lfh.write(f"+{self.__class_name__}.parse() {mrFilePath} is not accessible.\n")
                     return None, None, None
 
-                ifh = open(pkFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
+                ifh = open(mrFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
                 input = InputStream(ifh.read())
 
             else:
-                pkFilePath, pkString = None, pkFilePath
+                mrFilePath, mrString = None, mrFilePath
 
-                if pkString is None or len(pkString) == 0:
+                if mrString is None or len(mrString) == 0:
                     if self.__verbose:
                         self.__lfh.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
-                input = InputStream(pkString)
+                input = InputStream(mrString)
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
@@ -156,10 +149,10 @@ class NmrViewPKReader:
                             self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
-            lexer = NmrViewPKLexer(input)
+            lexer = XMLLexer(input)
             lexer.removeErrorListeners()
 
-            lexer_error_listener = LexerErrorListener(pkFilePath, maxErrorReport=self.__maxLexerErrorReport, ignoreCodicError=True)
+            lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
             lexer.addErrorListener(lexer_error_listener)
 
             messageList = lexer_error_listener.getMessageList()
@@ -172,37 +165,30 @@ class NmrViewPKReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = NmrViewPKParser(stream)
+            parser = XMLParser(stream)
             # try with simpler/faster SLL prediction mode
-            # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
+            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
+            parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.nmrview_pk()
+            tree = parser.document()
 
             walker = ParseTreeWalker()
-            listener = NmrViewPKParserListener(self.__verbose, self.__lfh,
-                                               self.__representativeModelId,
-                                               self.__representativeAltId,
-                                               self.__mrAtomNameMapping,
-                                               self.__cR, self.__caC,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               self.__reasons)
+            listener = AriaMRXParserListener(self.__verbose, self.__lfh,
+                                             self.__representativeModelId,
+                                             self.__representativeAltId,
+                                             self.__mrAtomNameMapping,
+                                             self.__cR, self.__caC,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             self.__reasons)
             listener.setDebugMode(self.__debug)
-            listener.enforsePeakRowFormat(self.__enforce_peak_row_format)
-            listener.setInternalMode(self.__internal)
             listener.createSfDict(createSfDict)
             if createSfDict:
-                if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
+                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
-                if reservedListIds is not None:
-                    listener.setReservedListIds(reservedListIds)
                 if entryId is not None:
                     listener.setEntryId(entryId)
-                if csLoops is not None:
-                    listener.setCsLoops(csLoops)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()
@@ -232,67 +218,7 @@ class NmrViewPKReader:
 
 
 if __name__ == "__main__":
-    reader = NmrViewPKReader(True)
+    reader = AriaMRXReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2mai/2mai-corrected.mr',
-                 '../../tests-nmr/mock-data-remediation/2mai/2mai.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/8voi/bmr31139/work/data/D_1000280655_nmr-peaks-upload_P1.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/8voi/8voi.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-D_1300061373/D_1300061373_nmr-peaks-upload_P1.dat.V1',
-                 '../../tests-nmr/mock-data-D_1300061373/D_1300061373_model_P1.cif.V36')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6zxp/bmr34544/work/data/D_1292110366_nmr-peaks-upload_P5.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/6zxp/6zxp.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36675/data/D_1300048680_nmr-peaks-upload_P1.dat.V10',
-                 '../../tests-nmr/mock-data-combine-at-upload/bmr36675/data/D_1300048680_model-release_P1.cif.V1')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6bp9/bmr30374/work/data/D_1000231028_nmr-peaks-upload_P3.dat.V4',
-                 '../../tests-nmr/mock-data-remediation/6bp9/6bp9.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/5z26/bmr36147/work/data/D_1300006302_nmr-peaks-upload_P1.dat.V11',
-                 '../../tests-nmr/mock-data-remediation/5z26/5z26.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6mnl/bmr30373/work/data/D_1000231170_nmr-peaks-upload_P3.dat.V3',
-                 '../../tests-nmr/mock-data-remediation/6mnl/6mnl.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/5z26/bmr36147/work/data/D_1300006302_nmr-peaks-upload_P2.dat.V2',
-                 '../../tests-nmr/mock-data-remediation/5z26/5z26.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/5kgz/bmr30107/work/data/D_1000222202_nmr-peaks-upload_P1.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/5kgz/5kgz.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6yp5/bmr34513/work/data/D_1292107993_nmr-peaks-upload_P1.dat.V2',
-                 '../../tests-nmr/mock-data-remediation/6yp5/6yp5.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2la0/2la0-corrected-div_ext.mr',
-                 '../../tests-nmr/mock-data-remediation/2la0/2la0.cif')
-
-    reader = NmrViewPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6iws/e170209_15n_noesy.xpk',
-                 '../../tests-nmr/mock-data-remediation/6iws/6iws.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/6yhx/6yhx-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/6yhx/6yhx.cif')

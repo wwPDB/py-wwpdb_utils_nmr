@@ -87,7 +87,7 @@
 # 07-Nov-2024  M. Yokochi - add 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-xea', and 'nm-pea-xwi' file types for NMR spectral peak remediation
 # 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
-# 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file
+# 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file (DAOTHER-7829, 9785, NMR data remediation)
 # 05-Dec-2024  M. Yokochi - add 'nm-aux-xea' file type for XEASY PROT (Assignment) file (NMR restraint remediation)
 # 16-Dec-2024  M. Yokochi - add 'nm-pea-vnm' file types for VNMR spectral peak list file (NMR restraint remediation)
 # 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warning (DAOTHER-8905, 9785, NMR data remediation, standalone NMR data conversion service)
@@ -107,6 +107,7 @@
 # 22-Aug-2025  M. Yokochi - add 'nm-pea-oli' file type for OLIVIA spectral peak list file (DAOTHER-8905, 9785)
 # 22-Aug-2025  M. Yokochi - add 'nm-shi-oli' file type for OLIVIA spectral peak list file (DAOTHER-9785)
 # 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for Bare PDB file acting as AMBER/CHARMM/GROMACS topology definition (DAOTHER-7829, 9785, NMR data remediation)
+# 02-Oct-2025  M. Yokochi - add 'nm-res-arx' file type for ARIA NOE restraint (XML) file (DAOTHER-7829, 9785, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1860,10 +1861,10 @@ class NmrDpReportInputSource:
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
                            'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb', 'nm-aux-xea',
-                           'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha', 'nm-res-cns',
-                           'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-mr',
-                           'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-sch',
-                           'nm-res-syb', 'nm-res-xpl',
+                           'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bio', 'nm-res-cha',
+                           'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd',
+                           'nm-res-mr', 'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax',
+                           'nm-res-sch', 'nm-res-syb', 'nm-res-xpl',
                            'nm-pea-any', 'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
                            'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top',
                            'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',

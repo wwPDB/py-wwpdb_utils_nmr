@@ -171,191 +171,194 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__hetero2_ass = {}
 
     # Exit a parse tree produced by XMLParser#element.
-    def exitElement(self, ctx: XMLParser.ElementContext):  # pylint: disable=unused-argument
+    def exitElement(self, ctx: XMLParser.ElementContext):
 
-        if self.__cur_path == '/spectrum':
-            self.num_of_dim = -1
-            self.__proton1_active, self.__proton2_active, self.__hetero1_active, self.__hetero2_active =\
-                False, False, False, False
+        try:
 
-        elif self.__cur_path == '/spectrum/peak':
-            if self.num_of_dim == -1:
-                self.num_of_dim = 0
-                if self.__proton1_ppm is not None:
-                    self.num_of_dim += 1
-                    self.__proton1_active = True
-                if self.__proton2_ppm is not None:
-                    self.num_of_dim += 1
-                    self.__proton2_active = True
-                if self.__hetero1_ppm is not None:
-                    self.num_of_dim += 1
-                    self.__hetero1_active = True
-                if self.__hetero2_ppm is not None:
-                    self.num_of_dim += 1
-                    self.__hetero2_active = True
-                self.initSpectralDim()
-                if self.num_of_dim not in self.__spectrum_names:
-                    self.__spectrum_names[self.num_of_dim] = {}
-                if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
-                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+            if self.__cur_path == '/spectrum':
+                self.num_of_dim = -1
+                self.__proton1_active, self.__proton2_active, self.__hetero1_active, self.__hetero2_active =\
+                    False, False, False, False
 
-            index = self.__index
+            elif self.__cur_path == '/spectrum/peak':
+                if self.num_of_dim == -1:
+                    self.num_of_dim = 0
+                    if self.__proton1_ppm is not None:
+                        self.num_of_dim += 1
+                        self.__proton1_active = True
+                    if self.__proton2_ppm is not None:
+                        self.num_of_dim += 1
+                        self.__proton2_active = True
+                    if self.__hetero1_ppm is not None:
+                        self.num_of_dim += 1
+                        self.__hetero1_active = True
+                    if self.__hetero2_ppm is not None:
+                        self.num_of_dim += 1
+                        self.__hetero2_active = True
+                    self.initSpectralDim()
+                    if self.num_of_dim not in self.__spectrum_names:
+                        self.__spectrum_names[self.num_of_dim] = {}
+                    if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+                        self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
-            ppm = [None] * self.num_of_dim
-            ppm_error = [None] * self.num_of_dim
-            assignments = [None] * self.num_of_dim
+                index = self.__index
 
-            idx = 0
-            if self.__proton1_active:
-                ppm[idx] = self.__proton1_ppm
-                ppm_error[idx] = self.__proton1_ppm_error
-                if self.__proton1_atoms is not None:
-                    assignments[idx] = self.__proton1_atoms
-                    if len(self.__proton1_atoms) > 1:
-                        if self.createSfDict__ and self.use_peak_row_format:
-                            sf = self.getSf()
-                            sf['peak_row_format'] = self.use_peak_row_format = False
-                idx += 1
-            if self.__proton2_active:
-                ppm[idx] = self.__proton2_ppm
-                ppm_error[idx] = self.__proton2_ppm_error
-                if self.__proton2_atoms is not None:
-                    assignments[idx] = self.__proton2_atoms
-                    if len(self.__proton2_atoms) > 1:
-                        if self.createSfDict__ and self.use_peak_row_format:
-                            sf = self.getSf()
-                            sf['peak_row_format'] = self.use_peak_row_format = False
-                idx += 1
-            if self.__hetero1_active:
-                ppm[idx] = self.__hetero1_ppm
-                ppm_error[idx] = self.__hetero1_ppm_error
-                if self.__hetero1_atoms is not None:
-                    assignments[idx] = self.__hetero1_atoms
-                    if len(self.__hetero1_atoms) > 1:
-                        if self.createSfDict__ and self.use_peak_row_format:
-                            sf = self.getSf()
-                            sf['peak_row_format'] = self.use_peak_row_format = False
-                idx += 1
-            if self.__hetero2_active:
-                ppm[idx] = self.__hetero2_ppm
-                ppm_error[idx] = self.__hetero2_ppm_error
-                if self.__hetero2_atoms is not None:
-                    assignments[idx] = self.__hetero2_atoms
-                    if len(self.__hetero2_atoms) > 1:
-                        if self.createSfDict__ and self.use_peak_row_format:
-                            sf = self.getSf()
-                            sf['peak_row_format'] = self.use_peak_row_format = False
-
-            if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):
+                ppm = [None] * self.num_of_dim
+                ppm_error = [None] * self.num_of_dim
                 assignments = [None] * self.num_of_dim
 
-            if self.num_of_dim == 2:
-                self.peaks2D += 1
+                idx = 0
+                if self.__proton1_active:
+                    ppm[idx] = self.__proton1_ppm
+                    ppm_error[idx] = self.__proton1_ppm_error
+                    if self.__proton1_atoms is not None:
+                        assignments[idx] = self.__proton1_atoms
+                        if len(self.__proton1_atoms) > 1:
+                            if self.createSfDict__ and self.use_peak_row_format:
+                                sf = self.getSf()
+                                sf['peak_row_format'] = self.use_peak_row_format = False
+                    idx += 1
+                if self.__proton2_active:
+                    ppm[idx] = self.__proton2_ppm
+                    ppm_error[idx] = self.__proton2_ppm_error
+                    if self.__proton2_atoms is not None:
+                        assignments[idx] = self.__proton2_atoms
+                        if len(self.__proton2_atoms) > 1:
+                            if self.createSfDict__ and self.use_peak_row_format:
+                                sf = self.getSf()
+                                sf['peak_row_format'] = self.use_peak_row_format = False
+                    idx += 1
+                if self.__hetero1_active:
+                    ppm[idx] = self.__hetero1_ppm
+                    ppm_error[idx] = self.__hetero1_ppm_error
+                    if self.__hetero1_atoms is not None:
+                        assignments[idx] = self.__hetero1_atoms
+                        if len(self.__hetero1_atoms) > 1:
+                            if self.createSfDict__ and self.use_peak_row_format:
+                                sf = self.getSf()
+                                sf['peak_row_format'] = self.use_peak_row_format = False
+                    idx += 1
+                if self.__hetero2_active:
+                    ppm[idx] = self.__hetero2_ppm
+                    ppm_error[idx] = self.__hetero2_ppm_error
+                    if self.__hetero2_atoms is not None:
+                        assignments[idx] = self.__hetero2_atoms
+                        if len(self.__hetero2_atoms) > 1:
+                            if self.createSfDict__ and self.use_peak_row_format:
+                                sf = self.getSf()
+                                sf['peak_row_format'] = self.use_peak_row_format = False
 
-                if None in (ppm[0], ppm[1])\
-                   or (self.__intensity is None and self.__volume is None):
-                    self.peaks2D -= 1
-                    return
+                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):
+                    assignments = [None] * self.num_of_dim
 
-                dstFunc = self.validatePeak2D(index, ppm[0], ppm[1],
-                                              ppm_error[0], ppm_error[1],
-                                              None, None, None, None, None, None,
-                                              self.__intensity, self.__intensity_error, self.__volume, self.__volume_error)
+                if self.num_of_dim == 2:
+                    self.peaks2D += 1
 
-                if dstFunc is None:
-                    self.peaks2D -= 1
-                    return
+                    if None in (ppm[0], ppm[1])\
+                       or (self.__intensity is None and self.__volume is None):
+                        self.peaks2D -= 1
+                        return
 
-                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                    dstFunc = self.validatePeak2D(index, ppm[0], ppm[1],
+                                                  ppm_error[0], ppm_error[1],
+                                                  None, None, None, None, None, None,
+                                                  self.__intensity, self.__intensity_error, self.__volume, self.__volume_error)
 
-                cur_spectral_dim[1]['freq_hint'].append(ppm[0])
-                cur_spectral_dim[2]['freq_hint'].append(ppm[1])
+                    if dstFunc is None:
+                        self.peaks2D -= 1
+                        return
 
-                has_assignments, has_multiple_assignments, asis1, asis2 =\
-                    self.checkAssignments2D(index, assignments, dstFunc)
+                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-                self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                        asis1, asis2,
-                                        '', None)
+                    cur_spectral_dim[1]['freq_hint'].append(ppm[0])
+                    cur_spectral_dim[2]['freq_hint'].append(ppm[1])
 
-            elif self.num_of_dim == 3:
-                self.peaks3D += 1
+                    has_assignments, has_multiple_assignments, asis1, asis2 =\
+                        self.checkAssignments2D(index, assignments, dstFunc)
 
-                if None in (ppm[0], ppm[1], ppm[2])\
-                   or (self.__intensity is None and self.__volume is None):
-                    self.peaks3D -= 1
-                    return
+                    self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                            asis1, asis2,
+                                            '', None)
 
-                dstFunc = self.validatePeak3D(index, ppm[0], ppm[1], ppm[2],
-                                              ppm_error[0], ppm_error[1], ppm_error[2],
-                                              None, None, None, None, None, None, None, None, None,
-                                              self.__intensity, self.__intensity_error, self.__volume, self.__volume_error)
+                elif self.num_of_dim == 3:
+                    self.peaks3D += 1
 
-                if dstFunc is None:
-                    self.peaks3D -= 1
-                    return
+                    if None in (ppm[0], ppm[1], ppm[2])\
+                       or (self.__intensity is None and self.__volume is None):
+                        self.peaks3D -= 1
+                        return
 
-                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                    dstFunc = self.validatePeak3D(index, ppm[0], ppm[1], ppm[2],
+                                                  ppm_error[0], ppm_error[1], ppm_error[2],
+                                                  None, None, None, None, None, None, None, None, None,
+                                                  self.__intensity, self.__intensity_error, self.__volume, self.__volume_error)
 
-                cur_spectral_dim[1]['freq_hint'].append(ppm[0])
-                cur_spectral_dim[2]['freq_hint'].append(ppm[1])
-                cur_spectral_dim[3]['freq_hint'].append(ppm[2])
+                    if dstFunc is None:
+                        self.peaks3D -= 1
+                        return
 
-                has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                    self.checkAssignments3D(index, assignments, dstFunc)
+                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-                self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                        asis1, asis2, asis3,
-                                        '', None)
+                    cur_spectral_dim[1]['freq_hint'].append(ppm[0])
+                    cur_spectral_dim[2]['freq_hint'].append(ppm[1])
+                    cur_spectral_dim[3]['freq_hint'].append(ppm[2])
 
-            elif self.num_of_dim == 4:
-                self.peaks4D += 1
+                    has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
+                        self.checkAssignments3D(index, assignments, dstFunc)
 
-                if None in (ppm[0], ppm[1], ppm[2], ppm[3])\
-                   or (self.__intensity is None and self.__volume is None):
-                    self.peaks4D -= 1
-                    return
+                    self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                            asis1, asis2, asis3,
+                                            '', None)
 
-                dstFunc = self.validatePeak4D(index, ppm[0], ppm[1], ppm[2], ppm[3],
-                                              ppm_error[0], ppm_error[1], ppm_error[2], ppm_error[3],
-                                              None, None, None, None, None, None, None, None, None, None, None, None,
-                                              self.__intensity, self.__intensity_error, self.__volume, self.__volume_error)
+                elif self.num_of_dim == 4:
+                    self.peaks4D += 1
 
-                if dstFunc is None:
-                    self.peaks4D -= 1
-                    return
+                    if None in (ppm[0], ppm[1], ppm[2], ppm[3])\
+                       or (self.__intensity is None and self.__volume is None):
+                        self.peaks4D -= 1
+                        return
 
-                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                    dstFunc = self.validatePeak4D(index, ppm[0], ppm[1], ppm[2], ppm[3],
+                                                  ppm_error[0], ppm_error[1], ppm_error[2], ppm_error[3],
+                                                  None, None, None, None, None, None, None, None, None, None, None, None,
+                                                  self.__intensity, self.__intensity_error, self.__volume, self.__volume_error)
 
-                cur_spectral_dim[1]['freq_hint'].append(ppm[0])
-                cur_spectral_dim[2]['freq_hint'].append(ppm[1])
-                cur_spectral_dim[3]['freq_hint'].append(ppm[2])
-                cur_spectral_dim[4]['freq_hint'].append(ppm[3])
+                    if dstFunc is None:
+                        self.peaks4D -= 1
+                        return
 
-                has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                    self.checkAssignments4D(index, assignments, dstFunc)
+                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-                self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                        asis1, asis2, asis3, asis4,
-                                        '', None)
+                    cur_spectral_dim[1]['freq_hint'].append(ppm[0])
+                    cur_spectral_dim[2]['freq_hint'].append(ppm[1])
+                    cur_spectral_dim[3]['freq_hint'].append(ppm[2])
+                    cur_spectral_dim[4]['freq_hint'].append(ppm[3])
 
-        elif self.__cur_path == '/spectrum/peak/proton1/assignment/atom':
-            if len(self.__proton1_ass) > 0:
-                self.__proton1_atoms.append(self.__proton1_ass)
+                    has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
+                        self.checkAssignments4D(index, assignments, dstFunc)
 
-        elif self.__cur_path == '/spectrum/peak/proton2/assignment/atom':
-            if len(self.__proton2_ass) > 0:
-                self.__proton2_atoms.append(self.__proton2_ass)
+                    self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                            asis1, asis2, asis3, asis4,
+                                            '', None)
 
-        elif self.__cur_path == '/spectrum/peak/hetero1/assignment/atom':
-            if len(self.__hetero1_ass) > 0:
-                self.__hetero1_atoms.append(self.__hetero1_ass)
+            elif self.__cur_path == '/spectrum/peak/proton1/assignment/atom':
+                if len(self.__proton1_ass) > 0:
+                    self.__proton1_atoms.append(self.__proton1_ass)
 
-        elif self.__cur_path == '/spectrum/peak/hetero2/assignment/atom':
-            if len(self.__hetero2_ass) > 0:
-                self.__hetero2_atoms.append(self.__hetero2_ass)
+            elif self.__cur_path == '/spectrum/peak/proton2/assignment/atom':
+                if len(self.__proton2_ass) > 0:
+                    self.__proton2_atoms.append(self.__proton2_ass)
 
-        self.__cur_path = self.__cur_path[:-(1 + len(str(ctx.Name(0))))]
+            elif self.__cur_path == '/spectrum/peak/hetero1/assignment/atom':
+                if len(self.__hetero1_ass) > 0:
+                    self.__hetero1_atoms.append(self.__hetero1_ass)
+
+            elif self.__cur_path == '/spectrum/peak/hetero2/assignment/atom':
+                if len(self.__hetero2_ass) > 0:
+                    self.__hetero2_atoms.append(self.__hetero2_ass)
+
+        finally:
+            self.__cur_path = self.__cur_path[:-(1 + len(str(ctx.Name(0))))]
 
     # Enter a parse tree produced by XMLParser#reference.
     def enterReference(self, ctx: XMLParser.ReferenceContext):  # pylint: disable=unused-argument

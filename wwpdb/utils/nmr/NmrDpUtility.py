@@ -8394,7 +8394,7 @@ class NmrDpUtility:
                                     ar['file_type'] = 'nm-res-arx'
                                     break
                                 if idx >= self.mr_max_spacer_lines:
-                                    braek
+                                    break
 
                     if ar['file_type'] in ('nm-res-cya', 'nm-res-oth'):
 

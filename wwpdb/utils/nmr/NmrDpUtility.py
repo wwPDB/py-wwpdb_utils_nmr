@@ -223,6 +223,7 @@
 # 22-Aug-2025  M. Yokochi - add 'nm-shi-oli' file type for OLIVIA spectral peak list file (DAOTHER-9785)
 # 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for bare PDB file as AMBER/CHARMM/GROMACS topology (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add support for ARIA NOE restraint (XML) file. file type: 'nm-res-arx' (DAOTHER-7829, 9785, NMR data remediation)
+# 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file (DAOTHER-7829, 9785, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -383,6 +384,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
     from wwpdb.utils.nmr.mr.AriaMRXReader import AriaMRXReader
+    from wwpdb.utils.nmr.mr.BareMRReader import BareMRReader
     from wwpdb.utils.nmr.mr.BarePDBReader import BarePDBReader
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
     from wwpdb.utils.nmr.mr.CharmmCRDReader import CharmmCRDReader
@@ -557,6 +559,7 @@ except ImportError:
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AriaMRReader import AriaMRReader
     from nmr.mr.AriaMRXReader import AriaMRXReader
+    from nmr.mr.BareMRReader import BareMRReader
     from nmr.mr.BarePDBReader import BarePDBReader
     from nmr.mr.BiosymMRReader import BiosymMRReader
     from nmr.mr.CharmmCRDReader import CharmmCRDReader
@@ -733,18 +736,18 @@ retrial_mr_file_types = ('nm-res-ari', 'nm-res-arx', 'nm-res-bio', 'nm-res-cns',
                          'nm-res-xpl')
 
 parsable_mr_file_types = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
-                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bio',
-                          'nm-res-cha', 'nm-res-cns', 'nm-res-cya', 'nm-res-dyn',
-                          'nm-res-gro', 'nm-res-isd', 'nm-res-noa', 'nm-res-sch',
-                          'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
+                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar',
+                          'nm-res-bio', 'nm-res-cha', 'nm-res-cns', 'nm-res-cya',
+                          'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-noa',
+                          'nm-res-sch', 'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 archival_mr_file_types = ('nmr-star',
                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
-                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bio',
-                          'nm-res-cha', 'nm-res-cns', 'nm-res-cya', 'nm-res-dyn',
-                          'nm-res-gro', 'nm-res-isd', 'nm-res-noa', 'nm-res-oth',
-                          'nm-res-sax', 'nm-res-sch', 'nm-res-syb', 'nm-res-ros',
-                          'nm-res-xpl')
+                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar',
+                          'nm-res-bio', 'nm-res-cha', 'nm-res-cns', 'nm-res-cya',
+                          'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-noa',
+                          'nm-res-oth', 'nm-res-sax', 'nm-res-sch', 'nm-res-syb',
+                          'nm-res-ros', 'nm-res-xpl')
 
 parsable_pk_file_types = ('nm-aux-xea',
                           'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
@@ -11309,9 +11312,9 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
-        light_mr_file_types = ('nm-res-ari', 'nm-res-bio', 'nm-res-cya', 'nm-res-dyn',
-                               'nm-res-isd', 'nm-res-noa', 'nm-res-syb', 'nm-res-ros',
-                               'nm-res-oth')
+        light_mr_file_types = ('nm-res-ari', 'nm-res-bar', 'nm-res-bio', 'nm-res-cya',
+                               'nm-res-dyn', 'nm-res-isd', 'nm-res-noa', 'nm-res-syb',
+                               'nm-res-ros', 'nm-res-oth')
 
         for ar in self.__inputParamDict[ar_file_path_list]:
             file_path = ar['file_name']
@@ -11323,7 +11326,6 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
 
             fileListId += 1
-
             if file_type in ('nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 if file_type == 'nm-res-mr':
                     md5_list.append(None)
@@ -11354,8 +11356,8 @@ class NmrDpUtility:
             a_mr_format_name = ('an ' if mr_format_name[0] in ('AINMX') else 'a ') + _mr_format_name
 
             atom_like_names =\
-                self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                                                                                 'nm-res-isd', 'nm-res-ari', 'nm-res-oth')
+                self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ari', 'nm-res-bar', 'nm-res-bio', 'nm-res-dyn',
+                                                                                 'nm-res-isd', 'nm-res-ros', 'nm-res-syb', 'nm-res-oth')
                                                               or is_aux_amb or is_aux_cha or is_aux_gro or is_aux_pdb else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
@@ -12729,7 +12731,7 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-oth', 'nm-res-sax') or file_type.startswith('nm-pea'):
+                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-bar', 'nm-res-oth', 'nm-res-sax') or file_type.startswith('nm-pea'):
                     continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype)\
@@ -13355,6 +13357,10 @@ class NmrDpUtility:
             return AriaMRXReader(verbose, self.__lfh, None, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT,
                                  reasons)
+        if file_type == 'nm-res-bar':
+            return BareMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                self.__ccU, self.__csStat, self.__nefT,
+                                reasons)
         if file_type == 'nm-res-bio':
             return BiosymMRReader(verbose, self.__lfh, None, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
@@ -17116,6 +17122,7 @@ class NmrDpUtility:
 
                 original_file_path_list = []
 
+                manually_selected = False
                 ofh = ofh_w_sel = None
                 j = 0
 
@@ -17159,6 +17166,7 @@ class NmrDpUtility:
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             _dst_file_w_sel = _dst_file + f'-selected-as-{g[0][-7:]}'
                             ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
+                            manually_selected = True
 
                         elif sel_cs_file_header_pattern.match(line):
                             g = sel_cs_file_header_pattern.search(line).groups()
@@ -17177,6 +17185,7 @@ class NmrDpUtility:
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             _dst_file_w_sel = _dst_file + '-ignored'
                             ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
+                            manually_selected = True
 
                         elif not line.isspace() and not comment_pattern.match(line):
                             j += 1
@@ -17341,6 +17350,9 @@ class NmrDpUtility:
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-pea-any'
 
+                        if manually_selected:
+                            _ar['original_file_name'] = os.path.basename(dst_file)
+
                         peak_file_list.append(_ar)
 
                         pk_list_paths.append({'nmr-peaks': dst_file,
@@ -17389,6 +17401,10 @@ class NmrDpUtility:
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = 'nm-res-oth'
+
+                        if manually_selected:
+                            _ar['original_file_name'] = os.path.basename(dst_file)
+
                         split_file_list.append(_ar)
 
                         mr_part_paths.append({_ar['file_type']: dst_file,
@@ -17407,6 +17423,10 @@ class NmrDpUtility:
 
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = _file_type
+
+                            if manually_selected:
+                                _ar['original_file_name'] = os.path.basename(dst_file)
+
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_file_type: dst_file,
@@ -17436,6 +17456,10 @@ class NmrDpUtility:
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = settled_file_type
+
+                        if manually_selected:
+                            _ar['original_file_name'] = os.path.basename(dst_file)
+
                         peak_file_list.append(_ar)
 
                         pk_list_paths.append({'nmr-peaks': dst_file,
@@ -17738,6 +17762,9 @@ class NmrDpUtility:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-pea-any'
 
+                            if manually_selected:
+                                _ar['original_file_name'] = os.path.basename(dst_file)
+
                             peak_file_list.append(_ar)
 
                             pk_list_paths.append({'nmr-peaks': _dst_file,
@@ -17758,6 +17785,10 @@ class NmrDpUtility:
 
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = _file_type
+
+                                if manually_selected:
+                                    _ar['original_file_name'] = os.path.basename(dst_file)
+
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_file_type: _dst_file,
@@ -17775,6 +17806,10 @@ class NmrDpUtility:
 
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = 'nm-res-oth'
+
+                            if manually_selected:
+                                _ar['original_file_name'] = os.path.basename(dst_file)
+
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_ar['file_type']: _dst_file,
@@ -17830,6 +17865,10 @@ class NmrDpUtility:
                                 _ar['file_type'] = valid_types[0]
                                 if distict:
                                     _ar['original_file_name'] = file_name
+
+                                if manually_selected:
+                                    _ar['original_file_name'] = os.path.basename(dst_file)
+
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
@@ -17840,6 +17879,10 @@ class NmrDpUtility:
                                 _ar['file_type'] = 'nm-res-xpl'
                                 if distict:
                                     _ar['original_file_name'] = file_name
+
+                                if manually_selected:
+                                    _ar['original_file_name'] = os.path.basename(dst_file)
+
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
@@ -17850,6 +17893,10 @@ class NmrDpUtility:
                                 _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
                                 if distict:
                                     _ar['original_file_name'] = file_name
+
+                                if manually_selected:
+                                    _ar['original_file_name'] = os.path.basename(dst_file)
+
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
@@ -17862,6 +17909,10 @@ class NmrDpUtility:
                                 _ar['file_type'] = 'nm-res-xpl'
                                 if distict:
                                     _ar['original_file_name'] = file_name
+
+                                if manually_selected:
+                                    _ar['original_file_name'] = os.path.basename(dst_file)
+
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
@@ -17873,6 +17924,10 @@ class NmrDpUtility:
                                 _ar['file_type'] = 'nm-res-cha'
                                 if distict:
                                     _ar['original_file_name'] = file_name
+
+                                if manually_selected:
+                                    _ar['original_file_name'] = os.path.basename(dst_file)
+
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
@@ -17883,6 +17938,9 @@ class NmrDpUtility:
                                 _ar['file_type'] = valid_types[0]
                                 if distict:
                                     _ar['original_file_name'] = file_name
+
+                                if manually_selected:
+                                    _ar['original_file_name'] = os.path.basename(dst_file)
 
                                 err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                     "@todo: It needs to be split properly."
@@ -17902,6 +17960,9 @@ class NmrDpUtility:
                             if distict:
                                 _ar['original_file_name'] = file_name
 
+                            if manually_selected:
+                                _ar['original_file_name'] = os.path.basename(dst_file)
+
                             err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                                 "@todo: It needs to be reviewed."
 
@@ -17919,6 +17980,9 @@ class NmrDpUtility:
                             _ar['file_type'] = valid_types[0]
                             if distict:
                                 _ar['original_file_name'] = file_name
+
+                            if manually_selected:
+                                _ar['original_file_name'] = os.path.basename(dst_file)
 
                             err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                                 "@todo: It needs to be reviewed."
@@ -34701,7 +34765,6 @@ class NmrDpUtility:
             return True
 
         ar_file_path_list = 'atypical_restraint_file_path_list'
-
         if ar_file_path_list not in self.__inputParamDict:
             return True
 
@@ -35086,7 +35149,8 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
+            if file_type in ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax')\
+               or file_type.startswith('nm-pea'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -35111,7 +35175,7 @@ class NmrDpUtility:
 
             file_name = file_name.lower()
 
-            if 'dist_restraint' in content_subtype.keys():
+            if content_subtype is not None and 'dist_restraint' in content_subtype.keys():
                 if any(k in file_name for k in hint_for_noe_dist) and not any(k in file_name for k in hint_for_any_dist):
                     ar_file_order.append((input_source, ar, file_size))
                 else:
@@ -35835,6 +35899,74 @@ class NmrDpUtility:
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-bar':
+                reader = BareMRReader(self.__verbose, self.__lfh,
+                                      self.__representative_model_id,
+                                      self.__representative_alt_id,
+                                      self.__mr_atom_name_mapping,
+                                      self.__cR, self.__caC,
+                                      self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = BareMRReader(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__representative_alt_id,
+                                              self.__mr_atom_name_mapping,
+                                              self.__cR, self.__caC,
+                                              self.__ccU, self.__csStat, self.__nefT,
+                                              reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate the restraint file (Bare WSV/TSV/CSV) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()

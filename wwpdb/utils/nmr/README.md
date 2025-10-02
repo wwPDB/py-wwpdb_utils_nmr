@@ -316,6 +316,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-amb`|`nm-res-amb`|`nmr-restraints` / `amber`|Restraint file in AMBER format
 `nm-res-ari`|`nm-res-ari`|`nmr-restraints` / `aria`|Restraint file in ARIA format
 `nm-res-arx`|**internal use**|`nmr-restraints` / `aria`|Restraint file in ARIA XML format
+`nm-res-bar`|**internal use**|`nmr-restraints` / `any`|Bare WSV/TSV/CSV restraint file with a header
 `nm-res-bio`|`nm-res-bio`|`nmr-restraints` / `biosym`|Restraint file in BIOSYM format
 `nm-aux-cha`|`nm-aux-cha`|`nmr-restraints` / `any`|Topology file in CHARMM/CRD format
 `nm-res-cha`|`nm-res-cha`|`nmr-restraints` / `charmm`|Restraint file in CHARMM format

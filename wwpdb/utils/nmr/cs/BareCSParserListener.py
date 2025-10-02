@@ -316,6 +316,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 value_uncertainty = self.anySelection[idx]
                                 if isinstance(value_uncertainty, float):
                                     value_uncertainties.append(value_uncertainty)
+                                elif isinstance(value_uncertainty, int):
+                                    value_uncertainties.append(float(value_uncertainty))
                                 else:
                                     value_uncertainties.append(None)
                         elif order == 'occupancy':
@@ -323,6 +325,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 occupancy = self.anySelection[idx]
                                 if isinstance(occupancy, float):
                                     occupancies.append(occupancy)
+                                elif isinstance(value_uncertainty, int):
+                                    occupancies.append(float(occupancy))
                                 else:
                                     occupancies.append(None)
                         elif order == 'figure_of_merit':
@@ -330,6 +334,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 figure_of_merit = self.anySelection[idx]
                                 if isinstance(figure_of_merit, float):
                                     figure_of_merits.append(figure_of_merit)
+                                elif isinstance(value_uncertainty, int):
+                                    figure_of_merits.append(float(figure_of_merit))
                                 else:
                                     figure_of_merits.append(None)
                         elif order == 'details':
@@ -412,6 +418,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 value_uncertainty = self.anySelection[idx]
                                 if isinstance(value_uncertainty, float):
                                     value_uncertainties.append(value_uncertainty)
+                                elif isinstance(value_uncertainty, int):
+                                    value_uncertainties.append(float(value_uncertainty))
                                 else:
                                     value_uncertainties.append(None)
                         elif order == 'occupancy':
@@ -419,6 +427,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 occupancy = self.anySelection[idx]
                                 if isinstance(occupancy, float):
                                     occupancies.append(occupancy)
+                                elif isinstance(occupancy, int):
+                                    occupancies.append(float(occupancy))
                                 else:
                                     occupancies.append(None)
                         elif order == 'figure_of_merit':
@@ -426,6 +436,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 figure_of_merit = self.anySelection[idx]
                                 if isinstance(figure_of_merit, float):
                                     figure_of_merits.append(figure_of_merit)
+                                elif isinstance(figure_of_merit, int):
+                                    figure_of_merits.append(float(figure_of_merit))
                                 else:
                                     figure_of_merits.append(None)
                         elif order == 'details':

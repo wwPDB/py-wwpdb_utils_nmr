@@ -6573,7 +6573,7 @@ class CharmmMRParserListener(ParseTreeListener):
         if hint is not None:
             if hint.isupper() != chainId.isupper() and hint == chainId.upper():
                 chainId = hint
-            if str.isdigit() and not hint.isdigit() and indexToLetter(int(str) - 1) == hint:
+            if chainId.isdigit() and not hint.isdigit() and indexToLetter(int(chainId) - 1) == hint:
                 chainId = hint
         return chainId
 

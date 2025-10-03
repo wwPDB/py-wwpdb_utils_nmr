@@ -6307,6 +6307,36 @@ def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None
     return False
 
 
+def isDefinedSegmentRestraint(atoms: List[dict]) -> bool:
+    """ Return whether inter-chain restraint matches condition defined by 'segment_id' attribute.
+    """
+
+    if len(atoms) != 2 or any('segment_id' not in atom or atom['segment_id'] in emptyValue for atom in atoms):
+        return False
+
+    segmentId1 = _segmentId1 = atoms[0]['segment_id']
+    segmentId2 = _segmentId2 = atoms[1]['segment_id']
+
+    chainId1 = atoms[0]['chain_id']
+    chainId2 = atoms[1]['chain_id']
+
+    if segmentId1 == segmentId2:
+        return chainId1 != chainId2
+
+    negate1 = segmentId1.startswith('not ')
+    negate2 = segmentId2.startswith('not ')
+
+    if negate1:
+        _segmentId1 = segmentId1[4:]
+    if negate2:
+        _segmentId2 = segmentId2[4:]
+
+    if negate1 == negate2:
+        return False if negate1 else chainId1 == chainId2
+
+    return chainId1 == chainId2 and _segmentId1 == _segmentId2
+
+
 def isDefinedInterChainRestraint(atoms: List[dict], keyword: str, symmetric: str, polySeq: Optional[List[dict]] = None) -> bool:
     """ Return whether inter-chain restraint matches condition defined by a given keyword.
         Supported keywords: 'intra', 'inter', and 'i_i+1', 'i_i+2', etc.

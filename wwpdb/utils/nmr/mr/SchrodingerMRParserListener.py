@@ -40,6 +40,7 @@ try:
                                                        hasInterChainRestraint,
                                                        isIdenticalRestraint,
                                                        isLongRangeRestraint,
+                                                       isDefinedSegmentRestraint,
                                                        isAmbigAtomSelection,
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
@@ -139,6 +140,7 @@ except ImportError:
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
                                            isLongRangeRestraint,
+                                           isDefinedSegmentRestraint,
                                            isAmbigAtomSelection,
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
@@ -2391,6 +2393,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
+                    if isDefinedSegmentRestraint(atoms):
+                        continue
                     if isIdenticalRestraint(atoms, self.__nefT, assert_uniq_segment_id):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
@@ -3221,7 +3225,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                and 'segment_id' in self.atomSelectionSet[0][0] and 'segment_id' in self.atomSelectionSet[1][0]\
                and self.atomSelectionSet[0][0]['segment_id'] != self.atomSelectionSet[1][0]['segment_id']\
                and 'assert_uniq_segment_id' not in self.reasonsForReParsing:
-                self.reasonsForReParsing['has_uniq_seqment_id'] = True
+                self.reasonsForReParsing['assert_uniq_segment_id'] = True
             assert_uniq_segment_id = self.__reasons is not None and 'assert_uniq_segment_id' in self.__reasons
 
             for i in range(0, len(self.atomSelectionSet), 2):
@@ -3235,6 +3239,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
+                    if isDefinedSegmentRestraint(atoms):
+                        continue
                     if isIdenticalRestraint(atoms, self.__nefT, assert_uniq_segment_id):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
@@ -7266,6 +7272,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     segment_id = atomSelection[0]['segment_id']
                     for _atom in refAtomSelection:
                         _atom['segment_id'] = segment_id
+                    _factor['atom_selection'] = refAtomSelection
 
         _atomSelection = []
         for _atom, _atom_ in zip(refAtomSelection, _factor['atom_selection']):
@@ -9084,44 +9091,52 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                         "The 'not' clause has no effect.")
 
                 elif 'atom_selection' not in self.factor:
-                    self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
 
-                    if 'atom_selection' in self.factor:
-                        _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
-                        for atom in _refAtomSelection:
-                            if 'is_poly' in atom:
-                                del atom['is_poly']
-                            if 'auth_atom_id' in atom:
-                                del atom['auth_atom_id']
-                            if 'segment_id' in atom:
-                                del atom['segment_id']
+                    if len(self.factor) <= 3 and 'chain_id' in self.factor and len(self.factor['chain_id']) == 0\
+                       and 'alt_chain_id' in self.factor:
+                        self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
+                        for atom in self.factor['atom_selection']:
+                            atom['segment_id'] = 'not ' + atom['segment_id']
 
-                        try:
+                    else:
+                        self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
 
-                            _atomSelection =\
-                                self.__cR.getDictListWithFilter('atom_site',
-                                                                AUTH_ATOM_DATA_ITEMS,
-                                                                [{'name': self.__modelNumName, 'type': 'int',
-                                                                  'value': self.__representativeModelId},
-                                                                 {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': (self.__representativeAltId,)}
-                                                                 ])
+                        if 'atom_selection' in self.factor:
+                            _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                            for atom in _refAtomSelection:
+                                if 'is_poly' in atom:
+                                    del atom['is_poly']
+                                if 'auth_atom_id' in atom:
+                                    del atom['auth_atom_id']
+                                if 'segment_id' in atom:
+                                    del atom['segment_id']
 
-                        except Exception as e:
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
+                            try:
 
-                        self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+                                _atomSelection =\
+                                    self.__cR.getDictListWithFilter('atom_site',
+                                                                    AUTH_ATOM_DATA_ITEMS,
+                                                                    [{'name': self.__modelNumName, 'type': 'int',
+                                                                      'value': self.__representativeModelId},
+                                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                                      'enum': (self.__representativeAltId,)}
+                                                                     ])
 
-                        if len(self.factor['atom_selection']) == 0:
+                            except Exception as e:
+                                if self.__verbose:
+                                    self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
+
+                            self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+
+                            if len(self.factor['atom_selection']) == 0:
+                                self.factor['atom_id'] = [None]
+                                self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                                "The 'not' clause has no effect.")
+
+                        else:
                             self.factor['atom_id'] = [None]
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             "The 'not' clause has no effect.")
-
-                    else:
-                        self.factor['atom_id'] = [None]
-                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                        "The 'not' clause has no effect.")
 
                 else:
 

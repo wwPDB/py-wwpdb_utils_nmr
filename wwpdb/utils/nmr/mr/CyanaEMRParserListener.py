@@ -5944,7 +5944,7 @@ class CyanaEMRParserListener(ParseTreeListener):
             target = self.numberSelection[0]
             error = abs(self.numberSelection[1])
             weight = self.numberSelection[2]
-            orientation = int(str(ctx.Integer(0)))
+            orientation = int(str(ctx.Integer()))
 
             if weight < 0.0:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -6279,7 +6279,7 @@ class CyanaEMRParserListener(ParseTreeListener):
             target = self.numberSelection[0]
             error = abs(self.numberSelection[1])
             weight = self.numberSelection[2]
-            orientation = int(str(ctx.Integer(0)))
+            orientation = int(str(ctx.Integer()))
 
             if weight < 0.0:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -7471,7 +7471,7 @@ class CyanaEMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CyanaEMRParser#gen_res_num.
     def exitGen_res_num(self, ctx: CyanaEMRParser.Gen_res_numContext):
         if ctx.Integer():
-            self.genResNumSelection.append((int(str(ctx.Ingeter())), None))
+            self.genResNumSelection.append((int(str(ctx.Integer())), None))
 
         elif ctx.Capital_integer():
             self.genResNumSelection.append((int(str(ctx.Capital_integer())[1:]), str(ctx.Capital_integer())[0]))

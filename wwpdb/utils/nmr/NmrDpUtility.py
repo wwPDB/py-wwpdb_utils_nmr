@@ -62183,7 +62183,7 @@ class NmrDpUtility:
                     row[0], row[1] = file_name_dict[file_name], file_name if len(file_name) > 0 else None
                     sf_allowed_tags = self.sf_allowed_tags[file_type][content_subtype]
                     if 'Constraint_file_ID' in sf_allowed_tags:
-                        sf.add_tag('Constraint_file_ID', file_name_dict[file_name])
+                        sf.add_tag('Constraint_file_ID', file_name_dict[file_name], update=True)
                     _name = get_first_sf_tag(sf, 'Sf_framecode').split('_')[0]
                     _name_ = _name.upper()
                     if _name == _name_:
@@ -62203,7 +62203,7 @@ class NmrDpUtility:
                     if 'Block_ID' in sf_allowed_tags:
                         block_id += 1
                         _block_id = str(block_id)
-                        sf.add_tag('Block_ID', _block_id)
+                        sf.add_tag('Block_ID', _block_id, update=True)
                         row[5] = _block_id
                     constraint_type = sf_item['constraint_type']
                     if constraint_type == 'planarity':
@@ -62342,11 +62342,11 @@ class NmrDpUtility:
                                   constraintType=details)
 
                 file_id += 1
-                sf.add_tag('Constraint_file_ID', file_id)
+                sf.add_tag('Constraint_file_ID', file_id, update=True)
 
                 block_id += 1
                 _block_id = str(block_id)
-                sf.add_tag('Block_ID', _block_id)
+                sf.add_tag('Block_ID', _block_id, update=True)
 
                 row = [None] * len(tags)
                 row[0], row[1], row[5] = file_id, original_file_name, _block_id

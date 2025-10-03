@@ -7443,7 +7443,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         def get_str_pattern(_ctx, upper=False):
             ret, alt, unq = [], [], []
 
-            s_idx = m_idx = 0
+            s_idx = m_idx = i_idx = 0
 
             while _ctx.Simple_names(m_idx):
                 _val = _val_ = str(_ctx.Simple_names(m_idx))
@@ -7462,6 +7462,14 @@ class SchrodingerMRParserListener(ParseTreeListener):
                 if s_idx == 0:
                     unq.append(_val_)
                 s_idx += 1
+
+            while _ctx.Integer(i_idx):
+                _val = _val_ = str(_ctx.Integer(i_idx))
+                ret.append(_val)
+                alt.append(_val_)
+                if i_idx == 0:
+                    unq.append(_val_)
+                i_idx += 1
 
             return ret, alt, unq
 

@@ -130,6 +130,7 @@ try:
                                            rdcBbPairCode,
                                            zincIonCode,
                                            calciumIonCode,
+                                           indexToLetter,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -260,6 +261,7 @@ except ImportError:
                                rdcBbPairCode,
                                zincIonCode,
                                calciumIonCode,
+                               indexToLetter,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -13284,8 +13286,11 @@ class XplorMRParserListener(ParseTreeListener):
             _chainId = self.__reasons['segment_id_mismatch'][chainId]
             if _chainId is not None:
                 chainId = _chainId
-        if hint is not None and hint.isupper() != chainId.isupper() and hint == chainId.upper():
-            chainId = hint
+        if hint is not None:
+            if hint.isupper() != chainId.isupper() and hint == chainId.upper():
+                chainId = hint
+            if str.isdigit() and not hint.isdigit() and indexToLetter(int(str) - 1) == hint:
+                chainId = hint
         return chainId
 
     def updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool):
@@ -15369,6 +15374,18 @@ class XplorMRParserListener(ParseTreeListener):
                         else:
                             self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                             f"The symbol {symbol_name!r} is not defined.")
+                    if ctx.Integer(0):
+                        chainId = str(ctx.Integer(0))
+                        self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
+                                                   if ps['auth_chain_id'] == self.getRealChainId(chainId, ps['auth_chain_id'])]
+                        if self.__hasNonPolySeq:
+                            for np in self.__nonPolySeq:
+                                _chainId = np['auth_chain_id']
+                                if _chainId == self.getRealChainId(chainId, _chainId) and _chainId not in self.factor['chain_id']:
+                                    self.factor['chain_id'].append(_chainId)
+                        self.factor['segment_id'] = chainId
+                        if self.factor['chain_id'] != [chainId]:
+                            self.factor['alt_chain_id'] = chainId
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                             if chainId[0] in self.__fibril_chain_ids:

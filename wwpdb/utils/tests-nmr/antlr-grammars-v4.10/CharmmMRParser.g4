@@ -344,7 +344,7 @@ factor:
 	Recall Integer |
 	(ByNumber | Residue) (Integers | Integer (Colon Integer)? | Symbol_name) |
 	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
-	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name) |
+	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name | Integer) |
 	(ISeg | IRes | IGroup) Integer Colon Integer;
 
 /* number expression in assign */

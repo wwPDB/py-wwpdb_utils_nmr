@@ -146,7 +146,7 @@ factor:
 	Molecule_entrynum Integer |
 	Molecule_atoms (IntRange | Integer | ((Equ_op | Lt_op | Gt_op | Leq_op | Geq_op) Integer)) |
 	Molecule_weight (IntRange | Integer | ((Equ_op | Lt_op | Gt_op | Leq_op | Geq_op) Integer)) |
-	(Chain | Chain_name) ((Simple_names | Simple_name) (Comma (Simple_names | Simple_name))*) |
+	(Chain | Chain_name) ((Simple_names | Simple_name | Integer) (Comma (Simple_names | Simple_name | Integer))*) |
 	(Residue | Residue_name_or_number) ((IntRange | Integer | (Equ_op | Lt_op | Gt_op | Leq_op | Geq_op) Integer) | ((Simple_names | Simple_name) (Comma (Simple_names | Simple_name))*)) |
 	Residue_ptype ((Simple_names | Simple_name) (Comma (Simple_names | Simple_name))*) |
 	Residue_mtype ((Simple_names | Simple_name) (Comma (Simple_names | Simple_name))*) |

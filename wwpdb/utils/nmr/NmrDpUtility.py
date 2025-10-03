@@ -224,6 +224,7 @@
 # 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for bare PDB file as AMBER/CHARMM/GROMACS topology (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add support for ARIA NOE restraint (XML) file. file type: 'nm-res-arx' (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file (DAOTHER-7829, 9785, NMR data remediation)
+# 03-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints as 'nm-res-cye' (DAOTHER-7829, 9785, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -391,6 +392,7 @@ try:
     from wwpdb.utils.nmr.mr.CharmmMRReader import CharmmMRReader
     from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
     from wwpdb.utils.nmr.mr.CyanaMRReader import CyanaMRReader
+    from wwpdb.utils.nmr.mr.CyanaEMRReader import CyanaEMRReader
     from wwpdb.utils.nmr.mr.CyanaNOAReader import CyanaNOAReader
     from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
     from wwpdb.utils.nmr.mr.GromacsMRReader import GromacsMRReader
@@ -566,6 +568,7 @@ except ImportError:
     from nmr.mr.CharmmMRReader import CharmmMRReader
     from nmr.mr.CnsMRReader import CnsMRReader
     from nmr.mr.CyanaMRReader import CyanaMRReader
+    from nmr.mr.CyanaEMRReader import CyanaEMRReader
     from nmr.mr.CyanaNOAReader import CyanaNOAReader
     from nmr.mr.DynamoMRReader import DynamoMRReader
     from nmr.mr.GromacsMRReader import GromacsMRReader
@@ -728,26 +731,28 @@ comment_code_mixed_set = {'#', '!'}
 default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
                             'tautomer_per_model': []}
 
-linear_mr_file_types = ('nm-res-bio', 'nm-res-cya', 'nm-res-ros', 'nm-res-syb')
+linear_mr_file_types = ('nm-res-bio', 'nm-res-cya', 'nm-res-cye', 'nm-res-ros',
+                        'nm-res-syb')
 
 retrial_mr_file_types = ('nm-res-ari', 'nm-res-arx', 'nm-res-bio', 'nm-res-cns',
-                         'nm-res-cha', 'nm-res-cya', 'nm-res-dyn', 'nm-res-isd',
-                         'nm-res-noa', 'nm-res-ros', 'nm-res-sch', 'nm-res-syb',
-                         'nm-res-xpl')
+                         'nm-res-cha', 'nm-res-cya', 'nm-res-cye', 'nm-res-dyn',
+                         'nm-res-isd', 'nm-res-noa', 'nm-res-ros', 'nm-res-sch',
+                         'nm-res-syb', 'nm-res-xpl')
 
 parsable_mr_file_types = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
                           'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar',
                           'nm-res-bio', 'nm-res-cha', 'nm-res-cns', 'nm-res-cya',
-                          'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-noa',
-                          'nm-res-sch', 'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
+                          'nm-res-cye', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd',
+                          'nm-res-noa', 'nm-res-sch', 'nm-res-syb', 'nm-res-ros',
+                          'nm-res-xpl')
 
 archival_mr_file_types = ('nmr-star',
                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
                           'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar',
                           'nm-res-bio', 'nm-res-cha', 'nm-res-cns', 'nm-res-cya',
-                          'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-noa',
-                          'nm-res-oth', 'nm-res-sax', 'nm-res-sch', 'nm-res-syb',
-                          'nm-res-ros', 'nm-res-xpl')
+                          'nm-res-cye', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd',
+                          'nm-res-noa', 'nm-res-oth', 'nm-res-sax', 'nm-res-sch',
+                          'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 parsable_pk_file_types = ('nm-aux-xea',
                           'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
@@ -8402,7 +8407,7 @@ class NmrDpUtility:
                                 if idx >= self.mr_max_spacer_lines:
                                     break
 
-                    if ar['file_type'] in ('nm-res-cya', 'nm-res-oth'):
+                    if ar['file_type'] in ('nm-res-cya', 'nm-res-cye', 'nm-res-oth'):
 
                         atom_names = 0
 
@@ -11313,8 +11318,8 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         light_mr_file_types = ('nm-res-ari', 'nm-res-bar', 'nm-res-bio', 'nm-res-cya',
-                               'nm-res-dyn', 'nm-res-isd', 'nm-res-noa', 'nm-res-syb',
-                               'nm-res-ros', 'nm-res-oth')
+                               'nm-res-cye', 'nm-res-dyn', 'nm-res-isd', 'nm-res-noa',
+                               'nm-res-syb', 'nm-res-ros', 'nm-res-oth')
 
         for ar in self.__inputParamDict[ar_file_path_list]:
             file_path = ar['file_name']
@@ -12325,6 +12330,34 @@ class NmrDpUtility:
 
                     has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                     has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                    if (has_lexer_error or has_parser_error) and file_type in ('nm-res-cya', 'nm-res-cye'):
+                        _file_type = 'nm-res-cye' if file_type == 'nm-res-cya' else 'nm-res-cya'
+                        _reader = self.__getSimpleFileReader(_file_type, self.__verbose, sll_pred=sll_pred)
+
+                        _listener, _parser_err_listener, _lexer_err_listener = _reader.parse(file_path, None)
+
+                        if _listener is not None and _file_type in retrial_mr_file_types:
+                            _reasons = _listener.getReasonsForReparsing()
+
+                            if _reasons is not None:
+                                _reader = self.__getSimpleFileReader(_file_type, self.__verbose, sll_pred=sll_pred, reasons=reasons)
+
+                                _listener, _parser_err_listener, _lexer_err_listener = _reader.parse(file_path, None)
+
+                        _has_lexer_error = _lexer_err_listener is not None and _lexer_err_listener.getMessageList() is not None
+                        _has_parser_error = _parser_err_listener is not None and _parser_err_listener.getMessageList() is not None
+
+                        _content_subtype = _listener.getContentSubtype() if _listener is not None else None
+                        if _content_subtype is not None and len(_content_subtype) == 0:
+                            content_subtype = None
+
+                        if not _has_lexer_error and not _has_parser_error and _content_subtype is not None:
+                            ar['file_type'] = _file_type
+                            listener, parser_err_listener, lexer_err_listener =\
+                                _listener, _parser_err_listener, _lexer_err_listener
+                            has_lexer_error = has_parser_error = False
+
                     content_subtype = listener.getContentSubtype() if listener is not None else None
                     if content_subtype is not None and len(content_subtype) == 0:
                         content_subtype = None
@@ -12465,7 +12498,7 @@ class NmrDpUtility:
                                 has_hbond_restraint = 'hbond_restraint' in content_subtype
                                 has_ssbond_restraint = 'ssbond_restraint' in content_subtype
 
-                                if file_type == 'nm-res-cya' and has_dist_restraint:
+                                if file_type in ('nm-res-cya', 'nm-res-cye') and has_dist_restraint:
                                     ar['dist_type'] = listener.getTypeOfDistanceRestraints()
                                 if file_type == 'nm-res-amb':
                                     ar['has_comments'] = listener.hasComments()
@@ -13171,12 +13204,16 @@ class NmrDpUtility:
                     elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                         _file_type = 'nm-res-xpl'
 
+                    elif len_valid_types == 2 and 'nm-res-cye' in valid_types:
+                        _file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cye')
+
                     elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
-                        _file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+                        _file_type = next(valid_type for valid_type in valid_types if valid_type not in ('nm-res-cya', 'nm-res-cye'))
 
                     elif len_valid_types == 3:
                         set_valid_types = set(valid_types)
                         if set_valid_types in ({'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'},
+                                               {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'},
                                                {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                             _file_type = 'nm-res-xpl'
                         if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
@@ -13383,6 +13420,15 @@ class NmrDpUtility:
                                    file_ext=self.__retrieveOriginalFileExtensionOfCyanaMrFile())
             reader.setRemediateMode(self.__remediation_mode)
             # do not use SLL prediction mode for CyanaMRReader
+            # reader.setSllPredMode(sll_pred)
+            return reader
+        if file_type == 'nm-res-cye':
+            reader = CyanaEMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                    self.__ccU, self.__csStat, self.__nefT,
+                                    reasons,
+                                    file_ext=self.__retrieveOriginalFileExtensionOfCyanaMrFile())
+            reader.setRemediateMode(self.__remediation_mode)
+            # do not use SLL prediction mode for CyanaEMRReader
             # reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-dyn':
@@ -14350,7 +14396,8 @@ class NmrDpUtility:
 
         if prev_input is not None and comment_pattern.match(prev_input)\
            and len_valid_types > 0 and valid_types[0] not in parsable_pk_file_types\
-           and file_type != 'nm-res-cya' and 'nm-res-cya' not in valid_types:  # CYANA MR grammar is lax to check comment
+           and file_type not in ('nm-res-cya', 'nm-res-cye') and 'nm-res-cya' not in valid_types and 'nm-res-cye' not in valid_types:
+            # CYANA MR grammar is lax to check comment
 
             try:
 
@@ -14395,12 +14442,16 @@ class NmrDpUtility:
         elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
             file_type = 'nm-res-xpl'
 
+        elif len_valid_types == 2 and 'nm-res-cye' in valid_types:
+            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cye')
+
         elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
-            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+            file_type = next(valid_type for valid_type in valid_types if valid_type not in ('nm-res-cya', 'nm-res-cye'))
 
         elif len_valid_types == 3:
             set_valid_types = set(valid_types)
             if set_valid_types in ({'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'},
+                                   {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'},
                                    {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                 file_type = 'nm-res-xpl'
             if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
@@ -14798,12 +14849,16 @@ class NmrDpUtility:
         elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
             file_type = 'nm-res-xpl'
 
+        elif len_valid_types == 2 and 'nm-res-cye' in valid_types:
+            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cye')
+
         elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
-            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+            file_type = next(valid_type for valid_type in valid_types if valid_type not in ('nm-res-cya', 'nm-res-cye'))
 
         elif len_valid_types == 3:
             set_valid_types = set(valid_types)
             if set_valid_types in ({'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'},
+                                   {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'},
                                    {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                 file_type = 'nm-res-xpl'
             if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
@@ -15333,12 +15388,16 @@ class NmrDpUtility:
         elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
             file_type = 'nm-res-xpl'
 
+        elif len_valid_types == 2 and 'nm-res-cye' in valid_types:
+            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cye')
+
         elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
-            file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+            file_type = next(valid_type for valid_type in valid_types if valid_type not in ('nm-res-cya', 'nm-res-cye'))
 
         elif len_valid_types == 3:
             set_valid_types = set(valid_types)
             if set_valid_types in ({'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'},
+                                   {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'},
                                    {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                 file_type = 'nm-res-xpl'
             if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
@@ -15538,7 +15597,7 @@ class NmrDpUtility:
                 genuine_type.append(_genuine_type)
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
-        # """ conflict with nm-res-cya (2kcp)
+        # """ conflict with nm-res-cya, nm-res-cye (2kcp)
         # if (not is_valid or multiple_check) and file_type != 'nm-aux-cha':
         #     _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
         #         self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-cha')
@@ -15660,6 +15719,17 @@ class NmrDpUtility:
         if (not is_valid or multiple_check) and file_type not in ('nm-res-cya', 'nm-pea-any'):
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None and 'nm-res-noa' not in genuine_type:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type not in ('nm-res-cye', 'nm-pea-any'):
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cye')
 
             is_valid |= _is_valid
             err += _err
@@ -17041,15 +17111,23 @@ class NmrDpUtility:
 
                             mr_part_paths.append({_ar['file_type']: dst_file})
 
+                        elif len_valid_types == 2 and 'nm-res-cye' in valid_types:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cye')
+                            split_file_list.append(_ar)
+
+                            mr_part_paths.append({_ar['file_type']: dst_file})
+
                         elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                             _ar['file_name'] = dst_file
-                            _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+                            _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type not in ('nm-res-cya', 'nm-res-cye'))
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_ar['file_type']: dst_file})
 
                         elif len_valid_types == 3\
                                 and (set(valid_types) == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}
+                                     or set(valid_types) == {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}
                                      or set(valid_types) == {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-res-xpl'
@@ -17884,9 +17962,21 @@ class NmrDpUtility:
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
                                                       'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
 
+                            elif len_valid_types == 2 and 'nm-res-cye' in valid_types:
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cye')
+
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
+
+                                split_file_list.append(_ar)
+
+                                mr_part_paths.append({_ar['file_type']: _dst_file,
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+
                             elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
-                                _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+                                _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type not in ('nm-res-cya', 'nm-res-cye'))
 
                                 if distinct:
                                     _ar['original_file_name'] = file_name
@@ -17898,6 +17988,7 @@ class NmrDpUtility:
 
                             elif len_valid_types == 3\
                                     and (set(valid_types) == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}
+                                         or set(valid_types) == {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}
                                          or set(valid_types) == {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
@@ -35095,7 +35186,7 @@ class NmrDpUtility:
 
                                         deal_aux_warn_message(file_name, listener, False)
 
-            elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
+            elif file_type in ('nm-res-cya', 'nm-res-cye') and content_subtype is not None and 'dist_restraint' in content_subtype:
                 if 'is_valid' in ar and ar['is_valid']:
                     if ar['dist_type'] in ('upl', 'both'):
                         cyanaUplDistRest += 1
@@ -36317,6 +36408,120 @@ class NmrDpUtility:
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons, upl_or_lol, cya_file_ext)
+                        reader.setRemediateMode(self.__remediation_mode)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    # support content subtype change during MR validation with the coordinates
+                    input_source.setItemValue('content_subtype', listener.getContentSubtype())
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate the restraint file (CYANA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-cye':
+                has_dist_restraint = 'dist_restraint' in content_subtype
+
+                upl_or_lol = None
+                if has_dist_restraint:
+                    dist_type = ar['dist_type']
+                    if cyanaLolDistRest == 0 and dist_type == 'upl':
+                        upl_or_lol = 'upl_only'
+                    elif cyanaUplDistRest == 0 and dist_type == 'lol':
+                        upl_or_lol = 'lol_only'
+                    elif dist_type == 'upl':
+                        upl_or_lol = 'upl_w_lol'
+                    elif dist_type == 'lol':
+                        upl_or_lol = 'lol_w_upl'
+                    else:
+                        upl_or_lol = None
+
+                cya_file_ext = self.__retrieveOriginalFileExtensionOfCyanaMrFile()
+
+                reader = CyanaEMRReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__representative_alt_id,
+                                        self.__mr_atom_name_mapping,
+                                        self.__cR, self.__caC,
+                                        self.__ccU, self.__csStat, self.__nefT,
+                                        reasons, upl_or_lol, cya_file_ext)
+                reader.setRemediateMode(self.__remediation_mode)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if None not in (reasons, _reasons):
+
+                        reader = CyanaEMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                None, upl_or_lol, cya_file_ext)
+                        reader.setRemediateMode(self.__remediation_mode)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = CyanaEMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons, upl_or_lol, cya_file_ext)
                         reader.setRemediateMode(self.__remediation_mode)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,

@@ -316,18 +316,19 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-amb`|`nm-res-amb`|`nmr-restraints` / `amber`|Restraint file in AMBER format
 `nm-res-ari`|`nm-res-ari`|`nmr-restraints` / `aria`|Restraint file in ARIA format
 `nm-res-arx`|**internal use**|`nmr-restraints` / `aria`|Restraint file in ARIA XML format
-`nm-res-bar`|**internal use**|`nmr-restraints` / `any`|Bare WSV/TSV/CSV restraint file with a header
+`nm-res-bar`|**internal use**|`nmr-restraints` / `any`|Bare WSV/TSV/CSV distance restraint file with a header
 `nm-res-bio`|`nm-res-bio`|`nmr-restraints` / `biosym`|Restraint file in BIOSYM format
 `nm-aux-cha`|`nm-aux-cha`|`nmr-restraints` / `any`|Topology file in CHARMM/CRD format
 `nm-res-cha`|`nm-res-cha`|`nmr-restraints` / `charmm`|Restraint file in CHARMM format
 `nm-res-cns`|`nm-res-cns`|`nmr-restraints` / `cns`|Restraint file in CNS format
 `nm-res-cya`|`nm-res-cya`|`nmr-restraints` / `cyana`|Restraint file in CYANA format
+`nm-res-cye`|**internal use**|`nmr-restraints` / `cyana`|Restraint file in CYANA format (extended to allow concatenated notation of chain code and sequence code)
 `nm-res-dyn`|`nm-res-dyn`|`nmr-restraints` / `dynamo`|Restraint file in DYNAMO/PALES/TALOS format
 `nm-aux-gro`|`nm-aux-gro`|`nmr-restraints` / `any`|Topology file in GROMACS format
 `nm-res-gro`|`nm-res-gro`|`nmr-restraints` / `gromacs`|Restraint file in GROMACS format
 `nm-res-isd`|`nm-res-isd`|`nmr-restraints` / `isd`|Restraint file in ISD format
 `nm-res-noa`|**internal use**|`nmr-restraints` / `cyana`|Restraint file in CYANA NOA format
-`nm-aux-pdb`|**internal use**|`nmr-restraints` / `any`|Topology file in Bare PDB format
+`nm-aux-pdb`|**internal use**|`nmr-restraints` / `any`|Topology file in Bare PDB format for AMBER/CHARMM/GROMACS systems in case
 `nm-res-ros`|`nm-res-ros`|`nmr-restraints` / `rosetta`|Restraint file in ROSETTA format
 `nm-res-sch`|`nm-res-sch`|`nmr-restraints` / `schrodinger`|Restraint file in Schröginder/ASL format
 `nm-res-syb`|`nm-res-syb`|`nmr-restraints` / `sybyl`|Restraint file in SYBYL format

@@ -288,10 +288,10 @@ XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 
 XPLOR_ORIGIN_AXIS_COLS = (0, 1, 2, 3)
 
-XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'NAQ', 'NS1', 'OS', 'OS1', 'OAH', 'SLC', 'GD')
+XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'NAQ', 'NS1', 'ON', 'OS', 'OS1', 'OAH', 'SLC', 'GD')
 
 NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 'THR', 'HIS',
-                               'ILE', 'LEU', 'MET', 'R1A')
+                               'ILE', 'LEU', 'MET', 'R1A', '3X9')
 
 HEME_LIKE_RES_NAMES = ('HEM', 'HEB', 'HEC', 'MH0')
 

@@ -6215,6 +6215,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                 _factor['alt_atom_id'] = atomIds[0] + desc
                             elif compId == 'R1A':
                                 atomIds = ['O1']
+                            elif compId == '3X9':
+                                atomIds = ['OAH']
                             else:
                                 has_nx_anchor = False
 
@@ -6990,13 +6992,6 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     if 0 <= idx < len(ps['auth_seq_id']):
                         return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
         return seqId, None, False
-
-    def getRealChainId(self, chainId: str) -> str:
-        if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']:
-            _chainId = self.__reasons['segment_id_mismatch'][chainId]
-            if _chainId is not None:
-                chainId = _chainId
-        return chainId
 
     def updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool):
         if self.__reasons is not None or 'alt_chain_id' not in factor\

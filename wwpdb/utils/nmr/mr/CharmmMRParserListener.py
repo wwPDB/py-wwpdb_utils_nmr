@@ -6559,11 +6559,13 @@ class CharmmMRParserListener(ParseTreeListener):
                         return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
         return seqId, None, False
 
-    def getRealChainId(self, chainId: str) -> str:
+    def getRealChainId(self, chainId: str, hint: str = None) -> str:
         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']:
             _chainId = self.__reasons['segment_id_mismatch'][chainId]
             if _chainId is not None:
                 chainId = _chainId
+        if hint is not None and hint.isupper() != chainId.isupper() and hint == chainId.upper():
+            chainId = hint
         return chainId
 
     def updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool):
@@ -7123,11 +7125,11 @@ class CharmmMRParserListener(ParseTreeListener):
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
-                                               if ps['auth_chain_id'] == self.getRealChainId(chainId)]
+                                               if ps['auth_chain_id'] == self.getRealChainId(chainId, ps['auth_chain_id'])]
                     if self.__hasNonPolySeq:
                         for np in self.__nonPolySeq:
                             _chainId = np['auth_chain_id']
-                            if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
+                            if _chainId == self.getRealChainId(chainId, _chainId) and _chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(_chainId)
                     if len(self.factor['chain_id']) > 0:
                         simpleNameIndex += 1
@@ -8335,11 +8337,11 @@ class CharmmMRParserListener(ParseTreeListener):
                             if len(chainId) == 0:
                                 return
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
-                                                   if ps['auth_chain_id'] == self.getRealChainId(chainId)]
+                                                   if ps['auth_chain_id'] == self.getRealChainId(chainId, ps['auth_chain_id'])]
                         if self.__hasNonPolySeq:
                             for np in self.__nonPolySeq:
                                 _chainId = np['auth_chain_id']
-                                if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
+                                if _chainId == self.getRealChainId(chainId, _chainId) and _chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(_chainId)
                         self.factor['segment_id'] = chainId
                         if self.factor['chain_id'] != [chainId]:

@@ -758,7 +758,7 @@ factor:
 	L_paren selection_expression R_paren |
 	All |
 	factor Around number_f |
-	Atom (Simple_names | Simple_name) (Integers | Integer) (Simple_names | Simple_name) |
+	Atom (Simple_names | Simple_name) (Integers | Integer) (Simple_names | Simple_name | Logical) |
 	Attribute Abs? Attr_properties Comparison_ops number_f |
 	BondedTo factor |
 	ByGroup factor |
@@ -767,7 +767,7 @@ factor:
 	Hydrogen |
 	Id Integer |
 	Known |
-	Name (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name) |
+	Name (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name | Logical) |
 	Not_op factor |
 	Point L_paren number_f Comma? number_f Comma? number_f R_paren Cut number_f |
 	Point L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren Cut number_f |

@@ -8126,6 +8126,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 _factor['alt_atom_id'] = atomIds[0] + desc
                             elif compId == 'R1A':
                                 atomIds = ['O1']
+                            elif compId == '3X9':
+                                atomIds = ['OAH']
                             else:
                                 has_nx_anchor = False
 
@@ -8912,11 +8914,13 @@ class CnsMRParserListener(ParseTreeListener):
                         return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
         return seqId, None, False
 
-    def getRealChainId(self, chainId: str) -> str:
+    def getRealChainId(self, chainId: str, hint: str = None) -> str:
         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']:
             _chainId = self.__reasons['segment_id_mismatch'][chainId]
             if _chainId is not None:
                 chainId = _chainId
+        if hint is not None and hint.isupper() != chainId.isupper() and hint == chainId.upper():
+            chainId = hint
         return chainId
 
     def updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool):
@@ -9565,11 +9569,11 @@ class CnsMRParserListener(ParseTreeListener):
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
-                                               if ps['auth_chain_id'] == self.getRealChainId(chainId)]
+                                               if ps['auth_chain_id'] == self.getRealChainId(chainId, ps['auth_chain_id'])]
                     if self.__hasNonPolySeq:
                         for np in self.__nonPolySeq:
                             _chainId = np['auth_chain_id']
-                            if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
+                            if _chainId == self.getRealChainId(chainId, _chainId) and _chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(_chainId)
                     if len(self.factor['chain_id']) > 0:
                         simpleNameIndex += 1
@@ -9674,6 +9678,31 @@ class CnsMRParserListener(ParseTreeListener):
                     self.factor['seq_id'] = list(_seqIdSelect)
 
                 _atomIdSelect = set()
+                if ctx.Logical():  # 7rno: ON
+                    atomId = str(ctx.Logical())
+                    for chainId in self.factor['chain_id']:
+                        ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                        if ps is None:
+                            continue
+                        for seqId in self.factor['seq_id']:
+                            if seqId in ps['auth_seq_id']:
+                                seqId, compId, _ = self.getRealSeqId(ps, seqId)
+                                # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                                if self.__ccU.updateChemCompDict(compId):
+                                    if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
+                                        _atomIdSelect.add(atomId)
+                    if self.__hasNonPolySeq:
+                        for chainId in self.factor['chain_id']:
+                            npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
+                            for np in npList:
+                                for seqId in self.factor['seq_id']:
+                                    if seqId in np['auth_seq_id']:
+                                        seqId, compId, _ = self.getRealSeqId(np, seqId, False)
+                                        # compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
+                                        if self.__ccU.updateChemCompDict(compId):
+                                            if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
+                                                _atomIdSelect.add(atomId)
+
                 if ctx.Simple_name(simpleNameIndex):
                     atomId = str(ctx.Simple_name(simpleNameIndex))
                     for chainId in self.factor['chain_id']:
@@ -10546,6 +10575,9 @@ class CnsMRParserListener(ParseTreeListener):
                         self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                         f"The symbol {symbol_name!r} is not defined.")
 
+                elif ctx.Logical():  # 7rno: ON
+                    self.factor['atom_id'] = [str(ctx.Logical())]
+
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor and __factor['atom_id'][0] is not None:
                         __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
@@ -11010,11 +11042,11 @@ class CnsMRParserListener(ParseTreeListener):
                             if len(chainId) == 0:
                                 return
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
-                                                   if ps['auth_chain_id'] == self.getRealChainId(chainId)]
+                                                   if ps['auth_chain_id'] == self.getRealChainId(chainId, ps['auth_chain_id'])]
                         if self.__hasNonPolySeq:
                             for np in self.__nonPolySeq:
                                 _chainId = np['auth_chain_id']
-                                if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
+                                if _chainId == self.getRealChainId(chainId, _chainId) and _chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(_chainId)
                         self.factor['segment_id'] = chainId
                         if self.factor['chain_id'] != [chainId]:

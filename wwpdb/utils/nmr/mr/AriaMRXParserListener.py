@@ -4257,6 +4257,8 @@ class AriaMRXParserListener(ParseTreeListener):
                         atomId = 'NE2'
                     elif compId == 'R1A':
                         atomId = 'O1'
+                    elif compId == '3X9':
+                        atomId = 'OAH'
 
                 elif self.__csStat.peptideLike(cifCompId):
                     atomId = 'CA'

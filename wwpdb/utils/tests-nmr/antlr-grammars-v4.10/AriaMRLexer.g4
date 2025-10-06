@@ -65,9 +65,9 @@ LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | 
 
 mode REF_SPEC_MODE;
 
-SPACE_RS:		[, \t]+ -> skip;
+SPACE_RS:		[\t]+ -> skip;
 
-RefSpecName:		~[, \t\r\n]+ ','? -> popMode;
+RefSpecName:		~[,\t\r\n]+ ','? -> popMode;
 
 RETURN_RS:		[\r\n]+ -> popMode;
 

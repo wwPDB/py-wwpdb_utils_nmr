@@ -21,18 +21,24 @@ options { tokenVocab=BareCSLexer; }
 bare_cs:
 	RETURN?
 	(
-	cs_raw_format |
+	cs_row_format |
 	RETURN
 	)*
 	EOF;
 
-cs_raw_format:
-	(Simple_name+ | Double_quote_string+) RETURN
-	cs_raw_list+;
+cs_row_format:
+	header
+	cs_row_list+;
 
-cs_raw_list:
+header:
+	column_name+ RETURN;
+
+cs_row_list:
 	any+ (RETURN | EOF);
 
-/* any data expression in peak list */
+/* any data expression in chemical shifts */
 any:	Float | Integer | Simple_name | Double_quote_float | Double_quote_integer | Double_quote_string;
 
+/* any column name of header */
+column_name:
+	Simple_name | Double_quote_string | Number_of_name;

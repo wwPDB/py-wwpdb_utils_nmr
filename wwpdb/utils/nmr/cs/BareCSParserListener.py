@@ -39,6 +39,9 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
     __col_name = None
     __col_order = None
 
+    # collection of column name
+    columnNameSelection = []
+
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
@@ -55,8 +58,20 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
     def exitBare_cs(self, ctx: BareCSParser.Bare_csContext):  # pylint: disable=unused-argument
         self.exit()
 
-    # Enter a parse tree produced by BareCSParser#cs_raw_format.
-    def enterCs_raw_format(self, ctx: BareCSParser.Cs_raw_formatContext):
+    # Enter a parse tree produced by BareCSParser#cs_row_format.
+    def enterCs_row_format(self, ctx: BareCSParser.Cs_row_formatContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BareCSParser#mr_row_format.
+    def exitCs_row_format(self, ctx: BareCSParser.Cs_row_formatContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BareCSParser#header.
+    def enterHeader(self, ctx: BareCSParser.HeaderContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BareCSParser#header.
+    def exitHeader(self, ctx: BareCSParser.HeaderContext):  # pylint: disable=unused-argument
 
         def is_half_spin_nuclei(atom_id: str) -> bool:
             """ Return whether nuclei of a given atom_id has a spin 1/2.
@@ -117,17 +132,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
             else:
                 self.__col_order.append('unknown')
 
-        if ctx.Simple_name(0):
-            i = 0
-            while ctx.Simple_name(i):
-                register_column_info(str(ctx.Simple_name(i)).upper())
-                i += 1
-
-        elif ctx.Double_quote_string(0):
-            i = 0
-            while ctx.Double_quote_string(i):
-                register_column_info(str(ctx.Double_quote_string(i)).strip('"').upper())
-                i += 1
+        for columnName in self.columnNameSelection:
+            register_column_info(columnName.upper())
 
         sparky_resonance_columns = ('GROUP', 'ATOM', 'NUC', 'SHIFT', 'SDEV')
         if all(col_name in self.__col_name for col_name in sparky_resonance_columns):
@@ -138,20 +144,17 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_line_num = 0
 
+        self.cur_subtype = 'chem_shift'
+
         self.chemShifts = 0
         self.offset = {}
 
-    # Exit a parse tree produced by BareCSParser#cs_raw_format.
-    def exitCs_raw_format(self, ctx: BareCSParser.Cs_raw_formatContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by BareCSParser#cs_raw_list.
-    def enterCs_raw_list(self, ctx: BareCSParser.Cs_raw_listContext):  # pylint: disable=unused-argument
-        self.cur_subtype = 'chem_shift'
+    # Enter a parse tree produced by BareCSParser#cs_row_list.
+    def enterCs_row_list(self, ctx: BareCSParser.Cs_row_listContext):  # pylint: disable=unused-argument
         self.cur_line_num += 1
 
-    # Exit a parse tree produced by BareCSParser#cs_raw_list.
-    def exitCs_raw_list(self, ctx: BareCSParser.Cs_raw_listContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by BareCSParser#cs_row_list.
+    def exitCs_row_list(self, ctx: BareCSParser.Cs_row_listContext):  # pylint: disable=unused-argument
 
         def concat_assignment(chain, seq, comp, atom):
             L = ''
@@ -511,6 +514,21 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     # Exit a parse tree produced by BareCSParser#any.
     def exitAny(self, ctx: BareCSParser.AnyContext):  # pylint: disable=unused-argument
+        pass
+
+        # Enter a parse tree produced by BareCSParser#column_name.
+    def enterColumn_name(self, ctx: BareCSParser.Column_nameContext):
+        if ctx.Simple_name():
+            self.columnNameSelection.append(str(ctx.Simple_name()))
+
+        elif ctx.Double_quote_string():
+            self.columnNameSelection.append(str(ctx.Double_quote_string()).strip('"'))
+
+        else:
+            self.columnNameSelection.append(str(ctx.Number_of_name()))
+
+    # Exit a parse tree produced by BareCSParser#column_name.
+    def exitColumn_name(self, ctx: BareCSParser.Column_nameContext):  # pylint: disable=unused-argument
         pass
 
 

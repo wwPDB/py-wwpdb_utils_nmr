@@ -292,6 +292,9 @@ class BareMRParserListener(ParseTreeListener):
     # collection of any selection
     anySelection = []
 
+    # collection of column name
+    columnNameSelection = []
+
     __f = None
     warningMessage = None
 
@@ -756,9 +759,20 @@ class BareMRParserListener(ParseTreeListener):
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
-    # Enter a parse tree produced by BareMRParser#mr_raw_format.
-    def enterMr_raw_format(self, ctx: BareMRParser.Mr_raw_formatContext):
+    # Enter a parse tree produced by BareMRParser#mr_row_format.
+    def enterMr_row_format(self, ctx: BareMRParser.Mr_row_formatContext):  # pylint: disable=unused-argument
+        pass
 
+    # Exit a parse tree produced by BareMRParser#mr_row_format.
+    def exitMr_row_format(self, ctx: BareMRParser.Mr_row_formatContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BareMRParser#header.
+    def enterHeader(self, ctx: BareMRParser.HeaderContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BareMRParser#header.
+    def exitHeader(self, ctx: BareMRParser.HeaderContext):  # pylint: disable=unused-argument
         self.__col_name = []
         self.__col_order = []
 
@@ -779,11 +793,12 @@ class BareMRParserListener(ParseTreeListener):
                     and 'ERR' not in col_name and 'UNCERT' not in col_name and 'UP' not in col_name and 'LOW' not in col_name\
                     and 'MAX' not in col_name and 'MIN' not in col_name:
                 self.__col_order.append('target_value')
-            elif 'ERR' in col_name or 'UNCERT' in col_name or 'DEV' in col_name or 'WIDTH' in col_name or 'WINDOW' in col_name or 'DELTA' in col_name:
+            elif 'ERR' in col_name or 'UNCERT' in col_name or 'DEV' in col_name or 'STD' in col_name\
+                    or 'WIDTH' in col_name or 'WINDOW' in col_name or 'DELTA' in col_name:
                 self.__col_order.append('value_uncertainty')
-            elif 'UP' in col_name or 'MAX' in col_name:
+            elif 'UP' in col_name or 'MAX' in col_name and 'DST' not in col_name:
                 self.__col_order.append('upper_limit')
-            elif 'LOW' in col_name or 'MIN' in col_name:
+            elif 'LOW' in col_name or 'MIN' in col_name and 'DST' not in col_name:
                 self.__col_order.append('lower_limit')
             elif 'COMMENT' in col_name or 'DETAIL' in col_name or 'MEMO' in col_name:
                 self.__col_order.append('details')
@@ -794,30 +809,21 @@ class BareMRParserListener(ParseTreeListener):
             else:
                 self.__col_order.append('unknown')
 
-        if ctx.Simple_name(0):
-            i = 0
-            while ctx.Simple_name(i):
-                register_column_info(str(ctx.Simple_name(i)).upper())
-                i += 1
+        for columnName in self.columnNameSelection:
+            register_column_info(columnName.upper())
 
-        elif ctx.Double_quote_string(0):
-            i = 0
-            while ctx.Double_quote_string(i):
-                register_column_info(str(ctx.Double_quote_string(i)).strip('"').upper())
-                i += 1
+        self.columnNameSelection.clear()
+
+        self.__cur_subtype = 'dist'
 
         self.distRestraints = 0
 
-    # Exit a parse tree produced by BareMRParser#mr_raw_format.
-    def exitMr_raw_format(self, ctx: BareMRParser.Mr_raw_formatContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by BareMRParser#mr_row_list.
+    def enterMr_row_list(self, ctx: BareMRParser.Mr_row_listContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by BareMRParser#mr_raw_list.
-    def enterMr_raw_list(self, ctx: BareMRParser.Mr_raw_listContext):  # pylint: disable=unused-argument
-        self.__cur_subtype = 'dist'
-
-    # Exit a parse tree produced by BareMRParser#mr_raw_list.
-    def exitMr_raw_list(self, ctx: BareMRParser.Mr_raw_listContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by BareMRParser#mr_row_list.
+    def exitMr_row_list(self, ctx: BareMRParser.Mr_row_listContext):  # pylint: disable=unused-argument
 
         try:
 
@@ -1093,6 +1099,21 @@ class BareMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by BareMRParser#any.
     def exitAny(self, ctx: BareMRParser.AnyContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BareMRParser#column_name.
+    def enterColumn_name(self, ctx: BareMRParser.Column_nameContext):
+        if ctx.Simple_name():
+            self.columnNameSelection.append(str(ctx.Simple_name()))
+
+        elif ctx.Double_quote_string():
+            self.columnNameSelection.append(str(ctx.Double_quote_string()).strip('"'))
+
+        else:
+            self.columnNameSelection.append(str(ctx.Number_of_name()))
+
+    # Exit a parse tree produced by BareMRParser#column_name.
+    def exitColumn_name(self, ctx: BareMRParser.Column_nameContext):  # pylint: disable=unused-argument
         pass
 
     def validateDistanceRange(self, weight: float, target_value: Optional[float], lower_limit: Optional[float], upper_limit: Optional[float],

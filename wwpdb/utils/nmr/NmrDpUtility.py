@@ -11334,7 +11334,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
 
             fileListId += 1
-            if file_type in ('nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
+            if file_type is None or file_type in ('nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 if file_type == 'nm-res-mr':
                     md5_list.append(None)
                 else:

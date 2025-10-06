@@ -21,18 +21,25 @@ options { tokenVocab=BareMRLexer; }
 bare_mr:
 	RETURN?
 	(
-	mr_raw_format |
+	mr_row_format |
 	RETURN
 	)*
 	EOF;
 
-mr_raw_format:
-	(Simple_name+ | Double_quote_string+) RETURN
-	mr_raw_list+;
+mr_row_format:
+	header
+	mr_row_list+;
 
-mr_raw_list:
+header:
+	column_name+ RETURN;
+
+mr_row_list:
 	any+ (RETURN | EOF);
 
-/* any data expression in peak list */
+/* any data expression in restraints */
 any:	Float | Integer | Simple_name | Double_quote_float | Double_quote_integer | Double_quote_string;
+
+/* any column name of header */
+column_name:
+	Simple_name | Double_quote_string | Number_of_name;
 

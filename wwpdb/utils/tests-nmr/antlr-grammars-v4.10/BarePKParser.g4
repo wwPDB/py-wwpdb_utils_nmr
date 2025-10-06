@@ -27,15 +27,15 @@ bare_pk:
 	peak_list_wo_chain_2d |
 	peak_list_wo_chain_3d |
 	peak_list_wo_chain_4d |
-	raw_format_2d |
-	raw_format_3d |
-	raw_format_4d |
-	rev_raw_format_2d |
-	rev_raw_format_3d |
-	rev_raw_format_4d |
-	raw_format_wo_label_2d |
-	raw_format_wo_label_3d |
-	raw_format_wo_label_4d
+	row_format_2d |
+	row_format_3d |
+	row_format_4d |
+	rev_row_format_2d |
+	rev_row_format_3d |
+	rev_row_format_4d |
+	row_format_wo_label_2d |
+	row_format_wo_label_3d |
+	row_format_wo_label_4d
 	RETURN
 	)*
 	EOF;
@@ -94,46 +94,46 @@ peak_wo_chain_4d:
 	Integer Simple_name Simple_name position
 	number* (RETURN | EOF);
 
-raw_format_2d:
+row_format_2d:
 	Peak X_ppm Y_ppm Amplitude? Volume? Label? Comment? RETURN_FO
-	peak_list_raw_2d+;
+	peak_list_row_2d+;
 
-raw_format_3d:
+row_format_3d:
 	Peak X_ppm Y_ppm Z_ppm Amplitude? Volume? Label? Comment? RETURN_FO
-	peak_list_raw_3d+;
+	peak_list_row_3d+;
 
-raw_format_4d:
+row_format_4d:
 	Peak X_ppm Y_ppm Z_ppm A_ppm Amplitude? Volume? Label? Comment? RETURN_FO
-	peak_list_raw_4d+;
+	peak_list_row_4d+;
 
-rev_raw_format_2d:
+rev_row_format_2d:
 	Peak Y_ppm X_ppm Amplitude? Volume? Label? Comment? RETURN_FO
-	peak_list_raw_2d+;
+	peak_list_row_2d+;
 
-rev_raw_format_3d:
+rev_row_format_3d:
 	Peak Z_ppm Y_ppm X_ppm Amplitude? Volume? Label? Comment? RETURN_FO
-	peak_list_raw_3d+;
+	peak_list_row_3d+;
 
-rev_raw_format_4d:
+rev_row_format_4d:
 	Peak A_ppm Z_ppm Y_ppm X_ppm Amplitude? Volume? Label? Comment? RETURN_FO
-	peak_list_raw_4d+;
+	peak_list_row_4d+;
 
-raw_format_wo_label_2d:
-	peak_list_raw_2d+;
+row_format_wo_label_2d:
+	peak_list_row_2d+;
 
-raw_format_wo_label_3d:
-	peak_list_raw_3d+;
+row_format_wo_label_3d:
+	peak_list_row_3d+;
 
-raw_format_wo_label_4d:
-	peak_list_raw_4d+;
+row_format_wo_label_4d:
+	peak_list_row_4d+;
 
-peak_list_raw_2d:
+peak_list_row_2d:
 	Integer position position number* Simple_name* (RETURN | EOF);
 
-peak_list_raw_3d:
+peak_list_row_3d:
 	Integer position position position number* Simple_name* (RETURN | EOF);
 
-peak_list_raw_4d:
+peak_list_row_4d:
 	Integer position position position position number* Simple_name* (RETURN | EOF);
 
 /* position expression in peak list */

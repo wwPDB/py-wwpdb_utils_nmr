@@ -210,29 +210,29 @@ class BarePKParser ( Parser ):
     RULE_peak_wo_chain_3d = 10
     RULE_peak_list_wo_chain_4d = 11
     RULE_peak_wo_chain_4d = 12
-    RULE_raw_format_2d = 13
-    RULE_raw_format_3d = 14
-    RULE_raw_format_4d = 15
-    RULE_rev_raw_format_2d = 16
-    RULE_rev_raw_format_3d = 17
-    RULE_rev_raw_format_4d = 18
-    RULE_raw_format_wo_label_2d = 19
-    RULE_raw_format_wo_label_3d = 20
-    RULE_raw_format_wo_label_4d = 21
-    RULE_peak_list_raw_2d = 22
-    RULE_peak_list_raw_3d = 23
-    RULE_peak_list_raw_4d = 24
+    RULE_row_format_2d = 13
+    RULE_row_format_3d = 14
+    RULE_row_format_4d = 15
+    RULE_rev_row_format_2d = 16
+    RULE_rev_row_format_3d = 17
+    RULE_rev_row_format_4d = 18
+    RULE_row_format_wo_label_2d = 19
+    RULE_row_format_wo_label_3d = 20
+    RULE_row_format_wo_label_4d = 21
+    RULE_peak_list_row_2d = 22
+    RULE_peak_list_row_3d = 23
+    RULE_peak_list_row_4d = 24
     RULE_position = 25
     RULE_number = 26
 
     ruleNames =  [ "bare_pk", "peak_list_2d", "peak_2d", "peak_list_3d", 
                    "peak_3d", "peak_list_4d", "peak_4d", "peak_list_wo_chain_2d", 
                    "peak_wo_chain_2d", "peak_list_wo_chain_3d", "peak_wo_chain_3d", 
-                   "peak_list_wo_chain_4d", "peak_wo_chain_4d", "raw_format_2d", 
-                   "raw_format_3d", "raw_format_4d", "rev_raw_format_2d", 
-                   "rev_raw_format_3d", "rev_raw_format_4d", "raw_format_wo_label_2d", 
-                   "raw_format_wo_label_3d", "raw_format_wo_label_4d", "peak_list_raw_2d", 
-                   "peak_list_raw_3d", "peak_list_raw_4d", "position", "number" ]
+                   "peak_list_wo_chain_4d", "peak_wo_chain_4d", "row_format_2d", 
+                   "row_format_3d", "row_format_4d", "rev_row_format_2d", 
+                   "rev_row_format_3d", "rev_row_format_4d", "row_format_wo_label_2d", 
+                   "row_format_wo_label_3d", "row_format_wo_label_4d", "peak_list_row_2d", 
+                   "peak_list_row_3d", "peak_list_row_4d", "position", "number" ]
 
     EOF = Token.EOF
     Peak=1
@@ -325,67 +325,67 @@ class BarePKParser ( Parser ):
                 return self.getTypedRuleContext(BarePKParser.Peak_list_wo_chain_4dContext,i)
 
 
-        def raw_format_2d(self, i:int=None):
+        def row_format_2d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Raw_format_2dContext)
+                return self.getTypedRuleContexts(BarePKParser.Row_format_2dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Raw_format_2dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Row_format_2dContext,i)
 
 
-        def raw_format_3d(self, i:int=None):
+        def row_format_3d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Raw_format_3dContext)
+                return self.getTypedRuleContexts(BarePKParser.Row_format_3dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Raw_format_3dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Row_format_3dContext,i)
 
 
-        def raw_format_4d(self, i:int=None):
+        def row_format_4d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Raw_format_4dContext)
+                return self.getTypedRuleContexts(BarePKParser.Row_format_4dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Raw_format_4dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Row_format_4dContext,i)
 
 
-        def rev_raw_format_2d(self, i:int=None):
+        def rev_row_format_2d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Rev_raw_format_2dContext)
+                return self.getTypedRuleContexts(BarePKParser.Rev_row_format_2dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Rev_raw_format_2dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Rev_row_format_2dContext,i)
 
 
-        def rev_raw_format_3d(self, i:int=None):
+        def rev_row_format_3d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Rev_raw_format_3dContext)
+                return self.getTypedRuleContexts(BarePKParser.Rev_row_format_3dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Rev_raw_format_3dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Rev_row_format_3dContext,i)
 
 
-        def rev_raw_format_4d(self, i:int=None):
+        def rev_row_format_4d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Rev_raw_format_4dContext)
+                return self.getTypedRuleContexts(BarePKParser.Rev_row_format_4dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Rev_raw_format_4dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Rev_row_format_4dContext,i)
 
 
-        def raw_format_wo_label_2d(self, i:int=None):
+        def row_format_wo_label_2d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Raw_format_wo_label_2dContext)
+                return self.getTypedRuleContexts(BarePKParser.Row_format_wo_label_2dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Raw_format_wo_label_2dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Row_format_wo_label_2dContext,i)
 
 
-        def raw_format_wo_label_3d(self, i:int=None):
+        def row_format_wo_label_3d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Raw_format_wo_label_3dContext)
+                return self.getTypedRuleContexts(BarePKParser.Row_format_wo_label_3dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Raw_format_wo_label_3dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Row_format_wo_label_3dContext,i)
 
 
-        def raw_format_wo_label_4d(self, i:int=None):
+        def row_format_wo_label_4d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Raw_format_wo_label_4dContext)
+                return self.getTypedRuleContexts(BarePKParser.Row_format_wo_label_4dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Raw_format_wo_label_4dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Row_format_wo_label_4dContext,i)
 
 
         def getRuleIndex(self):
@@ -456,47 +456,47 @@ class BarePKParser ( Parser ):
 
                 elif la_ == 7:
                     self.state = 63
-                    self.raw_format_2d()
+                    self.row_format_2d()
                     pass
 
                 elif la_ == 8:
                     self.state = 64
-                    self.raw_format_3d()
+                    self.row_format_3d()
                     pass
 
                 elif la_ == 9:
                     self.state = 65
-                    self.raw_format_4d()
+                    self.row_format_4d()
                     pass
 
                 elif la_ == 10:
                     self.state = 66
-                    self.rev_raw_format_2d()
+                    self.rev_row_format_2d()
                     pass
 
                 elif la_ == 11:
                     self.state = 67
-                    self.rev_raw_format_3d()
+                    self.rev_row_format_3d()
                     pass
 
                 elif la_ == 12:
                     self.state = 68
-                    self.rev_raw_format_4d()
+                    self.rev_row_format_4d()
                     pass
 
                 elif la_ == 13:
                     self.state = 69
-                    self.raw_format_wo_label_2d()
+                    self.row_format_wo_label_2d()
                     pass
 
                 elif la_ == 14:
                     self.state = 70
-                    self.raw_format_wo_label_3d()
+                    self.row_format_wo_label_3d()
                     pass
 
                 elif la_ == 15:
                     self.state = 71
-                    self.raw_format_wo_label_4d()
+                    self.row_format_wo_label_4d()
                     self.state = 72
                     self.match(BarePKParser.RETURN)
                     pass
@@ -1537,7 +1537,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Raw_format_2dContext(ParserRuleContext):
+    class Row_format_2dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1568,31 +1568,31 @@ class BarePKParser ( Parser ):
         def Comment(self):
             return self.getToken(BarePKParser.Comment, 0)
 
-        def peak_list_raw_2d(self, i:int=None):
+        def peak_list_row_2d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_2dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_2dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_2dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_2dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_raw_format_2d
+            return BarePKParser.RULE_row_format_2d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRaw_format_2d" ):
-                listener.enterRaw_format_2d(self)
+            if hasattr( listener, "enterRow_format_2d" ):
+                listener.enterRow_format_2d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRaw_format_2d" ):
-                listener.exitRaw_format_2d(self)
+            if hasattr( listener, "exitRow_format_2d" ):
+                listener.exitRow_format_2d(self)
 
 
 
 
-    def raw_format_2d(self):
+    def row_format_2d(self):
 
-        localctx = BarePKParser.Raw_format_2dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 26, self.RULE_raw_format_2d)
+        localctx = BarePKParser.Row_format_2dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 26, self.RULE_row_format_2d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -1642,7 +1642,7 @@ class BarePKParser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 256
-                    self.peak_list_raw_2d()
+                    self.peak_list_row_2d()
 
                 else:
                     raise NoViableAltException(self)
@@ -1659,7 +1659,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Raw_format_3dContext(ParserRuleContext):
+    class Row_format_3dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1693,31 +1693,31 @@ class BarePKParser ( Parser ):
         def Comment(self):
             return self.getToken(BarePKParser.Comment, 0)
 
-        def peak_list_raw_3d(self, i:int=None):
+        def peak_list_row_3d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_3dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_3dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_3dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_3dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_raw_format_3d
+            return BarePKParser.RULE_row_format_3d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRaw_format_3d" ):
-                listener.enterRaw_format_3d(self)
+            if hasattr( listener, "enterRow_format_3d" ):
+                listener.enterRow_format_3d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRaw_format_3d" ):
-                listener.exitRaw_format_3d(self)
+            if hasattr( listener, "exitRow_format_3d" ):
+                listener.exitRow_format_3d(self)
 
 
 
 
-    def raw_format_3d(self):
+    def row_format_3d(self):
 
-        localctx = BarePKParser.Raw_format_3dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 28, self.RULE_raw_format_3d)
+        localctx = BarePKParser.Row_format_3dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 28, self.RULE_row_format_3d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -1769,7 +1769,7 @@ class BarePKParser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 278
-                    self.peak_list_raw_3d()
+                    self.peak_list_row_3d()
 
                 else:
                     raise NoViableAltException(self)
@@ -1786,7 +1786,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Raw_format_4dContext(ParserRuleContext):
+    class Row_format_4dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1823,31 +1823,31 @@ class BarePKParser ( Parser ):
         def Comment(self):
             return self.getToken(BarePKParser.Comment, 0)
 
-        def peak_list_raw_4d(self, i:int=None):
+        def peak_list_row_4d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_4dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_4dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_4dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_4dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_raw_format_4d
+            return BarePKParser.RULE_row_format_4d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRaw_format_4d" ):
-                listener.enterRaw_format_4d(self)
+            if hasattr( listener, "enterRow_format_4d" ):
+                listener.enterRow_format_4d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRaw_format_4d" ):
-                listener.exitRaw_format_4d(self)
+            if hasattr( listener, "exitRow_format_4d" ):
+                listener.exitRow_format_4d(self)
 
 
 
 
-    def raw_format_4d(self):
+    def row_format_4d(self):
 
-        localctx = BarePKParser.Raw_format_4dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 30, self.RULE_raw_format_4d)
+        localctx = BarePKParser.Row_format_4dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 30, self.RULE_row_format_4d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -1901,7 +1901,7 @@ class BarePKParser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 301
-                    self.peak_list_raw_4d()
+                    self.peak_list_row_4d()
 
                 else:
                     raise NoViableAltException(self)
@@ -1918,7 +1918,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Rev_raw_format_2dContext(ParserRuleContext):
+    class Rev_row_format_2dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1949,31 +1949,31 @@ class BarePKParser ( Parser ):
         def Comment(self):
             return self.getToken(BarePKParser.Comment, 0)
 
-        def peak_list_raw_2d(self, i:int=None):
+        def peak_list_row_2d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_2dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_2dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_2dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_2dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_rev_raw_format_2d
+            return BarePKParser.RULE_rev_row_format_2d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRev_raw_format_2d" ):
-                listener.enterRev_raw_format_2d(self)
+            if hasattr( listener, "enterRev_row_format_2d" ):
+                listener.enterRev_row_format_2d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRev_raw_format_2d" ):
-                listener.exitRev_raw_format_2d(self)
+            if hasattr( listener, "exitRev_row_format_2d" ):
+                listener.exitRev_row_format_2d(self)
 
 
 
 
-    def rev_raw_format_2d(self):
+    def rev_row_format_2d(self):
 
-        localctx = BarePKParser.Rev_raw_format_2dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 32, self.RULE_rev_raw_format_2d)
+        localctx = BarePKParser.Rev_row_format_2dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 32, self.RULE_rev_row_format_2d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -2023,7 +2023,7 @@ class BarePKParser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 322
-                    self.peak_list_raw_2d()
+                    self.peak_list_row_2d()
 
                 else:
                     raise NoViableAltException(self)
@@ -2040,7 +2040,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Rev_raw_format_3dContext(ParserRuleContext):
+    class Rev_row_format_3dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -2074,31 +2074,31 @@ class BarePKParser ( Parser ):
         def Comment(self):
             return self.getToken(BarePKParser.Comment, 0)
 
-        def peak_list_raw_3d(self, i:int=None):
+        def peak_list_row_3d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_3dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_3dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_3dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_3dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_rev_raw_format_3d
+            return BarePKParser.RULE_rev_row_format_3d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRev_raw_format_3d" ):
-                listener.enterRev_raw_format_3d(self)
+            if hasattr( listener, "enterRev_row_format_3d" ):
+                listener.enterRev_row_format_3d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRev_raw_format_3d" ):
-                listener.exitRev_raw_format_3d(self)
+            if hasattr( listener, "exitRev_row_format_3d" ):
+                listener.exitRev_row_format_3d(self)
 
 
 
 
-    def rev_raw_format_3d(self):
+    def rev_row_format_3d(self):
 
-        localctx = BarePKParser.Rev_raw_format_3dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 34, self.RULE_rev_raw_format_3d)
+        localctx = BarePKParser.Rev_row_format_3dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 34, self.RULE_rev_row_format_3d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -2150,7 +2150,7 @@ class BarePKParser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 344
-                    self.peak_list_raw_3d()
+                    self.peak_list_row_3d()
 
                 else:
                     raise NoViableAltException(self)
@@ -2167,7 +2167,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Rev_raw_format_4dContext(ParserRuleContext):
+    class Rev_row_format_4dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -2204,31 +2204,31 @@ class BarePKParser ( Parser ):
         def Comment(self):
             return self.getToken(BarePKParser.Comment, 0)
 
-        def peak_list_raw_4d(self, i:int=None):
+        def peak_list_row_4d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_4dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_4dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_4dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_4dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_rev_raw_format_4d
+            return BarePKParser.RULE_rev_row_format_4d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRev_raw_format_4d" ):
-                listener.enterRev_raw_format_4d(self)
+            if hasattr( listener, "enterRev_row_format_4d" ):
+                listener.enterRev_row_format_4d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRev_raw_format_4d" ):
-                listener.exitRev_raw_format_4d(self)
+            if hasattr( listener, "exitRev_row_format_4d" ):
+                listener.exitRev_row_format_4d(self)
 
 
 
 
-    def rev_raw_format_4d(self):
+    def rev_row_format_4d(self):
 
-        localctx = BarePKParser.Rev_raw_format_4dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 36, self.RULE_rev_raw_format_4d)
+        localctx = BarePKParser.Rev_row_format_4dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 36, self.RULE_rev_row_format_4d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -2282,7 +2282,7 @@ class BarePKParser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 367
-                    self.peak_list_raw_4d()
+                    self.peak_list_row_4d()
 
                 else:
                     raise NoViableAltException(self)
@@ -2299,38 +2299,38 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Raw_format_wo_label_2dContext(ParserRuleContext):
+    class Row_format_wo_label_2dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def peak_list_raw_2d(self, i:int=None):
+        def peak_list_row_2d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_2dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_2dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_2dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_2dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_raw_format_wo_label_2d
+            return BarePKParser.RULE_row_format_wo_label_2d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRaw_format_wo_label_2d" ):
-                listener.enterRaw_format_wo_label_2d(self)
+            if hasattr( listener, "enterRow_format_wo_label_2d" ):
+                listener.enterRow_format_wo_label_2d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRaw_format_wo_label_2d" ):
-                listener.exitRaw_format_wo_label_2d(self)
+            if hasattr( listener, "exitRow_format_wo_label_2d" ):
+                listener.exitRow_format_wo_label_2d(self)
 
 
 
 
-    def raw_format_wo_label_2d(self):
+    def row_format_wo_label_2d(self):
 
-        localctx = BarePKParser.Raw_format_wo_label_2dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 38, self.RULE_raw_format_wo_label_2d)
+        localctx = BarePKParser.Row_format_wo_label_2dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 38, self.RULE_row_format_wo_label_2d)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 373 
@@ -2339,7 +2339,7 @@ class BarePKParser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 372
-                    self.peak_list_raw_2d()
+                    self.peak_list_row_2d()
 
                 else:
                     raise NoViableAltException(self)
@@ -2356,38 +2356,38 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Raw_format_wo_label_3dContext(ParserRuleContext):
+    class Row_format_wo_label_3dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def peak_list_raw_3d(self, i:int=None):
+        def peak_list_row_3d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_3dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_3dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_3dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_3dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_raw_format_wo_label_3d
+            return BarePKParser.RULE_row_format_wo_label_3d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRaw_format_wo_label_3d" ):
-                listener.enterRaw_format_wo_label_3d(self)
+            if hasattr( listener, "enterRow_format_wo_label_3d" ):
+                listener.enterRow_format_wo_label_3d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRaw_format_wo_label_3d" ):
-                listener.exitRaw_format_wo_label_3d(self)
+            if hasattr( listener, "exitRow_format_wo_label_3d" ):
+                listener.exitRow_format_wo_label_3d(self)
 
 
 
 
-    def raw_format_wo_label_3d(self):
+    def row_format_wo_label_3d(self):
 
-        localctx = BarePKParser.Raw_format_wo_label_3dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 40, self.RULE_raw_format_wo_label_3d)
+        localctx = BarePKParser.Row_format_wo_label_3dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 40, self.RULE_row_format_wo_label_3d)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 378 
@@ -2396,7 +2396,7 @@ class BarePKParser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 377
-                    self.peak_list_raw_3d()
+                    self.peak_list_row_3d()
 
                 else:
                     raise NoViableAltException(self)
@@ -2413,38 +2413,38 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Raw_format_wo_label_4dContext(ParserRuleContext):
+    class Row_format_wo_label_4dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def peak_list_raw_4d(self, i:int=None):
+        def peak_list_row_4d(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(BarePKParser.Peak_list_raw_4dContext)
+                return self.getTypedRuleContexts(BarePKParser.Peak_list_row_4dContext)
             else:
-                return self.getTypedRuleContext(BarePKParser.Peak_list_raw_4dContext,i)
+                return self.getTypedRuleContext(BarePKParser.Peak_list_row_4dContext,i)
 
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_raw_format_wo_label_4d
+            return BarePKParser.RULE_row_format_wo_label_4d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRaw_format_wo_label_4d" ):
-                listener.enterRaw_format_wo_label_4d(self)
+            if hasattr( listener, "enterRow_format_wo_label_4d" ):
+                listener.enterRow_format_wo_label_4d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRaw_format_wo_label_4d" ):
-                listener.exitRaw_format_wo_label_4d(self)
+            if hasattr( listener, "exitRow_format_wo_label_4d" ):
+                listener.exitRow_format_wo_label_4d(self)
 
 
 
 
-    def raw_format_wo_label_4d(self):
+    def row_format_wo_label_4d(self):
 
-        localctx = BarePKParser.Raw_format_wo_label_4dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 42, self.RULE_raw_format_wo_label_4d)
+        localctx = BarePKParser.Row_format_wo_label_4dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 42, self.RULE_row_format_wo_label_4d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -2453,7 +2453,7 @@ class BarePKParser ( Parser ):
             _la = self._input.LA(1)
             while True:
                 self.state = 382
-                self.peak_list_raw_4d()
+                self.peak_list_row_4d()
                 self.state = 385 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
@@ -2469,7 +2469,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Peak_list_raw_2dContext(ParserRuleContext):
+    class Peak_list_row_2dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -2506,23 +2506,23 @@ class BarePKParser ( Parser ):
                 return self.getToken(BarePKParser.Simple_name, i)
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_peak_list_raw_2d
+            return BarePKParser.RULE_peak_list_row_2d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterPeak_list_raw_2d" ):
-                listener.enterPeak_list_raw_2d(self)
+            if hasattr( listener, "enterPeak_list_row_2d" ):
+                listener.enterPeak_list_row_2d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitPeak_list_raw_2d" ):
-                listener.exitPeak_list_raw_2d(self)
+            if hasattr( listener, "exitPeak_list_row_2d" ):
+                listener.exitPeak_list_row_2d(self)
 
 
 
 
-    def peak_list_raw_2d(self):
+    def peak_list_row_2d(self):
 
-        localctx = BarePKParser.Peak_list_raw_2dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 44, self.RULE_peak_list_raw_2d)
+        localctx = BarePKParser.Peak_list_row_2dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 44, self.RULE_peak_list_row_2d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -2568,7 +2568,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Peak_list_raw_3dContext(ParserRuleContext):
+    class Peak_list_row_3dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -2605,23 +2605,23 @@ class BarePKParser ( Parser ):
                 return self.getToken(BarePKParser.Simple_name, i)
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_peak_list_raw_3d
+            return BarePKParser.RULE_peak_list_row_3d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterPeak_list_raw_3d" ):
-                listener.enterPeak_list_raw_3d(self)
+            if hasattr( listener, "enterPeak_list_row_3d" ):
+                listener.enterPeak_list_row_3d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitPeak_list_raw_3d" ):
-                listener.exitPeak_list_raw_3d(self)
+            if hasattr( listener, "exitPeak_list_row_3d" ):
+                listener.exitPeak_list_row_3d(self)
 
 
 
 
-    def peak_list_raw_3d(self):
+    def peak_list_row_3d(self):
 
-        localctx = BarePKParser.Peak_list_raw_3dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 46, self.RULE_peak_list_raw_3d)
+        localctx = BarePKParser.Peak_list_row_3dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 46, self.RULE_peak_list_row_3d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -2669,7 +2669,7 @@ class BarePKParser ( Parser ):
         return localctx
 
 
-    class Peak_list_raw_4dContext(ParserRuleContext):
+    class Peak_list_row_4dContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -2706,23 +2706,23 @@ class BarePKParser ( Parser ):
                 return self.getToken(BarePKParser.Simple_name, i)
 
         def getRuleIndex(self):
-            return BarePKParser.RULE_peak_list_raw_4d
+            return BarePKParser.RULE_peak_list_row_4d
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterPeak_list_raw_4d" ):
-                listener.enterPeak_list_raw_4d(self)
+            if hasattr( listener, "enterPeak_list_row_4d" ):
+                listener.enterPeak_list_row_4d(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitPeak_list_raw_4d" ):
-                listener.exitPeak_list_raw_4d(self)
+            if hasattr( listener, "exitPeak_list_row_4d" ):
+                listener.exitPeak_list_row_4d(self)
 
 
 
 
-    def peak_list_raw_4d(self):
+    def peak_list_row_4d(self):
 
-        localctx = BarePKParser.Peak_list_raw_4dContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 48, self.RULE_peak_list_raw_4d)
+        localctx = BarePKParser.Peak_list_row_4dContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 48, self.RULE_peak_list_row_4d)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)

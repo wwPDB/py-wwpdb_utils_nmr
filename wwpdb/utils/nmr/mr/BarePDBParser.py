@@ -32,7 +32,7 @@ def serializedATN():
         41,1,0,0,0,43,44,1,0,0,0,44,46,1,0,0,0,45,43,1,0,0,0,46,47,7,0,0,
         0,47,3,1,0,0,0,48,50,3,6,3,0,49,48,1,0,0,0,50,51,1,0,0,0,51,49,1,
         0,0,0,51,52,1,0,0,0,52,5,1,0,0,0,53,54,3,8,4,0,54,55,3,10,5,0,55,
-        63,5,12,0,0,56,57,5,1,0,0,57,64,5,1,0,0,58,60,5,12,0,0,59,58,1,0,
+        63,3,10,5,0,56,57,5,1,0,0,57,64,5,1,0,0,58,60,5,12,0,0,59,58,1,0,
         0,0,59,60,1,0,0,0,60,61,1,0,0,0,61,64,7,1,0,0,62,64,5,12,0,0,63,
         56,1,0,0,0,63,59,1,0,0,0,63,62,1,0,0,0,64,65,1,0,0,0,65,70,3,12,
         6,0,66,67,3,22,11,0,67,68,3,22,11,0,68,71,1,0,0,0,69,71,5,6,0,0,
@@ -368,15 +368,12 @@ class BarePDBParser ( Parser ):
             return self.getTypedRuleContext(BarePDBParser.Atom_numContext,0)
 
 
-        def atom_name(self):
-            return self.getTypedRuleContext(BarePDBParser.Atom_nameContext,0)
-
-
-        def Simple_name(self, i:int=None):
+        def atom_name(self, i:int=None):
             if i is None:
-                return self.getTokens(BarePDBParser.Simple_name)
+                return self.getTypedRuleContexts(BarePDBParser.Atom_nameContext)
             else:
-                return self.getToken(BarePDBParser.Simple_name, i)
+                return self.getTypedRuleContext(BarePDBParser.Atom_nameContext,i)
+
 
         def xyz(self):
             return self.getTypedRuleContext(BarePDBParser.XyzContext,0)
@@ -387,6 +384,9 @@ class BarePDBParser ( Parser ):
                 return self.getTokens(BarePDBParser.Integer)
             else:
                 return self.getToken(BarePDBParser.Integer, i)
+
+        def Simple_name(self):
+            return self.getToken(BarePDBParser.Simple_name, 0)
 
         def Integer_concat_alt(self):
             return self.getToken(BarePDBParser.Integer_concat_alt, 0)
@@ -434,7 +434,7 @@ class BarePDBParser ( Parser ):
             self.state = 54
             self.atom_name()
             self.state = 55
-            self.match(BarePDBParser.Simple_name)
+            self.atom_name()
             self.state = 63
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,5,self._ctx)

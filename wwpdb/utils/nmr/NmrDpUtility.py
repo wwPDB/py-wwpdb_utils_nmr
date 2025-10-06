@@ -2009,8 +2009,11 @@ class NmrDpUtility:
         # whether entity category exists (nmr-star specific)
         self.__has_star_entity = False
 
-        # whether a CS loop is in the primary NMR-STAR file (used only during NMR restraint remediation)
+        # whether a CS loop is in the primary NMR-STAR file (used only for NMR data remediation)
         self.__has_star_chem_shift = True
+
+        # whether public MR file contains valid NMR-STAR restraints (used only for NMR data remediation)
+        self.__public_mr_has_valid_star_restraint = False
 
         # whether allow missing distance restraints (NMR unified deposition, DAOTHER-8088 1.b, 8108)
         self.__allow_missing_dist_restraint = True
@@ -15403,6 +15406,11 @@ class NmrDpUtility:
             if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
                 file_type = 'nm-res-cha'
 
+        elif len_valid_types == 4:
+            set_valid_types = set(valid_types)
+            if set_valid_types == {'nm-res-cya', 'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}:
+                file_type = 'nm-res-cya'
+
         if self.__mr_debug:
             self.__lfh.write(f' -> {file_type}\n')
 
@@ -16046,6 +16054,8 @@ class NmrDpUtility:
         if ar_file_path_list not in self.__inputParamDict:
             return True
 
+        self.__public_mr_has_valid_star_restraint = False
+
         fileListId = self.__file_path_list_len
 
         dir_path = mr_file_name = '.'
@@ -16224,7 +16234,7 @@ class NmrDpUtility:
                 mr_part_paths.append({'header': header_file})
                 mr_part_paths.append({'footer': footer_file})
 
-            has_mr_header = has_pdb_format = has_cif_format = has_str_format = has_cs_str = has_mr_str = False
+            has_mr_header = has_pdb_format = has_cif_format = has_str_format = has_cs_str = False
 
             try:
 
@@ -16550,7 +16560,7 @@ class NmrDpUtility:
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
                                         if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
-                                            has_mr_str = True
+                                            self.__public_mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
@@ -16731,7 +16741,7 @@ class NmrDpUtility:
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
                                         if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
-                                            has_mr_str = True
+                                            self.__public_mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
                         elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
@@ -16761,11 +16771,15 @@ class NmrDpUtility:
                     has_content = True
                     break
 
-            if not has_content and not has_mr_str:
-                with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofh:
-                    ofh.write('')
+            if not has_content:
+                if not self.__public_mr_has_valid_star_restraint:
+                    with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofh:
+                        ofh.write('')
 
-                remediated = False
+                    remediated = False
+
+                else:
+                    continue
 
             if os.path.exists(cor_str_file) and os.path.exists(cor_dst_file) and has_content:
                 mrPath = cor_str_file
@@ -16879,7 +16893,7 @@ class NmrDpUtility:
                             if 'content_subtype' in input_source_dic:
                                 content_subtype = input_source_dic['content_subtype']
                                 if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
-                                    has_mr_str = True
+                                    self.__public_mr_has_valid_star_restraint = True
                                     mr_part_paths.append({'nmr-star': mrPath})
 
                 elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
@@ -17126,9 +17140,9 @@ class NmrDpUtility:
                             mr_part_paths.append({_ar['file_type']: dst_file})
 
                         elif len_valid_types == 3\
-                                and (set(valid_types) == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}
-                                     or set(valid_types) == {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}
-                                     or set(valid_types) == {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
+                                and set(valid_types) in ({'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'},
+                                                         {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'},
+                                                         {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                             _ar['file_name'] = dst_file
                             _ar['file_type'] = 'nm-res-xpl'
                             split_file_list.append(_ar)
@@ -17142,6 +17156,12 @@ class NmrDpUtility:
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_ar['file_type']: dst_file})
+
+                        elif len_valid_types == 4\
+                                and set(valid_types) == {'nm-res-cya', 'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}:
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-res-cya'
+                            split_file_list.append(_ar)
 
                         else:
                             _ar['file_name'] = dst_file
@@ -17987,9 +18007,9 @@ class NmrDpUtility:
                                                       'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 3\
-                                    and (set(valid_types) == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}
-                                         or set(valid_types) == {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}
-                                         or set(valid_types) == {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
+                                    and set(valid_types) in ({'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'},
+                                                             {'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'},
+                                                             {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-xpl'
 
@@ -18005,6 +18025,19 @@ class NmrDpUtility:
                                     and set(valid_types) == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
                                 _ar['file_name'] = _dst_file
                                 _ar['file_type'] = 'nm-res-cha'
+
+                                if distinct:
+                                    _ar['original_file_name'] = file_name
+
+                                split_file_list.append(_ar)
+
+                                mr_part_paths.append({_ar['file_type']: _dst_file,
+                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+
+                            elif len_valid_types == 4\
+                                    and set(valid_types) == {'nm-res-cya', 'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}:
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = 'nm-res-cya'
 
                                 if distinct:
                                     _ar['original_file_name'] = file_name
@@ -18132,7 +18165,7 @@ class NmrDpUtility:
                             except OSError:
                                 pass
 
-                else:
+                elif not self.__public_mr_has_valid_star_restraint:
 
                     touch_file = os.path.join(dir_path, '.entry_without_mr')
                     if not os.path.exists(touch_file):
@@ -62787,7 +62820,7 @@ class NmrDpUtility:
             if content_subtype in lp_counts:
                 mr_loops += lp_counts[content_subtype]
 
-        if mr_loops == 0 and not self.__validation_server:
+        if mr_loops == 0 and not self.__validation_server and not self.__public_mr_has_valid_star_restraint:
 
             if 'other_data_types' not in self.__sf_category_list:
 

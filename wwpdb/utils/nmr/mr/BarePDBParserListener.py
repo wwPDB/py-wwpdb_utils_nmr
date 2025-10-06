@@ -121,12 +121,13 @@ class BarePDBParserListener(ParseTreeListener):
     __cur_nr = -1
     # previous atom number
     __prev_nr = -1
-    # current atom name
-    __cur_atom_name = None
     # total appearances of TER clause
     __ter_count = 0
     # END clause
     __end = False
+
+    # collection of atom name selection
+    atomNameSelection = []
 
     # PDB atom number dictionary
     __atomNumberDict = None
@@ -1100,18 +1101,18 @@ class BarePDBParserListener(ParseTreeListener):
                 seqId = int(str(ctx.Integer(1)))
             elif ctx.Integer(0):
                 seqId = int(str(ctx.Integer(0)))
-                chainId = str(ctx.Simple_name(1)) if ctx.Simple_name(1) else None
+                chainId = str(ctx.Simple_name()) if ctx.Simple_name() else None
             elif ctx.Integer_concat_alt():
                 seqId = int(str(ctx.Integer_concat_alt())[:-1])
-                chainId = str(ctx.Simple_name(1)) if ctx.Simple_name(1) else None
+                chainId = str(ctx.Simple_name()) if ctx.Simple_name() else None
             else:
-                concat_string = str(ctx.Simple_name(1))
+                concat_string = str(ctx.Simple_name())
                 integers = re.findall(r'\d+', concat_string)
                 seqId = int(integers[0])
                 chainId = concat_string[:concat_string.index(integers[0])]
 
-            compId = str(ctx.Simple_name(0))
-            atomId = self.__cur_atom_name
+            atomId = self.atomNameSelection[0]
+            compId = self.atomNameSelection[1]
 
             if atomId is None:
                 return
@@ -1127,6 +1128,9 @@ class BarePDBParserListener(ParseTreeListener):
 
         except (ValueError, IndexError):
             pass
+
+        finally:
+            self.atomNameSelection.clear()
 
     # Enter a parse tree produced by BarePDBParser#atom_num.
     def enterAtom_num(self, ctx: BarePDBParser.Atom_numContext):
@@ -1147,9 +1151,9 @@ class BarePDBParserListener(ParseTreeListener):
     # Enter a parse tree produced by BarePDBParser#atom_name.
     def enterAtom_name(self, ctx: BarePDBParser.Atom_nameContext):
         if ctx.Simple_name():
-            self.__cur_atom_name = str(ctx.Simple_name())
+            self.atomNameSelection.append(str(ctx.Simple_name()))
         else:
-            self.__cur_atom_name = str(ctx.Integer_concat_alt())
+            self.atomNameSelection.append(str(ctx.Integer_concat_alt()))
 
     # Exit a parse tree produced by BarePDBParser#atom_name.
     def exitAtom_name(self, ctx: BarePDBParser.Atom_nameContext):  # pylint: disable=unused-argument

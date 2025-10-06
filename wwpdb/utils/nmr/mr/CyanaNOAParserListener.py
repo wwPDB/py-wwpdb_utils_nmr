@@ -1112,7 +1112,7 @@ class CyanaNOAParserListener(ParseTreeListener):
                     if trial[2] is not None and compId == trial[2]:
                         return trial
                     self.__preferAuthSeq = not self.__preferAuthSeq
-            except ValueError:
+            except TypeError:
                 pass
         return ps['auth_chain_id'], seqId, None
 

@@ -2562,7 +2562,7 @@ class CyanaEMRParserListener(ParseTreeListener):
                     if trial[2] is not None and compId == trial[2]:
                         return trial
                     self.__preferAuthSeq = not self.__preferAuthSeq
-            except ValueError:
+            except TypeError:
                 pass
         return ps['auth_chain_id'], seqId, None
 
@@ -5930,10 +5930,10 @@ class CyanaEMRParserListener(ParseTreeListener):
 
         try:
 
-            chainId1, seqId1 = self.genResNumSelection[0]
+            seqId1, chainId1 = self.genResNumSelection[0]
             compId1 = self.genSimpleNameSelection[0].upper()
             atomId1 = self.genSimpleNameSelection[1].upper()
-            chainId2, seqId2 = self.genResNumSelection[1]
+            seqId2, chainId2 = self.genResNumSelection[1]
             compId2 = self.genSimpleNameSelection[2].upper()
             atomId2 = self.genSimpleNameSelection[3].upper()
 
@@ -6268,7 +6268,7 @@ class CyanaEMRParserListener(ParseTreeListener):
 
         try:
 
-            chainId, seqId = self.genResNumSelection[0]
+            seqId, chainId = self.genResNumSelection[0]
             compId = self.genSimpleNameSelection[0].upper()
             atomId = self.genSimpleNameSelection[1].upper()
 
@@ -7287,6 +7287,9 @@ class CyanaEMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaEMRParser#unambig_atom_name_mapping.
     def enterUnambig_atom_name_mapping(self, ctx: CyanaEMRParser.Unambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        if len(self.genSimpleNameSelection) == 0:
+            return
+
         self.__cur_resname_for_mapping = self.genSimpleNameSelection[0].upper()
 
         self.__cur_comment_inlined = True
@@ -7317,6 +7320,9 @@ class CyanaEMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaEMRParser#ambig_atom_name_mapping.
     def enterAmbig_atom_name_mapping(self, ctx: CyanaEMRParser.Ambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        if len(self.genSimpleNameSelection) == 0:
+            return
+
         self.__cur_resname_for_mapping = self.genSimpleNameSelection[0].upper()
 
         self.__cur_comment_inlined = True

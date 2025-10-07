@@ -15409,7 +15409,7 @@ class NmrDpUtility:
         elif len_valid_types == 4:
             set_valid_types = set(valid_types)
             if set_valid_types == {'nm-res-cya', 'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}:
-                file_type = 'nm-res-cya'
+                file_type = 'nm-res-xpl'
 
         if self.__mr_debug:
             self.__lfh.write(f' -> {file_type}\n')
@@ -15902,7 +15902,7 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if len(genuine_type) != 1:
+        if len(genuine_type) != 1 and set(genuine_type) != {'nm-res-cya', 'nm-res-cye'}:
             _valid_types = [k for k, v in sorted(valid_types.items(), key=itemgetter(1), reverse=True)]
             _possible_types = [k for k, v in sorted(possible_types.items(), key=itemgetter(1), reverse=True)]
         else:
@@ -16778,7 +16778,6 @@ class NmrDpUtility:
 
                     remediated = False
 
-                else:
                     continue
 
             if os.path.exists(cor_str_file) and os.path.exists(cor_dst_file) and has_content:
@@ -17160,7 +17159,7 @@ class NmrDpUtility:
                         elif len_valid_types == 4\
                                 and set(valid_types) == {'nm-res-cya', 'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}:
                             _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-cya'
+                            _ar['file_type'] = 'nm-res-xpl'
                             split_file_list.append(_ar)
 
                         else:
@@ -18037,7 +18036,7 @@ class NmrDpUtility:
                             elif len_valid_types == 4\
                                     and set(valid_types) == {'nm-res-cya', 'nm-res-cye', 'nm-res-cns', 'nm-res-xpl'}:
                                 _ar['file_name'] = _dst_file
-                                _ar['file_type'] = 'nm-res-cya'
+                                _ar['file_type'] = 'nm-res-xpl'
 
                                 if distinct:
                                     _ar['original_file_name'] = file_name

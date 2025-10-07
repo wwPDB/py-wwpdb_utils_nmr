@@ -33734,8 +33734,8 @@ class NmrDpUtility:
                         if auth_chain_id_name in loop.tags:
                             continue
                         loop.add_tag(auth_chain_id_name)
-                        for row in loop.data:
-                            row.append[auth_chain_id]
+                        for row in loop:
+                            row.append(auth_chain_id)
                     has_auth_chain_tags = True
 
                 has_valid_comp_id = True
@@ -33770,6 +33770,8 @@ class NmrDpUtility:
                         has_auth_comp_tags = True
 
                 if has_auth_chain_tags and has_auth_seq_tags and has_auth_atom_tags and has_auth_comp_tags and has_valid_comp_id:
+                    is_valid = True
+
                     lp = getLoop(content_subtype, reduced=False)
 
                     sf.add_loop(lp)
@@ -33804,6 +33806,9 @@ class NmrDpUtility:
                                             chain_id, seq_id = _auth_asym_id, _auth_seq_id
 
                             except KeyError:
+                                continue
+                            except ValueError:
+                                is_valid = False
                                 continue
 
                             auth_atom_id = atom_id
@@ -34031,6 +34036,12 @@ class NmrDpUtility:
                                                   auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
                                                   atom_sels, self.__annotation_mode)
                             lp.add_data(_row)
+
+                    if not is_valid:
+
+                        lp = loop
+
+                        sf_item['loop'] = lp
 
                 else:  # nothing to do because of missing polymer sequence for this loop
 

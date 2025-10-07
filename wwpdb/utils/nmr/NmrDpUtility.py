@@ -1832,7 +1832,7 @@ def get_prompt_file_format(line: str) -> Optional[str]:
     if 'X-PLOR>{====>}' in line:
         return 'X-PLOR NIH'
 
-    if '{===>}' in line and ';' in line:
+    if ('{===>}' in line and ';' in line) or 'CNSsolve>' in line:
         return 'CNS'
 
     return None

@@ -33657,11 +33657,386 @@ class NmrDpUtility:
                                           [None], self.__annotation_mode)
                     lp.add_data(_row)
 
-            else:  # nothing to do because of missing polymer sequence for this loop
+            else:
 
-                lp = loop
+                auth_to_star_seq = self.__caC['auth_to_star_seq']
 
-                sf_item['loop'] = lp
+                key_items = [item['name'] for item in NMR_STAR_LP_KEY_ITEMS[content_subtype]]
+
+                if content_subtype == 'ccr_dd_restraint' and 'Dipole_2_chem_comp_index_ID_2' in loop.tags:
+                    key_items = copy.copy(key_items)
+                    key_item = next((key_item for key_item in key_items if key_item['name'] == 'Dipole_2_comp_index_ID_2'), None)
+                    if key_item is not None:
+                        key_item['name'] = 'Dipole_2_chem_comp_index_ID_2'
+
+                len_key_items = len(key_items)
+
+                atom_dim_num = (len_key_items - 1) // 5  # 5 for entity_assembly_id, entity_id, comp_index_id, comp_id, atom_id tags
+
+                if atom_dim_num == 0:
+                    err = f"Unexpected key items {key_items} set for processing {lp_category} loop in {sf_framecode} saveframe of {original_file_name} file."
+
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ KeyError  - {err}\n")
+
+                    return False
+
+                prefer_auth_atom_name = True
+
+                coord_atom_site = self.__caC['coord_atom_site']
+                auth_to_orig_seq = self.__caC['auth_to_orig_seq']
+                auth_to_ins_code = None
+
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
+
+                offset_holder = {}
+
+                index_tag = self.index_tags[file_type][content_subtype]
+                id_col = loop.tags.index('ID') if 'ID' in loop.tags else -1
+                combination_id_col = member_id_col = member_logic_code_col = upper_limit_col = -1
+                auth_comp_id_1_col = auth_comp_id_2_col = torsion_angle_name_col = -1
+                if content_subtype == 'dist_restraint':
+                    if 'Combination_ID' in loop.tags:
+                        combination_id_col = loop.tags.index('Combination_ID')
+                    if 'Member_ID' in loop.tags:
+                        member_id_col = loop.tags.index('Member_ID')
+                    if 'Member_logic_code' in loop.tags:
+                        member_logic_code_col = loop.tags.index('Member_logic_code')
+                    if 'Distance_upper_bound_val' in loop.tags:
+                        upper_limit_col = loop.tags.index('Distance_upper_bound_val')
+                    if 'Auth_comp_ID_1' in loop.tags:
+                        auth_comp_id_1_col = loop.tags.index('Auth_comp_ID_1')
+                    if 'Auth_comp_ID_2' in loop.tags:
+                        auth_comp_id_2_col = loop.tags.index('Auth_comp_ID_2')
+                elif content_subtype == 'dihed_restraint':
+                    if 'Torsion_angle_name' in loop.tags:
+                        torsion_angle_name_col = loop.tags.index('Torsion_angle_name')
+
+                auth_items = [auth_item['name'] for auth_item in NMR_STAR_LP_DATA_ITEMS[content_subtype]
+                              if auth_item['name'].startswith('Auth') or 'auth' in auth_item['name']]
+
+                auth_chain_id_names = [auth_item for auth_item in auth_items if 'asym' in auth_item or 'entity_assembly' in auth_item]
+                auth_seq_id_names = [auth_item for auth_item in auth_items if 'seq' in auth_item]
+                auth_comp_id_names = [auth_item for auth_item in auth_items if 'comp' in auth_item]
+                auth_atom_id_names = [auth_item for auth_item in auth_items if 'atom' in auth_item and 'atom_name' not in auth_item]
+
+                has_auth_chain_tags = set(auth_chain_id_names) & set(loop.tags) == set(auth_chain_id_names)
+                has_auth_seq_tags = set(auth_seq_id_names) & set(loop.tags) == set(auth_seq_id_names)
+                has_auth_comp_tags = set(auth_comp_id_names) & set(loop.tags) == set(auth_comp_id_names)
+                has_auth_atom_tags = set(auth_atom_id_names) & set(loop.tags) == set(auth_atom_id_names)
+
+                if not has_auth_chain_tags and self.__caC['polymer_sequence'] is not None and len(self.__caC['polymer_sequence']) == 1:
+                    auth_chain_id = self.__caC['polymer_sequence'][0]['auth_chain_id']
+                    for auth_chain_id_name in auth_chain_id_names:
+                        if auth_chain_id_name in loop.tags:
+                            continue
+                        loop.add_tag(auth_chain_id_name)
+                        for row in loop.data:
+                            row.append[auth_chain_id]
+                    has_auth_chain_tags = True
+
+                has_valid_comp_id = True
+                if has_auth_chain_tags and has_auth_seq_tags and has_auth_atom_tags and not has_auth_comp_tags:
+                    for d, auth_comp_id_name in enumerate(auth_comp_id_names):
+                        if auth_comp_id_name in loop.tags:
+                            tags = [auth_chain_id_names[d], auth_seq_id_names[d], auth_comp_id_names[d]]
+                            for idx, row in enumerate(loop.get_tag(tags)):
+                                if row[2] not in emptyValue:
+                                    continue
+                                try:
+                                    chain_id, seq_id = row[0], int(row[1])
+                                    comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                    if _auth_asym_id == chain_id and _auth_seq_id == seq_id), None)
+                                except (TypeError, ValueError):
+                                    comp_id = None
+                                    has_valid_comp_id = False
+                                loop.data[idx][loop.tags.index(auth_comp_id_names[d])] = comp_id
+                            continue
+                        loop.add_tag(auth_comp_id_name)
+                        tags = [auth_chain_id_names[d], auth_seq_id_names[d]]
+                        for idx, row in enumerate(loop.get_tag(tags)):
+                            try:
+                                chain_id, seq_id = row[0], int(row[1])
+                                comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                if _auth_asym_id == chain_id and _auth_seq_id == seq_id), None)
+                            except (TypeError, ValueError):
+                                comp_id = None
+                            loop.data[idx].append(comp_id)
+                            if comp_id is None:
+                                has_valid_comp_id = False
+                        has_auth_comp_tags = True
+
+                if has_auth_chain_tags and has_auth_seq_tags and has_auth_atom_tags and has_auth_comp_tags and has_valid_comp_id:
+                    lp = getLoop(content_subtype, reduced=False)
+
+                    sf.add_loop(lp)
+                    sf_item['loop'] = lp
+
+                    auth_items = []
+                    for d in range(atom_dim_num):
+                        auth_items.extend([auth_chain_id_names[d], auth_seq_id_names[d], auth_comp_id_names[d], auth_atom_id_names[d]])
+                    for idx, row in enumerate(loop.get_tag(auth_items)):
+                        atom_sels = [None] * atom_dim_num
+
+                        for d in range(atom_dim_num):
+
+                            try:
+
+                                chain_id = auth_chain_id = row[d * 4]
+                                seq_id = int(row[d * 4 + 1])
+                                comp_id = row[d * 4 + 2]
+                                atom_id = row[d * 4 + 3]
+
+                                seq_key = (chain_id, seq_id, comp_id)
+
+                                entity_assembly_id, comp_index_id, _, _ = auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+
+                                if self.__annotation_mode or self.__native_combined:
+                                    _auth_asym_id, _auth_seq_id =\
+                                        next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
+                                              if v[0] == entity_assembly_id and v[1] == comp_index_id and k[2] == comp_id), (None, None))
+                                    if _auth_asym_id is not None:
+                                        seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
+                                        if seq_key in auth_to_star_seq:
+                                            chain_id, seq_id = _auth_asym_id, _auth_seq_id
+
+                            except KeyError:
+                                continue
+
+                            auth_atom_id = atom_id
+
+                            auth_asym_id = auth_seq_id = None
+
+                            if seq_key in auth_to_star_seq:
+                                auth_asym_id, auth_seq_id, _ = seq_key
+                            else:
+                                k = next((k for k, v in auth_to_star_seq.items() if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                if k is None:
+                                    continue
+                                auth_asym_id, auth_seq_id, _ = k
+
+                            chain_id, seq_id = auth_asym_id, auth_seq_id
+
+                            _assign, warn = assignCoordPolymerSequenceWithChainId(self.__caC, self.__nefT, chain_id, seq_id, comp_id, atom_id)
+
+                            if warn is not None:
+
+                                _index_tag = index_tag if index_tag is not None else 'ID'
+                                try:
+                                    _index_tag_col = loop.tags.index(_index_tag)
+                                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                except ValueError:
+                                    _index_tag = 'ID'
+                                    try:
+                                        _index_tag_col = loop.tags.index(_index_tag)
+                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    except ValueError:
+                                        _index_tag = 'Index_ID'
+                                        idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
+
+                                if warn.startswith('[Atom not found]'):
+                                    if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                        self.report.error.appendDescription('atom_not_found',
+                                                                            {'file_name': original_file_name,
+                                                                             'sf_framecode': sf_framecode,
+                                                                             'category': lp_category,
+                                                                             'description': idx_msg + warn})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+
+                                continue
+
+                            enableWarning = True
+                            if content_subtype == 'dist_restraint':
+                                if (auth_comp_id_1_col != -1 and loop.data[idx][auth_comp_id_1_col] == 'HOH')\
+                                   or (auth_comp_id_2_col != -1 and loop.data[idx][auth_comp_id_2_col] == 'HOH'):
+                                    enableWarning = False
+                            elif content_subtype == 'dihed_restraint':
+                                if torsion_angle_name_col != -1 and loop.data[idx][torsion_angle_name_col] == 'PPA':
+                                    enableWarning = False
+
+                            atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
+                                                                  allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
+                                                                  enableWarning=enableWarning,
+                                                                  preferAuthAtomName=prefer_auth_atom_name,
+                                                                  representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
+                                                                  modelNumName=model_num_name)
+
+                            if warn is not None:
+
+                                _index_tag = index_tag if index_tag is not None else 'ID'
+                                try:
+                                    _index_tag_col = loop.tags.index(_index_tag)
+                                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                except ValueError:
+                                    _index_tag = 'ID'
+                                    try:
+                                        _index_tag_col = loop.tags.index(_index_tag)
+                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                                    except ValueError:
+                                        _index_tag = 'Index_ID'
+                                        idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
+
+                                if warn.startswith('[Atom not found]'):
+                                    if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                                        self.report.error.appendDescription('atom_not_found',
+                                                                            {'file_name': original_file_name,
+                                                                             'sf_framecode': sf_framecode,
+                                                                             'category': lp_category,
+                                                                             'description': idx_msg + warn})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+
+                                elif warn.startswith('[Hydrogen not instantiated]'):
+                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
+                                                                          {'file_name': original_file_name,
+                                                                           'sf_framecode': sf_framecode,
+                                                                           'category': lp_category,
+                                                                           'description': idx_msg + warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
+
+                                elif warn.startswith('[Invalid atom nomenclature]'):
+                                    self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                        {'file_name': original_file_name,
+                                                                         'sf_framecode': sf_framecode,
+                                                                         'category': lp_category,
+                                                                         'description': idx_msg + warn})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+
+                                elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                                    self.report.error.appendDescription('invalid_data',
+                                                                        {'file_name': original_file_name,
+                                                                         'sf_framecode': sf_framecode,
+                                                                         'category': lp_category,
+                                                                         'description': idx_msg + warn})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ ValueError  - {idx_msg + warn}\n")
+
+                                continue
+
+                        if any(d for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
+                            continue
+
+                        sf_item['id'] += 1
+
+                        if content_subtype == 'dist_restraint':
+                            Id = '.'
+                            if id_col != -1:
+                                Id = loop.data[idx][id_col]
+                                try:
+                                    _Id = int(Id)
+                                except ValueError:
+                                    Id = '.'
+                            Id = sf_item['id'] if isinstance(Id, str) and Id == '.' else _Id
+                            combinationId = '.'
+                            if combination_id_col != -1:
+                                combinationId = loop.data[idx][combination_id_col]
+                                try:
+                                    int(combinationId)
+                                except ValueError:
+                                    combinationId = '.'
+                            memberId = '.'
+                            if member_id_col != -1:
+                                memberId = loop.data[idx][member_id_col]
+                                try:
+                                    int(memberId)
+                                except ValueError:
+                                    memberId = '.'
+                            valid_atom_sels = atom_sels[0] is not None and atom_sels[1] is not None
+                            if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
+                               and (isAmbigAtomSelection(atom_sels[0], self.__csStat)
+                                    or isAmbigAtomSelection(atom_sels[1], self.__csStat)):
+                                memberId = 0
+                            memberLogicCode = '.'
+                            if member_logic_code_col != -1:
+                                memberLogicCode = loop.data[idx][member_logic_code_col]
+                                if memberLogicCode in emptyValue:
+                                    memberLogicCode = '.'
+                            memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1 else memberLogicCode
+
+                            if isinstance(memberId, int):
+                                _atom1 = _atom2 = None
+
+                            if valid_atom_sels:
+                                for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
+                                    if isIdenticalRestraint([atom1, atom2]):
+                                        continue
+                                    if isinstance(memberId, int):
+                                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                           or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                            memberId += 1
+                                            _atom1, _atom2 = atom1, atom2
+                                    sf_item['index_id'] += 1
+                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                          memberId, memberLogicCode, list_id, self.__entry_id,
+                                                          loop.tags, loop.data[idx],
+                                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                                          [atom1, atom2], self.__annotation_mode)
+
+                                    lp.add_data(_row)
+
+                            elif atom_sels[0] is not None:
+                                atom2 = None
+                                for atom1 in atom_sels[0]:
+                                    sf_item['index_id'] += 1
+                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                          memberId, memberLogicCode, list_id, self.__entry_id,
+                                                          loop.tags, loop.data[idx],
+                                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                                          [atom1, atom2], self.__annotation_mode)
+                                    lp.add_data(_row)
+
+                            elif atom_sels[1] is not None:
+                                atom1 = None
+                                for atom2 in atom_sels[1]:
+                                    sf_item['index_id'] += 1
+                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                          memberId, memberLogicCode, list_id, self.__entry_id,
+                                                          loop.tags, loop.data[idx],
+                                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                                          [atom1, atom2], self.__annotation_mode)
+                                    lp.add_data(_row)
+
+                            else:
+                                atom1 = atom2 = None
+                                sf_item['index_id'] += 1
+                                _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                      memberId, memberLogicCode, list_id, self.__entry_id,
+                                                      loop.tags, loop.data[idx],
+                                                      auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                                      [atom1, atom2], self.__annotation_mode)
+                                lp.add_data(_row)
+
+                        else:
+
+                            sf_item['index_id'] += 1
+                            _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
+                                                  None, None, list_id, self.__entry_id,
+                                                  loop.tags, loop.data[idx],
+                                                  auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                                  atom_sels, self.__annotation_mode)
+                            lp.add_data(_row)
+
+                else:  # nothing to do because of missing polymer sequence for this loop
+
+                    lp = loop
+
+                    sf_item['loop'] = lp
 
             if content_subtype == 'dist_restraint':
 

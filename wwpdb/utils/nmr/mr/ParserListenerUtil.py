@@ -9708,11 +9708,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             float_row_idx.append(key_size + 8)
         val = get_row_value('Upper_linear_limit')
         if val is not None:
-            row[key_size + 9] = str(abs(float(val)))
+            row[key_size + 9] = val
             float_row_idx.append(key_size + 9)
         val = get_row_value('Weight')
         if val is not None:
-            row[key_size + 10] = val
+            row[key_size + 10] = str(abs(float(val)))
         val = get_row_value('Distance_val')
         if val is not None:
             row[key_size + 11] = val
@@ -9831,11 +9831,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 1] = val
         val = get_row_value('Target_value')
         if val is not None:
-            row[key_size + 2] = str(abs(float(val)))
+            row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
         val = get_row_value('Target_value_uncertainty')
         if val is not None:
-            row[key_size + 3] = val
+            row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)
         val = get_row_value('RDC_lower_linear_limit')
         if val is not None:
@@ -10052,11 +10052,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 6] = val
         val = get_row_value('Val')
         if val is not None:
-            row[key_size + 7] = str(abs(float(val)))
+            row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
         val = get_row_value('Val_err')
         if val is not None:
-            row[key_size + 8] = val
+            row[key_size + 8] = str(abs(float(val)))
             float_row_idx.append(key_size + 8)
         val = get_row_value('Val_min')
         if val is not None:
@@ -10467,11 +10467,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 6] = val
         val = get_row_value('Val')
         if val is not None:
-            row[key_size + 7] = str(abs(float(val)))
+            row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
         val = get_row_value('Val_err')
         if val is not None:
-            row[key_size + 8] = val
+            row[key_size + 8] = str(abs(float(val)))
             float_row_idx.append(key_size + 8)
         val = get_row_value('Val_min')
         if val is not None:

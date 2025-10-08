@@ -783,7 +783,7 @@ class BareMRParserListener(ParseTreeListener):
                     self.__col_order.append('residue_name')
                 else:
                     self.__col_order.append('sequence_code')
-            elif 'CHAIN' in col_name or 'ASYM' in col_name or 'ENTITY' in col_name:
+            elif 'CHAIN' in col_name or 'ASYM' in col_name or 'ENTITY' in col_name or 'CHN' in col_name:
                 self.__col_order.append('chain_code')
             elif 'ATOM' in col_name and 'TYPE' not in col_name and 'NUM' not in col_name:
                 self.__col_order.append('atom_name')
@@ -798,7 +798,7 @@ class BareMRParserListener(ParseTreeListener):
                 self.__col_order.append('value_uncertainty')
             elif 'UP' in col_name or 'MAX' in col_name and 'DST' not in col_name:
                 self.__col_order.append('upper_limit')
-            elif 'LOW' in col_name or 'MIN' in col_name and 'DST' not in col_name:
+            elif col_name.startswith('LO') or 'LOW' in col_name or 'MIN' in col_name and 'DST' not in col_name:
                 self.__col_order.append('lower_limit')
             elif 'COMMENT' in col_name or 'DETAIL' in col_name or 'MEMO' in col_name:
                 self.__col_order.append('details')
@@ -842,7 +842,6 @@ class BareMRParserListener(ParseTreeListener):
                     self.__col_name.insert(0, 'N/A')
                     len_ord += 1
 
-                # MARDIGAS format
                 if len_ord + 2 == len_any and self.__col_name[0] == 'ATOM_I' and self.__col_name[1] == 'ATOM_J'\
                    and 'sequence_code' not in self.__col_order:
                     self.__col_order.insert(2, 'sequence_code')
@@ -850,6 +849,20 @@ class BareMRParserListener(ParseTreeListener):
                     self.__col_order.insert(1, 'sequence_code')
                     self.__col_name.insert(1, 'RES_I')
                     len_ord += 2
+
+                if self.__col_order.count('sequence_code') == 4 and self.__col_order.count('residue_name') == 0:
+                    name_test = 0
+                    for name, order in zip(self.__col_name, self.__col_order):
+                        if order == 'sequence_code':
+                            if 'NUM' in name or 'NM' in name or name.endswith('ID'):
+                                continue
+                            name_test += 1
+                    if name_test == 2:
+                        for idx, (name, order) in enumerate(zip(self.__col_name, self.__col_order)):
+                            if order == 'sequence_code':
+                                if 'NUM' in name or 'NM' in name or name.endswith('ID'):
+                                    continue
+                                self.__col_order[idx] = 'residue_name'
 
             if self.__col_order.count('sequence_code') != 2 or self.__col_order.count('atom_name') != 2\
                or ('target_value' not in self.__col_order and 'upper_limit' not in self.__col_order):

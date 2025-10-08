@@ -220,6 +220,11 @@ class BareMRReader:
 if __name__ == "__main__":
     reader = BareMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6oh1/top10_changed.nrv',
+                 '../../tests-nmr/mock-data-remediation/6oh1/6oh1.cif')
+
+    reader = BareMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mne/2mne-corrected-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2mne/2mne.cif')
 

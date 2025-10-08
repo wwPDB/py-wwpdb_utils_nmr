@@ -19,7 +19,7 @@ lexer grammar BareMRLexer;
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 // Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
-fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
+fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
@@ -48,7 +48,7 @@ Double_quote_float:	'"' Float '"';
 SPACE:			[, \t]+ -> skip;
 RETURN:			[\r\n]+;
 
-fragment COMMENT_START_CHAR:	('#' ~[_] | '!' | '\\' | '&' | '/' | '=');
+fragment COMMENT_START_CHAR:	('#' ~[_] | '!' | '\\' | '&' | '/' | '=' | '$');
 
 //ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | 'REMARK' 'S'?) ' '* RETURN -> channel(HIDDEN);

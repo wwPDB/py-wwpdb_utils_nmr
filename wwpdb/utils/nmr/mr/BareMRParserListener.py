@@ -833,13 +833,23 @@ class BareMRParserListener(ParseTreeListener):
             if len_ord > len_any:
                 return
 
-            if self.distRestraints == 0 and len_ord + 1 == len_any:
-                if 'index' not in self.__col_order:
-                    self.__col_order.insert(0, 'index')
-                else:
-                    self.__col_order.insert(0, 'unknown')
-                self.__col_name.insert(0, 'N/A')
-                len_ord += 1
+            if self.distRestraints == 0:
+                if len_ord + 1 == len_any:
+                    if 'index' not in self.__col_order:
+                        self.__col_order.insert(0, 'index')
+                    else:
+                        self.__col_order.insert(0, 'unknown')
+                    self.__col_name.insert(0, 'N/A')
+                    len_ord += 1
+
+                # MARDIGAS format
+                if len_ord + 2 == len_any and self.__col_name[0] == 'ATOM_I' and self.__col_name[1] == 'ATOM_J'\
+                   and 'sequence_code' not in self.__col_order:
+                    self.__col_order.insert(2, 'sequence_code')
+                    self.__col_name.insert(2, 'RES_J')
+                    self.__col_order.insert(1, 'sequence_code')
+                    self.__col_name.insert(1, 'RES_I')
+                    len_ord += 2
 
             if self.__col_order.count('sequence_code') != 2 or self.__col_order.count('atom_name') != 2\
                or ('target_value' not in self.__col_order and 'upper_limit' not in self.__col_order):

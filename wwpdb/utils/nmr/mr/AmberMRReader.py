@@ -358,6 +358,12 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lwh/2lwh-corrected-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2lwh/2lwh.cif',
+                 None)
+
     mr_atom_name_mapping_ = [
         {'auth_atom_id': 'C15', 'auth_comp_id': '2QL', 'auth_seq_id': 101, 'original_atom_id': 'C15', 'original_comp_id': 'DBP', 'original_seq_id': 23},
         {'auth_atom_id': 'C19', 'auth_comp_id': '2QL', 'auth_seq_id': 101, 'original_atom_id': 'C19', 'original_comp_id': 'DBP', 'original_seq_id': 23},

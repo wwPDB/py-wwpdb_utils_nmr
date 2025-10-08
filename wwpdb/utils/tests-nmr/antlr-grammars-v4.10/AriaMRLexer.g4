@@ -20,6 +20,7 @@ COMMA:			',' -> skip;
 
 Integer:		('+' | '-')? DECIMAL COMMA?;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) COMMA?;
+Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
@@ -45,6 +46,10 @@ Hyphen:			'-';
 
 fragment YesNo:		('yes' | 'no') COMMA?;
 fragment ATypeCode:	('M' | 'S' | 'A') COMMA?;
+
+P_code:			'p';
+A_code:			'a';
+C_code:			'c';
 
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;

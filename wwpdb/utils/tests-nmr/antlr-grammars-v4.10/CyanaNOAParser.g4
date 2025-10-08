@@ -47,11 +47,11 @@ noe_assignments:
 	(Violated_in Integer Structures_by Angstrome Period)?;
 
 noe_assignment:
-	Simple_name Simple_name Integer (Add_op | Sub_op) Simple_name Simple_name Integer (Ok | Lone | Poor | Far)
+	Simple_name Simple_name Integer (Add_op | Sub_op) Simple_name Simple_name Integer (Ok | Lone | Poor | Far) Integer
 	numerical_report;
 
 numerical_report:
-	Integer Integer (Integer | Sub_op) (Integer | Sub_op) Distance_range? extended_report?;
+	Integer (Integer | Sub_op) (Integer | Sub_op) Distance_range? extended_report?;
 
 extended_report:
 	(Numerical_report1 | Numerical_report2 | Numerical_report3 | Numerical_report4) extended_report?;

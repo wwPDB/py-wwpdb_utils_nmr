@@ -20,7 +20,8 @@ options { tokenVocab=AriaMRLexer; }
 
 aria_mr:
 	(
-	distance_restraints
+	distance_restraints |
+	old_distance_restraints
 	)*
 	EOF;
 
@@ -43,6 +44,23 @@ atom_pair:
 
 atom_selection:
 	Simple_name Simple_name Simple_name?;
+
+old_distance_restraints:
+	old_distance_restraint+;
+
+old_distance_restraint:
+	p_row
+	a_row
+	c_row+;
+
+p_row:
+	P_code Integer Integer Integer Float Real Hyphen Hyphen Hyphen Hyphen Float Float Float Hyphen Float Float Float;
+
+a_row:
+	A_code Integer Float Float Float Float Real Real Real Real Integer Integer;
+
+c_row:
+	C_code Float Float Float Float Float Float Hyphen Integer Simple_name Simple_name Float Float Simple_name Float Float Hyphen Integer Simple_name Simple_name Float Float Simple_name Float Float;
 
 /* number expression in restrains */
 number:	Float | Integer;

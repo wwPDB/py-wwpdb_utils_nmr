@@ -275,6 +275,10 @@ class AriaMRParserListener(ParseTreeListener):
     # current weight value
     __cur_weight = 1.0
 
+    __cur_lol = -1.0
+
+    __cur_upl = -1.0
+
     # current combination
     __cur_comb_id = None
 
@@ -799,11 +803,15 @@ class AriaMRParserListener(ParseTreeListener):
             self.__retrieveLocalSeqScheme()
 
             total = 0
+            weights = []
 
             for contlib in self.__cur_contrib:
 
                 atom_pair = contlib['atom_pair']
                 weight = contlib['weight']
+
+                if weight <= 0.0:
+                    continue
 
                 chainId1 = atom_pair[0]['chain_id'] if 'chain_id' in atom_pair[0] else None
                 seqId1 = atom_pair[0]['seq_id']
@@ -854,6 +862,7 @@ class AriaMRParserListener(ParseTreeListener):
                     return
 
                 total += 1
+                weights.append(weight)
 
             if total == 0:
                 return
@@ -879,6 +888,7 @@ class AriaMRParserListener(ParseTreeListener):
                     _atom1 = _atom2 = None
                 if self.__createSfDict:
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
+                dstFunc['weight'] = weights[i // 2]
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
@@ -3091,6 +3101,217 @@ class AriaMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by AriaMRParser#atom_selection.
     def exitAtom_selection(self, ctx: AriaMRParser.Atom_selectionContext):  # pylint: disable=unused-argument
         pass
+
+    # Enter a parse tree produced by AriaMRParser#old_distance_restraints.
+    def enterOld_distance_restraints(self, ctx: AriaMRParser.Old_distance_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+    # Exit a parse tree produced by AriaMRParser#old_distance_restraints.
+    def exitOld_distance_restraints(self, ctx: AriaMRParser.Old_distance_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AriaMRParser#old_distance_restraint.
+    def enterOld_distance_restraint(self, ctx: AriaMRParser.Old_distance_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.__cur_comb_id = 0
+        self.__cur_contrib.clear()
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by AriaMRParser#old_distance_restraint.
+    def exitOld_distance_restraint(self, ctx: AriaMRParser.Old_distance_restraintContext):  # pylint: disable=unused-argument
+
+        try:
+
+            if len(self.__cur_contrib) == 0:
+                return
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            self.__retrieveLocalSeqScheme()
+
+            total = 0
+            weights = []
+
+            for contlib in self.__cur_contrib:
+
+                atom_pair = contlib['atom_pair']
+                weight = contlib['weight']
+
+                if weight <= 0.0:
+                    continue
+
+                chainId1 = atom_pair[0]['chain_id'] if 'chain_id' in atom_pair[0] else None
+                seqId1 = atom_pair[0]['seq_id']
+                compId1 = atom_pair[0]['comp_id']
+                atomId1 = atom_pair[0]['atom_id']
+
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)\
+                    if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+
+                chainId2 = atom_pair[1]['chain_id'] if 'chain_id' in atom_pair[1] else None
+                seqId2 = atom_pair[1]['seq_id']
+                compId2 = atom_pair[1]['comp_id']
+                atomId2 = atom_pair[1]['atom_id']
+
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)\
+                    if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                if 0 in (len(chainAssign1), len(chainAssign2)):
+                    continue
+
+                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                if len(self.atomSelectionSet) < (total + 1) * 2:
+                    continue
+
+                self.__allowZeroUpperLimit = False
+                if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                   and len(self.atomSelectionSet[0]) > 0\
+                   and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                    chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                    seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                    atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                    chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                    seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                    atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                    if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                       and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                        self.__allowZeroUpperLimit = True
+                self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
+                dstFunc = self.validateDistanceRange(weight, None, self.__cur_lol, self.__cur_upl, self.__omitDistLimitOutlier)
+
+                if dstFunc is None:
+                    return
+
+                total += 1
+                weights.append(weight)
+
+            if total == 0:
+                return
+
+            combinationId = memberId = memberLogicCode = '.'
+            if self.__createSfDict:
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf['id'] += 1
+                if self.__cur_comb_id > 1:
+                    combinationId = 0
+                if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                   and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                        or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                    memberId = 0
+
+            for i in range(0, total * 2, 2):
+                if isinstance(combinationId, int):
+                    combinationId += 1
+                if isinstance(memberId, int):
+                    memberId = 0
+                    _atom1 = _atom2 = None
+                if self.__createSfDict:
+                    memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
+                dstFunc['weight'] = weights[i // 2]
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
+                                                      self.atomSelectionSet[i + 1]):
+                    atoms = [atom1, atom2]
+                    if isIdenticalRestraint(atoms, self.__nefT):
+                        continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
+                        if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
+                    if self.__createSfDict and memberLogicCode == '.':
+                        altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
+                        if altAtomId1 is not None or altAtomId2 is not None:
+                            atom1, atom2 =\
+                                self.selectRealisticBondConstraint(atom1, atom2,
+                                                                   altAtomId1, altAtomId2,
+                                                                   dstFunc)
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        if isinstance(memberId, int):
+                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                memberId += 1
+                                _atom1, _atom2 = atom1, atom2
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     combinationId, memberId, memberLogicCode,
+                                     sf['list_id'], self.__entryId, dstFunc,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                     atom1, atom2, asis1=asis1, asis2=asis2)
+                        sf['loop'].add_data(row)
+
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
+
+                        if isinstance(combinationId, int)\
+                           or (memberLogicCode == 'OR'
+                               and (isAmbigAtomSelection(self.atomSelectionSet[i], self.__csStat)
+                                    or isAmbigAtomSelection(self.atomSelectionSet[i + 1], self.__csStat))):
+                            sf['constraint_subsubtype'] = 'ambi'
+
+                        if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                            upperLimit = float(dstFunc['upper_limit'])
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by AriaMRParser#p_row.
+    def enterP_row(self, ctx: AriaMRParser.P_rowContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AriaMRParser#p_row.
+    def exitP_row(self, ctx: AriaMRParser.P_rowContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AriaMRParser#a_row.
+    def enterA_row(self, ctx: AriaMRParser.A_rowContext):
+        self.__cur_lol = float(str(ctx.Float(2))) if ctx.Float(2) else -1.0
+        self.__cur_upl = float(str(ctx.Float(3))) if ctx.Float(3) else -1.0
+
+    # Exit a parse tree produced by AriaMRParser#a_row.
+    def exitA_row(self, ctx: AriaMRParser.A_rowContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AriaMRParser#c_row.
+    def enterC_row(self, ctx: AriaMRParser.C_rowContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AriaMRParser#c_row.
+    def exitC_row(self, ctx: AriaMRParser.C_rowContext):
+        self.__cur_comb_id += 1
+
+        atom_pair = [{'atom_id': str(ctx.Simple_name(2)).upper(),
+                      'seq_id': int(str(ctx.Integer(0))),
+                      'comp_id': str(ctx.Simple_name(0)).upper()},
+                     {'atom_id': str(ctx.Simple_name(5)).upper(),
+                      'seq_id': int(str(ctx.Integer(1))),
+                      'comp_id': str(ctx.Simple_name(3)).upper()}]
+
+        weight = float(str(ctx.Float(1))) if ctx.Float(1) else -1.0
+
+        self.__cur_contrib.append({'atom_pair': copy.copy(atom_pair),
+                                   'weight': weight,
+                                   'combination_id': self.__cur_comb_id})
 
     # Enter a parse tree produced by AriaMRParser#number.
     def enterNumber(self, ctx: AriaMRParser.NumberContext):  # pylint: disable=unused-argument

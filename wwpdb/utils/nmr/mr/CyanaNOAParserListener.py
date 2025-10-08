@@ -290,6 +290,7 @@ class CyanaNOAParserListener(ParseTreeListener):
     # collection of noe assignment
     noeAssignments = []
     asisList = []
+    weights = []
 
     __f = None
     warningMessage = None
@@ -836,6 +837,7 @@ class CyanaNOAParserListener(ParseTreeListener):
 
                 self.noeAssignments.clear()
                 self.asisList.clear()
+                self.weights.clear()
 
     # Exit a parse tree produced by CyanaNOAParser#peak_quality.
     def exitPeak_quality(self, ctx: CyanaNOAParser.Peak_qualityContext):  # pylint: disable=unused-argument
@@ -862,6 +864,7 @@ class CyanaNOAParserListener(ParseTreeListener):
                     sf['id'] += 1
 
                 for idx, atomSelectionSet in enumerate(self.noeAssignments):
+                    self.dstFunc['weight'] = self.weights[idx]
                     memberLogicCode = 'OR' if len(atomSelectionSet[0]) * len(atomSelectionSet[1]) > 1 else '.'
                     has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(atomSelectionSet)
 
@@ -938,6 +941,7 @@ class CyanaNOAParserListener(ParseTreeListener):
             finally:
                 self.noeAssignments.clear()
                 self.asisList.clear()
+                self.weights.clear()
 
     def validateDistanceRange(self, weight: float, target_value: Optional[float],
                               lower_limit: Optional[float], upper_limit: Optional[float],
@@ -2437,6 +2441,7 @@ class CyanaNOAParserListener(ParseTreeListener):
 
                 self.noeAssignments.append(copy.deepcopy(self.atomSelectionSet))
                 self.asisList.append([asis1, asis2])
+                self.weights.append(float(str(ctx.Integer(2))) / 100.0)
 
             finally:
                 self.atomSelectionSet.clear()

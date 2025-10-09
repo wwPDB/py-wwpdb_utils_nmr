@@ -182,6 +182,9 @@ DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
 DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
 
 
+reduced_residue_name_pattern = re.compile(r'([A-Za-z]+)(\d+)')
+
+
 # This class defines a complete listener for a parse tree produced by BareMRParser.
 class BareMRParserListener(ParseTreeListener):
 
@@ -255,6 +258,11 @@ class BareMRParserListener(ParseTreeListener):
     __hasNonPolySeq = False
     __preferAuthSeq = True
     __extendAuthSeq = False
+
+    __entityAssembly = None
+    __polyPeptide = False
+    __polyDeoxyribonucleotide = False
+    __polyRibonucleotide = False
 
     # chain number dictionary
     __chainNumberDict = None
@@ -365,6 +373,7 @@ class BareMRParserListener(ParseTreeListener):
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+            self.__entityAssembly = ret['entity_assembly']
             self.__modResidue = ret['mod_residue']
             self.__splitLigand = ret['split_ligand']
 
@@ -382,6 +391,17 @@ class BareMRParserListener(ParseTreeListener):
                 self.__nonPolySeq = self.__nonPoly
             else:
                 self.__nonPolySeq = self.__branched
+
+        if self.__hasPolySeq:
+            for entity in self.__entityAssembly:
+                if 'entity_poly_type' in entity:
+                    poly_type = entity['entity_poly_type']
+                    if poly_type.startswith('polypeptide'):
+                        self.__polyPeptide = True
+                    elif poly_type == 'polydeoxyribonucleotide':
+                        self.__polyDeoxyribonucleotide = True
+                    elif poly_type == 'polyribonucleotide':
+                        self.__polyRibonucleotide = True
 
         if self.__hasNonPoly:
             atom_list = []
@@ -785,7 +805,7 @@ class BareMRParserListener(ParseTreeListener):
                     self.__col_order.append('sequence_code')
             elif 'CHAIN' in col_name or 'ASYM' in col_name or 'ENTITY' in col_name or 'CHN' in col_name:
                 self.__col_order.append('chain_code')
-            elif 'ATOM' in col_name and 'TYPE' not in col_name and 'NUM' not in col_name:
+            elif ('ATOM' in col_name or 'PROTON' in col_name) and 'TYPE' not in col_name and 'NUM' not in col_name:
                 self.__col_order.append('atom_name')
             elif ('ID' in col_name or 'NUM' in col_name or 'INDEX' in col_name) and 'WIDTH' not in col_name:
                 self.__col_order.append('index')
@@ -843,7 +863,7 @@ class BareMRParserListener(ParseTreeListener):
                     len_ord += 1
 
                 elif len_ord + 2 == len_any and self.__col_name[0] == 'ATOM_I' and self.__col_name[1] == 'ATOM_J'\
-                   and 'sequence_code' not in self.__col_order:
+                        and 'sequence_code' not in self.__col_order:
                     self.__col_order.insert(2, 'sequence_code')
                     self.__col_name.insert(2, 'RES_J')
                     self.__col_order.insert(1, 'sequence_code')
@@ -899,7 +919,21 @@ class BareMRParserListener(ParseTreeListener):
                         if isinstance(self.anySelection[idx], int):
                             seqIds.append(self.anySelection[idx])
                         elif isinstance(self.anySelection[idx], str):
-                            compIds.append(self.anySelection[idx])
+                            if self.__col_order.count('residue_name') == 0 and reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                seqIds.append(int(g[1]))
+                                compId = g[0]
+                                if len(compId) == 1:
+                                    if self.__polyPeptide and not self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
+                                        try:
+                                            compId = next(k for k, v in monDict3.items() if v == compId)
+                                        except StopIteration:
+                                            pass
+                                    elif not self.__polyPeptide and self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
+                                        compId = 'D' + compId
+                                compIds.append(compId)
+                            else:
+                                compIds.append(self.anySelection[idx])
                     elif order == 'residue_name':
                         if isinstance(self.anySelection[idx], str):
                             compIds.append(self.anySelection[idx])

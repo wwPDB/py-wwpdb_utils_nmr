@@ -15,6 +15,7 @@ __version__ = "1.0.0"
 import sys
 import re
 import copy
+import numpy
 import itertools
 import collections
 
@@ -29,6 +30,8 @@ try:
     from wwpdb.utils.nmr.mr.BareMRParser import BareMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
+                                                       getTypeOfDihedralRestraint,
+                                                       fixBackboneAtomsOfDihedralRestraint,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        translateToLigandName,
@@ -39,6 +42,7 @@ try:
                                                        isStructConn,
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
+                                                       isLikePheOrTyr,
                                                        getMetalCoordOf,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -48,6 +52,7 @@ try:
                                                        getLoop,
                                                        getRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
@@ -56,8 +61,13 @@ try:
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
+                                                       THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
+                                                       ANGLE_RESTRAINT_RANGE,
+                                                       ANGLE_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP,
                                                        DIST_AMBIG_MED,
@@ -97,13 +107,18 @@ try:
                                            retrieveOriginalSeqIdFromMRMap)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance,
-                                                dist_error)
+                                                dist_error,
+                                                angle_target_values,
+                                                dihedral_angle,
+                                                angle_error)
 except ImportError:
     from nmr.io.CifReader import (CifReader,
                                   SYMBOLS_ELEMENT)
     from nmr.mr.BareMRParser import BareMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
+                                           getTypeOfDihedralRestraint,
+                                           fixBackboneAtomsOfDihedralRestraint,
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            translateToLigandName,
@@ -114,6 +129,7 @@ except ImportError:
                                            isStructConn,
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
+                                           isLikePheOrTyr,
                                            getMetalCoordOf,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -123,6 +139,7 @@ except ImportError:
                                            getLoop,
                                            getRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
@@ -131,8 +148,13 @@ except ImportError:
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
+                                           THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
+                                           ANGLE_RESTRAINT_RANGE,
+                                           ANGLE_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP,
                                            DIST_AMBIG_MED,
@@ -172,7 +194,10 @@ except ImportError:
                                retrieveOriginalSeqIdFromMRMap)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance,
-                                    dist_error)
+                                    dist_error,
+                                    angle_target_values,
+                                    dihedral_angle,
+                                    angle_error)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -182,7 +207,15 @@ DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
 DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
 
 
+ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
+ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
+
+ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
+ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
+
+
 reduced_residue_name_pattern = re.compile(r'([A-Za-z]+)(\d+)')
+rev_reduced_residue_name_pattern = re.compile(r'(\d+)([A-Za-z]+)')
 
 
 # This class defines a complete listener for a parse tree produced by BareMRParser.
@@ -197,6 +230,7 @@ class BareMRParserListener(ParseTreeListener):
     __createSfDict = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
+    __correctCircularShift = True
 
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
@@ -443,7 +477,8 @@ class BareMRParserListener(ParseTreeListener):
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
-        self.distRestraints = 0      # ISD: Distance restraints
+        self.distRestraints = 0      # Distance restraints
+        self.dihedRestraints = 0     # Dihedral angle restraints
 
         self.sfDict = {}
 
@@ -834,9 +869,13 @@ class BareMRParserListener(ParseTreeListener):
 
         self.columnNameSelection.clear()
 
-        self.__cur_subtype = 'dist'
+        if self.__col_order.count('atom_name') == 2:
+            self.__cur_subtype = 'dist'
+            self.distRestraints = 0
 
-        self.distRestraints = 0
+        if self.__col_order.count('atom_name') == 4:
+            self.__cur_subtype = 'dihed'
+            self.dihedRestraints = 0
 
     # Enter a parse tree produced by BareMRParser#mr_row_list.
     def enterMr_row_list(self, ctx: BareMRParser.Mr_row_listContext):  # pylint: disable=unused-argument
@@ -844,6 +883,12 @@ class BareMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by BareMRParser#mr_row_list.
     def exitMr_row_list(self, ctx: BareMRParser.Mr_row_listContext):  # pylint: disable=unused-argument
+        if self.__cur_subtype == 'dist':
+            self.exitDist_row_list()
+        if self.__cur_subtype == 'dihed':
+            self.exitDihed_row_list()
+
+    def exitDist_row_list(self):
 
         try:
 
@@ -932,6 +977,19 @@ class BareMRParserListener(ParseTreeListener):
                                     elif not self.__polyPeptide and self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
                                         compId = 'D' + compId
                                 compIds.append(compId)
+                            if self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                seqIds.append(int(g[0]))
+                                compId = g[1]
+                                if len(compId) == 1:
+                                    if self.__polyPeptide and not self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
+                                        try:
+                                            compId = next(k for k, v in monDict3.items() if v == compId)
+                                        except StopIteration:
+                                            pass
+                                    elif not self.__polyPeptide and self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
+                                        compId = 'D' + compId
+                                compIds.append(compId)
                             else:
                                 compIds.append(self.anySelection[idx])
                     elif order == 'residue_name':
@@ -985,12 +1043,12 @@ class BareMRParserListener(ParseTreeListener):
             chainId1 = chainId2 = seqId1 = seqId2 = compId1 = compId2 = atomId1 = atomId2 = None
 
             if len(chainIds) > 0:
-                chainId1, chainIds = chainIds[0], chainIds[1]
+                chainId1, chainId2 = chainIds[0], chainIds[1]
 
             seqId1, seqId2 = seqIds[0], seqIds[1]
 
             if len(compIds) > 0:
-                compId1, compIds = compIds[0], compIds[1]
+                compId1, compId2 = compIds[0], compIds[1]
 
             atomId1, atomId2 = atomIds[0], atomIds[1]
 
@@ -1123,6 +1181,610 @@ class BareMRParserListener(ParseTreeListener):
 
         finally:
             self.anySelection.clear()
+
+    def exitDihed_row_list(self):
+
+        try:
+
+            len_ord = len(self.__col_order)
+            len_any = len(self.anySelection)
+
+            if len_ord > len_any:
+                return
+
+            if self.dihedRestraints == 0:
+                if len_ord + 1 == len_any:
+                    if 'index' not in self.__col_order:
+                        self.__col_order.insert(0, 'index')
+                    else:
+                        self.__col_order.insert(0, 'unknown')
+                    self.__col_name.insert(0, 'N/A')
+                    len_ord += 1
+
+                elif len_ord + 4 == len_any and self.__col_name[0] == 'ATOM_I' and self.__col_name[1] == 'ATOM_J'\
+                        and self.__col_name[2] == 'ATOM_K' and self.__col_name[3] == 'ATOM_L'\
+                        and 'sequence_code' not in self.__col_order:
+                    self.__col_order.insert(4, 'sequence_code')
+                    self.__col_name.insert(4, 'RES_L')
+                    self.__col_order.insert(3, 'sequence_code')
+                    self.__col_name.insert(3, 'RES_K')
+                    self.__col_order.insert(2, 'sequence_code')
+                    self.__col_name.insert(2, 'RES_J')
+                    self.__col_order.insert(1, 'sequence_code')
+                    self.__col_name.insert(1, 'RES_I')
+                    len_ord += 4
+
+                elif self.__col_order.count('sequence_code') == 8 and self.__col_order.count('residue_name') == 0:
+                    name_test = 0
+                    for name, order in zip(self.__col_name, self.__col_order):
+                        if order == 'sequence_code':
+                            if 'NUM' in name or 'NM' in name or name.endswith('ID'):
+                                continue
+                            name_test += 1
+                    if name_test == 4:
+                        for idx, (name, order) in enumerate(zip(self.__col_name, self.__col_order)):
+                            if order == 'sequence_code':
+                                if 'NUM' in name or 'NM' in name or name.endswith('ID'):
+                                    continue
+                                self.__col_order[idx] = 'residue_name'
+
+            if self.__col_order.count('sequence_code') != 4 or self.__col_order.count('atom_name') != 4\
+               or ('target_value' not in self.__col_order and 'upper_limit' not in self.__col_order):
+                return
+
+            for col_type in ('chain_code', 'residue_name'):
+                if col_type in self.__col_order and self.__col_order.count(col_type) != 4:
+                    return
+
+            for col_type in ('target_value', 'upper_limit', 'lower_limit'):
+                if col_type in self.__col_order and self.__col_order.count(col_type) != 1:
+                    return
+
+            self.dihedRestraints += 1
+
+            self.atomSelectionSet.clear()
+
+            if not self.__hasPolySeq:
+                return
+
+            chainIds, seqIds, compIds, atomIds = [], [], [], []
+            target_value = value_uncertainty = lower_limit = upper_limit = None
+            weight = 1.0
+
+            for idx in range(len_any):
+                if idx < len_ord:
+                    order = self.__col_order[idx]
+                    if order == 'chain_code':
+                        if isinstance(self.anySelection[idx], str):
+                            chainIds.append(self.anySelection[idx])
+                        elif isinstance(self.anySelection[idx], int):
+                            chainIds.append(str(self.anySelection[idx]))
+                    elif order == 'sequence_code':
+                        if isinstance(self.anySelection[idx], int):
+                            seqIds.append(self.anySelection[idx])
+                        elif isinstance(self.anySelection[idx], str):
+                            if self.__col_order.count('residue_name') == 0 and reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                seqIds.append(int(g[1]))
+                                compId = g[0]
+                                if len(compId) == 1:
+                                    if self.__polyPeptide and not self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
+                                        try:
+                                            compId = next(k for k, v in monDict3.items() if v == compId)
+                                        except StopIteration:
+                                            pass
+                                    elif not self.__polyPeptide and self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
+                                        compId = 'D' + compId
+                                compIds.append(compId)
+                            if self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                seqIds.append(int(g[0]))
+                                compId = g[1]
+                                if len(compId) == 1:
+                                    if self.__polyPeptide and not self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
+                                        try:
+                                            compId = next(k for k, v in monDict3.items() if v == compId)
+                                        except StopIteration:
+                                            pass
+                                    elif not self.__polyPeptide and self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
+                                        compId = 'D' + compId
+                                compIds.append(compId)
+                            else:
+                                compIds.append(self.anySelection[idx])
+                    elif order == 'residue_name':
+                        if isinstance(self.anySelection[idx], str):
+                            compIds.append(self.anySelection[idx])
+                        elif isinstance(self.anySelection[idx], int):
+                            seqIds.append(self.anySelection[idx])
+                    elif order == 'atom_name':
+                        if isinstance(self.anySelection[idx], str):
+                            atomIds.append(self.anySelection[idx])
+                    elif order == 'target_value':
+                        if isinstance(self.anySelection[idx], float):
+                            target_value = self.anySelection[idx]
+                        elif isinstance(self.anySelection[idx], int):
+                            target_value = float(self.anySelection[idx])
+                    elif order == 'lower_limit':
+                        if isinstance(self.anySelection[idx], float):
+                            lower_limit = self.anySelection[idx]
+                        elif isinstance(self.anySelection[idx], int):
+                            lower_limit = float(self.anySelection[idx])
+                    elif order == 'upper_limit':
+                        if isinstance(self.anySelection[idx], float):
+                            upper_limit = self.anySelection[idx]
+                        elif isinstance(self.anySelection[idx], int):
+                            upper_limit = float(self.anySelection[idx])
+                    elif order == 'value_uncertainty':
+                        if isinstance(self.anySelection[idx], float):
+                            value_uncertainty = abs(self.anySelection[idx])
+                        elif isinstance(self.anySelection[idx], int):
+                            value_uncertainty = float(self.anySelection[idx])
+                    elif order == 'weight':
+                        if isinstance(self.anySelection[idx], float):
+                            weight = self.anySelection[idx]
+                        elif isinstance(self.anySelection[idx], int):
+                            weight = float(self.anySelection[idx])
+
+            if weight < 0.0:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The weight value '{weight}' must not be a negative value.")
+                self.dihedRestraints -= 1
+                return
+            if weight == 0.0:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The weight value '{weight}' should be a positive value.")
+
+            if len(chainIds) not in (0, 4) or len(seqIds) != 4 or len(compIds) not in (0, 4)\
+               or len(atomIds) != 4 or (target_value is None and upper_limit is None):
+                self.dihedRestraints -= 1
+                return
+
+            chainId1 = chainId2 = chainId3 = chainId4 =\
+                seqId1 = seqId2 = seqId3 = seqId4 =\
+                compId1 = compId2 = compId3 = compId4 =\
+                atomId1 = atomId2 = atomId3 = atomId4 = None
+
+            if len(chainIds) > 0:
+                chainId1, chainId2, chainId3, chainId4 = chainIds[0], chainIds[1], chainIds[2], chainIds[3]
+
+            seqId1, seqId2, seqId3, seqId4 = seqIds[0], seqIds[1], seqIds[2], seqIds[3]
+
+            if len(compIds) > 0:
+                compId1, compId2, compId3, compId4 = compIds[0], compIds[1], compIds[2], compIds[3]
+
+            atomId1, atomId2, atomId3, atomId4 = atomIds[0], atomIds[1], atomIds[2], atomIds[3]
+
+            if upper_limit is None and lower_limit is None and value_uncertainty is not None:
+                upper_limit = target_value + value_uncertainty
+                lower_limit = target_value - value_uncertainty
+
+            self.__retrieveLocalSeqScheme()
+
+            if compId1 is not None:
+                chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)\
+                    if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+            else:
+                chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                    if chainId1 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+
+            if compId2 is not None:
+                chainAssign2, _ = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)\
+                    if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+            else:
+                chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                    if chainId2 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+
+            if compId3 is not None:
+                chainAssign3, _ = self.assignCoordPolymerSequenceWithChainId(chainId3, seqId3, compId3, atomId3)\
+                    if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, compId3, atomId3)
+            else:
+                chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
+                    if chainId3 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId3, atomId3)
+
+            if compId4 is not None:
+                chainAssign4, _ = self.assignCoordPolymerSequenceWithChainId(chainId4, seqId4, compId4, atomId4)\
+                    if chainId4 is not None else self.assignCoordPolymerSequence(seqId4, compId4, atomId4)
+            else:
+                chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)\
+                    if chainId4 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId4, atomId4)
+
+            if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
+                self.dihedRestraints -= 1
+                return
+
+            dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                self.dihedRestraints -= 1
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1, False)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2, False)
+            self.selectCoordAtoms(chainAssign3, seqId3, compId3, atomId3, False)
+            self.selectCoordAtoms(chainAssign4, seqId4, compId4, atomId4, False)
+
+            if len(self.atomSelectionSet) < 4:
+                return
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a dihedral angle')
+                return
+
+            len_f = len(self.__f)
+            self.areUniqueCoordAtoms('a dihedral angle',
+                                     allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+            combinationId = '.' if len_f == len(self.__f) else 0
+
+            atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
+            if isinstance(combinationId, int):
+                fixedAngleName = '.'
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    atoms = [atom1, atom2, atom3, atom4]
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           atoms,
+                                                           'plane_like' in dstFunc,
+                                                           self.__cR, self.__ccU,
+                                                           self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                    if angleName is not None and angleName.startswith('pseudo'):
+                        angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                           atoms,
+                                                                                           self.__getCurrentRestraint())
+                        self.__f.append(err)
+
+                    if angleName in emptyValue and atomSelTotal != 4:
+                        continue
+
+                    fixedAngleName = angleName
+                    break
+
+            sf = None
+            if self.__createSfDict:
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+
+            first_item = True
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       atoms,
+                                                       'plane_like' in dstFunc,
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName is not None and angleName.startswith('pseudo'):
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint())
+                    self.__f.append(err)
+
+                if angleName in emptyValue and atomSelTotal != 4:
+                    continue
+
+                if isinstance(combinationId, int):
+                    if angleName != fixedAngleName:
+                        continue
+                    combinationId += 1
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
+                    sf['index_id'] += 1
+                    if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                        dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                          dstFunc)
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 combinationId, None, angleName,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+        finally:
+            self.anySelection.clear()
+
+    def validateAngleRange(self, weight: float, target_value: Optional[float],
+                           lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+        """ Validate angle value range.
+        """
+
+        validRange = True
+        dstFunc = {'weight': weight}
+
+        if self.__correctCircularShift:
+            _array = numpy.array([target_value, lower_limit, upper_limit],
+                                 dtype=float)
+
+            shift = None
+            if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                shift = -(numpy.nanmax(_array) // 360) * 360
+            elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                shift = -(numpy.nanmin(_array) // 360) * 360
+            if shift is not None:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                "The target/limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
+                if target_value is not None:
+                    target_value += shift
+                if lower_limit is not None:
+                    lower_limit += shift
+                if upper_limit is not None:
+                    upper_limit += shift
+
+        if target_value is not None:
+            if ANGLE_ERROR_MIN < target_value < ANGLE_ERROR_MAX:
+                dstFunc['target_value'] = f"{target_value}"
+            else:
+                validRange = False
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+
+        if lower_limit is not None:
+            if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
+                dstFunc['lower_limit'] = f"{lower_limit}"
+            else:
+                validRange = False
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+
+        if upper_limit is not None:
+            if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
+                dstFunc['upper_limit'] = f"{upper_limit}"
+            else:
+                validRange = False
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+
+        if not validRange:
+            return None
+
+        if target_value is not None:
+            if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if lower_limit is not None:
+            if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if upper_limit is not None:
+            if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
+                pass
+            else:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
+        if None not in (upper_limit, lower_limit)\
+           and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
+
+        return dstFunc
+
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
+        """ Return realistic chi2 angle constraint taking into account the current coordinates.
+        """
+
+        if not self.__hasCoord:
+            return dst_func
+
+        try:
+
+            _p1 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom1['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p1) != 1:
+                return dst_func
+
+            p1 = to_np_array(_p1[0])
+
+            _p2 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom2['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p2) != 1:
+                return dst_func
+
+            p2 = to_np_array(_p2[0])
+
+            _p3 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom3['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom3['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom3['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p3) != 1:
+                return dst_func
+
+            p3 = to_np_array(_p3[0])
+
+            _p4 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom4['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom4['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': 'CD1'},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p4) != 1:
+                return dst_func
+
+            p4 = to_np_array(_p4[0])
+
+            chi2 = dihedral_angle(p1, p2, p3, p4)
+
+            _p4 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom4['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom4['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': 'CD2'},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_p4) != 1:
+                return dst_func
+
+            alt_p4 = to_np_array(_p4[0])
+
+            alt_chi2 = dihedral_angle(p1, p2, p3, alt_p4)
+
+            target_value = dst_func.get('target_value')
+            if target_value is not None:
+                target_value = float(target_value)
+            target_value_uncertainty = dst_func.get('target_value_uncertainty')
+            if target_value_uncertainty is not None:
+                target_value_uncertainty = float(target_value_uncertainty)
+
+            lower_limit = dst_func.get('lower_limit')
+            if lower_limit is not None:
+                lower_limit = float(lower_limit)
+            upper_limit = dst_func.get('upper_limit')
+            if upper_limit is not None:
+                upper_limit = float(upper_limit)
+
+            lower_linear_limit = dst_func.get('lower_linear_limit')
+            if lower_linear_limit is not None:
+                lower_linear_limit = float(lower_linear_limit)
+            upper_linear_limit = dst_func.get('upper_linear_limit')
+            if upper_linear_limit is not None:
+                upper_linear_limit = float(upper_linear_limit)
+
+            target_value, lower_bound, upper_bound =\
+                angle_target_values(target_value, target_value_uncertainty,
+                                    lower_limit, upper_limit,
+                                    lower_linear_limit, upper_linear_limit)
+
+            if target_value is None:
+                return dst_func
+
+            if angle_error(lower_bound, upper_bound, target_value, chi2) > angle_error(lower_bound, upper_bound, target_value, alt_chi2):
+                target_value = dst_func.get('target_value')
+                if target_value is not None:
+                    target_value = float(target_value) + 180.0
+                lower_limit = dst_func.get('lower_limit')
+                if lower_limit is not None:
+                    lower_limit = float(lower_limit) + 180.0
+                upper_limit = dst_func.get('upper_limit')
+                if upper_limit is not None:
+                    upper_limit = float(upper_limit) + 180.0
+
+                if lower_linear_limit is not None:
+                    lower_linear_limit += 180.0
+                if upper_linear_limit is not None:
+                    upper_linear_limit += 180.0
+
+                _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
+                                     dtype=float)
+
+                shift = 0.0
+                if self.__correctCircularShift:
+                    if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                        shift = -(numpy.nanmax(_array) // 360) * 360
+                    elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                        shift = -(numpy.nanmin(_array) // 360) * 360
+                if target_value is not None:
+                    dst_func['target_value'] = str(target_value + shift)
+                if lower_limit is not None:
+                    dst_func['lower_limit'] = str(lower_limit + shift)
+                if upper_limit is not None:
+                    dst_func['upper_limit'] = str(upper_limit + shift)
+                if lower_linear_limit is not None:
+                    dst_func['lower_linear_limit'] = str(lower_linear_limit + shift)
+                if upper_linear_limit is not None:
+                    dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+
+        return dst_func
+
+    def areUniqueCoordAtoms(self, subtype_name: str, allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
+        """ Check whether atom selection sets are uniquely assigned.
+        """
+
+        for _atomSelectionSet in self.atomSelectionSet:
+            _lenAtomSelectionSet = len(_atomSelectionSet)
+
+            if _lenAtomSelectionSet == 0:
+                return False  # raised error already
+
+            if _lenAtomSelectionSet == 1:
+                continue
+
+            for (atom1, atom2) in itertools.combinations(_atomSelectionSet, 2):
+                if atom1['chain_id'] != atom2['chain_id']:
+                    continue
+                if atom1['seq_id'] != atom2['seq_id']:
+                    continue
+                if allow_ambig:
+                    self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    f"{atom2['atom_id']}' found in {subtype_name} restraint.")
+                    continue
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
+                return False
+
+        return True
 
     # Enter a parse tree produced by BareMRParser#any.
     def enterAny(self, ctx: BareMRParser.AnyContext):
@@ -3854,6 +4516,8 @@ class BareMRParserListener(ParseTreeListener):
     def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
+        if self.__cur_subtype == 'dihed':
+            return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints, {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -3862,6 +4526,8 @@ class BareMRParserListener(ParseTreeListener):
         preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.__cur_subtype == 'dist':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = preferAuthSeq
+        if self.__cur_subtype == 'dihed':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = preferAuthSeq
         if not preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
@@ -3882,6 +4548,8 @@ class BareMRParserListener(ParseTreeListener):
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)
+        if self.__cur_subtype == 'dihed':
+            key = (self.__cur_subtype, self.dihedRestraints)
         else:
             return
 
@@ -3968,7 +4636,8 @@ class BareMRParserListener(ParseTreeListener):
         """ Return content subtype of Bare WSV/TSV/CSV MR file.
         """
 
-        contentSubtype = {'dist_restraint': self.distRestraints
+        contentSubtype = {'dist_restraint': self.distRestraints,
+                          'dihed_restraint': self.dihedRestraints
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}

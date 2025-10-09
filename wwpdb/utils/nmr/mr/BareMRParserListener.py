@@ -842,7 +842,7 @@ class BareMRParserListener(ParseTreeListener):
                     self.__col_name.insert(0, 'N/A')
                     len_ord += 1
 
-                if len_ord + 2 == len_any and self.__col_name[0] == 'ATOM_I' and self.__col_name[1] == 'ATOM_J'\
+                elif len_ord + 2 == len_any and self.__col_name[0] == 'ATOM_I' and self.__col_name[1] == 'ATOM_J'\
                    and 'sequence_code' not in self.__col_order:
                     self.__col_order.insert(2, 'sequence_code')
                     self.__col_name.insert(2, 'RES_J')
@@ -850,7 +850,7 @@ class BareMRParserListener(ParseTreeListener):
                     self.__col_name.insert(1, 'RES_I')
                     len_ord += 2
 
-                if self.__col_order.count('sequence_code') == 4 and self.__col_order.count('residue_name') == 0:
+                elif self.__col_order.count('sequence_code') == 4 and self.__col_order.count('residue_name') == 0:
                     name_test = 0
                     for name, order in zip(self.__col_name, self.__col_order):
                         if order == 'sequence_code':

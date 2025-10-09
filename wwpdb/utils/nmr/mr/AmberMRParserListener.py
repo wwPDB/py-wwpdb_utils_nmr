@@ -1390,7 +1390,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                         f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.")
                                     else:
-                                        factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col])
+                                        factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col], useDefault=False)
                                         if factor is not None:
                                             atomSelection.append(factor)
 
@@ -1412,7 +1412,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.")
                                             else:
                                                 for order in range(6):
-                                                    factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam, order)
+                                                    factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam, order, useDefault=False)
                                                     if factor is None:
                                                         break
                                                     atomSelection.append(factor)
@@ -5258,10 +5258,10 @@ class AmberMRParserListener(ParseTreeListener):
             useDefault = False
 
         enforceAuthSeq = authChainId is not None
-        if enforceAuthSeq or self.__altPolySeq is None:
+        if self.iresid == 0 and (enforceAuthSeq or self.__altPolySeq is None):
             useDefault = True
 
-        for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+        for ps in (self.__polySeq if useDefault or self.iresid == 1 else self.__altPolySeq):
             refAuthChainId = ps['auth_chain_id']
             chainId = refAuthChainId if useDefault else ps['chain_id']
 

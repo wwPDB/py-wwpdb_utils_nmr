@@ -102,7 +102,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                     self.__col_order.append('residue_name')
                 else:
                     self.__col_order.append('sequence_code')
-            elif 'CHAIN' in col_name or 'ASYM' in col_name or 'ENTITY' in col_name:
+            elif 'CHAIN' in col_name or 'ASYM' in col_name or 'ENTITY' in col_name or 'CHN' in col_name:
                 self.__col_order.append('chain_code')
             elif 'ATOM' in col_name and 'TYPE' not in col_name and 'ISOTOPE' not in col_name and 'NUM' not in col_name:
                 self.__col_order.append('atom_name')
@@ -175,17 +175,32 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
             if len_ord > len_any:
                 return
 
-            if self.chemShifts == 0 and len_ord + 1 == len_any:
-                if 'sequence_code' not in self.__col_order:
-                    self.__col_order.insert(0, 'sequence_code')
-                elif 'atom_name_instance' not in self.__col_order and 'assignment' not in self.__col_order:
-                    self.__col_order.insert(0, 'assignment')
-                elif 'index' not in self.__col_order:
-                    self.__col_order.insert(0, 'index')
-                else:
-                    self.__col_order.insert(0, 'unknown')
-                self.__col_name.insert(0, 'N/A')
-                len_ord += 1
+            if self.chemShifts == 0:
+                if len_ord + 1 == len_any:
+                    if 'sequence_code' not in self.__col_order:
+                        self.__col_order.insert(0, 'sequence_code')
+                    elif 'atom_name_instance' not in self.__col_order and 'assignment' not in self.__col_order:
+                        self.__col_order.insert(0, 'assignment')
+                    elif 'index' not in self.__col_order:
+                        self.__col_order.insert(0, 'index')
+                    else:
+                        self.__col_order.insert(0, 'unknown')
+                    self.__col_name.insert(0, 'N/A')
+                    len_ord += 1
+
+                elif self.__col_order.count('sequence_code') == 2 and self.__col_order.count('residue_name') == 0:
+                    name_test = 0
+                    for name, order in zip(self.__col_name, self.__col_order):
+                        if order == 'sequence_code':
+                            if 'NUM' in name or 'NM' in name or name.endswith('ID'):
+                                continue
+                            name_test += 1
+                    if name_test == 1:
+                        for idx, (name, order) in enumerate(zip(self.__col_name, self.__col_order)):
+                            if order == 'sequence_code':
+                                if 'NUM' in name or 'NM' in name or name.endswith('ID'):
+                                    continue
+                                self.__col_order[idx] = 'residue_name'
 
             if not ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name_instance' in self.__col_order)
                     or ('value' in self.__col_order and ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name' in self.__col_order)

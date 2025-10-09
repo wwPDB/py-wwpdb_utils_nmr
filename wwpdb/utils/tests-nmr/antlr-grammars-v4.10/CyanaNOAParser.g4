@@ -36,7 +36,7 @@ noe_peaks:
 	noe_assignments?;
 
 peak_header:
-	Peak Integer From Simple_name L_paren Float Comma Float Ppm_SC
+	Peak Integer From File_name L_paren Float Comma Float Ppm_SC
 	(Angstrome | (Angstrome (Increased_from | Decreased_from) Angstrome) | Diagonal) R_paren Colon;
 
 peak_quality:
@@ -75,10 +75,10 @@ peak_stat:
 	Selected Colon Integer
 	Assigned Colon Integer
 	Unassigned Colon Integer
-	Without_possibility Colon Integer
-	With_viol_below Angstrome Colon Integer
-	With_viol_between Float And Angstrome Colon Integer
-	With_viol_above Angstrome Colon Integer
+	(Without_possibility Colon Integer)?
+	(With_viol_below Angstrome Colon Integer)?
+	(With_viol_between Float And Angstrome Colon Integer)?
+	(With_viol_above Angstrome Colon Integer)?
 	With_diagonal Colon Integer
 
 	Cross_peaks Colon

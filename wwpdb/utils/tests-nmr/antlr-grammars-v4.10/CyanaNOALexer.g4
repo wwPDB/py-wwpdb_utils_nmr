@@ -17,7 +17,7 @@ limitations under the License.
 lexer grammar CyanaNOALexer;
 
 Peak:			'Peak';
-From:			'from';
+From:			'from' -> pushMode(FILE_NAME_MODE);
 Ppm_SC:			'ppm;';
 Increased_from:		'increased from';
 Decreased_from:		'decreased from';
@@ -111,6 +111,12 @@ SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		('\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
+
+mode FILE_NAME_MODE;
+
+File_name:		~[ \t\r\n]+ -> popMode;
+
+SPACE_FN:		[ \t]+ -> skip;
 
 mode COMMENT_MODE;
 

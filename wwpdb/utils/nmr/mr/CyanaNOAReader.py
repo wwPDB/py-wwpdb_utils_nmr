@@ -230,5 +230,10 @@ class CyanaNOAReader:
 if __name__ == "__main__":
     reader = CyanaNOAReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6bjf/cycle7.noa',
+                 '../../tests-nmr/mock-data-remediation/6bjf/6bjf.cif')
+
+    reader = CyanaNOAReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2n07/2n07-trimmed-div_dst.mr',
                  '../../tests-nmr/mock-data-remediation/2n07/2n07.cif')

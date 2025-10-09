@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,71,204,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,73,212,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,1,0,1,0,1,0,1,0,5,
         0,29,8,0,10,0,12,0,32,9,0,1,0,1,0,1,1,1,1,5,1,38,8,1,10,1,12,1,41,
         9,1,1,1,1,1,1,2,1,2,1,2,3,2,48,8,2,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,
@@ -21,29 +21,30 @@ def serializedATN():
         9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,
         9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,5,9,139,8,9,10,9,12,9,142,9,9,1,10,
         1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,11,1,11,1,11,1,11,1,11,1,11,
-        1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,
-        1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,
-        1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,
-        1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,0,0,12,0,2,4,6,8,10,12,14,
-        16,18,20,22,0,6,1,1,71,71,1,0,4,5,1,0,53,54,1,0,10,13,2,0,54,54,
-        57,57,1,0,59,62,205,0,30,1,0,0,0,2,35,1,0,0,0,4,44,1,0,0,0,6,49,
-        1,0,0,0,8,68,1,0,0,0,10,79,1,0,0,0,12,90,1,0,0,0,14,101,1,0,0,0,
-        16,110,1,0,0,0,18,114,1,0,0,0,20,143,1,0,0,0,22,151,1,0,0,0,24,29,
-        3,2,1,0,25,29,3,4,2,0,26,29,3,18,9,0,27,29,3,22,11,0,28,24,1,0,0,
-        0,28,25,1,0,0,0,28,26,1,0,0,0,28,27,1,0,0,0,29,32,1,0,0,0,30,28,
-        1,0,0,0,30,31,1,0,0,0,31,33,1,0,0,0,32,30,1,0,0,0,33,34,5,0,0,1,
-        34,1,1,0,0,0,35,39,5,63,0,0,36,38,5,69,0,0,37,36,1,0,0,0,38,41,1,
-        0,0,0,39,37,1,0,0,0,39,40,1,0,0,0,40,42,1,0,0,0,41,39,1,0,0,0,42,
-        43,7,0,0,0,43,3,1,0,0,0,44,45,3,6,3,0,45,47,3,8,4,0,46,48,3,10,5,
-        0,47,46,1,0,0,0,47,48,1,0,0,0,48,5,1,0,0,0,49,50,5,1,0,0,50,51,5,
-        57,0,0,51,52,5,2,0,0,52,53,5,64,0,0,53,54,5,47,0,0,54,55,5,58,0,
-        0,55,56,5,51,0,0,56,57,5,58,0,0,57,63,5,3,0,0,58,64,5,56,0,0,59,
-        60,5,56,0,0,60,61,7,1,0,0,61,64,5,56,0,0,62,64,5,6,0,0,63,58,1,0,
-        0,0,63,59,1,0,0,0,63,62,1,0,0,0,64,65,1,0,0,0,65,66,5,48,0,0,66,
-        67,5,49,0,0,67,7,1,0,0,0,68,69,5,57,0,0,69,70,5,7,0,0,70,71,5,57,
-        0,0,71,72,5,8,0,0,72,73,5,51,0,0,73,74,5,9,0,0,74,75,5,52,0,0,75,
-        76,5,58,0,0,76,77,5,49,0,0,77,9,1,0,0,0,78,80,3,12,6,0,79,78,1,0,
-        0,0,80,81,1,0,0,0,81,79,1,0,0,0,81,82,1,0,0,0,82,88,1,0,0,0,83,84,
+        1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,3,11,166,8,11,1,11,1,11,
+        1,11,1,11,3,11,172,8,11,1,11,1,11,1,11,1,11,1,11,1,11,3,11,180,8,
+        11,1,11,1,11,1,11,1,11,3,11,186,8,11,1,11,1,11,1,11,1,11,1,11,1,
+        11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,
+        11,1,11,1,11,1,11,1,11,1,11,1,11,0,0,12,0,2,4,6,8,10,12,14,16,18,
+        20,22,0,6,1,1,73,73,1,0,4,5,1,0,53,54,1,0,10,13,2,0,54,54,57,57,
+        1,0,59,62,217,0,30,1,0,0,0,2,35,1,0,0,0,4,44,1,0,0,0,6,49,1,0,0,
+        0,8,68,1,0,0,0,10,79,1,0,0,0,12,90,1,0,0,0,14,101,1,0,0,0,16,110,
+        1,0,0,0,18,114,1,0,0,0,20,143,1,0,0,0,22,151,1,0,0,0,24,29,3,2,1,
+        0,25,29,3,4,2,0,26,29,3,18,9,0,27,29,3,22,11,0,28,24,1,0,0,0,28,
+        25,1,0,0,0,28,26,1,0,0,0,28,27,1,0,0,0,29,32,1,0,0,0,30,28,1,0,0,
+        0,30,31,1,0,0,0,31,33,1,0,0,0,32,30,1,0,0,0,33,34,5,0,0,1,34,1,1,
+        0,0,0,35,39,5,63,0,0,36,38,5,71,0,0,37,36,1,0,0,0,38,41,1,0,0,0,
+        39,37,1,0,0,0,39,40,1,0,0,0,40,42,1,0,0,0,41,39,1,0,0,0,42,43,7,
+        0,0,0,43,3,1,0,0,0,44,45,3,6,3,0,45,47,3,8,4,0,46,48,3,10,5,0,47,
+        46,1,0,0,0,47,48,1,0,0,0,48,5,1,0,0,0,49,50,5,1,0,0,50,51,5,57,0,
+        0,51,52,5,2,0,0,52,53,5,69,0,0,53,54,5,47,0,0,54,55,5,58,0,0,55,
+        56,5,51,0,0,56,57,5,58,0,0,57,63,5,3,0,0,58,64,5,56,0,0,59,60,5,
+        56,0,0,60,61,7,1,0,0,61,64,5,56,0,0,62,64,5,6,0,0,63,58,1,0,0,0,
+        63,59,1,0,0,0,63,62,1,0,0,0,64,65,1,0,0,0,65,66,5,48,0,0,66,67,5,
+        49,0,0,67,7,1,0,0,0,68,69,5,57,0,0,69,70,5,7,0,0,70,71,5,57,0,0,
+        71,72,5,8,0,0,72,73,5,51,0,0,73,74,5,9,0,0,74,75,5,52,0,0,75,76,
+        5,58,0,0,76,77,5,49,0,0,77,9,1,0,0,0,78,80,3,12,6,0,79,78,1,0,0,
+        0,80,81,1,0,0,0,81,79,1,0,0,0,81,82,1,0,0,0,82,88,1,0,0,0,83,84,
         5,15,0,0,84,85,5,57,0,0,85,86,5,16,0,0,86,87,5,56,0,0,87,89,5,50,
         0,0,88,83,1,0,0,0,88,89,1,0,0,0,89,11,1,0,0,0,90,91,5,64,0,0,91,
         92,5,64,0,0,92,93,5,57,0,0,93,94,7,2,0,0,94,95,5,64,0,0,95,96,5,
@@ -64,19 +65,22 @@ def serializedATN():
         58,0,0,147,148,5,57,0,0,148,149,5,57,0,0,149,150,5,57,0,0,150,21,
         1,0,0,0,151,152,5,25,0,0,152,153,5,49,0,0,153,154,5,29,0,0,154,155,
         5,49,0,0,155,156,5,57,0,0,156,157,5,30,0,0,157,158,5,49,0,0,158,
-        159,5,57,0,0,159,160,5,31,0,0,160,161,5,49,0,0,161,162,5,57,0,0,
-        162,163,5,32,0,0,163,164,5,49,0,0,164,165,5,57,0,0,165,166,5,33,
-        0,0,166,167,5,56,0,0,167,168,5,49,0,0,168,169,5,57,0,0,169,170,5,
-        34,0,0,170,171,5,58,0,0,171,172,5,37,0,0,172,173,5,56,0,0,173,174,
-        5,49,0,0,174,175,5,57,0,0,175,176,5,35,0,0,176,177,5,56,0,0,177,
-        178,5,49,0,0,178,179,5,57,0,0,179,180,5,36,0,0,180,181,5,49,0,0,
-        181,182,5,57,0,0,182,183,5,38,0,0,183,184,5,49,0,0,184,185,5,39,
-        0,0,185,186,5,49,0,0,186,187,5,57,0,0,187,188,5,40,0,0,188,189,5,
-        49,0,0,189,190,5,57,0,0,190,191,5,41,0,0,191,192,5,44,0,0,192,193,
-        5,49,0,0,193,194,5,57,0,0,194,195,5,42,0,0,195,196,5,45,0,0,196,
-        197,5,49,0,0,197,198,5,57,0,0,198,199,5,43,0,0,199,200,5,46,0,0,
-        200,201,5,49,0,0,201,202,5,57,0,0,202,23,1,0,0,0,11,28,30,39,47,
-        63,81,88,105,108,112,140
+        159,5,57,0,0,159,160,5,31,0,0,160,161,5,49,0,0,161,165,5,57,0,0,
+        162,163,5,32,0,0,163,164,5,49,0,0,164,166,5,57,0,0,165,162,1,0,0,
+        0,165,166,1,0,0,0,166,171,1,0,0,0,167,168,5,33,0,0,168,169,5,56,
+        0,0,169,170,5,49,0,0,170,172,5,57,0,0,171,167,1,0,0,0,171,172,1,
+        0,0,0,172,179,1,0,0,0,173,174,5,34,0,0,174,175,5,58,0,0,175,176,
+        5,37,0,0,176,177,5,56,0,0,177,178,5,49,0,0,178,180,5,57,0,0,179,
+        173,1,0,0,0,179,180,1,0,0,0,180,185,1,0,0,0,181,182,5,35,0,0,182,
+        183,5,56,0,0,183,184,5,49,0,0,184,186,5,57,0,0,185,181,1,0,0,0,185,
+        186,1,0,0,0,186,187,1,0,0,0,187,188,5,36,0,0,188,189,5,49,0,0,189,
+        190,5,57,0,0,190,191,5,38,0,0,191,192,5,49,0,0,192,193,5,39,0,0,
+        193,194,5,49,0,0,194,195,5,57,0,0,195,196,5,40,0,0,196,197,5,49,
+        0,0,197,198,5,57,0,0,198,199,5,41,0,0,199,200,5,44,0,0,200,201,5,
+        49,0,0,201,202,5,57,0,0,202,203,5,42,0,0,203,204,5,45,0,0,204,205,
+        5,49,0,0,205,206,5,57,0,0,206,207,5,43,0,0,207,208,5,46,0,0,208,
+        209,5,49,0,0,209,210,5,57,0,0,210,23,1,0,0,0,15,28,30,39,47,63,81,
+        88,105,108,112,140,165,171,179,185
     ]
 
 class CyanaNOAParser ( Parser ):
@@ -123,7 +127,8 @@ class CyanaNOAParser ( Parser ):
                       "Integer", "Float", "Numerical_report1", "Numerical_report2", 
                       "Numerical_report3", "Numerical_report4", "COMMENT", 
                       "Simple_name", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
-                      "LINE_COMMENT", "Any_name", "SPACE_CM", "RETURN_CM" ]
+                      "LINE_COMMENT", "File_name", "SPACE_FN", "Any_name", 
+                      "SPACE_CM", "RETURN_CM" ]
 
     RULE_cyana_noa = 0
     RULE_comment = 1
@@ -211,9 +216,11 @@ class CyanaNOAParser ( Parser ):
     ENCLOSE_COMMENT=66
     SECTION_COMMENT=67
     LINE_COMMENT=68
-    Any_name=69
-    SPACE_CM=70
-    RETURN_CM=71
+    File_name=69
+    SPACE_FN=70
+    Any_name=71
+    SPACE_CM=72
+    RETURN_CM=73
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -372,7 +379,7 @@ class CyanaNOAParser ( Parser ):
             self.state = 39
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==69:
+            while _la==71:
                 self.state = 36
                 self.match(CyanaNOAParser.Any_name)
                 self.state = 41
@@ -381,7 +388,7 @@ class CyanaNOAParser ( Parser ):
 
             self.state = 42
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==71):
+            if not(_la==-1 or _la==73):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -472,8 +479,8 @@ class CyanaNOAParser ( Parser ):
         def From(self):
             return self.getToken(CyanaNOAParser.From, 0)
 
-        def Simple_name(self):
-            return self.getToken(CyanaNOAParser.Simple_name, 0)
+        def File_name(self):
+            return self.getToken(CyanaNOAParser.File_name, 0)
 
         def L_paren(self):
             return self.getToken(CyanaNOAParser.L_paren, 0)
@@ -539,7 +546,7 @@ class CyanaNOAParser ( Parser ):
             self.state = 51
             self.match(CyanaNOAParser.From)
             self.state = 52
-            self.match(CyanaNOAParser.Simple_name)
+            self.match(CyanaNOAParser.File_name)
             self.state = 53
             self.match(CyanaNOAParser.L_paren)
             self.state = 54
@@ -1269,30 +1276,6 @@ class CyanaNOAParser ( Parser ):
         def Unassigned(self):
             return self.getToken(CyanaNOAParser.Unassigned, 0)
 
-        def Without_possibility(self):
-            return self.getToken(CyanaNOAParser.Without_possibility, 0)
-
-        def With_viol_below(self):
-            return self.getToken(CyanaNOAParser.With_viol_below, 0)
-
-        def Angstrome(self, i:int=None):
-            if i is None:
-                return self.getTokens(CyanaNOAParser.Angstrome)
-            else:
-                return self.getToken(CyanaNOAParser.Angstrome, i)
-
-        def With_viol_between(self):
-            return self.getToken(CyanaNOAParser.With_viol_between, 0)
-
-        def Float(self):
-            return self.getToken(CyanaNOAParser.Float, 0)
-
-        def And(self):
-            return self.getToken(CyanaNOAParser.And, 0)
-
-        def With_viol_above(self):
-            return self.getToken(CyanaNOAParser.With_viol_above, 0)
-
         def With_diagonal(self):
             return self.getToken(CyanaNOAParser.With_diagonal, 0)
 
@@ -1323,6 +1306,30 @@ class CyanaNOAParser ( Parser ):
         def Long_range_ex(self):
             return self.getToken(CyanaNOAParser.Long_range_ex, 0)
 
+        def Without_possibility(self):
+            return self.getToken(CyanaNOAParser.Without_possibility, 0)
+
+        def With_viol_below(self):
+            return self.getToken(CyanaNOAParser.With_viol_below, 0)
+
+        def Angstrome(self, i:int=None):
+            if i is None:
+                return self.getTokens(CyanaNOAParser.Angstrome)
+            else:
+                return self.getToken(CyanaNOAParser.Angstrome, i)
+
+        def With_viol_between(self):
+            return self.getToken(CyanaNOAParser.With_viol_between, 0)
+
+        def Float(self):
+            return self.getToken(CyanaNOAParser.Float, 0)
+
+        def And(self):
+            return self.getToken(CyanaNOAParser.And, 0)
+
+        def With_viol_above(self):
+            return self.getToken(CyanaNOAParser.With_viol_above, 0)
+
         def getRuleIndex(self):
             return CyanaNOAParser.RULE_peak_stat
 
@@ -1341,6 +1348,7 @@ class CyanaNOAParser ( Parser ):
 
         localctx = CyanaNOAParser.Peak_statContext(self, self._ctx, self.state)
         self.enterRule(localctx, 22, self.RULE_peak_stat)
+        self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 151
@@ -1365,85 +1373,109 @@ class CyanaNOAParser ( Parser ):
             self.match(CyanaNOAParser.Colon)
             self.state = 161
             self.match(CyanaNOAParser.Integer)
-            self.state = 162
-            self.match(CyanaNOAParser.Without_possibility)
-            self.state = 163
-            self.match(CyanaNOAParser.Colon)
-            self.state = 164
-            self.match(CyanaNOAParser.Integer)
             self.state = 165
-            self.match(CyanaNOAParser.With_viol_below)
-            self.state = 166
-            self.match(CyanaNOAParser.Angstrome)
-            self.state = 167
-            self.match(CyanaNOAParser.Colon)
-            self.state = 168
-            self.match(CyanaNOAParser.Integer)
-            self.state = 169
-            self.match(CyanaNOAParser.With_viol_between)
-            self.state = 170
-            self.match(CyanaNOAParser.Float)
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==32:
+                self.state = 162
+                self.match(CyanaNOAParser.Without_possibility)
+                self.state = 163
+                self.match(CyanaNOAParser.Colon)
+                self.state = 164
+                self.match(CyanaNOAParser.Integer)
+
+
             self.state = 171
-            self.match(CyanaNOAParser.And)
-            self.state = 172
-            self.match(CyanaNOAParser.Angstrome)
-            self.state = 173
-            self.match(CyanaNOAParser.Colon)
-            self.state = 174
-            self.match(CyanaNOAParser.Integer)
-            self.state = 175
-            self.match(CyanaNOAParser.With_viol_above)
-            self.state = 176
-            self.match(CyanaNOAParser.Angstrome)
-            self.state = 177
-            self.match(CyanaNOAParser.Colon)
-            self.state = 178
-            self.match(CyanaNOAParser.Integer)
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==33:
+                self.state = 167
+                self.match(CyanaNOAParser.With_viol_below)
+                self.state = 168
+                self.match(CyanaNOAParser.Angstrome)
+                self.state = 169
+                self.match(CyanaNOAParser.Colon)
+                self.state = 170
+                self.match(CyanaNOAParser.Integer)
+
+
             self.state = 179
-            self.match(CyanaNOAParser.With_diagonal)
-            self.state = 180
-            self.match(CyanaNOAParser.Colon)
-            self.state = 181
-            self.match(CyanaNOAParser.Integer)
-            self.state = 182
-            self.match(CyanaNOAParser.Cross_peaks)
-            self.state = 183
-            self.match(CyanaNOAParser.Colon)
-            self.state = 184
-            self.match(CyanaNOAParser.With_off_diagonal)
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==34:
+                self.state = 173
+                self.match(CyanaNOAParser.With_viol_between)
+                self.state = 174
+                self.match(CyanaNOAParser.Float)
+                self.state = 175
+                self.match(CyanaNOAParser.And)
+                self.state = 176
+                self.match(CyanaNOAParser.Angstrome)
+                self.state = 177
+                self.match(CyanaNOAParser.Colon)
+                self.state = 178
+                self.match(CyanaNOAParser.Integer)
+
+
             self.state = 185
-            self.match(CyanaNOAParser.Colon)
-            self.state = 186
-            self.match(CyanaNOAParser.Integer)
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==35:
+                self.state = 181
+                self.match(CyanaNOAParser.With_viol_above)
+                self.state = 182
+                self.match(CyanaNOAParser.Angstrome)
+                self.state = 183
+                self.match(CyanaNOAParser.Colon)
+                self.state = 184
+                self.match(CyanaNOAParser.Integer)
+
+
             self.state = 187
-            self.match(CyanaNOAParser.With_unique)
+            self.match(CyanaNOAParser.With_diagonal)
             self.state = 188
             self.match(CyanaNOAParser.Colon)
             self.state = 189
             self.match(CyanaNOAParser.Integer)
             self.state = 190
-            self.match(CyanaNOAParser.With_short_range)
+            self.match(CyanaNOAParser.Cross_peaks)
             self.state = 191
-            self.match(CyanaNOAParser.Short_range_ex)
-            self.state = 192
             self.match(CyanaNOAParser.Colon)
+            self.state = 192
+            self.match(CyanaNOAParser.With_off_diagonal)
             self.state = 193
-            self.match(CyanaNOAParser.Integer)
+            self.match(CyanaNOAParser.Colon)
             self.state = 194
-            self.match(CyanaNOAParser.With_medium_range)
+            self.match(CyanaNOAParser.Integer)
             self.state = 195
-            self.match(CyanaNOAParser.Medium_range_ex)
+            self.match(CyanaNOAParser.With_unique)
             self.state = 196
             self.match(CyanaNOAParser.Colon)
             self.state = 197
             self.match(CyanaNOAParser.Integer)
             self.state = 198
-            self.match(CyanaNOAParser.With_long_range)
+            self.match(CyanaNOAParser.With_short_range)
             self.state = 199
-            self.match(CyanaNOAParser.Long_range_ex)
+            self.match(CyanaNOAParser.Short_range_ex)
             self.state = 200
             self.match(CyanaNOAParser.Colon)
             self.state = 201
+            self.match(CyanaNOAParser.Integer)
+            self.state = 202
+            self.match(CyanaNOAParser.With_medium_range)
+            self.state = 203
+            self.match(CyanaNOAParser.Medium_range_ex)
+            self.state = 204
+            self.match(CyanaNOAParser.Colon)
+            self.state = 205
+            self.match(CyanaNOAParser.Integer)
+            self.state = 206
+            self.match(CyanaNOAParser.With_long_range)
+            self.state = 207
+            self.match(CyanaNOAParser.Long_range_ex)
+            self.state = 208
+            self.match(CyanaNOAParser.Colon)
+            self.state = 209
             self.match(CyanaNOAParser.Integer)
         except RecognitionException as re:
             localctx.exception = re

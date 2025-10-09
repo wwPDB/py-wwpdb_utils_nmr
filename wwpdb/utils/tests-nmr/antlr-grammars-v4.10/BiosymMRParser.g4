@@ -26,7 +26,8 @@ biosym_mr:
 	dihedral_angle_constraints |
 	chirality_constraints |
 	prochirality_constraints |
-	mixing_time
+	mixing_time |
+	ins_distance_restraints
 	)*
 	EOF;
 
@@ -97,5 +98,21 @@ mixing_time:
 	Real;
 
 /* number expression in restrains */
-number:	Float | Float_DecimalComma | Integer;
+number: Float | Float_DecimalComma | Integer;
+
+/* Insight II distance restraint */
+ins_distance_restraints:
+	ins_distance_restraint;
+
+ins_distance_restraint:
+	decl_create decl_function decl_target;
+
+decl_create:
+	Restraint Create Double_quote_string Distance Double_quote_string Double_quote_string RETURN_II;
+
+decl_function:
+	Restraint Function Double_quote_string (Quadratic | Flat_bottomed) Double_quote_string Double_quote_string Double_quote_string? RETURN_II;
+
+decl_target:
+	Restraint Target Double_quote_string (Double_quote_string | Relative) Double_quote_string RETURN_II;
 

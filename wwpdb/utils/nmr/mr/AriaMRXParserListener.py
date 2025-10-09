@@ -3942,7 +3942,7 @@ class AriaMRXParserListener(ParseTreeListener):
 
         return list(chainAssign)
 
-    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: str, seqId: int, atomId: str) -> List[Tuple[str, int, str, bool]]:
+    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: Optional[str], seqId: int, atomId: str) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -3965,7 +3965,7 @@ class AriaMRXParserListener(ParseTreeListener):
 
         for ps in self.__polySeq:
             chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, None)
-            if chainId != fixedChainId:
+            if fixedChainId is not None and chainId != fixedChainId:
                 continue
             if self.__reasons is not None:
                 if 'seq_id_remap' not in self.__reasons\
@@ -4044,7 +4044,7 @@ class AriaMRXParserListener(ParseTreeListener):
         if self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, None, False)
-                if chainId != fixedChainId:
+                if fixedChainId is not None and chainId != fixedChainId:
                     continue
                 if self.__reasons is not None:
                     if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
@@ -4075,7 +4075,7 @@ class AriaMRXParserListener(ParseTreeListener):
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
-                if chainId != fixedChainId:
+                if fixedChainId is not None and chainId != fixedChainId:
                     continue
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
@@ -4089,7 +4089,7 @@ class AriaMRXParserListener(ParseTreeListener):
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
                     chainId = np['auth_chain_id']
-                    if chainId != fixedChainId:
+                    if fixedChainId is not None and chainId != fixedChainId:
                         continue
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
@@ -4103,7 +4103,7 @@ class AriaMRXParserListener(ParseTreeListener):
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['auth_chain_id']
-                if chainId != fixedChainId:
+                if fixedChainId is not None and chainId != fixedChainId:
                     continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
@@ -4113,7 +4113,7 @@ class AriaMRXParserListener(ParseTreeListener):
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
-                if chainId != fixedChainId:
+                if fixedChainId is not None and chainId != fixedChainId:
                     continue
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__labelToAuthSeq:

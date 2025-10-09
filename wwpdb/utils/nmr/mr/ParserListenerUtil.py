@@ -9492,30 +9492,37 @@ def getDstFuncForHBond(atom1: dict, atom2: dict) -> dict:
     if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
         dstFunc['lower_limit'] = '1.2'
         dstFunc['upper_limit'] = '1.5'
+        return dstFunc
 
-    elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+    if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
         dstFunc['lower_limit'] = '2.2'
         dstFunc['upper_limit'] = '2.5'
+        return dstFunc
 
-    elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+    if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
         dstFunc['lower_limit'] = '1.5'
         dstFunc['upper_limit'] = '2.5'
+        return dstFunc
 
-    elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+    if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
         dstFunc['lower_limit'] = '2.5'
         dstFunc['upper_limit'] = '3.5'
+        return dstFunc
 
-    elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+    if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
         dstFunc['lower_limit'] = '2.5'
         dstFunc['upper_limit'] = '3.5'
+        return dstFunc
 
-    elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+    if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
         dstFunc['lower_limit'] = '1.5'
         dstFunc['upper_limit'] = '2.5'
+        return dstFunc
 
-    elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+    if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
         dstFunc['lower_limit'] = '2.5'
         dstFunc['upper_limit'] = '3.5'
+        return dstFunc
 
     return getDstFuncAsNoe()
 
@@ -9535,10 +9542,12 @@ def getDstFuncForSsBond(atom1: dict, atom2: dict) -> dict:
     if atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
         dstFunc['lower_limit'] = '1.9'
         dstFunc['upper_limit'] = '2.3'
+        return dstFunc
 
-    elif atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
+    if atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
         dstFunc['lower_limit'] = '2.1'
         dstFunc['upper_limit'] = '2.6'
+        return dstFunc
 
     return dstFunc
 

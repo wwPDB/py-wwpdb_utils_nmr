@@ -220,7 +220,7 @@ class BareMRReader:
 if __name__ == "__main__":
     reader = BareMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6xah/Restraints_dAAPICL-corrected',
+    reader.parse('../../tests-nmr/mock-data-remediation/6xah/Restraints_dAAPICL',
                  '../../tests-nmr/mock-data-remediation/6xah/6xah.cif')
 
     reader = BareMRReader(True)

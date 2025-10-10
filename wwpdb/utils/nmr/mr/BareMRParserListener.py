@@ -977,7 +977,7 @@ class BareMRParserListener(ParseTreeListener):
                                     elif not self.__polyPeptide and self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
                                         compId = 'D' + compId
                                 compIds.append(compId)
-                            if self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                            elif self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
                                 g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[0]))
                                 compId = g[1]
@@ -1276,7 +1276,7 @@ class BareMRParserListener(ParseTreeListener):
                                     elif not self.__polyPeptide and self.__polyDeoxyribonucleotide and not self.__polyRibonucleotide:
                                         compId = 'D' + compId
                                 compIds.append(compId)
-                            if self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                            elif self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
                                 g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[0]))
                                 compId = g[1]

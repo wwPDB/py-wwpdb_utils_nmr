@@ -35321,7 +35321,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
-                    elif warn.startswith('[Sequence mismatch]'):
+                    elif warn.startswith('[Sequence mismatch]') and not dry_run:
                         if not dry_run and not has_res_sch:
                             self.report.error.appendDescription('sequence_mismatch', msg_dict)
                             self.report.setError()

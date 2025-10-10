@@ -246,7 +246,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             comp_id = 'D' + comp_id
-                                if self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                elif self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
                                     g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[0])
                                     comp_id = g[1]
@@ -349,7 +349,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             comp_id = 'D' + comp_id
-                                if self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                elif self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
                                     g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[0])
                                     comp_id = g[1]

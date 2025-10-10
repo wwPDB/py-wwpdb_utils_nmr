@@ -3905,10 +3905,26 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
 
     nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
 
-    if len(nstd_residues_prev) == 0:
-        return None
-
     auth_comp_id = 'auth_comp_id' if cR_prev.hasItem('atom_site', 'auth_comp_id') else 'label_comp_id'
+
+    if len(nstd_residues_prev) == 0:
+
+        if cR_prev.hasCategory('chem_comp'):
+            return None
+
+        coord_prev = cR_prev.getDictListWithFilter('atom_site',
+                                                   [{'name': auth_comp_id, 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}],
+                                                   [{'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},
+                                                    {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
+                                                    ])
+
+        for c in coord_prev:
+            comp_id = c['comp_id']
+            if comp_id not in monDict3 and comp_id not in nstd_residues_prev:
+                nstd_residues_prev.append(comp_id)
+
+        if len(nstd_residues_prev) == 0:
+            return None
 
     coord_prev = cR_prev.getDictListWithFilter('atom_site',
                                                [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -3940,6 +3956,38 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                         'original_seq_id': c_prev['seq_id']}
             if atom_map not in atom_name_mapping:
                 atom_name_mapping.append(atom_map)
+
+    if len(atom_name_mapping) == 0:
+
+        coord_prev = cR_prev.getDictListWithFilter('atom_site',
+                                                   [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                    {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                                                    {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
+                                                    {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                    ],
+                                                   [{'name': auth_comp_id, 'type': 'enum', 'enum': nstd_residues_prev},
+                                                    {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
+                                                    ])
+
+        for c in coord:
+            c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+
+            if c_prev is None:
+                continue
+
+            if c['seq_id'] != c_prev['seq_id']\
+               or c['comp_id'] != c_prev['comp_id']\
+               or c['atom_id'] != c_prev['atom_id']:
+                atom_map = {'auth_atom_id': c['atom_id'],
+                            'auth_comp_id': c['comp_id'],
+                            'auth_seq_id': c['seq_id'],
+                            'original_atom_id': c_prev['atom_id'],
+                            'original_comp_id': c_prev['comp_id'],
+                            'original_seq_id': c_prev['seq_id']}
+                if atom_map not in atom_name_mapping:
+                    atom_name_mapping.append(atom_map)
 
     if cR_prev.hasItem('atom_site', 'pdbx_auth_atom_name'):
         coord_prev = cR_prev.getDictListWithFilter('atom_site',

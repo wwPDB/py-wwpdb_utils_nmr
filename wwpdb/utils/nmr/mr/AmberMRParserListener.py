@@ -1390,7 +1390,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                         f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.")
                                     else:
-                                        factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col], useDefault=False)
+                                        factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col], useDefault=self.__atomNumberDict is None)
                                         if factor is not None:
                                             atomSelection.append(factor)
 
@@ -1412,7 +1412,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.")
                                             else:
                                                 for order in range(6):
-                                                    factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam, order, useDefault=False)
+                                                    factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam, order, useDefault=self.__atomNumberDict is None)
                                                     if factor is None:
                                                         break
                                                     atomSelection.append(factor)

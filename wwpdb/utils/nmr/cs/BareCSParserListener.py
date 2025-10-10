@@ -13,6 +13,7 @@ __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
 import sys
+import re
 
 from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
@@ -24,6 +25,7 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.AlignUtil import monDict3
 except ImportError:
     from nmr.cs.BareCSParser import BareCSParser
     from nmr.cs.BaseCSParserListener import (BaseCSParserListener,
@@ -31,6 +33,11 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.AlignUtil import monDict3
+
+
+reduced_residue_name_pattern = re.compile(r'([A-Za-z]+)(\d+)')
+rev_reduced_residue_name_pattern = re.compile(r'(\d+)([A-Za-z]+)')
 
 
 # This class defines a complete listener for a parse tree produced by BareCSParser.
@@ -227,7 +234,32 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
                             elif isinstance(self.anySelection[idx], str):
-                                comp_id = self.anySelection[idx]
+                                if self.__col_order.count('residue_name') == 0 and reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                    g = reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                    seq_id = int(g[1])
+                                    comp_id = g[0]
+                                    if len(comp_id) == 1:
+                                        if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                            try:
+                                                comp_id = next(k for k, v in monDict3.items() if v == comp_id)
+                                            except StopIteration:
+                                                pass
+                                        elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                            comp_id = 'D' + comp_id
+                                if self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                    g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                    seq_id = int(g[0])
+                                    comp_id = g[1]
+                                    if len(comp_id) == 1:
+                                        if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                            try:
+                                                comp_id = next(k for k, v in monDict3.items() if v == comp_id)
+                                            except StopIteration:
+                                                pass
+                                        elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                            comp_id = 'D' + comp_id
+                                else:
+                                    comp_id = self.anySelection[idx]
                         elif order == 'residue_name':
                             if isinstance(self.anySelection[idx], str):
                                 comp_id = self.anySelection[idx]
@@ -305,6 +337,30 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
                             elif isinstance(self.anySelection[idx], str):
+                                if self.__col_order.count('residue_name') == 0 and reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                    g = reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                    seq_id = int(g[1])
+                                    comp_id = g[0]
+                                    if len(comp_id) == 1:
+                                        if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                            try:
+                                                comp_id = next(k for k, v in monDict3.items() if v == comp_id)
+                                            except StopIteration:
+                                                pass
+                                        elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                            comp_id = 'D' + comp_id
+                                if self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                    g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                    seq_id = int(g[0])
+                                    comp_id = g[1]
+                                    if len(comp_id) == 1:
+                                        if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                            try:
+                                                comp_id = next(k for k, v in monDict3.items() if v == comp_id)
+                                            except StopIteration:
+                                                pass
+                                        elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                            comp_id = 'D' + comp_id
                                 comp_id = self.anySelection[idx]
                         elif order == 'residue_name':
                             if isinstance(self.anySelection[idx], str):

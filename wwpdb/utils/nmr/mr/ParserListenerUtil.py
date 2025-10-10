@@ -8005,6 +8005,8 @@ def retrieveOriginalFileName(filePath: str) -> str:
         fileName = fileName[:idx]
 
     if fileName.endswith('.mr'):
+        if fileName.endswith('-trimmed.mr'):
+            fileName = fileName[:-11] + '.mr'
         if fileName.endswith('-corrected.mr'):
             fileName = fileName[:-13] + '.mr'
         if fileName.endswith('-trimmed.mr'):
@@ -8017,6 +8019,8 @@ def retrieveOriginalFileName(filePath: str) -> str:
             fileName = fileName[:idx] + '.mr'
 
     if fileName.endswith('.str'):
+        if fileName.endswith('-trimmed.str'):
+            fileName = fileName[:-12] + '.str'
         if fileName.endswith('-corrected.str'):
             fileName = fileName[:-14] + '.str'
         if fileName.endswith('-trimmed.str'):
@@ -8029,6 +8033,8 @@ def retrieveOriginalFileName(filePath: str) -> str:
             fileName = fileName[:idx] + '.str'
 
     if fileName.endswith('.cif'):
+        if fileName.endswith('-trimmed.cif'):
+            fileName = fileName[:-12] + '.cif'
         if fileName.endswith('-corrected.cif'):
             fileName = fileName[:-14] + '.cif'
         if fileName.endswith('-trimmed.cif'):

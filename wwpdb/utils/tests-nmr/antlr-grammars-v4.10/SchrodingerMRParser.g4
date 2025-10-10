@@ -54,77 +54,77 @@ distance_statement:
 	parameter_statement |
 	Atom1 Atom2 Lo Up Fc |
 	distance_assign+ |
-	distance_assign_unsupported+;
+	distance_assign_by_number+;
 
 distance_assign:
 	selection selection number number number;
 
-distance_assign_unsupported:
+distance_assign_by_number:
 	Integer Integer number number number;
 
 dihedral_angle_statement:
 	parameter_statement |
 	Atom1 Atom2 Atom3 Atom4 Target Fc |
 	dihedral_angle_assign+ |
-	dihedral_angle_assign_unsupported+;
+	dihedral_angle_assign_by_number+;
 
 dihedral_angle_assign:
 	selection selection selection selection number number;
 
-dihedral_angle_assign_unsupported:
+dihedral_angle_assign_by_number:
 	Integer Integer Integer Integer number number;
 
 angle_statement:
 	parameter_statement |
 	Atom1 Atom2 Atom3 Target Fc |
 	angle_assign+ |
-	angle_assign_unsupported+;
+	angle_assign_by_number+;
 
 angle_assign:
 	selection selection selection number number;
 
-angle_assign_unsupported:
+angle_assign_by_number:
 	Integer Integer Integer number number;
 
 fxdi_statement:
 	fxdi_assign+ |
-	fxdi_assign_unsupported+;
+	fxdi_assign_by_number+;
 
 fxdi_assign:
-	FXDI selection selection Integer? number number number;
+	FXDI selection selection Integer Integer number number number number;
 
-fxdi_assign_unsupported:
-	FXDI Integer Integer Integer? number number number;
+fxdi_assign_by_number:
+	FXDI Integer Integer Integer Integer number number number number;
 
 fxta_statement:
 	fxta_assign+ |
-	fxta_assign_unsupported+;
+	fxta_assign_by_number+;
 
 fxta_assign:
-	FXTA selection selection selection selection number number number Integer;
+	FXTA selection selection selection selection number number number number;
 
-fxta_assign_unsupported:
-	FXTA Integer Integer Integer Integer number number number Integer;
+fxta_assign_by_number:
+	FXTA Integer Integer Integer Integer number number number number;
 
 fxba_statement:
 	fxba_assign+ |
-	fxba_assign_unsupported+;
+	fxba_assign_by_number+;
 
 fxba_assign:
-	FXBA selection selection selection number number number;
+	FXBA selection selection selection Integer number number number;
 
-fxba_assign_unsupported:
-	FXBA Integer Integer Integer number number number;
+fxba_assign_by_number:
+	FXBA Integer Integer Integer Integer number number number number;
 
 fxhb_statement:
 	fxhb_assign+ |
-	fxhb_assign_unsupported+;
+	fxhb_assign_by_number+;
 
 fxhb_assign:
-	FXHB selection selection selection number number;
+	FXHB selection selection selection Integer number number;
 
-fxhb_assign_unsupported:
-	FXHB Integer Integer Integer number number;
+fxhb_assign_by_number:
+	FXHB Integer Integer Integer Integer number number number number;
 
 /* Atom Selection Language - ASL
   See also https://shaker.umh.es/computing/Schrodinger_suites/maestro_command_reference.pdf

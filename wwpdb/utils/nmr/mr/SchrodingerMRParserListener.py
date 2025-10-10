@@ -283,6 +283,9 @@ class SchrodingerMRParserListener(ParseTreeListener):
     # Pairwise align
     __pA = None
 
+    # atom number dictionary
+    __atomNumberDict = None
+
     # reasons for re-parsing request from the previous trial
     __reasons = None
 
@@ -438,7 +441,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
                  csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
-                 reasons: Optional[dict] = None):
+                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -629,6 +632,9 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
+        if atomNumberDict is not None:
+            self.__atomNumberDict = atomNumberDict
+
         self.__cachedDictForAtomIdList = {}
         self.__cachedDictForFactor = {}
 
@@ -636,11 +642,6 @@ class SchrodingerMRParserListener(ParseTreeListener):
         self.dihedRestraints = 0     # SCHRODINGER: Dihedral angle restraints
         self.angRestraints = 0       # SCHRODINGER: Angle database restraints
         self.hbondRestraints = 0     # SCHRODINGER: Hydrogen bond restraints
-
-        self.failedDistRestraints = 0      # SCHRODINGER: Distance restraints (unsupported)
-        self.failedDihedRestraints = 0     # SCHRODINGER: Dihedral angle restraints (unsupported)
-        self.failedAngRestraints = 0       # SCHRODINGER: Angle database restraints (unsupported)
-        self.failedHbondRestraints = 0     # SCHRODINGER: Hydrogen bond restraints (unsupported)
 
         self.distStatements = 0      # SCHRODINGER: Distance statements
         self.dihedStatements = 0     # SCHRODINGER: Dihedral angle statements
@@ -2659,15 +2660,29 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def enterDistance_assign_unsupported(self, ctx: SchrodingerMRParser.Distance_assign_unsupportedContext):
-        self.failedDistRestraints += 1
-        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
-        self.__f.append(f"[Unsupported data] [Check the {self.failedDistRestraints}th row of distance restraints]"
-                        "The 'DIST' clause has no effect "
-                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+    # Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
+    def enterDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext):
+        self.distRestraints += 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#distance_assign_unsupported.
-    def exitDistance_assign_unsupported(self, ctx: SchrodingerMRParser.Distance_assign_unsupportedContext):  # pylint: disable=unused-argument
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
+
+        if self.__atomNumberDict is None:
+            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                            "The 'FXDI' clause has no effect "
+                            f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
+            self.distRestraints -= 1
+        else:
+            for ai in atom_sel:
+                if ai in self.__atomNumberDict:
+                    atomSelection = [copy.copy(self.__atomNumberDict[ai])]
+                    self.atomSelectionSet.append(atomSelection)
+                else:
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    f"'{ai}' is not defined in the atom number dictionary.")
+                    self.distRestraints -= 1
+
+    # Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
+    def exitDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_statement.
@@ -2986,16 +3001,29 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
         return True
 
-    # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_unsupported.
-    def enterDihedral_angle_assign_unsupported(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_unsupportedContext):
-        self.failedDihedRestraints += 1
-        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2))), int(str(ctx.Integer(3)))]
-        self.__f.append(f"[Unsupported data] [Check the {self.failedDihedRestraints}th row of dihedral angle restraints]"
-                        "The 'TORS' clause has no effect "
-                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+    # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_by_number.
+    def enterDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext):
+        self.dihedRestraints += 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_unsupported.
-    def exitDihedral_angle_assign_unsupported(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_unsupportedContext):  # pylint: disable=unused-argument
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2))), int(str(ctx.Integer(3)))]
+
+        if self.__atomNumberDict is None:
+            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                            "The 'FXTA' clause has no effect "
+                            f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
+            self.dihedRestraints -= 1
+        else:
+            for ai in atom_sel:
+                if ai in self.__atomNumberDict:
+                    atomSelection = [copy.copy(self.__atomNumberDict[ai])]
+                    self.atomSelectionSet.append(atomSelection)
+                else:
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    f"'{ai}' is not defined in the atom number dictionary.")
+                    self.dihedRestraints -= 1
+
+    # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_by_number.
+    def exitDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#angle_statement.
@@ -3096,16 +3124,29 @@ class SchrodingerMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by SchrodingerMRParser#angle_assign_unsupported.
-    def enterAngle_assign_unsupported(self, ctx: SchrodingerMRParser.Angle_assign_unsupportedContext):
-        self.failedAngRestraints += 1
-        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
-        self.__f.append(f"[Unsupported data] [Check the {self.failedAngRestraints}th row of angle restraints]"
-                        "The 'ANGLE' clause has no effect "
-                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+    # Enter a parse tree produced by SchrodingerMRParser#angle_assign_by_number.
+    def enterAngle_assign_by_number(self, ctx: SchrodingerMRParser.Angle_assign_by_numberContext):
+        self.angRestraints += 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#angle_assign_unsupported.
-    def exitAngle_assign_unsupported(self, ctx: SchrodingerMRParser.Angle_assign_unsupportedContext):  # pylint: disable=unused-argument
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
+
+        if self.__atomNumberDict is None:
+            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                            "The 'FXBA' clause has no effect "
+                            f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
+            self.distRestraints -= 1
+        else:
+            for ai in atom_sel:
+                if ai in self.__atomNumberDict:
+                    atomSelection = [copy.copy(self.__atomNumberDict[ai])]
+                    self.atomSelectionSet.append(atomSelection)
+                else:
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    f"'{ai}' is not defined in the atom number dictionary.")
+                    self.distRestraints -= 1
+
+    # Exit a parse tree produced by SchrodingerMRParser#angle_assign_by_number.
+    def exitAngle_assign_by_number(self, ctx: SchrodingerMRParser.Angle_assign_by_numberContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#fxdi_statement.
@@ -3161,8 +3202,10 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
             delta = abs(self.numberSelection[2])
 
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
+            lower_limit = upper_limit = None
+            if delta > 0.0:
+                lower_limit = target_value - delta
+                upper_limit = target_value + delta
 
             fc = self.numberSelection[0]
 
@@ -3304,16 +3347,30 @@ class SchrodingerMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxdi_assign_unsupported.
-    def enterFxdi_assign_unsupported(self, ctx: SchrodingerMRParser.Fxdi_assign_unsupportedContext):
-        self.failedDistRestraints += 1
-        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
-        self.__f.append(f"[Unsupported data] [Check the {self.failedDistRestraints}th row of distance restraints]"
-                        "The 'FXDI' clause has no effect "
-                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+    # Enter a parse tree produced by SchrodingerMRParser#fxdi_assign_by_number.
+    def enterFxdi_assign_by_number(self, ctx: SchrodingerMRParser.Fxdi_assign_by_numberContext):
+        self.distRestraints += 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxdi_assign_unsupported.
-    def exitFxdi_assign_unsupported(self, ctx: SchrodingerMRParser.Fxdi_assign_unsupportedContext):  # pylint: disable=unused-argument
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
+
+        if self.__atomNumberDict is None:
+            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                            "The 'FXDI' clause has no effect "
+                            f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
+            self.distRestraints -= 1
+        else:
+            for ai in atom_sel:
+                if ai in self.__atomNumberDict:
+                    atomSelection = [copy.copy(self.__atomNumberDict[ai])]
+                    self.atomSelectionSet.append(atomSelection)
+                else:
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    f"'{ai}' is not defined in the atom number dictionary.")
+
+            self.exitFxdi_assign(ctx)
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxdi_assign_by_number.
+    def exitFxdi_assign_by_number(self, ctx: SchrodingerMRParser.Fxdi_assign_by_numberContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#fxta_statement.
@@ -3340,7 +3397,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         self.__g.clear()
 
     # Exit a parse tree produced by SchrodingerMRParser#fxta_assign.
-    def exitFxta_assign(self, ctx: SchrodingerMRParser.Fxta_assignContext):
+    def exitFxta_assign(self, ctx: SchrodingerMRParser.Fxta_assignContext):  # pylint: disable=unused-argument
 
         try:
 
@@ -3357,8 +3414,10 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
             delta = abs(self.numberSelection[2])
 
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
+            lower_limit = upper_limit = None
+            if delta > 0.0:
+                lower_limit = target_value - delta
+                upper_limit = target_value + delta
 
             fc = self.numberSelection[0]
 
@@ -3369,7 +3428,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
             lower_linear_limit = upper_linear_limit = None
 
-            multiplicity = int(str(ctx.Integer()))
+            multiplicity = int(self.numberSelection[4])
 
             if multiplicity <= 0:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -3496,137 +3555,30 @@ class SchrodingerMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxta_assign_unsupported.
-    def enterFxta_assign_unsupported(self, ctx: SchrodingerMRParser.Fxta_assign_unsupportedContext):
-        self.failedDihedRestraints += 1
+    # Enter a parse tree produced by SchrodingerMRParser#fxta_assign_by_number.
+    def enterFxta_assign_by_number(self, ctx: SchrodingerMRParser.Fxta_assign_by_numberContext):
+        self.dihedRestraints += 1
+
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2))), int(str(ctx.Integer(3)))]
-        self.__f.append(f"[Unsupported data] [Check the {self.failedDihedRestraints}th row of dihedral angle restraints]"
-                        "The 'FXTA' clause has no effect "
-                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxta_assign_unsupported.
-    def exitFxta_assign_unsupported(self, ctx: SchrodingerMRParser.Fxta_assign_unsupportedContext):  # pylint: disable=unused-argument
-        pass
+        if self.__atomNumberDict is None:
+            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                            "The 'FXTA' clause has no effect "
+                            f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
+            self.dihedRestraints -= 1
+        else:
+            for ai in atom_sel:
+                if ai in self.__atomNumberDict:
+                    atomSelection = [copy.copy(self.__atomNumberDict[ai])]
+                    self.atomSelectionSet.append(atomSelection)
+                else:
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    f"'{ai}' is not defined in the atom number dictionary.")
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxba_statement.
-    def enterFxba_statement(self, ctx: SchrodingerMRParser.Fxba_statementContext):  # pylint: disable=unused-argument
-        self.angStatements += 1
-        self.__cur_subtype = 'ang'
+            self.exitFxta_assign(ctx)
 
-        if self.__createSfDict:
-            self.__addSf()
-
-    # Exit a parse tree produced by SchrodingerMRParser#fxba_statement.
-    def exitFxba_statement(self, ctx: SchrodingerMRParser.Fxba_statementContext):  # pylint: disable=unused-argument
-        if self.__createSfDict:
-            self.__trimSfWoLp()
-
-    # Enter a parse tree produced by SchrodingerMRParser#fxba_assign.
-    def enterFxba_assign(self, ctx: SchrodingerMRParser.Fxba_assignContext):  # pylint: disable=unused-argument
-        self.angRestraints += 1
-        if self.__cur_subtype != 'ang':
-            self.angStatements += 1
-        self.__cur_subtype = 'ang'
-
-        self.atomSelectionSet.clear()
-        self.__g.clear()
-
-    # Exit a parse tree produced by SchrodingerMRParser#fxba_assign.
-    def exitFxba_assign(self, ctx: SchrodingerMRParser.Fxba_assignContext):  # pylint: disable=unused-argument
-
-        try:
-
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
-                self.angRestraints -= 1
-                return
-
-            target_value = self.numberSelection[1]
-
-            if target_value <= 0.0:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"The target angle '{target_value}' should be a positive value because we cannot refer the initial coordinates.")
-                return
-
-            delta = abs(self.numberSelection[2])
-
-            lower_limit = target_value - delta
-            upper_limit = target_value + delta
-
-            fc = self.numberSelection[0]
-
-            if fc <= 0.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                f"The energy constant value {fc} must be a positive value.")
-                return
-
-            lower_limit = upper_limit = None
-
-            dstFunc = self.validateAngleRange(1.0, {'energy_const': fc}, target_value, lower_limit, upper_limit)
-
-            if dstFunc is None:
-                return
-
-            if not self.__hasPolySeq and not self.__hasNonPolySeq:
-                return
-
-            if not self.areUniqueCoordAtoms('a angle (FXBA)'):
-                if len(self.__g) > 0:
-                    self.__f.extend(self.__g)
-                return
-
-            if self.__createSfDict:
-                sf = self.__getSf('angle restraint')
-                sf['id'] += 1
-                if len(sf['loop']['tags']) == 0:
-                    sf['loop']['tags'] = ['index_id', 'id',
-                                          'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
-                                          'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
-                                          'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
-                                          'target_value', 'target_value_uncertainty',
-                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                          'force_constant',
-                                          'list_id']
-
-            updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
-
-            for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
-                                                         self.atomSelectionSet[1],
-                                                         self.atomSelectionSet[2]):
-                if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
-                    continue
-                if self.__debug:
-                    print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                          f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
-                if self.__createSfDict and sf is not None:
-                    sf['index_id'] += 1
-                    sf['loop']['data'].append([sf['index_id'], sf['id'],
-                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
-                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
-                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
-                                               dstFunc.get('target_value'), None,
-                                               dstFunc.get('lower_linear_limit'),
-                                               dstFunc.get('lower_limit'),
-                                               dstFunc.get('upper_limit'),
-                                               dstFunc.get('upper_linear_limit'),
-                                               fc,
-                                               sf['list_id']])
-
-        except ValueError:
-            self.angRestraints -= 1
-
-        finally:
-            self.numberSelection.clear()
-
-    # Enter a parse tree produced by SchrodingerMRParser#fxba_assign_unsupported.
-    def enterFxba_assign_unsupported(self, ctx: SchrodingerMRParser.Fxba_assign_unsupportedContext):
-        self.failedAngRestraints += 1
-        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
-        self.__f.append(f"[Unsupported data] [Check the {self.failedAngRestraints}th row of angle restraints]"
-                        "The 'FXBA' clause has no effect "
-                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
-
-    # Exit a parse tree produced by SchrodingerMRParser#fxba_assign_unsupported.
-    def exitFxba_assign_unsupported(self, ctx: SchrodingerMRParser.Fxba_assign_unsupportedContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by SchrodingerMRParser#fxba_assign_by_number.
+    def exitFxba_assign_by_number(self, ctx: SchrodingerMRParser.Fxba_assign_by_numberContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#fxhb_statement.
@@ -3830,16 +3782,30 @@ class SchrodingerMRParserListener(ParseTreeListener):
         if not is_hbond:
             self.__cur_subtype = 'hbond'
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxhb_assign_unsupported.
-    def enterFxhb_assign_unsupported(self, ctx: SchrodingerMRParser.Fxhb_assign_unsupportedContext):
-        self.failedHbondRestraints += 1
-        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
-        self.__f.append(f"[Unsupported data] [Check the {self.failedHbondRestraints}th row of hydrogen bond restraints]"
-                        "The 'FXHB' clause has no effect "
-                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+    # Enter a parse tree produced by SchrodingerMRParser#fxhb_assign_by_number.
+    def enterFxhb_assign_by_number(self, ctx: SchrodingerMRParser.Fxhb_assign_by_numberContext):
+        self.hbondRestraints += 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxhb_assign_unsupported.
-    def exitFxhb_assign_unsupported(self, ctx: SchrodingerMRParser.Fxhb_assign_unsupportedContext):  # pylint: disable=unused-argument
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
+
+        if self.__atomNumberDict is None:
+            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                            "The 'FXHB' clause has no effect "
+                            f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
+            self.hbondRestraints -= 1
+        else:
+            for ai in atom_sel:
+                if ai in self.__atomNumberDict:
+                    atomSelection = [copy.copy(self.__atomNumberDict[ai])]
+                    self.atomSelectionSet.append(atomSelection)
+                else:
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    f"'{ai}' is not defined in the atom number dictionary.")
+
+            self.exitFxhb_assign(ctx)
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxhb_assign_by_number.
+    def exitFxhb_assign_by_number(self, ctx: SchrodingerMRParser.Fxhb_assign_by_numberContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#selection.

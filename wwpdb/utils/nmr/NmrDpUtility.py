@@ -35298,8 +35298,8 @@ class NmrDpUtility:
         amberAtomNumberDict = charmmAtomNumberDict = gromacsAtomNumberDict = pdbAtomNumberDict = None
         _amberAtomNumberDict = {}
 
-        has_nm_aux_amb_file = has_nm_aux_cha_file = has_nm_aux_gro_file = False
-        has_nm_res_amb_file = has_nm_res_cha_file = has_nm_res_gro_file = False
+        has_aux_amb = has_aux_cha = has_aux_gro = False
+        has_res_amb = has_res_cha = has_res_gro = has_res_sch = False
 
         cyanaUplDistRest = cyanaLolDistRest = 0
 
@@ -35322,14 +35322,14 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
-                        if not dry_run:
+                        if not dry_run and not has_res_sch:
                             self.report.error.appendDescription('sequence_mismatch', msg_dict)
                             self.report.setError()
 
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
 
-                        valid = False
+                            valid = False
 
                     elif warn.startswith('[Unknown atom name]'):
                         if not dry_run:
@@ -35375,22 +35375,25 @@ class NmrDpUtility:
             fileListId += 1
 
             if file_type == 'nm-aux-amb':
-                has_nm_aux_amb_file = True
+                has_aux_amb = True
 
             if file_type == 'nm-aux-cha':
-                has_nm_aux_cha_file = True
+                has_aux_cha = True
 
             if file_type == 'nm-aux-gro':
-                has_nm_aux_gro_file = True
+                has_aux_gro = True
 
             if file_type == 'nm-res-amb':
-                has_nm_res_amb_file = True
+                has_res_amb = True
 
             if file_type == 'nm-res-cha':
-                has_nm_res_cha_file = True
+                has_res_cha = True
 
             if file_type == 'nm-res-gro':
-                has_nm_res_gro_file = True
+                has_res_gro = True
+
+            if file_type == 'nm-res-sch':
+                has_res_sch = True
 
         fileListId = self.__file_path_list_len
 
@@ -35523,9 +35526,10 @@ class NmrDpUtility:
 
                 if 'is_valid' in ar and ar['is_valid']:
 
-                    if (has_nm_res_amb_file and not has_nm_aux_amb_file)\
-                       or (has_nm_res_cha_file and not has_nm_aux_cha_file)\
-                       or (has_nm_res_gro_file and not has_nm_aux_gro_file):
+                    if (has_res_amb and not has_aux_amb)\
+                       or (has_res_cha and not has_aux_cha)\
+                       or (has_res_gro and not has_aux_gro)\
+                       or has_res_sch:
 
                         file_name = input_source_dic['file_name']
 
@@ -35559,7 +35563,7 @@ class NmrDpUtility:
 
                             poly_seq = listener.getPolymerSequence()
 
-                            if any(len(pdb_ps['seq_id']) == 0 for pdb_ps in poly_seq):
+                            if not has_res_sch and any(len(pdb_ps['seq_id']) == 0 for pdb_ps in poly_seq):
                                 continue
 
                             if poly_seq is not None:
@@ -35569,7 +35573,7 @@ class NmrDpUtility:
                             if seq_align is not None:
                                 self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
-                                if valid or not has_nm_res_amb_file:
+                                if valid or not has_res_amb:
 
                                     for sa in seq_align:
                                         ref_chain_id = sa['ref_chain_id']
@@ -35604,6 +35608,9 @@ class NmrDpUtility:
 
                                         deal_aux_warn_message(file_name, listener, False)
 
+                            elif has_res_sch and pdbAtomNumberDict is None:
+                                pdbAtomNumberDict = listener.getAtomNumberDict()
+
             elif file_type in ('nm-res-cya', 'nm-res-cye') and content_subtype is not None and 'dist_restraint' in content_subtype:
                 if 'is_valid' in ar and ar['is_valid']:
                     if ar['dist_type'] in ('upl', 'both'):
@@ -35611,12 +35618,33 @@ class NmrDpUtility:
                     if ar['dist_type'] in ('lol', 'both'):
                         cyanaLolDistRest += 1
 
+        if has_res_sch and pdbAtomNumberDict is None and not self.__internal_mode:
+            cif_file_name = os.path.basename(self.__cifPath)
+
+            if onedep_model_file_pattern.match(cif_file_name):
+                dep_id = onedep_model_file_pattern.search(cif_file_name).groups()[0]
+
+                file_path = os.path.join(self.__cR.getDirPath(), f'{dep_id}_model-upload_P1.pdb.V1')
+
+                if os.path.exists(file_path):
+                    reader = BarePDBReader(self.__verbose, self.__lfh,
+                                           self.__representative_model_id,
+                                           self.__representative_alt_id,
+                                           self.__mr_atom_name_mapping,
+                                           self.__cR, self.__caC,
+                                           self.__ccU, self.__csStat, self.__nefT)
+
+                    listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener is not None:
+                        pdbAtomNumberDict = listener.getAtomNumberDict()
+
         if pdbAtomNumberDict is not None:
-            if has_nm_res_amb_file and amberAtomNumberDict is None:
+            if has_res_amb and amberAtomNumberDict is None:
                 amberAtomNumberDict = pdbAtomNumberDict
-            if has_nm_res_cha_file and charmmAtomNumberDict is None:
+            if has_res_cha and charmmAtomNumberDict is None:
                 charmmAtomNumberDict = pdbAtomNumberDict
-            if has_nm_res_gro_file and gromacsAtomNumberDict is None:
+            if has_res_gro and gromacsAtomNumberDict is None:
                 gromacsAtomNumberDict = pdbAtomNumberDict
 
         fileListId = self.__file_path_list_len
@@ -36119,7 +36147,7 @@ class NmrDpUtility:
 
                     continue
 
-            if file_type == 'nm-res-cha' and charmmAtomNumberDict is None and not has_nm_aux_cha_file:
+            if file_type == 'nm-res-cha' and charmmAtomNumberDict is None and not has_aux_cha:
 
                 err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded to verify CHARMM restraint file {file_name!r}."
 
@@ -36143,7 +36171,7 @@ class NmrDpUtility:
 
                     continue
 
-            if file_type == 'nm-res-gro' and gromacsAtomNumberDict is None and not has_nm_aux_gro_file:
+            if file_type == 'nm-res-gro' and gromacsAtomNumberDict is None and not has_aux_gro:
 
                 err = f"GROMACS topology file must be uploaded to verify GROMACS restraint file {file_name!r}."
 
@@ -37354,7 +37382,7 @@ class NmrDpUtility:
                                              self.__mr_atom_name_mapping,
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
-                                             reasons)
+                                             pdbAtomNumberDict, reasons)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                 reader.setNmrChainAssignments(nmr_vs_model)
 
@@ -37376,7 +37404,7 @@ class NmrDpUtility:
                                                      self.__mr_atom_name_mapping,
                                                      self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,
-                                                     None)
+                                                     pdbAtomNumberDict, None)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                         reader.setNmrChainAssignments(nmr_vs_model)
 
@@ -37404,7 +37432,7 @@ class NmrDpUtility:
                                                      self.__mr_atom_name_mapping,
                                                      self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,
-                                                     reasons)
+                                                     pdbAtomNumberDict, reasons)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                         reader.setNmrChainAssignments(nmr_vs_model)
 
@@ -37743,7 +37771,7 @@ class NmrDpUtility:
 
         xeasyAtomNumberDict = None
 
-        has_nm_aux_xea_file = has_nm_pea_xea_file = False
+        has_aux_xea = has_pea_xea = False
 
         fileListId = self.__file_path_list_len
 
@@ -37756,7 +37784,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
 
             if file_type == 'nm-pea-xea':
-                has_nm_pea_xea_file = True
+                has_pea_xea = True
                 break
 
             fileListId += 1
@@ -37868,7 +37896,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ KeyError  - {warn}\n")
 
-        if has_nm_pea_xea_file:
+        if has_pea_xea:
 
             fileListId = self.__file_path_list_len
 
@@ -37886,7 +37914,7 @@ class NmrDpUtility:
                 fileListId += 1
 
                 if file_type == 'nm-aux-xea':
-                    has_nm_aux_xea_file = True
+                    has_aux_xea = True
 
                     file_name = input_source_dic['file_name']
 
@@ -38279,7 +38307,7 @@ class NmrDpUtility:
 
                 continue
 
-            if file_type == 'nm-pea-xea' and not has_nm_aux_xea_file and not self.__internal_mode:
+            if file_type == 'nm-pea-xea' and not has_aux_xea and not self.__internal_mode:
 
                 err = f"XEASY PROT file should be uploaded to verify XEASY spectral peak list file {file_name!r}."
 

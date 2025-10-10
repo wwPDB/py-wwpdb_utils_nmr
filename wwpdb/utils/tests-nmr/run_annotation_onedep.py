@@ -161,7 +161,7 @@ class gen_auth_view_onedep:
         self.__gro_top_pattern = re.compile(r"^\[ atoms \]\s*")
         self.__gro_rst_pattern = re.compile(r"^\[ (distance|dihedral|orientation)_restraints \]\s*")
 
-        self.__pdb_top_pattern = re.compile(r"^ATOM\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){3}.*$")
+        self.__pdb_top_pattern = re.compile(r"^(ATOM|HETATM)\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){3}.*$")
 
         self.__bmrb_id = ''.join(c for c in sys.argv[1] if c.isdigit())
 

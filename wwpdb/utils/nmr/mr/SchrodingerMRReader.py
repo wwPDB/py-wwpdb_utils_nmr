@@ -59,7 +59,7 @@ class SchrodingerMRReader:
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
                  csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
-                 reasons: Optional[dict] = None):
+                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -95,6 +95,9 @@ class SchrodingerMRReader:
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
         if nefT is None:
             self.__nefT.set_remediation_mode(True)
+
+        # atom number dictionary
+        self.__atomNumberDict = atomNumberDict
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -193,7 +196,7 @@ class SchrodingerMRReader:
                                                    self.__mrAtomNameMapping,
                                                    self.__cR, self.__caC,
                                                    self.__ccU, self.__csStat, self.__nefT,
-                                                   self.__reasons)
+                                                   self.__atomNumberDict, self.__reasons)
             listener.setDebugMode(self.__debug)
             listener.setInternalMode(self.__internal)
             listener.setNmrChainAssignments(self.__nmr_vs_model)

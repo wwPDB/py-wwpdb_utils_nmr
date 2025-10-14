@@ -29,6 +29,7 @@ import pickle
 import logging
 import hashlib
 import collections
+import json
 
 from packaging import version
 from operator import itemgetter
@@ -37,11 +38,13 @@ from typing import Any, IO, Union, Optional
 try:
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           trueValue)
+                                           trueValue,
+                                           getPrettyJson)
 except ImportError:
     from nmr.io.mmCIFUtil import mmCIFUtil
     from nmr.AlignUtil import (emptyValue,
-                               trueValue)
+                               trueValue,
+                               getPrettyJson)
 
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
@@ -949,6 +952,11 @@ class CifToNmrStar:
 
         except Exception as e:
             self.__lfh.write(f"+{self.__class_name__}.normalize() ++ Error  - {str(e)}\n")
+
+        for sf in strData.get_saveframes_by_tag_and_value('_Other_data_type_list.Text_data_format', 'json'):
+            text_data = get_first_sf_tag(sf, 'Text_data')
+            if len(text_data) > 0:
+                set_sf_tag(sf, 'Text_data', getPrettyJson(json.loads(text_data)))
 
         return strData
 

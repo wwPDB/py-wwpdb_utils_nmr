@@ -35321,7 +35321,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
-                    elif warn.startswith('[Sequence mismatch]') and not dry_run:
+                    elif warn.startswith('[Sequence mismatch]'):
                         if not dry_run and not has_res_sch:
                             self.report.error.appendDescription('sequence_mismatch', msg_dict)
                             self.report.setError()
@@ -47649,6 +47649,7 @@ class NmrDpUtility:
                     internal_cif_file = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V1')
                     internal_cif_file0 = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V0')
                     internal_cif_file_prefix = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V')
+                    other_internal_cif_file = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V-1')
 
                     max_ver = 1
                     if not os.path.exists(internal_cif_file):
@@ -47674,7 +47675,7 @@ class NmrDpUtility:
                                             if file_name.endswith('.pdb'):
                                                 if not has_coordinates(file_path):
                                                     continue
-                                                com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file_prefix}{max_ver}', '-o', '1']
+                                                com = [maxitpath, '-input', file_path, '-output', f'{internal_cif_file_prefix}{max_ver}', '-o', '1']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
                                                 # print(f'{" ".join(com)}\n -> {ret_code}')
@@ -47684,7 +47685,7 @@ class NmrDpUtility:
                                             elif file_name.endswith('.cif'):
                                                 if not has_cif_coordinates(file_path):
                                                     continue
-                                                com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file_prefix}{max_ver}', '-o', '8']
+                                                com = [maxitpath, '-input', file_path, '-output', f'{internal_cif_file_prefix}{max_ver}', '-o', '8']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
                                                 # print(f'{" ".join(com)}\n -> {ret_code}')
@@ -47701,7 +47702,7 @@ class NmrDpUtility:
                                                 if file_name.endswith('.pdb'):
                                                     if not has_coordinates(file_path):
                                                         continue
-                                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                    com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
                                                     # print(f'{" ".join(com)}\n -> {ret_code}')
@@ -47710,7 +47711,7 @@ class NmrDpUtility:
                                                 elif file_name.endswith('.cif'):
                                                     if not has_cif_coordinates(file_path):
                                                         continue
-                                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                    com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '8']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
                                                     # print(f'{" ".join(com)}\n -> {ret_code}')
@@ -47722,7 +47723,7 @@ class NmrDpUtility:
                                             for file_name in os.listdir(intnl_upload_dir):
                                                 if file_name.endswith('model-upload_P1.pdb.V1'):
                                                     file_path = os.path.join(intnl_upload_dir, file_name)
-                                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                    com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
                                                     # print(f'{" ".join(com)}\n -> {ret_code}')
@@ -47732,7 +47733,7 @@ class NmrDpUtility:
                                                 for file_name in os.listdir(intnl_upload_dir):
                                                     if file_name.endswith('model-upload_P1.cif.V1'):
                                                         file_path = os.path.join(intnl_upload_dir, file_name)
-                                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                        com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '8']
                                                         result = subprocess.run(com, check=False)
                                                         ret_code = result.returncode
                                                         # print(f'{" ".join(com)}\n -> {ret_code}')
@@ -47817,6 +47818,97 @@ class NmrDpUtility:
                             retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file0,
                                                                 self.__representative_model_id, self.__representative_alt_id)
 
+                        try:
+
+                            import subprocess  # pylint: disable=import-outside-toplevel
+
+                            database_2 = self.__cR.getDictListWithFilter('database_2',
+                                                                         [{'name': 'database_code', 'type': 'str'}],
+                                                                         [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+                            if len(database_2) > 0:
+
+                                bmrb_id = database_2[0]['database_code']
+                                if bmrb_id is not None and bmrb_id.isdigit() and not os.path.exists(other_internal_cif_file):
+                                    for dir_name in os.listdir(self.__cR.getDirPath()):
+                                        if dir_name.startswith('bmr') and dir_name != f'bmr{bmrb_id}':
+                                            dir_path = os.path.join(self.__cR.getDirPath(), dir_name)
+                                            if os.path.isdir(dir_path):
+                                                ret_code = -1
+                                                other_intnl_upload_dir = os.path.join(dir_path, 'work')
+                                                if os.path.isdir(other_intnl_upload_dir):
+                                                    for file_name in os.listdir(other_intnl_upload_dir):
+                                                        file_path = os.path.join(other_intnl_upload_dir, file_name)
+                                                        if not os.path.isfile(file_path):
+                                                            continue
+                                                        if file_name.endswith('.pdb'):
+                                                            if not has_coordinates(file_path):
+                                                                continue
+                                                            com = [maxitpath, '-input', file_path, '-output', other_internal_cif_file, '-o', '1']
+                                                            result = subprocess.run(com, check=False)
+                                                            ret_code = result.returncode
+                                                            # print(f'{" ".join(com)}\n -> {ret_code}')
+                                                            if ret_code == 0:
+                                                                break
+                                                    if ret_code != 0:
+                                                        cif_path_list = []
+                                                        for file_name in os.listdir(other_intnl_upload_dir):
+                                                            file_path = os.path.join(other_intnl_upload_dir, file_name)
+                                                            if not os.path.isfile(file_path):
+                                                                continue
+                                                            if file_name.endswith('.cif'):
+                                                                if not has_cif_coordinates(file_path):
+                                                                    continue
+                                                                cif_path_list.append((file_path, os.path.getsize(file_path)))
+                                                        if len(cif_path_list) > 0:
+                                                            cif_path_list = sorted(cif_path_list, key=lambda item: item[1])
+                                                            file_path = cif_path_list[0][0]
+                                                            shutil.copyfile(file_path, other_internal_cif_file)
+                                                            ret_code = 0
+                                                            break
+                                                if ret_code != 0:
+                                                    other_intnl_upload_dir = os.path.join(dir_path, 'work/upload')
+                                                    if os.path.isdir(other_intnl_upload_dir):
+                                                        for file_name in os.listdir(other_intnl_upload_dir):
+                                                            file_path = os.path.join(other_intnl_upload_dir, file_name)
+                                                            if not os.path.isfile(file_path):
+                                                                continue
+                                                            if file_name.endswith('.pdb'):
+                                                                if not has_coordinates(file_path):
+                                                                    continue
+                                                                com = [maxitpath, '-input', file_path, '-output', other_internal_cif_file, '-o', '1']
+                                                                result = subprocess.run(com, check=False)
+                                                                ret_code = result.returncode
+                                                                # print(f'{" ".join(com)}\n -> {ret_code}')
+                                                                if ret_code == 0:
+                                                                    break
+                                                            if ret_code != 0:
+                                                                cif_path_list = []
+                                                                for file_name in os.listdir(other_intnl_upload_dir):
+                                                                    file_path = os.path.join(other_intnl_upload_dir, file_name)
+                                                                    if not os.path.isfile(file_path):
+                                                                        continue
+                                                                    if file_name.endswith('.cif'):
+                                                                        if not has_cif_coordinates(file_path):
+                                                                            continue
+                                                                        cif_path_list.append((file_path, os.path.getsize(file_path)))
+                                                                if len(cif_path_list) > 0:
+                                                                    cif_path_list = sorted(cif_path_list, key=lambda item: item[1])
+                                                                    file_path = cif_path_list[0][0]
+                                                                    shutil.copyfile(file_path, other_internal_cif_file)
+                                                                    ret_code = 0
+                                                                    break
+
+                            if os.path.exists(internal_cif_file0):
+                                major = max(revision_history)
+                                minor = revision_history[major] - 2
+                                revision_history[major] = minor
+                                self.__internal_atom_name_mapping[-1] =\
+                                    retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, other_internal_cif_file,
+                                                                        self.__representative_model_id, self.__representative_alt_id)
+
+                        except Exception as e:
+                            print(str(e))
+
             if len(self.__internal_atom_name_mapping) == 0:
                 cif_file_name = os.path.basename(self.__cifPath)
 
@@ -47835,7 +47927,7 @@ class NmrDpUtility:
                             for file_name in os.listdir(cur_dir_path):
                                 if file_name == f'{dep_id}_model-upload_P1.pdb.V1':
                                     file_path = os.path.join(cur_dir_path, file_name)
-                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                    com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '1']
                                     result = subprocess.run(com, check=False)
                                     ret_code = result.returncode
                                     if ret_code == 0:
@@ -47844,7 +47936,7 @@ class NmrDpUtility:
                                 for file_name in os.listdir(cur_dir_path):
                                     if file_name == f'{dep_id}_model_P1.pdb.V1':
                                         file_path = os.path.join(cur_dir_path, file_name)
-                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                        com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '1']
                                         result = subprocess.run(com, check=False)
                                         ret_code = result.returncode
                                         if ret_code == 0:
@@ -47853,7 +47945,7 @@ class NmrDpUtility:
                                 for file_name in os.listdir(cur_dir_path):
                                     if file_name == f'{dep_id}_model-upload_P1.cif.V1':
                                         file_path = os.path.join(cur_dir_path, file_name)
-                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                        com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '8']
                                         result = subprocess.run(com, check=False)
                                         ret_code = result.returncode
                                         if ret_code == 0:
@@ -47862,7 +47954,7 @@ class NmrDpUtility:
                                 for file_name in os.listdir(cur_dir_path):
                                     if file_name == f'{dep_id}_model_P1.cif.V1':
                                         file_path = os.path.join(cur_dir_path, file_name)
-                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                        com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '8']
                                         result = subprocess.run(com, check=False)
                                         ret_code = result.returncode
                                         if ret_code == 0:

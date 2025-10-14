@@ -3905,6 +3905,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
 
     nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
 
+    auth_seq_id = 'auth_seq_id' if cR_prev.hasItem('atom_site', 'auth_seq_id') else 'label_seq_id'
     auth_comp_id = 'auth_comp_id' if cR_prev.hasItem('atom_site', 'auth_comp_id') else 'label_comp_id'
 
     if len(nstd_residues_prev) == 0:
@@ -3927,7 +3928,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
             return None
 
     coord_prev = cR_prev.getDictListWithFilter('atom_site',
-                                               [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                               [{'name': auth_seq_id, 'type': 'int', 'alt_name': 'seq_id'},
                                                 {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                 {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -3960,7 +3961,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     if len(atom_name_mapping) == 0:
 
         coord_prev = cR_prev.getDictListWithFilter('atom_site',
-                                                   [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                   [{'name': auth_seq_id, 'type': 'int', 'alt_name': 'seq_id'},
                                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                     {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                     {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -3991,7 +3992,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
 
     if cR_prev.hasItem('atom_site', 'pdbx_auth_atom_name'):
         coord_prev = cR_prev.getDictListWithFilter('atom_site',
-                                                   [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                   [{'name': auth_seq_id, 'type': 'int', 'alt_name': 'seq_id'},
                                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                     {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                     {'name': 'pdbx_auth_atom_name', 'type': 'starts-with-alnum', 'alt_name': 'alt_atom_id'}

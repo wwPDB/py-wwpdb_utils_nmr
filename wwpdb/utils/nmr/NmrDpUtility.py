@@ -37869,11 +37869,11 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
-                        self.report.error.appendDescription('sequence_mismatch', msg_dict)
-                        self.report.setError()
+                        self.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                        self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unknown atom name]'):
                         self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)

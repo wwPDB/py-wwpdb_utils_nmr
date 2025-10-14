@@ -35606,7 +35606,7 @@ class NmrDpUtility:
                                                     if k not in pdbAtomNumberDict:
                                                         pdbAtomNumberDict[k] = v
 
-                                        deal_aux_warn_message(file_name, listener, False)
+                                        deal_aux_warn_message(file_name, listener, True)
 
                             elif has_res_sch and pdbAtomNumberDict is None:
                                 pdbAtomNumberDict = listener.getAtomNumberDict()

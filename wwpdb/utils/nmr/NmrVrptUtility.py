@@ -2097,7 +2097,7 @@ class NmrVrptUtility:
                             d = distance(pos_1, pos_2)
                             if d == 0.0:
                                 self.__lfh.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - "
-                                                 "distance restraint {rest_key} {r} does not make sense, "
+                                                 f"distance restraint {rest_key} {r} does not make sense, "
                                                  f"{os.path.basename(self.__nmrDataPath)}.\n")
                             dist_list_set[bound_key].append(d)
                         else:

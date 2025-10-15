@@ -8398,6 +8398,8 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
                 auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
             if seqKey in authToStarSeq and (not has_aux_atom or (has_aux_atom and auxSeqKey in authToStarSeq)):
                 starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+                if chainId in offsetHolder and offset < offsetHolder[chainId]:
+                    break
                 offsetHolder[chainId] = offset
                 if has_aux_atom and compId in monDict3 and auxCompId in monDict3:
                     offsetHolder[f'_{chainId}'] = offset
@@ -8408,6 +8410,8 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
                 auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
             if seqKey in authToStarSeq and (not has_aux_atom or (has_aux_atom and auxSeqKey in authToStarSeq)):
                 starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+                if chainId in offsetHolder and -offset < offsetHolder[chainId]:
+                    break
                 offsetHolder[chainId] = -offset
                 if has_aux_atom and compId in monDict3 and auxCompId in monDict3:
                     offsetHolder[f'_{chainId}'] = -offset

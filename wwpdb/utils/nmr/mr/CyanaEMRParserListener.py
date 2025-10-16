@@ -4457,7 +4457,7 @@ class CyanaEMRParserListener(ParseTreeListener):
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomIdSet, _atomId = [], []
-            for atomId_ in __atomId.split('|'):
+            for atomId_ in atomId.split('|'):
                 if len(_atomId) > 0:
                     _atomId = []
 

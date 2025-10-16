@@ -2218,7 +2218,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 atomId = __atomId
 
             _atomIdSet, _atomId = [], []
-            for atomId_ in __atomId.split('|'):
+            for atomId_ in atomId.split('|'):
                 if len(_atomId) > 0:
                     _atomId = []
 

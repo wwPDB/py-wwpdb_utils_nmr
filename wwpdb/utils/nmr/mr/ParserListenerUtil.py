@@ -2602,7 +2602,6 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     return "H22'"
                 if atomId == "H2'" and "H21'" in _refAtomIdList:  # 8YN
                     return "H21'"
-                
             elif atomId.startswith("H3'"):
                 if refAtomIdList is not None:
                     if atomId == "H3''" and "H3'A" in refAtomIdList:

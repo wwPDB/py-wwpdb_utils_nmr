@@ -231,6 +231,12 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(False, reasons={'non_poly_remap': {'PNS': {87: {'chain_id': 'A', 'seq_id': 1201, 'original_chain_id': None}}}})
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/8aig/final.upl.5_v4',
+                     '../../tests-nmr/mock-data-remediation/8aig/8aig.cif')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2khk/2khk-corrected.mr',

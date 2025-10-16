@@ -2564,6 +2564,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 or not ('seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons or 'ext_chain_seq_id_remap' in self.__reasons)):
             try:
                 if not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])
+                           and ('gap_in_auth_seq' not in _ps or _ps['auth_seq_id'][0] > 0)
                            for _ps in self.__polySeq):
                     self.__preferAuthSeq = not self.__preferAuthSeq
                     trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
@@ -2905,7 +2906,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             ligands += np['alt_comp_id'].count(compId)
                     if ligands == 1:
                         _compId = compId
-                if ligands == 0 and len(chainAssign) == 0:
+                if ligands == 0 and len(chainAssign) == 0 and _compId not in monDict3:
                     __compId = None
                     for np in self.__nonPoly:
                         for ligand in np['comp_id']:
@@ -3568,7 +3569,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             ligands += np['alt_comp_id'].count(compId)
                     if ligands == 1:
                         _compId = compId
-                if ligands == 0 and len(chainAssign) == 0:
+                if ligands == 0 and len(chainAssign) == 0 and _compId not in monDict3:
                     __compId = None
                     for np in self.__nonPoly:
                         for ligand in np['comp_id']:

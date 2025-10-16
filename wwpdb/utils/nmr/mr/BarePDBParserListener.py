@@ -123,6 +123,8 @@ class BarePDBParserListener(ParseTreeListener):
     __prev_nr = -1
     # total appearances of TER clause
     __ter_count = 0
+    # offset value for atom number due to TER clause
+    __ter_offset = 0
     # END clause
     __end = False
 
@@ -185,6 +187,7 @@ class BarePDBParserListener(ParseTreeListener):
         self.__cur_nr = -1
         self.__prev_nr = -1
         self.__ter_count = 0
+        self.__ter_offset = 0
         self.__end = False
 
     # Exit a parse tree produced by BarePDBParser#bare_pdb.
@@ -1117,7 +1120,7 @@ class BarePDBParserListener(ParseTreeListener):
             if atomId is None:
                 return
 
-            atom = {'atom_number': nr,
+            atom = {'atom_number': nr + self.__ter_offset,
                     'auth_chain_id': chainId,
                     'auth_seq_id': seqId,
                     'auth_comp_id': compId,
@@ -1212,9 +1215,16 @@ class BarePDBParserListener(ParseTreeListener):
         pass
 
     # Exit a parse tree produced by BarePDBParser#terminal.
-    def exitTerminal(self, ctx: BarePDBParser.TerminalContext):  # pylint: disable=unused-argument
+    def exitTerminal(self, ctx: BarePDBParser.TerminalContext):
         self.__atoms.append('TER')
         self.__ter_count += 1
+
+        if ctx.Any_name(0):
+            try:
+                if int(str(ctx.Any_name(0))) == self.__cur_nr + 1:
+                    self.__ter_offset -= 1
+            except ValueError:
+                pass
 
     # Enter a parse tree produced by BarePDBParser#end.
     def enterEnd(self, ctx: BarePDBParser.EndContext):  # pylint: disable=unused-argument

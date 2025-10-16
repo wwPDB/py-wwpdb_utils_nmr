@@ -75,8 +75,32 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 Ordinal:		DECIMAL '.';
 
+/* Insight II distance restraint */
+Restraint:		'restraint' -> pushMode(INSIGHT_II_MODE);
+
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K S?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K S?) ~[\r\n]* -> channel(HIDDEN);
+
+mode INSIGHT_II_MODE;
+
+fragment NAME_CHAR_II:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#' | ':' | '|';
+fragment SIMPLE_NAME_II:	START_CHAR NAME_CHAR_II*;
+
+Double_quote_string:	'"' SIMPLE_NAME_II '"';
+
+Create:			'create';
+Function:		'function';
+Target:			'target';
+
+Distance:		'distance';
+Quadratic:		'quadratic';
+Flat_bottomed:		'flatBottomed';
+
+Relative:		'relative';
+
+SPACE_II:		[ \t]+ -> skip;
+
+RETURN_II:		[\r\n]+ -> popMode;
 

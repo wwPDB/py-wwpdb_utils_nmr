@@ -102,7 +102,7 @@ COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 fragment ALPHA:		[A-Z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
-fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#';
+fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#' | '|';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 Simple_name:		SIMPLE_NAME;

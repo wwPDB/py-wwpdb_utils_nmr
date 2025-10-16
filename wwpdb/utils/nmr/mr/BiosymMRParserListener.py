@@ -826,8 +826,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
-            chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
+            chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+            chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -970,8 +970,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
-            chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
+            chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+            chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -2216,123 +2216,136 @@ class BiosymMRParserListener(ParseTreeListener):
             if atomId != __atomId and coordAtomSite is not None and __atomId in coordAtomSite['atom_id']:
                 atomId = __atomId
 
-            _atomId = []
-            if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
-                key = (chainId, cifSeqId, compId, atomId)
-                if key in self.__cachedDictForStarAtom:
-                    _atomId = copy.deepcopy(self.__cachedDictForStarAtom[key])
-                else:
-                    pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
-                    atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
-                    if len(atomIdList) > 1:
-                        hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
-                        hvyAtomId = None
-                        for canHvyAtomId in hvyAtomIdList:
-                            if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
-                                            representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
-                                            modelNumName=self.__modelNumName):
-                                hvyAtomId = canHvyAtomId
-                                break
-                        if hvyAtomId is not None:
-                            for _atomId_ in atomIdList:
-                                if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
+            _atomIdSet, _atomId = [], []
+            for atomId_ in __atomId.split('|'):
+                if len(_atomId) > 0:
+                    _atomId = []
+
+                if not isPolySeq and atomId_[0] in ('Q', 'M') and coordAtomSite is not None:
+                    key = (chainId, cifSeqId, compId, atomId_)
+                    if key in self.__cachedDictForStarAtom:
+                        _atomId = copy.deepcopy(self.__cachedDictForStarAtom[key])
+                    else:
+                        pattern = re.compile(fr'H{atomId_[1:]}\d+') if compId in monDict3 else re.compile(fr'H{atomId_[1:]}\S?$')
+                        atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
+                        if len(atomIdList) > 1:
+                            hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
+                            hvyAtomId = None
+                            for canHvyAtomId in hvyAtomIdList:
+                                if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
                                                 representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
                                                 modelNumName=self.__modelNumName):
-                                    _atomId.append(_atomId_)
-                    if len(_atomId) > 1:
-                        self.__cachedDictForStarAtom[key] = copy.deepcopy(_atomId)
-            if len(_atomId) > 1:
-                details = None
-            else:
-                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-                if details is not None:
-                    if atomId != __atomId:
-                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, __atomId, leave_unmatched=True)
-                    elif len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
-                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+                                    hvyAtomId = canHvyAtomId
+                                    break
+                            if hvyAtomId is not None:
+                                for _atomId_ in atomIdList:
+                                    if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
+                                                    representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                                    modelNumName=self.__modelNumName):
+                                        _atomId.append(_atomId_)
+                        if len(_atomId) > 1:
+                            self.__cachedDictForStarAtom[key] = copy.deepcopy(_atomId)
+                if len(_atomId) > 1:
+                    details = None
+                else:
+                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId_, leave_unmatched=True)
+                    if details is not None:
+                        if atomId_ != __atomId:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, __atomId, leave_unmatched=True)
+                        elif len(atomId_) > 1 and not atomId_[-1].isalpha() and (atomId_[0] in pseProBeginCode or atomId_[0] in ('C', 'N', 'P', 'F')):
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId_[:-1], leave_unmatched=True)
+                            if atomId_[-1].isdigit() and int(atomId_[-1]) <= len(_atomId):
+                                _atomId = [_atomId[int(atomId_[-1]) - 1]]
 
-            if details is not None or atomId.endswith('"'):
-                _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU, unambig=self.__cur_subtype != 'dist')
-                if _atomId_ != atomId:
-                    if atomId.startswith('HT') and len(_atomId_) == 2:
-                        _atomId_ = 'H'
-                    __atomId__ = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
-                    if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
-                            _atomId = __atomId__
-                        elif __atomId__[0][0] in protonBeginCode:
-                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
-                            if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+                if details is not None or atomId_.endswith('"'):
+                    _atomId_ = translateToStdAtomName(atomId_, cifCompId, ccU=self.__ccU, unambig=self.__cur_subtype != 'dist')
+                    if _atomId_ != atomId_:
+                        if atomId_.startswith('HT') and len(_atomId_) == 2:
+                            _atomId_ = 'H'
+                        __atomId__ = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
+                        if coordAtomSite is not None:
+                            if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
                                 _atomId = __atomId__
-                elif coordAtomSite is not None:
-                    _atomId = []
-            # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
+                            elif __atomId__[0][0] in protonBeginCode:
+                                __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
+                                if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+                                    _atomId = __atomId__
+                    elif coordAtomSite is not None:
+                        _atomId = []
+                # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId_)[0]
 
-            if coordAtomSite is not None\
-               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
-                if atomId in coordAtomSite['atom_id']:
-                    _atomId = [atomId]
-                elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
-                    _atomId = ['H']
+                if coordAtomSite is not None\
+                   and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
+                    if atomId_ in coordAtomSite['atom_id']:
+                        _atomId = [atomId_]
+                    elif seqId == 1 and atomId_ == 'H1' and self.__csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
+                        _atomId = ['H']
 
-            if coordAtomSite is None and not isPolySeq and self.__hasNonPolySeq:
-                try:
-                    for np in self.__nonPolySeq:
-                        if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
-                            cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
-                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId)
-                            if coordAtomSite is not None:
-                                break
-                except ValueError:
-                    pass
+                if coordAtomSite is None and not isPolySeq and self.__hasNonPolySeq:
+                    try:
+                        for np in self.__nonPolySeq:
+                            if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
+                                cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
+                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId)
+                                if coordAtomSite is not None:
+                                    break
+                    except ValueError:
+                        pass
 
-            if coordAtomSite is not None:
-                atomSiteAtomId = coordAtomSite['atom_id']
-                if len(_atomId) == 0 and __atomId in zincIonCode and 'ZN' in atomSiteAtomId:
-                    compId = atomId = 'ZN'
-                    _atomId = [atomId]
-                elif len(_atomId) == 0 and __atomId in calciumIonCode and 'CA' in atomSiteAtomId:
-                    compId = atomId = 'CA'
-                    _atomId = [atomId]
-                elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
-                    pass
-                elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
-                    _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
+                if coordAtomSite is not None:
+                    atomSiteAtomId = coordAtomSite['atom_id']
+                    if len(_atomId) == 0 and __atomId in zincIonCode and 'ZN' in atomSiteAtomId:
+                        compId = atomId_ = 'ZN'
+                        _atomId = [atomId_]
+                    elif len(_atomId) == 0 and __atomId in calciumIonCode and 'CA' in atomSiteAtomId:
+                        compId = atomId_ = 'CA'
+                        _atomId = [atomId_]
+                    elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
+                        pass
+                    elif atomId_[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
+                        _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
-            lenAtomId = len(_atomId)
-            if self.__reasons is not None and compId != cifCompId and __compId == cifCompId:
-                compId = cifCompId
-            if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
-                multiChain = insCode = False
-                if len(chainAssign) > 0:
-                    chainIds = [ca[0] for ca in chainAssign]
-                    multiChain = len(collections.Counter(chainIds).most_common()) > 1
-                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
-                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == cifSeqId]
-                    if compId in compIds:
-                        insCode = True
-                        cifCompId = compId
-                if not multiChain and not insCode:
-                    if self.__preferAuthSeq:
-                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId, asis=False)
-                        if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
-                            if lenAtomId > 0 and _atomId[0] in _coordAtomSite['atom_id']:
-                                self.__authSeqId = 'label_seq_id'
-                                self.__setLocalSeqScheme()
-                                continue
-                    self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
-                                    f"Residue name {__compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
+                lenAtomId = len(_atomId)
+                if self.__reasons is not None and compId != cifCompId and __compId == cifCompId:
+                    compId = cifCompId
+                if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
+                    multiChain = insCode = False
+                    if len(chainAssign) > 0:
+                        chainIds = [ca[0] for ca in chainAssign]
+                        multiChain = len(collections.Counter(chainIds).most_common()) > 1
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                    if ps is not None:
+                        compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == cifSeqId]
+                        if compId in compIds:
+                            insCode = True
+                            cifCompId = compId
+                    if not multiChain and not insCode:
+                        if self.__preferAuthSeq:
+                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId, asis=False)
+                            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                                if lenAtomId > 0 and _atomId[0] in _coordAtomSite['atom_id']:
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__setLocalSeqScheme()
+                                    continue
+                        self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
+                                        f"Residue name {__compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
+                        continue
+
+                if compId != cifCompId and cifCompId in monDict3 and not isPolySeq:
                     continue
 
-            if compId != cifCompId and cifCompId in monDict3 and not isPolySeq:
-                continue
+                if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:
+                    _atomId = [cifCompId]
+                    lenAtomId = 1
 
-            if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:
-                _atomId = [cifCompId]
-                lenAtomId = 1
+                if lenAtomId > 0:
+                    _atomIdSet.append(_atomId)
+
+            if len(_atomIdSet) > 1:
+                _atomId = []
+                for _atomId_ in _atomIdSet:
+                    _atomId.extend(_atomId_)
+                lenAtomId = len(_atomId)
 
             if lenAtomId == 0:
                 if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):
@@ -3674,8 +3687,8 @@ class BiosymMRParserListener(ParseTreeListener):
         if not any(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId2):
             chainId2 = None
 
-        chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+        chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])
+        chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])
 
         if 0 in (len(chainAssign1), len(chainAssign2)):
             return

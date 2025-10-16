@@ -41,7 +41,7 @@ Atom_selection:		DECIMAL ':' SIMPLE_NAME '_' (DECIMAL ALPHA? | ALPHA? DECIMAL) '
 fragment ALPHA:		[A-Z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
-fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#';
+fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#' | '|';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
@@ -57,7 +57,7 @@ LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | 
 
 mode INSIGHT_II_MODE;
 
-fragment NAME_CHAR_II:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#' | ':';
+fragment NAME_CHAR_II:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#' | ':' | '|';
 fragment SIMPLE_NAME_II:	START_CHAR NAME_CHAR_II*;
 
 Double_quote_string:	'"' SIMPLE_NAME_II '"';

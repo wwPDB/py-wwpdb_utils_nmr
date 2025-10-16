@@ -319,7 +319,9 @@ class GromacsMRParserListener(ParseTreeListener):
             self.__pA = PairwiseAlign()
             self.__pA.setVerbose(verbose)
 
-        self.__atomNumberDict = atomNumberDict
+        if atomNumberDict is not None:
+            self.__atomNumberDict = atomNumberDict
+            self.__offsetHolder = None
 
         self.distRestraints = 0      # GROMACS: Distance restraints
         self.angRestraints = 0       # GROMACS: Angle restraints

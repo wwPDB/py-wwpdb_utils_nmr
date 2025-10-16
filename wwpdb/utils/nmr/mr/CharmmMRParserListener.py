@@ -607,6 +607,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
         if atomNumberDict is not None:
             self.__atomNumberDict = atomNumberDict
+            self.__offsetHolder = None
 
         self.__cachedDictForAtomIdList = {}
         self.__cachedDictForFactor = {}

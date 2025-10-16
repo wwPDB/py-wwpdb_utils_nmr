@@ -628,6 +628,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if atomNumberDict is not None:
             self.__atomNumberDict = atomNumberDict
+            self.__offsetHolder = None
         else:
             self.__sanderAtomNumberDict = {}
 
@@ -3692,6 +3693,7 @@ class AmberMRParserListener(ParseTreeListener):
                         # simple distance
                         if not self.inGenDist:
 
+                            memberId = '.'
                             if self.__createSfDict:
                                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                                        self.__csStat, self.__originalFileName),
@@ -3699,7 +3701,6 @@ class AmberMRParserListener(ParseTreeListener):
                                 sf['id'] += 1
                                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                                memberId = '.'
                                 if memberLogicCode == 'OR':
                                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)

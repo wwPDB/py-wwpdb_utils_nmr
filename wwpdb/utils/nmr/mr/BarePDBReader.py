@@ -206,6 +206,11 @@ class BarePDBReader:
 if __name__ == "__main__":
     reader = BarePDBReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2ly2/2ly2_model-upload_P1.pdb.V1',
+                 '../../tests-nmr/mock-data-remediation/2ly2/2ly2.cif')
+
+    reader = BarePDBReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2l8m/bmr17415/work/upload/rep-f.pdb',
                  '../../tests-nmr/mock-data-remediation/2l8m/2l8m.cif')
 

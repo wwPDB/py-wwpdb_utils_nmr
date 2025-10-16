@@ -8363,7 +8363,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
 
             has_aux_atom = True
 
-    if seqKey in authToStarSeq and chainId not in offsetHolder:
+    if seqKey in authToStarSeq and (offsetHolder is None or chainId not in offsetHolder):
         starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
         return starAtom
 
@@ -8377,29 +8377,30 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
                 starAtom['seq_id'] += offset
                 return starAtom
 
-    if chainId in offsetHolder and seqId is not None:
-        offset = offsetHolder[chainId]
-        seqKey = (chainId, seqId + offset, compId)
-        if has_aux_atom:
-            auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
-        if seqKey in authToStarSeq and (not has_aux_atom or (has_aux_atom and auxSeqKey in authToStarSeq)):
-            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
-            atom['seq_id'] = seqId + offset
-            return starAtom
+    if offsetHolder is not None:
+        if chainId in offsetHolder and seqId is not None:
+            offset = offsetHolder[chainId]
+            seqKey = (chainId, seqId + offset, compId)
+            if has_aux_atom:
+                auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
+            if seqKey in authToStarSeq and (not has_aux_atom or (has_aux_atom and auxSeqKey in authToStarSeq)):
+                starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+                atom['seq_id'] = seqId + offset
+                return starAtom
 
-    elif f'_{chainId}' in offsetHolder and seqId is not None:
-        offset = offsetHolder[f'_{chainId}']
-        seqKey = (chainId, seqId + offset, compId)
-        if seqKey in authToStarSeq:
-            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
-            atom['seq_id'] = seqId + offset
-            return starAtom
+        elif f'_{chainId}' in offsetHolder and seqId is not None:
+            offset = offsetHolder[f'_{chainId}']
+            seqKey = (chainId, seqId + offset, compId)
+            if seqKey in authToStarSeq:
+                starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+                atom['seq_id'] = seqId + offset
+                return starAtom
 
     if seqKey in authToStarSeq:
         starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
         return starAtom
 
-    if seqId is not None:
+    if seqId is not None and offsetHolder is not None:
         for offset in range(1, MAX_OFFSET_ATTEMPT):
             seqKey = (chainId, seqId + offset, compId)
             if has_aux_atom:
@@ -8438,7 +8439,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
                 atom['comp_id'] = starAtom['comp_id'] = _seqKey[2]
             return starAtom
 
-    if chainId in offsetHolder and compId in monDict3:
+    if offsetHolder is not None and chainId in offsetHolder and compId in monDict3:
         del offsetHolder[chainId]
 
     return None
@@ -8460,21 +8461,22 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
     if seqKey in authToInsCode:
         return authToInsCode[seqKey]
 
-    if chainId in offsetHolder:
-        offset = offsetHolder[chainId]
-        seqKey = (chainId, seqId + offset, compId)
-        if seqKey in authToInsCode:
-            return authToInsCode[seqKey]
+    if offsetHolder is not None:
+        if chainId in offsetHolder:
+            offset = offsetHolder[chainId]
+            seqKey = (chainId, seqId + offset, compId)
+            if seqKey in authToInsCode:
+                return authToInsCode[seqKey]
 
-    for offset in range(1, MAX_OFFSET_ATTEMPT):
-        seqKey = (chainId, seqId + offset, compId)
-        if seqKey in authToInsCode:
-            offsetHolder[chainId] = offset
-            return authToInsCode[seqKey]
-        seqKey = (chainId, seqId - offset, compId)
-        if seqKey in authToInsCode:
-            offsetHolder[chainId] = -offset
-            return authToInsCode[seqKey]
+        for offset in range(1, MAX_OFFSET_ATTEMPT):
+            seqKey = (chainId, seqId + offset, compId)
+            if seqKey in authToInsCode:
+                offsetHolder[chainId] = offset
+                return authToInsCode[seqKey]
+            seqKey = (chainId, seqId - offset, compId)
+            if seqKey in authToInsCode:
+                offsetHolder[chainId] = -offset
+                return authToInsCode[seqKey]
 
     _seqKey = next((_seqKey for _seqKey in authToInsCode if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
 

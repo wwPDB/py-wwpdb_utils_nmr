@@ -2572,6 +2572,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                         return "H2'"
                     if atomId == "H2''2" and "H2''" in refAtomIdList:
                         return "H2''"
+                    if atomId == "H2''" and "H22'" in refAtomIdList:  # 8YN
+                        return "H22'"
+                    if atomId == "H2'" and "H21'" in refAtomIdList:  # 8YN
+                        return "H21'"
                 if atomId == "H2'" and "H2'1" in _refAtomIdList:  # DCZ, THM
                     return "H2'1"
                 if atomId == "H2''" and "H2'2" in _refAtomIdList:  # DCZ, THM
@@ -2594,6 +2598,11 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     return "H2'"
                 if atomId == "H2''2" and "H2''" in _refAtomIdList:
                     return "H2''"
+                if atomId == "H2''" and "H22'" in _refAtomIdList:  # 8YN
+                    return "H22'"
+                if atomId == "H2'" and "H21'" in _refAtomIdList:  # 8YN
+                    return "H21'"
+                
             elif atomId.startswith("H3'"):
                 if refAtomIdList is not None:
                     if atomId == "H3''" and "H3'A" in refAtomIdList:

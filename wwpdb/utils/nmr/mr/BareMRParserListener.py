@@ -3907,6 +3907,7 @@ class BareMRParserListener(ParseTreeListener):
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomIdSet, _atomId = [], []
+            skip = False
             for atomId_ in atomId.split('|'):
                 if len(_atomId) > 0:
                     _atomId = []
@@ -4016,13 +4017,16 @@ class BareMRParserListener(ParseTreeListener):
                                 if lenAtomId > 0 and _atomId[0] in _coordAtomSite['atom_id']:
                                     self.__authSeqId = 'label_seq_id'
                                     self.__setLocalSeqScheme()
-                                    continue
+                                    skip = True
+                                    break
                         self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
                                         f"Residue name {__compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
-                        continue
+                        skip = True
+                        break
 
                 if compId != cifCompId and cifCompId in monDict3 and not isPolySeq:
-                    continue
+                    skip = True
+                    break
 
                 if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:
                     _atomId = [cifCompId]
@@ -4030,6 +4034,9 @@ class BareMRParserListener(ParseTreeListener):
 
                 if lenAtomId > 0:
                     _atomIdSet.append(_atomId)
+
+            if skip:
+                continue
 
             if len(_atomIdSet) > 1:
                 _atomId = []

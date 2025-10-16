@@ -35618,6 +35618,27 @@ class NmrDpUtility:
                     if ar['dist_type'] in ('lol', 'both'):
                         cyanaLolDistRest += 1
 
+        if ((has_res_amb and not has_aux_amb) or (has_res_cha and not has_aux_cha) or (has_res_gro and not has_aux_gro) or has_res_sch)\
+           and pdbAtomNumberDict is None and self.__internal_mode:
+            cif_file_name = os.path.basename(self.__cifPath)
+            if re.match(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.cif$', cif_file_name):
+                dep_id = cif_file_name[:-4]
+
+                file_path = os.path.join(self.__cR.getDirPath(), f'{dep_id}_model-upload_P1.pdb.V1')
+
+                if os.path.exists(file_path):
+                    reader = BarePDBReader(self.__verbose, self.__lfh,
+                                           self.__representative_model_id,
+                                           self.__representative_alt_id,
+                                           self.__mr_atom_name_mapping,
+                                           self.__cR, self.__caC,
+                                           self.__ccU, self.__csStat, self.__nefT)
+
+                    listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener is not None:
+                        pdbAtomNumberDict = listener.getAtomNumberDict()
+
         if has_res_sch and pdbAtomNumberDict is None and not self.__internal_mode:
             cif_file_name = os.path.basename(self.__cifPath)
 

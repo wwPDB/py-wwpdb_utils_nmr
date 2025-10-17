@@ -1741,11 +1741,15 @@ class DynamoMRParserListener(ParseTreeListener):
                 refChainId = fixedChainId
                 preferNonPoly = True
             if not preferNonPoly:
-                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                if 'chain_id_remap' in self.__reasons:  # and seqId in self.__reasons['chain_id_remap']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                    if seqId not in self.__reasons['chain_id_remap']:
+                        self.__allow_ext_seq = True
                     refChainId = fixedChainId
-                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                elif 'chain_id_clone' in self.__reasons:  # and seqId in self.__reasons['chain_id_clone']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                    if seqId not in self.__reasons['chain_id_clone']:
+                        self.__allow_ext_seq = True
                     refChainId = fixedChainId
                 elif 'seq_id_remap' in self.__reasons\
                         or 'chain_seq_id_remap' in self.__reasons\
@@ -2229,12 +2233,16 @@ class DynamoMRParserListener(ParseTreeListener):
                                 ext_seq = True
                     if ext_seq and seqId in _auth_seq_id_list:
                         ext_seq = False
+                if self.__allow_ext_seq:
+                    refChainIds = [fixedChainId]
+                    ext_seq = True
                 if ext_seq:
                     refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
-                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                    if not self.__allow_ext_seq:
+                        self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                        f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                        f"of chain {refChainId} of the coordinates. "
+                                        "Please update the sequence in the Macromolecules page.")
                     resKey = (_seqId, _compId)
                     if resKey not in self.__extResKey:
                         self.__extResKey.append(resKey)

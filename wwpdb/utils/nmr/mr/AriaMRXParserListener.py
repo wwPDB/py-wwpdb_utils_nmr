@@ -2544,10 +2544,14 @@ class AriaMRXParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                 preferNonPoly = True
             if not preferNonPoly:
-                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                if 'chain_id_remap' in self.__reasons:  # and seqId in self.__reasons['chain_id_remap']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                    if seqId not in self.__reasons['chain_id_remap']:
+                        self.__allow_ext_seq = True
+                elif 'chain_id_clone' in self.__reasons:  # and seqId in self.__reasons['chain_id_clone']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                    if seqId not in self.__reasons['chain_id_clone']:
+                        self.__allow_ext_seq = True
                 elif 'seq_id_remap' in self.__reasons\
                         or 'chain_seq_id_remap' in self.__reasons\
                         or 'ext_chain_seq_id_remap' in self.__reasons:
@@ -2999,6 +3003,10 @@ class AriaMRXParserListener(ParseTreeListener):
                                     ext_seq = True
                         if ext_seq and seqId in _auth_seq_id_list:
                             ext_seq = False
+                    if self.__allow_ext_seq:
+                        refChainIds = [fixedChainId]
+                        ext_seq = True
+                        enableWarning = False
                     if ext_seq:
                         refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                         if enableWarning:
@@ -3187,11 +3195,15 @@ class AriaMRXParserListener(ParseTreeListener):
                 refChainId = fixedChainId
                 preferNonPoly = True
             if not preferNonPoly:
-                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                if 'chain_id_remap' in self.__reasons:  # and seqId in self.__reasons['chain_id_remap']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                    if seqId not in self.__reasons['chain_id_remap']:
+                        self.__allow_ext_seq = True
                     refChainId = fixedChainId
-                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                elif 'chain_id_clone' in self.__reasons:  # and seqId in self.__reasons['chain_id_clone']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                    if seqId not in self.__reasons['chain_id_clone']:
+                        self.__allow_ext_seq = True
                     refChainId = fixedChainId
                 elif 'seq_id_remap' in self.__reasons\
                         or 'chain_seq_id_remap' in self.__reasons\
@@ -3700,6 +3712,10 @@ class AriaMRXParserListener(ParseTreeListener):
                                     ext_seq = True
                         if ext_seq and seqId in _auth_seq_id_list:
                             ext_seq = False
+                    if self.__allow_ext_seq:
+                        refChainIds = [fixedChainId]
+                        ext_seq = True
+                        enableWarning = False
                     if ext_seq:
                         refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                         if enableWarning:
@@ -3744,10 +3760,14 @@ class AriaMRXParserListener(ParseTreeListener):
         if self.__reasons is not None:
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
-            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+            if 'chain_id_remap' in self.__reasons:  # and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                if seqId not in self.__reasons['chain_id_remap']:
+                    self.__allow_ext_seq = True
+            elif 'chain_id_clone' in self.__reasons:  # and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                if seqId not in self.__reasons['chain_id_clone']:
+                    self.__allow_ext_seq = True
             if fixedSeqId is not None:
                 seqId = _seqId = fixedSeqId
 
@@ -3957,10 +3977,14 @@ class AriaMRXParserListener(ParseTreeListener):
         if self.__reasons is not None:
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
-            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+            if 'chain_id_remap' in self.__reasons:  # and seqId in self.__reasons['chain_id_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                if seqId not in self.__reasons['chain_id_remap']:
+                    self.__allow_ext_seq = True
+            elif 'chain_id_clone' in self.__reasons:  # and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                if seqId not in self.__reasons['chain_id_clone']:
+                    self.__allow_ext_seq = True
             if fixedSeqId is not None:
                 seqId = _seqId = fixedSeqId
 

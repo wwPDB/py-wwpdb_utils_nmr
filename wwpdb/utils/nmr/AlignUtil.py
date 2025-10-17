@@ -3299,6 +3299,10 @@ def retrieveRemappedChainId(chainIdRemap: dict, seqId: int) -> Tuple[Optional[st
     """
 
     if seqId not in chainIdRemap:
+        for _offset in (-1, 1, -2, 2):
+            if seqId + _offset in chainIdRemap:
+                remap = chainIdRemap[seqId + _offset]
+                return remap['chain_id'], remap['seq_id'] - _offset
         return None, None
 
     remap = chainIdRemap[seqId]

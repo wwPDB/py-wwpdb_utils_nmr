@@ -1274,10 +1274,14 @@ class CyanaNOAParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                 preferNonPoly = True
             if not preferNonPoly:
-                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                if 'chain_id_remap' in self.__reasons:  # and seqId in self.__reasons['chain_id_remap']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                    if seqId not in self.__reasons['chain_id_remap']:
+                        self.__allow_ext_seq = True
+                elif 'chain_id_clone' in self.__reasons:  # and seqId in self.__reasons['chain_id_clone']:
                     fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                    if seqId not in self.__reasons['chain_id_clone']:
+                        self.__allow_ext_seq = True
                 elif 'seq_id_remap' in self.__reasons\
                         or 'chain_seq_id_remap' in self.__reasons\
                         or 'ext_chain_seq_id_remap' in self.__reasons:
@@ -1722,6 +1726,10 @@ class CyanaNOAParserListener(ParseTreeListener):
                                     ext_seq = True
                         if ext_seq and seqId in _auth_seq_id_list:
                             ext_seq = False
+                    if self.__allow_ext_seq:
+                        refChainIds = [fixedChainId]
+                        ext_seq = True
+                        enableWarning = False
                     if ext_seq:
                         refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                         if enableWarning:

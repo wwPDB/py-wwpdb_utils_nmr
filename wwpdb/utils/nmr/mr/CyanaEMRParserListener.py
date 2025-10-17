@@ -1698,7 +1698,7 @@ class CyanaEMRParserListener(ParseTreeListener):
                                      asis1=asis1, asis2=asis1, asis3=asis2, asis4=asis2)
                         sf['loop'].add_data(row)
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.__cur_subtype == 'dist':
                 self.distRestraints -= 1
             elif self.__cur_subtype == 'jcoup':
@@ -5833,7 +5833,7 @@ class CyanaEMRParserListener(ParseTreeListener):
                     if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                         sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.dihedRestraints -= 1
 
         finally:
@@ -5951,7 +5951,10 @@ class CyanaEMRParserListener(ParseTreeListener):
         orientation = self.__cur_rdc_orientation = int(str(ctx.Integer(0)))
         magnitude = self.numberSelection[0]
         rhombicity = self.numberSelection[1]
-        orientationCenterSeqId = int(str(ctx.Integer(1))) if ctx.Integer(1) else str(ctx.Capital_integer()) if ctx.Capital_integer() else str(ctx.Simple_name())
+        orientationCenterSeqId = int(str(ctx.Integer(1))) if ctx.Integer(1)\
+            else str(ctx.Capital_integer()) if ctx.Capital_integer()\
+            else str(ctx.Integer_capital()) if ctx.Integer_capital()\
+            else str(ctx.Simple_name())
 
         self.rdcParameterDict[orientation] = {'magnitude': magnitude,
                                               'rhombicity': rhombicity,
@@ -6150,7 +6153,7 @@ class CyanaEMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.rdcRestraints -= 1
 
         finally:
@@ -6289,7 +6292,10 @@ class CyanaEMRParserListener(ParseTreeListener):
         orientation = int(str(ctx.Integer(0)))
         magnitude = self.numberSelection[0]
         rhombicity = self.numberSelection[1]
-        orientationCenterSeqId = int(str(ctx.Integer(1))) if ctx.Integer(1) else str(ctx.Capital_integer()) if ctx.Capital_integer() else str(ctx.Simple_name())
+        orientationCenterSeqId = int(str(ctx.Integer(1))) if ctx.Integer(1)\
+            else str(ctx.Capital_integer()) if ctx.Capital_integer()\
+            else str(ctx.Integer_capital()) if ctx.Integer_capital()\
+            else str(ctx.Simple_name())
 
         self.pcsParameterDict[orientation] = {'magnitude': magnitude,
                                               'rhombicity': rhombicity,
@@ -6391,7 +6397,7 @@ class CyanaEMRParserListener(ParseTreeListener):
                                  atom, asis1=asis)
                     sf['loop'].add_data(row)
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.pcsRestraints -= 1
 
         finally:
@@ -6660,7 +6666,7 @@ class CyanaEMRParserListener(ParseTreeListener):
                                  atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis1, asis3=asis2, asis4=asis2)
                     sf['loop'].add_data(row)
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.jcoupRestraints -= 1
 
         finally:
@@ -7532,6 +7538,9 @@ class CyanaEMRParserListener(ParseTreeListener):
         elif ctx.Capital_integer():
             self.genResNumSelection.append((int(str(ctx.Capital_integer())[1:]), str(ctx.Capital_integer())[0]))
 
+        elif ctx.Integer_capital():
+            self.genResNumSelection.append((int(str(ctx.Integer_capital())[:-1]), str(ctx.Integer_capital())[-1]))
+
         else:
             self.genResNumSelection.append((None, None))
 
@@ -7547,6 +7556,9 @@ class CyanaEMRParserListener(ParseTreeListener):
         elif ctx.Capital_integer():
             self.genSimpleNameSelection.append(str(ctx.Capital_integer()))
 
+        elif ctx.Integer_capital():
+            self.genSimpleNameSelection.append(str(ctx.Integer_capital()))
+
         else:
             self.genSimpleNameSelection.append(None)
 
@@ -7561,6 +7573,9 @@ class CyanaEMRParserListener(ParseTreeListener):
 
         elif ctx.Capital_integer():
             self.genAtomNameSelection.append(str(ctx.Capital_integer()))
+
+        elif ctx.Integer_capital():
+            self.genAtomNameSelection.append(str(ctx.Integer_capital()))
 
         elif ctx.Ambig_code():
             self.genAtomNameSelection.append(str(ctx.Ambig_code()))

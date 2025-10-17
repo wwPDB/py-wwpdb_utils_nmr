@@ -73,7 +73,7 @@ rdc_restraints:
 	(Orientation_header | comment | rdc_restraint)+;
 
 rdc_parameter:
-	Integer number number (Integer | Capital_integer | Simple_name);
+	Integer number number (Integer | Capital_integer | Integer_capital | Simple_name);
 
 rdc_restraint:
 	gen_res_num gen_simple_name gen_simple_name
@@ -88,7 +88,7 @@ pcs_restraints:
 	(Orientation_header | comment | pcs_restraint)+;
 
 pcs_parameter:
-	Integer number number (Integer | Capital_integer | Simple_name);
+	Integer number number (Integer | Capital_integer | Integer_capital | Simple_name);
 
 pcs_restraint:
 	gen_res_num gen_simple_name gen_simple_name
@@ -159,13 +159,13 @@ number:	Float | Float_DecimalComma | Integer;
 
 /* residue number allowing chain identification */
 gen_res_num:
-	Integer | Capital_integer;
+	Integer | Capital_integer | Integer_capital;
 
 /* residue name or atom name */
 gen_simple_name:
-	Simple_name | Capital_integer;
+	Simple_name | Capital_integer | Integer_capital;
 
 /* atom id extenstion with ambig code */
 gen_atom_name:
-	Simple_name | Capital_integer | Ambig_code;
+	Simple_name | Capital_integer | Integer_capital | Ambig_code;
 

@@ -642,7 +642,7 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
         return 'CYANA NOE assignment'
     if fileType == 'nm-res-mr':
         return 'MR data'
-    if fileType == 'nm-res-ros':
+    if fileType in ('nm-res-ros', 'nm-res-roe'):
         return 'ROSETTA restraint'
     if fileType == 'nm-res-sch':
         return 'SCHRODINGER/ASL restraint'

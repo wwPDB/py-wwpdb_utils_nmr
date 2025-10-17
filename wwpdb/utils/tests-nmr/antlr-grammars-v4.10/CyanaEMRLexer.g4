@@ -80,6 +80,7 @@ Mapping:		'MAPPING' -> pushMode(MAP_MODE);
 Ambig:			'AMBIG' -> pushMode(MAP_MODE);
 
 Capital_integer:	[A-Z] DECIMAL;
+Integer_capital:	DECIMAL [A-Z];
 
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;

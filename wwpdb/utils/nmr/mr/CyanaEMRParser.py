@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,59,338,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,60,338,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
         7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
@@ -39,8 +39,8 @@ def serializedATN():
         1,25,1,25,1,25,4,25,324,8,25,11,25,12,25,325,1,25,1,25,1,26,1,26,
         1,27,1,27,1,28,1,28,1,29,1,29,1,29,0,0,30,0,2,4,6,8,10,12,14,16,
         18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,0,
-        7,1,1,34,34,2,0,2,2,26,27,2,0,53,53,55,55,1,0,2,4,2,0,2,2,26,26,
-        1,0,26,27,2,0,1,1,26,27,366,0,84,1,0,0,0,2,89,1,0,0,0,4,99,1,0,0,
+        7,1,1,35,35,2,0,2,2,26,28,2,0,54,54,56,56,1,0,2,4,2,0,2,2,26,27,
+        1,0,26,28,2,0,1,1,26,28,366,0,84,1,0,0,0,2,89,1,0,0,0,4,99,1,0,0,
         0,6,103,1,0,0,0,8,126,1,0,0,0,10,130,1,0,0,0,12,147,1,0,0,0,14,158,
         1,0,0,0,16,163,1,0,0,0,18,177,1,0,0,0,20,188,1,0,0,0,22,193,1,0,
         0,0,24,202,1,0,0,0,26,206,1,0,0,0,28,226,1,0,0,0,30,229,1,0,0,0,
@@ -58,7 +58,7 @@ def serializedATN():
         75,1,0,0,0,82,76,1,0,0,0,82,77,1,0,0,0,82,78,1,0,0,0,82,79,1,0,0,
         0,82,80,1,0,0,0,82,81,1,0,0,0,83,86,1,0,0,0,84,82,1,0,0,0,84,85,
         1,0,0,0,85,87,1,0,0,0,86,84,1,0,0,0,87,88,5,0,0,1,88,1,1,0,0,0,89,
-        93,5,8,0,0,90,92,5,32,0,0,91,90,1,0,0,0,92,95,1,0,0,0,93,91,1,0,
+        93,5,8,0,0,90,92,5,33,0,0,91,90,1,0,0,0,92,95,1,0,0,0,93,91,1,0,
         0,0,93,94,1,0,0,0,94,96,1,0,0,0,95,93,1,0,0,0,96,97,7,0,0,0,97,3,
         1,0,0,0,98,100,3,6,3,0,99,98,1,0,0,0,100,101,1,0,0,0,101,99,1,0,
         0,0,101,102,1,0,0,0,102,5,1,0,0,0,103,104,3,54,27,0,104,105,3,56,
@@ -100,35 +100,35 @@ def serializedATN():
         1,0,0,0,220,222,3,52,26,0,221,220,1,0,0,0,221,222,1,0,0,0,222,224,
         1,0,0,0,223,225,3,52,26,0,224,223,1,0,0,0,224,225,1,0,0,0,225,27,
         1,0,0,0,226,227,5,14,0,0,227,228,5,15,0,0,228,29,1,0,0,0,229,232,
-        5,16,0,0,230,231,5,35,0,0,231,233,5,39,0,0,232,230,1,0,0,0,232,233,
-        1,0,0,0,233,234,1,0,0,0,234,237,5,41,0,0,235,236,5,37,0,0,236,238,
-        5,39,0,0,237,235,1,0,0,0,237,238,1,0,0,0,238,239,1,0,0,0,239,242,
-        5,40,0,0,240,241,5,36,0,0,241,243,5,39,0,0,242,240,1,0,0,0,242,243,
-        1,0,0,0,243,244,1,0,0,0,244,247,5,41,0,0,245,246,5,38,0,0,246,248,
-        5,39,0,0,247,245,1,0,0,0,247,248,1,0,0,0,248,249,1,0,0,0,249,250,
-        5,40,0,0,250,251,5,43,0,0,251,31,1,0,0,0,252,253,5,17,0,0,253,254,
+        5,16,0,0,230,231,5,36,0,0,231,233,5,40,0,0,232,230,1,0,0,0,232,233,
+        1,0,0,0,233,234,1,0,0,0,234,237,5,42,0,0,235,236,5,38,0,0,236,238,
+        5,40,0,0,237,235,1,0,0,0,237,238,1,0,0,0,238,239,1,0,0,0,239,242,
+        5,41,0,0,240,241,5,37,0,0,241,243,5,40,0,0,242,240,1,0,0,0,242,243,
+        1,0,0,0,243,244,1,0,0,0,244,247,5,42,0,0,245,246,5,39,0,0,246,248,
+        5,40,0,0,247,245,1,0,0,0,247,248,1,0,0,0,248,249,1,0,0,0,249,250,
+        5,41,0,0,250,251,5,44,0,0,251,31,1,0,0,0,252,253,5,17,0,0,253,254,
         3,56,28,0,254,255,3,54,27,0,255,256,3,56,28,0,256,257,3,54,27,0,
-        257,33,1,0,0,0,258,259,5,18,0,0,259,260,5,45,0,0,260,261,5,47,0,
-        0,261,35,1,0,0,0,262,266,5,19,0,0,263,265,5,49,0,0,264,263,1,0,0,
+        257,33,1,0,0,0,258,259,5,18,0,0,259,260,5,46,0,0,260,261,5,48,0,
+        0,261,35,1,0,0,0,262,266,5,19,0,0,263,265,5,50,0,0,264,263,1,0,0,
         0,265,268,1,0,0,0,266,264,1,0,0,0,266,267,1,0,0,0,267,269,1,0,0,
-        0,268,266,1,0,0,0,269,270,5,51,0,0,270,37,1,0,0,0,271,272,5,21,0,
-        0,272,39,1,0,0,0,273,277,5,20,0,0,274,276,5,49,0,0,275,274,1,0,0,
+        0,268,266,1,0,0,0,269,270,5,52,0,0,270,37,1,0,0,0,271,272,5,21,0,
+        0,272,39,1,0,0,0,273,277,5,20,0,0,274,276,5,50,0,0,275,274,1,0,0,
         0,276,279,1,0,0,0,277,275,1,0,0,0,277,278,1,0,0,0,278,280,1,0,0,
-        0,279,277,1,0,0,0,280,281,5,51,0,0,281,41,1,0,0,0,282,283,5,22,0,
-        0,283,284,5,45,0,0,284,285,5,47,0,0,285,43,1,0,0,0,286,287,5,23,
+        0,279,277,1,0,0,0,280,281,5,52,0,0,281,41,1,0,0,0,282,283,5,22,0,
+        0,283,284,5,46,0,0,284,285,5,48,0,0,285,43,1,0,0,0,286,287,5,23,
         0,0,287,289,3,56,28,0,288,290,3,2,1,0,289,288,1,0,0,0,289,290,1,
         0,0,0,290,293,1,0,0,0,291,294,3,46,23,0,292,294,3,2,1,0,293,291,
         1,0,0,0,293,292,1,0,0,0,294,295,1,0,0,0,295,293,1,0,0,0,295,296,
-        1,0,0,0,296,45,1,0,0,0,297,298,5,24,0,0,298,299,5,55,0,0,299,301,
-        5,56,0,0,300,302,5,55,0,0,301,300,1,0,0,0,302,303,1,0,0,0,303,301,
-        1,0,0,0,303,304,1,0,0,0,304,305,1,0,0,0,305,306,5,58,0,0,306,47,
+        1,0,0,0,296,45,1,0,0,0,297,298,5,24,0,0,298,299,5,56,0,0,299,301,
+        5,57,0,0,300,302,5,56,0,0,301,300,1,0,0,0,302,303,1,0,0,0,303,301,
+        1,0,0,0,303,304,1,0,0,0,304,305,1,0,0,0,305,306,5,59,0,0,306,47,
         1,0,0,0,307,308,5,23,0,0,308,310,3,56,28,0,309,311,3,2,1,0,310,309,
         1,0,0,0,310,311,1,0,0,0,311,314,1,0,0,0,312,315,3,50,25,0,313,315,
         3,2,1,0,314,312,1,0,0,0,314,313,1,0,0,0,315,316,1,0,0,0,316,314,
         1,0,0,0,316,317,1,0,0,0,317,49,1,0,0,0,318,319,5,25,0,0,319,320,
-        7,2,0,0,320,323,5,56,0,0,321,322,5,55,0,0,322,324,5,54,0,0,323,321,
+        7,2,0,0,320,323,5,57,0,0,321,322,5,56,0,0,322,324,5,55,0,0,323,321,
         1,0,0,0,324,325,1,0,0,0,325,323,1,0,0,0,325,326,1,0,0,0,326,327,
-        1,0,0,0,327,328,5,58,0,0,328,51,1,0,0,0,329,330,7,3,0,0,330,53,1,
+        1,0,0,0,327,328,5,59,0,0,328,51,1,0,0,0,329,330,7,3,0,0,330,53,1,
         0,0,0,331,332,7,4,0,0,332,55,1,0,0,0,333,334,7,5,0,0,334,57,1,0,
         0,0,335,336,7,6,0,0,336,59,1,0,0,0,41,64,82,84,93,101,111,114,117,
         120,123,128,136,141,144,149,154,156,174,179,184,186,204,212,215,
@@ -153,16 +153,16 @@ class CyanaEMRParser ( Parser ):
                      "<INVALID>", "'VAR'", "'UNSET'", "<INVALID>", "'PRINT'", 
                      "'RESIDUE'", "'MAPPING'", "'AMBIG'", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "<INVALID>", "'ATOM1'", "'ATOM2'", 
-                     "'RESIDUE1'", "'RESIDUE2'" ]
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "'ATOM1'", "'ATOM2'", "'RESIDUE1'", "'RESIDUE2'" ]
 
     symbolicNames = [ "<INVALID>", "Ambig_code", "Integer", "Float", "Float_DecimalComma", 
                       "Orientation_header", "Tensor_header", "SMCLN_COMMENT", 
                       "COMMENT", "NoeUpp", "NoeLow", "Type", "Equ_op", "Or", 
                       "Ssbond", "Ssbond_resids", "Hbond", "Link", "Atom_stereo", 
                       "Var", "Unset", "SetVar", "Print", "Residue", "Mapping", 
-                      "Ambig", "Capital_integer", "Simple_name", "SPACE", 
-                      "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
+                      "Ambig", "Capital_integer", "Integer_capital", "Simple_name", 
+                      "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
                       "Any_name", "SPACE_CM", "RETURN_CM", "Atom1", "Atom2", 
                       "Residue1", "Residue2", "Equ_op_HB", "Integer_HB", 
                       "Simple_name_HB", "SPACE_HB", "RETURN_HB", "LINE_COMMENT_HB", 
@@ -239,39 +239,40 @@ class CyanaEMRParser ( Parser ):
     Mapping=24
     Ambig=25
     Capital_integer=26
-    Simple_name=27
-    SPACE=28
-    ENCLOSE_COMMENT=29
-    SECTION_COMMENT=30
-    LINE_COMMENT=31
-    Any_name=32
-    SPACE_CM=33
-    RETURN_CM=34
-    Atom1=35
-    Atom2=36
-    Residue1=37
-    Residue2=38
-    Equ_op_HB=39
-    Integer_HB=40
-    Simple_name_HB=41
-    SPACE_HB=42
-    RETURN_HB=43
-    LINE_COMMENT_HB=44
-    Double_quote_string=45
-    SPACE_PR=46
-    RETURN_PR=47
-    LINE_COMMENT_PR=48
-    Simple_name_VA=49
-    SPACE_VA=50
-    RETURN_VA=51
-    LINE_COMMENT_VA=52
-    Ambig_code_MP=53
-    Integer_MP=54
-    Simple_name_MP=55
-    Equ_op_MP=56
-    SPACE_MP=57
-    RETURN_MP=58
-    LINE_COMMENT_MP=59
+    Integer_capital=27
+    Simple_name=28
+    SPACE=29
+    ENCLOSE_COMMENT=30
+    SECTION_COMMENT=31
+    LINE_COMMENT=32
+    Any_name=33
+    SPACE_CM=34
+    RETURN_CM=35
+    Atom1=36
+    Atom2=37
+    Residue1=38
+    Residue2=39
+    Equ_op_HB=40
+    Integer_HB=41
+    Simple_name_HB=42
+    SPACE_HB=43
+    RETURN_HB=44
+    LINE_COMMENT_HB=45
+    Double_quote_string=46
+    SPACE_PR=47
+    RETURN_PR=48
+    LINE_COMMENT_PR=49
+    Simple_name_VA=50
+    SPACE_VA=51
+    RETURN_VA=52
+    LINE_COMMENT_VA=53
+    Ambig_code_MP=54
+    Integer_MP=55
+    Simple_name_MP=56
+    Equ_op_MP=57
+    SPACE_MP=58
+    RETURN_MP=59
+    LINE_COMMENT_MP=60
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -440,7 +441,7 @@ class CyanaEMRParser ( Parser ):
             self.state = 84
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 83837284) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 218055012) != 0):
                 self.state = 82
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,1,self._ctx)
@@ -610,7 +611,7 @@ class CyanaEMRParser ( Parser ):
             self.state = 93
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==32:
+            while _la==33:
                 self.state = 90
                 self.match(CyanaEMRParser.Any_name)
                 self.state = 95
@@ -619,7 +620,7 @@ class CyanaEMRParser ( Parser ):
 
             self.state = 96
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==34):
+            if not(_la==-1 or _la==35):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1054,7 +1055,7 @@ class CyanaEMRParser ( Parser ):
                         self.state = 152
                         self.comment()
                         pass
-                    elif token in [2, 26]:
+                    elif token in [2, 26, 27]:
                         self.state = 153
                         self.rdc_restraint()
                         pass
@@ -1100,6 +1101,9 @@ class CyanaEMRParser ( Parser ):
         def Capital_integer(self):
             return self.getToken(CyanaEMRParser.Capital_integer, 0)
 
+        def Integer_capital(self):
+            return self.getToken(CyanaEMRParser.Integer_capital, 0)
+
         def Simple_name(self):
             return self.getToken(CyanaEMRParser.Simple_name, 0)
 
@@ -1132,7 +1136,7 @@ class CyanaEMRParser ( Parser ):
             self.number()
             self.state = 161
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 201326596) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 469762052) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1318,7 +1322,7 @@ class CyanaEMRParser ( Parser ):
                         self.state = 182
                         self.comment()
                         pass
-                    elif token in [2, 26]:
+                    elif token in [2, 26, 27]:
                         self.state = 183
                         self.pcs_restraint()
                         pass
@@ -1364,6 +1368,9 @@ class CyanaEMRParser ( Parser ):
         def Capital_integer(self):
             return self.getToken(CyanaEMRParser.Capital_integer, 0)
 
+        def Integer_capital(self):
+            return self.getToken(CyanaEMRParser.Integer_capital, 0)
+
         def Simple_name(self):
             return self.getToken(CyanaEMRParser.Simple_name, 0)
 
@@ -1396,7 +1403,7 @@ class CyanaEMRParser ( Parser ):
             self.number()
             self.state = 191
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 201326596) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 469762052) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1757,7 +1764,7 @@ class CyanaEMRParser ( Parser ):
             self.state = 232
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==35:
+            if _la==36:
                 self.state = 230
                 self.match(CyanaEMRParser.Atom1)
                 self.state = 231
@@ -1769,7 +1776,7 @@ class CyanaEMRParser ( Parser ):
             self.state = 237
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==37:
+            if _la==38:
                 self.state = 235
                 self.match(CyanaEMRParser.Residue1)
                 self.state = 236
@@ -1781,7 +1788,7 @@ class CyanaEMRParser ( Parser ):
             self.state = 242
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==36:
+            if _la==37:
                 self.state = 240
                 self.match(CyanaEMRParser.Atom2)
                 self.state = 241
@@ -1793,7 +1800,7 @@ class CyanaEMRParser ( Parser ):
             self.state = 247
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==38:
+            if _la==39:
                 self.state = 245
                 self.match(CyanaEMRParser.Residue2)
                 self.state = 246
@@ -1972,7 +1979,7 @@ class CyanaEMRParser ( Parser ):
             self.state = 266
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==49:
+            while _la==50:
                 self.state = 263
                 self.match(CyanaEMRParser.Simple_name_VA)
                 self.state = 268
@@ -2076,7 +2083,7 @@ class CyanaEMRParser ( Parser ):
             self.state = 277
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==49:
+            while _la==50:
                 self.state = 274
                 self.match(CyanaEMRParser.Simple_name_VA)
                 self.state = 279
@@ -2298,7 +2305,7 @@ class CyanaEMRParser ( Parser ):
                 self.state = 303 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==55):
+                if not (_la==56):
                     break
 
             self.state = 305
@@ -2463,7 +2470,7 @@ class CyanaEMRParser ( Parser ):
             self.match(CyanaEMRParser.Ambig)
             self.state = 319
             _la = self._input.LA(1)
-            if not(_la==53 or _la==55):
+            if not(_la==54 or _la==56):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2481,7 +2488,7 @@ class CyanaEMRParser ( Parser ):
                 self.state = 325 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==55):
+                if not (_la==56):
                     break
 
             self.state = 327
@@ -2561,6 +2568,9 @@ class CyanaEMRParser ( Parser ):
         def Capital_integer(self):
             return self.getToken(CyanaEMRParser.Capital_integer, 0)
 
+        def Integer_capital(self):
+            return self.getToken(CyanaEMRParser.Integer_capital, 0)
+
         def getRuleIndex(self):
             return CyanaEMRParser.RULE_gen_res_num
 
@@ -2584,7 +2594,7 @@ class CyanaEMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 331
             _la = self._input.LA(1)
-            if not(_la==2 or _la==26):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 201326596) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2611,6 +2621,9 @@ class CyanaEMRParser ( Parser ):
         def Capital_integer(self):
             return self.getToken(CyanaEMRParser.Capital_integer, 0)
 
+        def Integer_capital(self):
+            return self.getToken(CyanaEMRParser.Integer_capital, 0)
+
         def getRuleIndex(self):
             return CyanaEMRParser.RULE_gen_simple_name
 
@@ -2634,7 +2647,7 @@ class CyanaEMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 333
             _la = self._input.LA(1)
-            if not(_la==26 or _la==27):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 469762048) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2660,6 +2673,9 @@ class CyanaEMRParser ( Parser ):
 
         def Capital_integer(self):
             return self.getToken(CyanaEMRParser.Capital_integer, 0)
+
+        def Integer_capital(self):
+            return self.getToken(CyanaEMRParser.Integer_capital, 0)
 
         def Ambig_code(self):
             return self.getToken(CyanaEMRParser.Ambig_code, 0)
@@ -2687,7 +2703,7 @@ class CyanaEMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 335
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 201326594) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 469762050) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

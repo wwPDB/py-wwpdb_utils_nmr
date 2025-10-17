@@ -316,8 +316,8 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-amb`|`nm-res-amb`|`nmr-restraints` / `amber`|Restraint file in AMBER format
 `nm-res-ari`|`nm-res-ari`|`nmr-restraints` / `aria`|Restraint file in ARIA format
 `nm-res-arx`|**internal use**|`nmr-restraints` / `aria`|Restraint file in ARIA XML format
-`nm-res-bar`|**internal use**|`nmr-restraints` / `any`|Bare WSV/TSV/CSV distance restraint file with a header
-`nm-res-bio`|`nm-res-bio`|`nmr-restraints` / `biosym`|Restraint file in BIOSYM format
+`nm-res-bar`|**internal use**|`nmr-restraints` / `any`|Bare WSV/TSV/CSV distance restraint file with a header (MARDIGAS, AQUA's NOE restraint output, or User defined header)
+`nm-res-bio`|`nm-res-bio`|`nmr-restraints` / `biosym`|Restraint file in BIOSYM format (including INSIGHT-II)
 `nm-aux-cha`|`nm-aux-cha`|`nmr-restraints` / `any`|Topology file in CHARMM/CRD format
 `nm-res-cha`|`nm-res-cha`|`nmr-restraints` / `charmm`|Restraint file in CHARMM format
 `nm-res-cns`|`nm-res-cns`|`nmr-restraints` / `cns`|Restraint file in CNS format
@@ -327,15 +327,15 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-aux-gro`|`nm-aux-gro`|`nmr-restraints` / `any`|Topology file in GROMACS format
 `nm-res-gro`|`nm-res-gro`|`nmr-restraints` / `gromacs`|Restraint file in GROMACS format
 `nm-res-isd`|`nm-res-isd`|`nmr-restraints` / `isd`|Restraint file in ISD format
-`nm-res-noa`|**internal use**|`nmr-restraints` / `cyana`|Restraint file in CYANA NOA format
-`nm-aux-pdb`|**internal use**|`nmr-restraints` / `any`|Topology file in Bare PDB format for AMBER/CHARMM/GROMACS systems in case
-`nm-res-ros`|`nm-res-ros`|`nmr-restraints` / `rosetta`|Restraint file in ROSETTA format
+`nm-res-noa`|**internal use**|`nmr-restraints` / `cyana`|Restraint file in CYANA NOE assignment format (aka. NOA)
+`nm-aux-pdb`|**internal use**|`nmr-restraints` / `any`|Topology file in Bare PDB format for AMBER/CHARMM/GROMACS/SCHRODINGER systems in case
+`nm-res-ros`|`nm-res-ros`|`nmr-restraints` / `rosetta`|Restraint file in ROSETTA format (including CS-ROSETTA extension for disulfide bond and RDC)
 `nm-res-sch`|`nm-res-sch`|`nmr-restraints` / `schrodinger`|Restraint file in Schröginder/ASL format
 `nm-res-syb`|`nm-res-syb`|`nmr-restraints` / `sybyl`|Restraint file in SYBYL format
 `nm-res-xpl`|`nm-res-xpl`|`nmr-restraints` / `xplor-nih`|Restraint file in XPLOR-NIH format
 `nm-res-oth`|`nm-res-oth`|`nmr-restraints` / `any`|Restraint file in other format
 `nm-res-mr`|**internal use**|`nmr-restraints` / `pdb-mr`|Restraint file in PDB-MR format
-`nm-res-sax`|**internal use**|`nmr-restraints` / `any`|SAX CSV file
+`nm-res-sax`|**internal use**|`nmr-restraints` / `any`|SAX WSV/TSV/CSV file (q, I(q), sigma(I))
 `nm-pea-ari`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in ARIA format
 `nm-pea-bar`|**internal use**|`nmr-peaks` / `any`|Bare WSV/TSV spectral peak list file with a header
 `nm-pea-ccp`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in CCPN format
@@ -353,7 +353,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-pea-any`|`nm-pea-any`|`nmr-peaks` / `any`|Any spectral peak list file
 `nmrif`|**internal use**|`nmrif` / `pdbx`|NMR metadata file in PDBx/mmCIF format (aka. NMRIF)
 `nm-shi-ari`|**internal use**|`nmr-chemical-shifts` / `any`|ARIA chemical shift file
-`nm-shi-bar`|**internal use**|`nmr-chemical-shifts` / `any`|Bare WSV/TSV/CSV chemical shift file (residue per line, atom per line, SPARKY's resonance list)
+`nm-shi-bar`|**internal use**|`nmr-chemical-shifts` / `any`|Bare WSV/TSV/CSV chemical shift file (residue per line, atom per line, or SPARKY's resonance list)
 `nm-shi-gar`|**internal use**|`nmr-chemical-shifts` / `any`|GARRET chemical shift file (CAMRA)
 `nm-shi-npi`|**internal use**|`nmr-chemical-shifts` / `any`|NMRPIPE chemical shift file
 `nm-shi-oli`|**internal use**|`nmr-chemical-shifts` / `any`|OLIVIA chemical shift file

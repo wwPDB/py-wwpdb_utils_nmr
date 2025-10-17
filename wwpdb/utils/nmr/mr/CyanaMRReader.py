@@ -234,6 +234,17 @@ if __name__ == "__main__":
     reader = CyanaMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mh0/2mh0-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2mh0/2mh0.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mh0/2mh0-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2mh0/2mh0.cif')
+
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/5zgg/5zgg-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/5zgg/5zgg.cif')
     print(reader_listener.getReasonsForReparsing())

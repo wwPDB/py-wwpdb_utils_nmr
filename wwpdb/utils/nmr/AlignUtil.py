@@ -1415,13 +1415,13 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 #       ||    ||||| |||||| vs ||    ||| |||||||
                 # cs    PR....NRQPP.PYPLTA    PR....NRQ.PPPYPLTA
                 #               123456                1 2356
-                length = len(seq_id1)
+                length1 = len(seq_id1)
                 _seq_id1_ = copy.deepcopy(seq_id1)
                 for idx1, _seq_id1 in enumerate(_seq_id1_):
-                    if _seq_id1 is None and 1 < idx1 < length - 2\
+                    if _seq_id1 is None and 1 < idx1 < length1 - 2\
                        and None not in (seq_id1[idx1 - 1], seq_id1[idx1 + 1])\
                        and seq_id1[idx1 + 1] - seq_id1[idx1 - 1] == 1:
-                        for _idx1 in range(idx1 + 1, length - 1):
+                        for _idx1 in range(idx1 + 1, length1 - 1):
                             if None not in (seq_id1[_idx1], seq_id1[_idx1 + 1])\
                                and seq_id1[_idx1 + 1] - seq_id1[_idx1] == 2:
                                 seq_id1.insert(_idx1 + 1, None)
@@ -1432,13 +1432,13 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                     auth_comp_id1.insert(_idx1 + 1, '.')
                                     auth_comp_id1.pop(idx1)
 
-                length = len(seq_id2)
+                length2 = len(seq_id2)
                 _seq_id2_ = copy.deepcopy(seq_id2)
                 for idx2, _seq_id2 in enumerate(_seq_id2_):
-                    if _seq_id2 is None and 1 < idx2 < length - 2\
+                    if _seq_id2 is None and 1 < idx2 < length2 - 2\
                        and None not in (seq_id2[idx2 - 1], seq_id2[idx2 + 1])\
                        and seq_id2[idx2 + 1] - seq_id2[idx2 - 1] == 1:
-                        for _idx2 in range(idx2 + 1, length - 1):
+                        for _idx2 in range(idx2 + 1, length2 - 1):
                             if None not in (seq_id2[_idx2], seq_id2[_idx2 + 1])\
                                and seq_id2[_idx2 + 1] - seq_id2[_idx2] == 2:
                                 seq_id2.insert(_idx2 + 1, None)
@@ -3299,7 +3299,10 @@ def retrieveRemappedChainId(chainIdRemap: dict, seqId: int) -> Tuple[Optional[st
     """
 
     if seqId not in chainIdRemap:
-        for _offset in (-1, 1, -2, 2):
+        for _offset in range(1, 3):
+            if seqId - _offset in chainIdRemap:
+                remap = chainIdRemap[seqId - _offset]
+                return remap['chain_id'], remap['seq_id'] + _offset
             if seqId + _offset in chainIdRemap:
                 remap = chainIdRemap[seqId + _offset]
                 return remap['chain_id'], remap['seq_id'] - _offset

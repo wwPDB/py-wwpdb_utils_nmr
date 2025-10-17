@@ -684,6 +684,32 @@ class BareMRParserListener(ParseTreeListener):
                                 syncCompIdOfPolySeqRst(self.__polySeqRstFailed, self.__compIdMap)  # 2mx9
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                            for sa in seqAlignFailed:
+                                if sa['conflict'] == 0:
+                                    chainId = sa['test_chain_id']
+                                    _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
+                                    if _ps is None:
+                                        continue
+                                    _matched = sa['matched']
+                                    for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                        _compId = None
+                                        for compId in list(compIds):
+                                            _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                            updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
+                                            sortPolySeqRst(_polySeqRstFailed)
+                                            _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
+                                            _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
+                                            if _sa is None or _sa['conflict'] > 0:
+                                                continue
+                                            if _sa['matched'] > _matched:
+                                                _matched = _sa['matched']
+                                                _compId = compId
+                                        if _compId is not None:
+                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
+                                            sortPolySeqRst(self.__polySeqRstFailed)
+
+                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
                             chainAssignFailed, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
                                                                          self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
 
@@ -702,7 +728,7 @@ class BareMRParserListener(ParseTreeListener):
                                                if sa['ref_chain_id'] == ref_chain_id
                                                and sa['test_chain_id'] == test_chain_id), None)
 
-                                    if sa is None:
+                                    if sa is None or sa['sequence_coverage'] < 0.1:
                                         continue
 
                                     poly_seq_model = next(ps for ps in self.__polySeq

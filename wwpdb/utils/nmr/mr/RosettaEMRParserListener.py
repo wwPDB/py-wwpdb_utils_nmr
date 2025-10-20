@@ -1092,8 +1092,10 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1.split('|', 1)[0])
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2.split('|', 1)[0])
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -2965,9 +2967,12 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
+                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
 
             if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3)):
                 return
@@ -3249,10 +3254,14 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)
-            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
+                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
+            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)\
+                if chainId4 is not None else self.assignCoordPolymerSequence(seqId4, atomId4)
 
             if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
                 return
@@ -3413,14 +3422,22 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)
-            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)
-            chainAssign5 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId5, seqId5, atomId5)
-            chainAssign6 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId6, seqId6, atomId6)
-            chainAssign7 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId7, seqId7, atomId7)
-            chainAssign8 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId8, seqId8, atomId8)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
+                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
+            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)\
+                if chainId4 is not None else self.assignCoordPolymerSequence(seqId4, atomId4)
+            chainAssign5 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId5, seqId5, atomId5)\
+                if chainId5 is not None else self.assignCoordPolymerSequence(seqId5, atomId5)
+            chainAssign6 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId6, seqId6, atomId6)\
+                if chainId6 is not None else self.assignCoordPolymerSequence(seqId6, atomId6)
+            chainAssign7 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId7, seqId7, atomId7)\
+                if chainId7 is not None else self.assignCoordPolymerSequence(seqId7, atomId7)
+            chainAssign8 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId8, seqId8, atomId8)\
+                if chainId8 is not None else self.assignCoordPolymerSequence(seqId8, atomId8)
 
             if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4),
                      len(chainAssign5), len(chainAssign6), len(chainAssign7), len(chainAssign8)):
@@ -3581,8 +3598,10 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -3705,7 +3724,8 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId234, atomId2, chainId1)
             chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3, chainId1)
             chainAssign4 = self.assignCoordPolymerSequence(seqId234, atomId4, chainId1)
@@ -3786,8 +3806,8 @@ class RosettaEMRParserListener(ParseTreeListener):
 
         try:
 
-            seqId1, chainId1 = self.genResNumSelection[0]
-            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId, chainId = self.genResNumSelection[0]
+            atomId = self.genSimpleNameSelection[0].upper()
             opposingChainId = str(ctx.Simple_name()).upper()
 
             dstFunc = self.validateDistanceRange(1.0)
@@ -3800,12 +3820,13 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId, atomId)\
+                if chainId is not None else self.assignCoordPolymerSequence(seqId, atomId)
 
-            if len(chainAssign1) == 0:
+            if len(chainAssign) == 0:
                 return
 
-            self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+            self.selectCoordAtoms(chainAssign, seqId, atomId)
 
             if len(self.atomSelectionSet) < 1:
                 return
@@ -3820,11 +3841,11 @@ class RosettaEMRParserListener(ParseTreeListener):
                                 f"The opposing chain {opposingChainId!r} is not found in the coordinates.")
                 return
 
-            for atom1 in self.atomSelectionSet[0]:
-                chainId = atom1['chain_id']
+            for atom in self.atomSelectionSet[0]:
+                chainId = atom['chain_id']
                 if chainId == opposingChainId:
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"The selected atom {chainId}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} "
+                                    f"The selected atom {chainId}:{atom['seq_id']}:{atom['comp_id']}:{atom['atom_id']} "
                                     f"must not in the opposing chain {opposingChainId!r}.")
                     return
 
@@ -3846,14 +3867,14 @@ class RosettaEMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"NESTED: {self.stackNest}")
 
-            for atom1 in self.atomSelectionSet[0]:
+            for atom in self.atomSelectionSet[0]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (Site) id={self.geoRestraints} "
-                          f"atom={atom1} opposingChainId={opposingChainId} {dstFunc}")
+                          f"atom={atom} opposingChainId={opposingChainId} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     sf['loop']['data'].append([sf['index_id'], sf['id'],
-                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom['chain_id'], atom['seq_id'], atom['comp_id'], atom['atom_id'],
                                                opposingChainId,
                                                dstFunc.get('target_value'), None,
                                                dstFunc.get('lower_linear_limit'),
@@ -3901,7 +3922,8 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
 
             if len(chainAssign1) == 0:
                 return
@@ -3999,8 +4021,10 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -4106,7 +4130,8 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId)
+            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId)\
+                if chainId is not None else self.assignCoordPolymerSequence(seqId)
 
             if len(chainAssign) == 0:
                 return
@@ -5136,8 +5161,10 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -5316,8 +5343,10 @@ class RosettaEMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return

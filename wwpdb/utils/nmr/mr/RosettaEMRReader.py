@@ -223,6 +223,17 @@ class RosettaEMRReader:
 
 
 if __name__ == "__main__":
+    reader = RosettaEMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2miz/2miz-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2miz/2miz.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = RosettaEMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2miz/2miz-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2miz/2miz.cif')
+
     reader = RosettaEMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

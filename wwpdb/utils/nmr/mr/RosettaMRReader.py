@@ -233,17 +233,6 @@ if __name__ == "__main__":
     reader = RosettaMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/2mjz/2mjz-trimmed.mr',
-                     '../../tests-nmr/mock-data-remediation/2mjz/2mjz.cif')
-    print(reader_listener.getReasonsForReparsing())
-    reader = RosettaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2mjz/2mjz-trimmed.mr',
-                 '../../tests-nmr/mock-data-remediation/2mjz/2mjz.cif')
-
-    reader = RosettaMRReader(True)
-    reader.setDebugMode(True)
-    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2miz/2miz-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2miz/2miz.cif')
     print(reader_listener.getReasonsForReparsing())

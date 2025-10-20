@@ -1449,6 +1449,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                     auth_comp_id2.insert(_idx2 + 1, '.')
                                     auth_comp_id2.pop(idx2)
 
+                length = length2
+
                 ref_code = getOneLetterCodeCanSequence(comp_id1)
                 test_code = getOneLetterCodeCanSequence(comp_id2)
                 mid_code = getMiddleCode(ref_code, test_code)

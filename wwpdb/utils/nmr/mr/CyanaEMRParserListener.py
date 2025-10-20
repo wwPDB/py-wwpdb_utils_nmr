@@ -23,7 +23,11 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CyanaEMRParser import CyanaEMRParser
-    from wwpdb.utils.nmr.mr.CyanaBaseMRParserListener import CyanaBaseMRParserListener
+    from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import (BaseLinearMRParserListener,
+                                                               DIST_RANGE_MIN,
+                                                               DIST_RANGE_MAX,
+                                                               DIST_ERROR_MIN,
+                                                               DIST_ERROR_MAX)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        getRdcCode,
                                                        isIdenticalRestraint,
@@ -47,14 +51,6 @@ try:
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_ERROR,
-                                                       ANGLE_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_ERROR,
-                                                       RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR,
-                                                       PCS_RESTRAINT_RANGE,
-                                                       PCS_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP,
                                                        KNOWN_ANGLE_NAMES,
@@ -75,7 +71,11 @@ try:
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.CyanaEMRParser import CyanaEMRParser
-    from nmr.mr.CyanaBaseMRParserListener import CyanaBaseMRParserListener
+    from nmr.mr.BaseLinearMRParserListener import (BaseLinearMRParserListener,
+                                                   DIST_RANGE_MIN,
+                                                   DIST_RANGE_MAX,
+                                                   DIST_ERROR_MIN,
+                                                   DIST_ERROR_MAX)
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            getRdcCode,
                                            isIdenticalRestraint,
@@ -99,14 +99,6 @@ except ImportError:
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
-                                           DIST_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_ERROR,
-                                           ANGLE_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_ERROR,
-                                           RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR,
-                                           PCS_RESTRAINT_RANGE,
-                                           PCS_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP,
                                            KNOWN_ANGLE_NAMES,
@@ -126,36 +118,8 @@ except ImportError:
                                     distance)
 
 
-DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
-DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
-
-DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
-DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
-
-
-ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
-ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
-
-ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
-ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
-
-
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
-
-RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
-RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
-
-
-PCS_RANGE_MIN = PCS_RESTRAINT_RANGE['min_inclusive']
-PCS_RANGE_MAX = PCS_RESTRAINT_RANGE['max_inclusive']
-
-PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
-PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
-
-
 # This class defines a complete listener for a parse tree produced by CyanaEMRParser.
-class CyanaEMRParserListener(ParseTreeListener, CyanaBaseMRParserListener):
+class CyanaEMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -165,9 +129,13 @@ class CyanaEMRParserListener(ParseTreeListener, CyanaBaseMRParserListener):
                  csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
                  reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None):
         self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
                          cR, caC, ccU, csStat, nefT, reasons, upl_or_lol, file_ext)
+
+        self.file_type = 'nm-res-cye'
+        self.software_name = 'CYANA'
 
         self.allowZeroUpperLimit = False
 

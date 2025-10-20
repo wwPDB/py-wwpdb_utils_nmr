@@ -1,9 +1,9 @@
 ##
-# File: CyanaBaseMRParserListener.py
+# File: BaseLinearMRParserListener.py
 # Date: 20-Oct-2025
 #
 # Updates:
-""" ParserLister class for CYANA MR files.
+""" ParserLister class for Generic Linear MR files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -209,9 +209,10 @@ PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
 PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
 
 
-class CyanaBaseMRParserListener():
+class BaseLinearMRParserListener():
 
-    file_type = 'nm-res-cya'
+    file_type = ''
+    software_name = ''
 
     __verbose = None
     __lfh = None
@@ -242,8 +243,8 @@ class CyanaBaseMRParserListener():
     # reasons for re-parsing request from the previous trial
     reasons = None
 
+    # CYANA specific
     upl_or_lol = None  # must be one of (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')
-
     file_ext = None  # must be one of (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
     cur_dist_type = ''
     local_dist_types = []  # list items must be one of ('upl', 'lol')
@@ -316,17 +317,23 @@ class CyanaBaseMRParserListener():
 
     # current restraint subtype
     cur_subtype = ''
+
+    # CYANA specific
     cur_subtype_altered = False
+
+    # CYANA/ROSETTA specific
     cur_comment_inlined = False
+
+    # CYANA specific
     cur_rdc_orientation = 0
 
     # whether to allow extended sequence temporary
     allow_ext_seq = False
 
-    # RDC parameter dictionary
+    # RDC parameter dictionary (CYANA specific)
     rdcParameterDict = None
 
-    # PCS parameter dictionary
+    # PCS parameter dictionary (CYANA specific)
     pcsParameterDict = None
 
     # collection of atom selection
@@ -335,26 +342,36 @@ class CyanaBaseMRParserListener():
     # collection of number selection
     numberSelection = []
 
-    # collection of auxiliary atom selection
+    # collection of auxiliary atom selection (CYANA/DYNAMO specific)
     auxAtomSelectionSet = ''
 
-    # current residue name for atom name mapping
+    # current residue name for atom name mapping (AMBER/CYANA specific)
     cur_resname_for_mapping = ''
 
-    # unambigous atom name mapping
+    # unambigous atom name mapping (AMBER/ARIA/CYANA specific)
     unambigAtomNameMapping = {}
 
-    # ambigous atom name mapping
+    # ambigous atom name mapping (AMBER/ARIA/CYANA specific)
     ambigAtomNameMapping = {}
 
-    # collection of general residue number extended with chain code
+    # collection of general residue number extended with chain code (CYANA/ROSETTA specific)
     genResNumSelection = []
 
-    # collection of general simple name
+    # collection of general simple name (CYANA/ROSETTA specific)
     genSimpleNameSelection = []
 
-    # collection of general atom name extended with ambig code
+    # collection of general atom name extended with ambig code (CYANA specific)
     genAtomNameSelection = []
+
+    # current Insight II restraint declaration (BIOSYM specific)
+    cur_ins_decl = None
+
+    # current Insight II target values (BIOSYM specific)
+    cur_ins_lol = None
+    cur_ins_upl = None
+
+    # collection of Insight II's atom selection (BIOSYM specific)
+    insAtomSelection = []
 
     f = None
     warningMessage = None
@@ -527,16 +544,16 @@ class CyanaBaseMRParserListener():
         self.dihed_lb_greater_than_ub = False
         self.dihed_ub_always_positive = True
 
-        self.distRestraints = 0      # CYANA: Distance restraint file (.upl or .lol)
-        self.dihedRestraints = 0     # CYANA: Torsion angle restraint file (.aco)
-        self.rdcRestraints = 0       # CYANA: Residual dipolar coupling restraint file (.rdc)
-        self.pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file (.pcs)
-        self.noepkRestraints = 0     # CYANA: NOESY volume restraint file (.upv or .lov)
-        self.jcoupRestraints = 0     # CYANA: Scalar coupling constant restraint file (.cco)
-        self.geoRestraints = 0       # CYANA: Coordinate geometry restraints
-        self.hbondRestraints = 0     # CYANA: Hydrogen bond geometry restraints
-        self.ssbondRestraints = 0    # CYANA: Disulfide bond geometry restraints
-        self.fchiralRestraints = 0   # CYANA: Floating chiral stereo assignments
+        self.distRestraints = 0      # Distance restraint file (.upl or .lol)
+        self.dihedRestraints = 0     # Torsion angle restraint file (.aco)
+        self.rdcRestraints = 0       # Residual dipolar coupling restraint file (.rdc)
+        self.pcsRestraints = 0       # Pseudocontact shift restraint file (.pcs)
+        self.noepkRestraints = 0     # NOESY volume restraint file (.upv or .lov)
+        self.jcoupRestraints = 0     # Scalar coupling constant restraint file (.cco)
+        self.geoRestraints = 0       # Coordinate geometry restraints
+        self.hbondRestraints = 0     # Hydrogen bond geometry restraints
+        self.ssbondRestraints = 0    # Disulfide bond geometry restraints
+        self.fchiralRestraints = 0   # Floating chiral stereo assignments
 
         self.sfDict = {}
 
@@ -1745,7 +1762,7 @@ class CyanaBaseMRParserListener():
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   "Please attach ambiguous atom name mapping information generated "
-                                  "by 'makeDIST_RST' to the CYANA restraint file.")
+                                  f"by 'makeDIST_RST' to the {self.software_name} restraint file.")
             elif seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
@@ -2454,7 +2471,7 @@ class CyanaBaseMRParserListener():
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   "Please attach ambiguous atom name mapping information generated "
-                                  "by 'makeDIST_RST' to the CYANA restraint file.")
+                                  f"by 'makeDIST_RST' to the {self.software_name} restraint file.")
             elif seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
@@ -2755,7 +2772,7 @@ class CyanaBaseMRParserListener():
                 self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                               f"{_seqId}:?:{atomId} is not present in the coordinates. "
                               "Please attach ambiguous atom name mapping information generated "
-                              "by 'makeDIST_RST' to the CYANA restraint file.")
+                              f"by 'makeDIST_RST' to the {self.software_name} restraint file.")
             elif atomId is not None:
                 if len(self.polySeq) == 1 and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
@@ -2976,7 +2993,7 @@ class CyanaBaseMRParserListener():
                 self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                               f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates. "
                               "Please attach ambiguous atom name mapping information generated "
-                              "by 'makeDIST_RST' to the CYANA restraint file.")
+                              f"by 'makeDIST_RST' to the {self.software_name} restraint file.")
             else:
                 if len(self.polySeq) == 1 and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
@@ -4376,7 +4393,7 @@ class CyanaBaseMRParserListener():
 
         restraint_name = getRestraintName(self.cur_subtype)
 
-        sf_framecode = 'CYANA_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = f'{self.software_name}_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode,
@@ -4460,7 +4477,7 @@ class CyanaBaseMRParserListener():
                     return
 
     def getContentSubtype(self) -> dict:
-        """ Return content subtype of CYANA MR file.
+        """ Return content subtype of MR file.
         """
 
         contentSubtype = {'dist_restraint': self.distRestraints,
@@ -4478,7 +4495,7 @@ class CyanaBaseMRParserListener():
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
     def getEffectiveContentSubtype(self) -> dict:
-        """ Return effective content subtype of CYANA MR file (excluding .upv, lov, and .cco).
+        """ Return effective content subtype of MR file (excluding .upv, lov, and .cco).
         """
 
         contentSubtype = {'dist_restraint': self.distRestraints,
@@ -4490,31 +4507,31 @@ class CyanaBaseMRParserListener():
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
     def getPolymerSequence(self) -> Optional[List[dict]]:
-        """ Return polymer sequence of CYANA MR file.
+        """ Return polymer sequence of MR file.
         """
 
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
-        """ Return sequence alignment between coordinates and CYANA MR.
+        """ Return sequence alignment between coordinates and MR.
         """
 
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
-        """ Return chain assignment between coordinates and CYANA MR.
+        """ Return chain assignment between coordinates and MR.
         """
 
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
     def getReasonsForReparsing(self) -> Optional[dict]:
-        """ Return reasons for re-parsing CYANA MR file.
+        """ Return reasons for re-parsing MR file.
         """
 
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def getTypeOfDistanceRestraints(self) -> str:
-        """ Return type of distance restraints of the CYANA MR file.
+        """ Return type of distance restraints of the MR file.
         """
 
         if self.file_ext is not None:

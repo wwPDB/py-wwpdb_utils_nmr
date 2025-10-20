@@ -181,14 +181,14 @@ class BiosymMRReader:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               self.__reasons)
-            listener.setDebugMode(self.__debug)
-            listener.createSfDict(createSfDict)
+            listener.debug = self.__debug
+            listener.createSfDict = createSfDict
             if createSfDict:
-                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
+                listener.originaFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                 if listIdCounter is not None:
-                    listener.setListIdCounter(listIdCounter)
+                    listener.listIdCounter = listIdCounter
                 if entryId is not None:
-                    listener.setEntryId(entryId)
+                    listener.entryId = entryId
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

@@ -22,7 +22,7 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CyanaNOAParser import CyanaNOAParser
-    from wwpdb.utils.nmr.mr.CyanaBaseMRParserListener import CyanaBaseMRParserListener
+    from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (isIdenticalRestraint,
                                                        hasIntraChainRestraint,
                                                        isAmbigAtomSelection,
@@ -34,8 +34,6 @@ try:
                                                        getPotentialType,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -44,7 +42,7 @@ try:
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.CyanaNOAParser import CyanaNOAParser
-    from nmr.mr.CyanaBaseMRParserListener import CyanaBaseMRParserListener
+    from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
     from nmr.mr.ParserListenerUtil import (isIdenticalRestraint,
                                            hasIntraChainRestraint,
                                            isAmbigAtomSelection,
@@ -56,8 +54,6 @@ except ImportError:
                                            getPotentialType,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
-                                           DIST_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -65,15 +61,8 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
-DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
-DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
-
-DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
-DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
-
-
 # This class defines a complete listener for a parse tree produced by CyanaNOAParser.
-class CyanaNOAParserListener(ParseTreeListener, CyanaBaseMRParserListener):
+class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -82,10 +71,14 @@ class CyanaNOAParserListener(ParseTreeListener, CyanaBaseMRParserListener):
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
                  csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
                  reasons: Optional[dict] = None):
+        self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
+
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
                          cR, caC, ccU, csStat, nefT, reasons)
 
         self.file_type = 'nm-res-noa'
+        self.software_name = 'CYANA'
 
         self.cur_subtype = ''
 

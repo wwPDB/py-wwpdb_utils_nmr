@@ -729,7 +729,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                if sa['ref_chain_id'] == ref_chain_id
                                                and sa['test_chain_id'] == test_chain_id), None)
 
-                                    if sa is None or sa['sequence_coverage'] < 0.1:
+                                    if sa is None or sa['sequence_coverage'] < 0.03:
                                         continue
 
                                     poly_seq_model = next(ps for ps in self.__polySeq

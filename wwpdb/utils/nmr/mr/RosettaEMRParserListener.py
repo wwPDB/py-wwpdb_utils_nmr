@@ -735,7 +735,7 @@ class RosettaEMRParserListener(ParseTreeListener):
                                                if sa['ref_chain_id'] == ref_chain_id
                                                and sa['test_chain_id'] == test_chain_id), None)
 
-                                    if sa is None or sa['sequence_coverage'] < 0.1:
+                                    if sa is None or sa['sequence_coverage'] < 0.03:
                                         continue
 
                                     poly_seq_model = next(ps for ps in self.__polySeq
@@ -5434,6 +5434,198 @@ class RosettaEMRParserListener(ParseTreeListener):
         finally:
             self.atomSelectionSet.clear()
             self.genResNumSelection.clear()
+
+    def enterAtom_pair_w_chain_restraints(self, ctx: RosettaEMRParser.Atom_pair_w_chain_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+        self.__cur_comment_inlined = True
+
+    # Exit a parse tree produced by RosettaEMRParser#atom_pair_w_chain_restraints.
+    def exitAtom_pair_w_chain_restraints(self, ctx: RosettaEMRParser.Atom_pair_w_chain_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_comment_inlined = False
+
+    # Enter a parse tree produced by RosettaEMRParser#atom_pair_w_chain_restraint.
+    def enterAtom_pair_w_chain_restraint(self, ctx: RosettaEMRParser.Atom_pair_w_chain_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by RosettaEMRParser#atom_pair_w_chain_restraint.
+    def exitAtom_pair_w_chain_restraint(self, ctx: RosettaEMRParser.Atom_pair_w_chain_restraintContext):
+
+        try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            chainId1 = self.genSimpleNameSelection[1]
+            seqId2 = int(str(ctx.Integer(1)))
+            atomId2 = self.genSimpleNameSelection[2].upper()
+            chainId2 = self.genSimpleNameSelection[3]
+
+            if len(self.atomSelectionInComment) == 2:
+                matched = True
+                for atomSel in self.atomSelectionInComment:
+                    if atomSel['atom_id'] not in (atomId1, atomId2):
+                        matched = False
+                        break
+                if matched:
+                    for idx, atomSel in enumerate(self.atomSelectionInComment):
+                        if idx == 0:
+                            seqId1 = atomSel['seq_id']
+                            atomId1 = atomSel['atom_id']
+                        else:
+                            seqId2 = atomSel['seq_id']
+                            atomId2 = atomSel['atom_id']
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            self.__retrieveLocalSeqScheme()
+
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])
+
+            if 0 in (len(chainAssign1), len(chainAssign2)):
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            self.__allowZeroUpperLimit = False
+            if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
+               and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                    self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
+            dstFunc = self.validateDistanceRange(1.0)
+
+            if dstFunc is None:
+                return
+
+            isNested = len(self.stackNest) > 0
+            isMulti = isNested and self.stackNest[-1]['type'] == 'multi'
+
+            if self.__createSfDict:
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                if not isNested or self.__is_first_nest:
+                    sf['id'] += 1
+                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 or isNested else '.'
+
+            if isNested:
+                if self.__debug:
+                    print(f"NESTED: {self.stackNest}")
+
+            has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+
+            combinationId = '.'
+            if isNested and self.__nest_combination_id > 0:
+                combinationId = self.__nest_combination_id
+
+            memberId = '.'
+            if self.__createSfDict:
+                if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1 and not isNested:
+                    if not self.atomSelectionSet[0][0]['auth_atom_id'].upper().startswith('CEN')\
+                       and not self.atomSelectionSet[1][0]['auth_atom_id'].upper().startswith('CEN'):
+                        memberLogicCode = '.'
+
+                if memberLogicCode == 'OR':
+                    if isNested:
+                        memberId = self.__nest_member_id
+                        _atom1 = _atom2 = None
+                    elif len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        memberId = 0
+                        _atom1 = _atom2 = None
+
+                combinationId = '.'
+                if isNested and self.__nest_combination_id > 0:
+                    combinationId = self.__nest_combination_id
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
+                    continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
+                    if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
+                if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
+                    continue
+                if self.__createSfDict and memberLogicCode == '.':
+                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
+                    if altAtomId1 is not None or altAtomId2 is not None:
+                        atom1, atom2 =\
+                            self.selectRealisticBondConstraint(atom1, atom2,
+                                                               altAtomId1, altAtomId2,
+                                                               dstFunc)
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int):
+                        if isNested:
+                            memberId += 1
+                            self.__nest_member_id = memberId
+                            _atom1, _atom2 = atom1, atom2
+                        elif _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            memberId += 1
+                            _atom1, _atom2 = atom1, atom2
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 combinationId, memberId, 'AND' if isMulti else memberLogicCode,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1, atom2)
+                    sf['loop'].add_data(row)
+
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
+                    if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                        sf['constraint_subsubtype'] = 'ambi'
+
+                    if memberLogicCode == 'OR'\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        sf['constraint_subsubtype'] = 'ambi'
+
+                    if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                        upperLimit = float(dstFunc['upper_limit'])
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                            sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None:
+                if isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+                    memberId = '.'
+                if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
+                    sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+        finally:
+            self.atomSelectionInComment.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaEMRParser#number.
     def enterNumber(self, ctx: RosettaEMRParser.NumberContext):  # pylint: disable=unused-argument

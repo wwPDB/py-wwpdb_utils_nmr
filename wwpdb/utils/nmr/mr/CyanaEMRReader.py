@@ -193,15 +193,15 @@ class CyanaEMRReader:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               self.__reasons, self.__upl_or_lol, self.__file_ext)
-            listener.setDebugMode(self.__debug)
-            listener.setRemediateMode(self.__remediate)
-            listener.createSfDict(createSfDict)
+            listener.debug = self.__debug
+            listener.remediate = self.__remediate
+            listener.createSfDict = createSfDict
             if createSfDict:
-                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
+                listener.originaFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                 if listIdCounter is not None:
-                    listener.setListIdCounter(listIdCounter)
+                    listener.listIdCounter = listIdCounter
                 if entryId is not None:
-                    listener.setEntryId(entryId)
+                    listener.entryId = entryId
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

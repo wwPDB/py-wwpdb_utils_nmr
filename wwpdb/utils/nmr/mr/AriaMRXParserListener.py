@@ -64,7 +64,7 @@ try:
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
-                                                       THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                        PLANE_LIKE_LOWER_LIMIT,
                                                        PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
@@ -163,7 +163,7 @@ except ImportError:
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
-                                           THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           THRESHOLD_FOR_CIRCULAR_SHIFT,
                                            PLANE_LIKE_LOWER_LIMIT,
                                            PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
@@ -2205,9 +2205,9 @@ class AriaMRXParserListener(ParseTreeListener):
                                  dtype=float)
 
             shift = None
-            if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+            if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmax(_array) // 360) * 360
-            elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+            elif numpy.nanmax(_array) <= -THRESHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
@@ -5028,9 +5028,9 @@ class AriaMRXParserListener(ParseTreeListener):
 
                 shift = 0.0
                 if self.__correctCircularShift:
-                    if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                    if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
                         shift = -(numpy.nanmax(_array) // 360) * 360
-                    elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                    elif numpy.nanmax(_array) <= -THRESHOLD_FOR_CIRCULAR_SHIFT:
                         shift = -(numpy.nanmin(_array) // 360) * 360
                 if target_value is not None:
                     dst_func['target_value'] = str(target_value + shift)

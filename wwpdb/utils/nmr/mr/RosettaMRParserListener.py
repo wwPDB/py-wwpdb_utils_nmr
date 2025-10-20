@@ -1,6 +1,6 @@
 ##
 # File: RosettaMRParserListener.py
-# Date: 04-Mar-2022
+# Date: 17-Oct-2025
 #
 # Updates:
 """ ParserLister class for ROSETTA MR files.
@@ -63,7 +63,7 @@ try:
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
-                                                       THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                        PLANE_LIKE_LOWER_LIMIT,
                                                        PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
@@ -153,7 +153,7 @@ except ImportError:
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
-                                           THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           THRESHOLD_FOR_CIRCULAR_SHIFT,
                                            PLANE_LIKE_LOWER_LIMIT,
                                            PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
@@ -337,6 +337,12 @@ class RosettaMRParserListener(ParseTreeListener):
     __nest_combination_id = -1
     __nest_member_id = -1
     stackNest = []
+
+    # collection of general residue number extended with chain code
+    genResNumSelection = []
+
+    # collection of general simple name
+    genSimpleNameSelection = []
 
     __f = None
     warningMessage = None
@@ -1057,14 +1063,14 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#atom_pair_restraint.
-    def exitAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):
+    def exitAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            atomId1 = str(ctx.Simple_name(0)).upper()
-            seqId2 = int(str(ctx.Integer(1)))
-            atomId2 = str(ctx.Simple_name(1)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            atomId2 = self.genSimpleNameSelection[1].upper()
 
             if len(self.atomSelectionInComment) == 2:
                 matched = True
@@ -1086,8 +1092,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1.split('|', 1)[0])
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2.split('|', 1)[0])
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1.split('|', 1)[0])
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2.split('|', 1)[0])
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -1228,6 +1236,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.atomSelectionInComment.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     def validateDistanceRange(self, weight: float) -> Optional[dict]:
         """ Validate distance value range.
@@ -1837,6 +1847,236 @@ class RosettaMRParserListener(ParseTreeListener):
                                     updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compIds[0])
                                 else:
                                     updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
+
+            else:
+                if len(self.__polySeq) == 1 and seqId < 1:
+                    refChainId = self.__polySeq[0]['auth_chain_id']
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"The residue number '{_seqId}' is not present in polymer sequence "
+                                    f"of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                else:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"The residue number '{_seqId}' is not present in the coordinates.")
+
+        return list(chainAssign)
+
+    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: Optional[str], seqId: int, atomId: Optional[str] = None
+                                                           ) -> List[Tuple[str, int, str, bool]]:
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        chainAssign = set()
+        _seqId = seqId
+
+        fixedSeqId = fixedCompId = None
+
+        self.__allow_ext_seq = False
+
+        if self.__reasons is not None:
+            if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+            if 'chain_id_remap' in self.__reasons:  # and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                if seqId not in self.__reasons['chain_id_remap']:
+                    self.__allow_ext_seq = True
+            elif 'chain_id_clone' in self.__reasons:  # and seqId in self.__reasons['chain_id_clone']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                if seqId not in self.__reasons['chain_id_clone']:
+                    self.__allow_ext_seq = True
+            if fixedSeqId is not None:
+                seqId = _seqId = fixedSeqId
+
+        for ps in self.__polySeq:
+            chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, None)
+            if fixedChainId is not None and chainId != fixedChainId:
+                continue
+            if self.__reasons is not None:
+                if 'seq_id_remap' not in self.__reasons\
+                   and 'chain_seq_id_remap' not in self.__reasons\
+                   and 'ext_chain_seq_id_remap' not in self.__reasons:
+                    if fixedChainId is not None and fixedChainId != chainId:
+                        continue
+                else:
+                    if 'ext_chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId, fixedCompId =\
+                            retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], chainId, seqId)
+                        if fixedChainId is not None and fixedChainId != chainId:
+                            continue
+                        if fixedSeqId is not None:
+                            self.__allow_ext_seq = fixedCompId is not None
+                            seqId = _seqId = fixedSeqId
+                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
+                        if fixedChainId is not None and fixedChainId != chainId:
+                            continue
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
+                    if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
+            if seqId in ps['auth_seq_id'] or fixedCompId is not None:
+                if fixedCompId is not None:
+                    cifCompId = fixedCompId
+                else:
+                    if cifCompId is not None:
+                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
+                    else:
+                        idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
+                    cifCompId = ps['comp_id'][idx]
+                if self.__reasons is not None:
+                    if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
+                       and seqId in self.__reasons['non_poly_remap'][cifCompId]:
+                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
+                        if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
+                            continue
+                updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.add((chainId, seqId, cifCompId, True))
+            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        _seqId_ = seqId + 1
+                        while _seqId_ <= max_auth_seq_id:
+                            if _seqId_ in ps['auth_seq_id']:
+                                break
+                            _seqId_ += 1
+                        if _seqId_ not in ps['auth_seq_id']:
+                            _seqId_ = seqId - 1
+                            while _seqId_ >= min_auth_seq_id:
+                                if _seqId_ in ps['auth_seq_id']:
+                                    break
+                                _seqId_ -= 1
+                        if _seqId_ in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
+                            try:
+                                seqId_ = ps['auth_seq_id'][idx]
+                                cifCompId = ps['comp_id'][idx]
+                                updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                                if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.add((chainId, seqId_, cifCompId, True))
+                            except IndexError:
+                                pass
+
+        if self.__hasNonPolySeq:
+            for np in self.__nonPolySeq:
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, None, False)
+                if fixedChainId is not None and chainId != fixedChainId:
+                    continue
+                if self.__reasons is not None:
+                    if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
+                        if fixedChainId is not None and fixedChainId != chainId:
+                            continue
+                    else:
+                        if 'chain_seq_id_remap' in self.__reasons:
+                            fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
+                            if fixedChainId is not None and fixedChainId != chainId:
+                                continue
+                            if fixedSeqId is not None:
+                                seqId = _seqId = fixedSeqId
+                        if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                            if fixedSeqId is not None:
+                                seqId = _seqId = fixedSeqId
+                if seqId in np['auth_seq_id']:
+                    if cifCompId is not None:
+                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))
+                    else:
+                        idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id'] else np['seq_id'].index(seqId)
+                    cifCompId = np['comp_id'][idx]
+                    updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                    if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.add((chainId, seqId, cifCompId, False))
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                if fixedChainId is not None and chainId != fixedChainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                        updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                        if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+
+            if self.__hasNonPolySeq:
+                for np in self.__nonPolySeq:
+                    chainId = np['auth_chain_id']
+                    if fixedChainId is not None and chainId != fixedChainId:
+                        continue
+                    seqKey = (chainId, _seqId)
+                    if seqKey in self.__authToLabelSeq:
+                        _, seqId = self.__authToLabelSeq[seqKey]
+                        if seqId in np['seq_id']:
+                            cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
+                            updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                            if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                chainId = ps['auth_chain_id']
+                if fixedChainId is not None and chainId != fixedChainId:
+                    continue
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
+                    chainAssign.add((chainId, _seqId, cifCompId, True))
+
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
+            for ps in self.__polySeq:
+                chainId = ps['chain_id']
+                if fixedChainId is not None and chainId != fixedChainId:
+                    continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__labelToAuthSeq:
+                    _, seqId = self.__labelToAuthSeq[seqKey]
+                    if seqId in ps['auth_seq_id']:
+                        cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                        updatePolySeqRst(self.__polySeqRst, fixedChainId, seqId, cifCompId)
+                        if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                            self.__authSeqId = 'label_seq_id'
+                            self.__setLocalSeqScheme()
+
+        if len(chainAssign) == 0:
+            if atomId is not None:
+                if seqId == 1 or (fixedChainId, seqId - 1) in self.__coordUnobsRes:
+                    if atomId in aminoProtonCode and atomId != 'H1':
+                        return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1')
+                if (('-' in atomId and ':' in atomId) or '.' in atomId):
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates. "
+                                    "Please attach ambiguous atom name mapping information generated "
+                                    "by 'makeDIST_RST' to the CYANA restraint file.")
+                else:
+                    if len(self.__polySeq) == 1 and seqId < 1:
+                        refChainId = self.__polySeq[0]['auth_chain_id']
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{_seqId}:?:{atomId} is not present in the coordinates. "
+                                        f"The residue number '{_seqId}' is not present in polymer sequence "
+                                        f"of chain {refChainId} of the coordinates. "
+                                        "Please update the sequence in the Macromolecules page.")
+                    else:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
+                        compIds = guessCompIdFromAtomId([atomId], self.__polySeq, self.__nefT)
+                        if compIds is not None:
+                            if len(compIds) == 1:
+                                updatePolySeqRst(self.__polySeqRstFailed, fixedChainId, seqId, compIds[0])
+                            else:
+                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, fixedChainId, seqId, compIds)
 
             else:
                 if len(self.__polySeq) == 1 and seqId < 1:
@@ -2653,9 +2893,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 shift = 0.0
                 if self.__correctCircularShift:
-                    if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                    if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
                         shift = -(numpy.nanmax(_array) // 360) * 360
-                    elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                    elif numpy.nanmax(_array) <= -THRESHOLD_FOR_CIRCULAR_SHIFT:
                         shift = -(numpy.nanmin(_array) // 360) * 360
                 if target_value is not None:
                     dst_func['target_value'] = str(target_value + shift)
@@ -2706,80 +2946,90 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#angle_restraint.
-    def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        atomId1 = str(ctx.Simple_name(0)).upper()
-        seqId2 = int(str(ctx.Integer(1)))
-        atomId2 = str(ctx.Simple_name(1)).upper()
-        seqId3 = int(str(ctx.Integer(2)))
-        atomId3 = str(ctx.Simple_name(2)).upper()
+    def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
 
-        dstFunc = self.validateAngleRange(1.0)
+        try:
 
-        if dstFunc is None:
-            return
+            seqId1, chainId1 = self.genResNumSelection[0]
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            atomId2 = self.genSimpleNameSelection[1].upper()
+            seqId3, chainId3 = self.genResNumSelection[2]
+            atomId3 = self.genSimpleNameSelection[2].upper()
 
-        if not self.__hasPolySeq and not self.__hasNonPolySeq:
-            return
+            dstFunc = self.validateAngleRange(1.0)
 
-        self.__retrieveLocalSeqScheme()
+            if dstFunc is None:
+                return
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
-        chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
 
-        if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3)):
-            return
+            self.__retrieveLocalSeqScheme()
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'an angle')
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'an angle')
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'an angle')
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
+                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
 
-        if len(self.atomSelectionSet) < 3:
-            return
+            if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3)):
+                return
 
-        if not self.areUniqueCoordAtoms('an angle'):
-            return
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'an angle')
+            self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'an angle')
+            self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'an angle')
 
-        isNested = len(self.stackNest) > 0
+            if len(self.atomSelectionSet) < 3:
+                return
 
-        if self.__createSfDict:
-            sf = self.__getSf('angle restraint')
-            if not isNested or self.__is_first_nest:
-                sf['id'] += 1
-            if len(sf['loop']['tags']) == 0:
-                sf['loop']['tags'] = ['index_id', 'id',
-                                      'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
-                                      'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
-                                      'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
-                                      'target_value', 'target_value_uncertainty',
-                                      'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                      'list_id']
+            if not self.areUniqueCoordAtoms('an angle'):
+                return
 
-        if isNested:
-            if self.__debug:
-                print(f"NESTED: {self.stackNest}")
+            isNested = len(self.stackNest) > 0
 
-        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
-                                                     self.atomSelectionSet[1],
-                                                     self.atomSelectionSet[2]):
-            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
-                continue
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
-            if self.__createSfDict and sf is not None:
-                sf['index_id'] += 1
-                sf['loop']['data'].append([sf['index_id'], sf['id'],
-                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
-                                           atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
-                                           atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
-                                           dstFunc.get('target_value'), None,
-                                           dstFunc.get('lower_linear_limit'),
-                                           dstFunc.get('lower_limit'),
-                                           dstFunc.get('upper_limit'),
-                                           dstFunc.get('upper_linear_limit'),
-                                           sf['list_id']])
+            if self.__createSfDict:
+                sf = self.__getSf('angle restraint')
+                if not isNested or self.__is_first_nest:
+                    sf['id'] += 1
+                if len(sf['loop']['tags']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                          'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                          'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                          'target_value', 'target_value_uncertainty',
+                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                          'list_id']
+
+            if isNested:
+                if self.__debug:
+                    print(f"NESTED: {self.stackNest}")
+
+            for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                         self.atomSelectionSet[1],
+                                                         self.atomSelectionSet[2]):
+                if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
+                    continue
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                               dstFunc.get('target_value'), None,
+                                               dstFunc.get('lower_linear_limit'),
+                                               dstFunc.get('lower_limit'),
+                                               dstFunc.get('upper_limit'),
+                                               dstFunc.get('upper_linear_limit'),
+                                               sf['list_id']])
+
+        finally:
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     def validateAngleRange(self, weight: float) -> Optional[dict]:
         """ Validate angle value range.
@@ -2845,9 +3095,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                  dtype=float)
 
             shift = None
-            if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+            if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmax(_array) // 360) * 360
-            elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+            elif numpy.nanmax(_array) <= -THRESHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
@@ -2981,58 +3231,100 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#dihedral_restraint.
-    def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        atomId1 = str(ctx.Simple_name(0)).upper()
-        seqId2 = int(str(ctx.Integer(1)))
-        atomId2 = str(ctx.Simple_name(1)).upper()
-        seqId3 = int(str(ctx.Integer(2)))
-        atomId3 = str(ctx.Simple_name(2)).upper()
-        seqId4 = int(str(ctx.Integer(3)))
-        atomId4 = str(ctx.Simple_name(3)).upper()
-
-        dstFunc = self.validateAngleRange(1.0)
-
-        if dstFunc is None:
-            return
-
-        if not self.__hasPolySeq and not self.__hasNonPolySeq:
-            return
-
-        self.__retrieveLocalSeqScheme()
-
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
-        chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
-        chainAssign4 = self.assignCoordPolymerSequence(seqId4, atomId4)
-
-        if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
-            return
-
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'a dihedral angle')
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a dihedral angle')
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'a dihedral angle')
-        self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False, 'a dihedral angle')
-
-        if len(self.atomSelectionSet) < 4:
-            return
+    def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
 
         try:
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
-        except IndexError:
-            self.areUniqueCoordAtoms('a dihedral angle')
-            return
 
-        len_f = len(self.__f)
-        self.areUniqueCoordAtoms('a dihedral angle',
-                                 allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
-        combinationId = '.' if len_f == len(self.__f) else 0
+            seqId1, chainId1 = self.genResNumSelection[0]
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            atomId2 = self.genSimpleNameSelection[1].upper()
+            seqId3, chainId3 = self.genResNumSelection[2]
+            atomId3 = self.genSimpleNameSelection[2].upper()
+            seqId4, chainId4 = self.genResNumSelection[3]
+            atomId4 = self.genSimpleNameSelection[3].upper()
 
-        atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+            dstFunc = self.validateAngleRange(1.0)
 
-        if isinstance(combinationId, int):
-            fixedAngleName = '.'
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            self.__retrieveLocalSeqScheme()
+
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
+                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
+            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)\
+                if chainId4 is not None else self.assignCoordPolymerSequence(seqId4, atomId4)
+
+            if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'a dihedral angle')
+            self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a dihedral angle')
+            self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'a dihedral angle')
+            self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False, 'a dihedral angle')
+
+            if len(self.atomSelectionSet) < 4:
+                return
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a dihedral angle')
+                return
+
+            len_f = len(self.__f)
+            self.areUniqueCoordAtoms('a dihedral angle',
+                                     allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+            combinationId = '.' if len_f == len(self.__f) else 0
+
+            atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
+            if isinstance(combinationId, int):
+                fixedAngleName = '.'
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    atoms = [atom1, atom2, atom3, atom4]
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           atoms,
+                                                           'plane_like' in dstFunc,
+                                                           self.__cR, self.__ccU,
+                                                           self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                    if angleName is not None and angleName.startswith('pseudo'):
+                        angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                           atoms,
+                                                                                           self.__getCurrentRestraint())
+                        self.__f.append(err)
+
+                    if angleName in emptyValue and atomSelTotal != 4:
+                        continue
+
+                    fixedAngleName = angleName
+                    break
+
+            sf = None
+            if self.__createSfDict:
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+
+            isNested = len(self.stackNest) > 0
+
+            if isNested:
+                if self.__debug:
+                    print(f"NESTED: {self.stackNest}")
+
+            first_item = True
+
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
@@ -3053,65 +3345,34 @@ class RosettaMRParserListener(ParseTreeListener):
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
 
-                fixedAngleName = angleName
-                break
+                if isinstance(combinationId, int):
+                    if angleName != fixedAngleName:
+                        continue
+                    combinationId += 1
+                if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                    dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                      dstFunc)
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    if first_item and (not isNested or self.__is_first_nest):
+                        sf['id'] += 1
+                        first_item = False
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 combinationId, None, angleName,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
 
-        sf = None
-        if self.__createSfDict:
-            sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
-        isNested = len(self.stackNest) > 0
-
-        if isNested:
-            if self.__debug:
-                print(f"NESTED: {self.stackNest}")
-
-        first_item = True
-
-        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                            self.atomSelectionSet[1],
-                                                            self.atomSelectionSet[2],
-                                                            self.atomSelectionSet[3]):
-            atoms = [atom1, atom2, atom3, atom4]
-            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                   atoms,
-                                                   'plane_like' in dstFunc,
-                                                   self.__cR, self.__ccU,
-                                                   self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-
-            if angleName is not None and angleName.startswith('pseudo'):
-                angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
-                                                                                   atoms,
-                                                                                   self.__getCurrentRestraint())
-                self.__f.append(err)
-
-            if angleName in emptyValue and atomSelTotal != 4:
-                continue
-
-            if isinstance(combinationId, int):
-                if angleName != fixedAngleName:
-                    continue
-                combinationId += 1
-            if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
-                dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
-                                                                  dstFunc)
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
-            if self.__createSfDict and sf is not None:
-                if first_item and (not isNested or self.__is_first_nest):
-                    sf['id'] += 1
-                    first_item = False
-                sf['index_id'] += 1
-                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             combinationId, None, angleName,
-                             sf['list_id'], self.__entryId, dstFunc,
-                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                             atom1, atom2, atom3, atom4)
-                sf['loop'].add_data(row)
-
-        if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
-            sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+        finally:
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
     def enterDihedral_pair_restraints(self, ctx: RosettaMRParser.Dihedral_pair_restraintsContext):  # pylint: disable=unused-argument
@@ -3129,160 +3390,175 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
-    def exitDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        atomId1 = str(ctx.Simple_name(0)).upper()
-        seqId2 = int(str(ctx.Integer(1)))
-        atomId2 = str(ctx.Simple_name(1)).upper()
-        seqId3 = int(str(ctx.Integer(2)))
-        atomId3 = str(ctx.Simple_name(2)).upper()
-        seqId4 = int(str(ctx.Integer(3)))
-        atomId4 = str(ctx.Simple_name(3)).upper()
+    def exitDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):  # pylint: disable=unused-argument
 
-        seqId5 = int(str(ctx.Integer(4)))
-        atomId5 = str(ctx.Simple_name(4)).upper()
-        seqId6 = int(str(ctx.Integer(5)))
-        atomId6 = str(ctx.Simple_name(5)).upper()
-        seqId7 = int(str(ctx.Integer(6)))
-        atomId7 = str(ctx.Simple_name(6)).upper()
-        seqId8 = int(str(ctx.Integer(7)))
-        atomId8 = str(ctx.Simple_name(7)).upper()
+        try:
 
-        dstFunc = self.validateAngleRange(1.0)
+            seqId1, chainId1 = self.genResNumSelection[0]
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            atomId2 = self.genSimpleNameSelection[1].upper()
+            seqId3, chainId3 = self.genResNumSelection[2]
+            atomId3 = self.genSimpleNameSelection[2].upper()
+            seqId4, chainId4 = self.genResNumSelection[3]
+            atomId4 = self.genSimpleNameSelection[3].upper()
 
-        if dstFunc is None:
-            return
+            seqId5, chainId5 = self.genResNumSelection[4]
+            atomId5 = self.genSimpleNameSelection[4].upper()
+            seqId6, chainId6 = self.genResNumSelection[5]
+            atomId6 = self.genSimpleNameSelection[5].upper()
+            seqId7, chainId7 = self.genResNumSelection[6]
+            atomId7 = self.genSimpleNameSelection[6].upper()
+            seqId8, chainId8 = self.genResNumSelection[7]
+            atomId8 = self.genSimpleNameSelection[7].upper()
 
-        if not self.__hasPolySeq and not self.__hasNonPolySeq:
-            return
+            dstFunc = self.validateAngleRange(1.0)
 
-        self.__retrieveLocalSeqScheme()
+            if dstFunc is None:
+                return
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
-        chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
-        chainAssign4 = self.assignCoordPolymerSequence(seqId4, atomId4)
-        chainAssign5 = self.assignCoordPolymerSequence(seqId5, atomId5)
-        chainAssign6 = self.assignCoordPolymerSequence(seqId6, atomId6)
-        chainAssign7 = self.assignCoordPolymerSequence(seqId7, atomId7)
-        chainAssign8 = self.assignCoordPolymerSequence(seqId8, atomId8)
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
 
-        if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4),
-                 len(chainAssign5), len(chainAssign6), len(chainAssign7), len(chainAssign8)):
-            return
+            self.__retrieveLocalSeqScheme()
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'a dihedral angle pair')
-        self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a dihedral angle pair')
-        self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'a dihedral angle pair')
-        self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False, 'a dihedral angle pair')
-        self.selectCoordAtoms(chainAssign5, seqId5, atomId5, False, 'a dihedral angle pair')
-        self.selectCoordAtoms(chainAssign6, seqId6, atomId6, False, 'a dihedral angle pair')
-        self.selectCoordAtoms(chainAssign7, seqId7, atomId7, False, 'a dihedral angle pair')
-        self.selectCoordAtoms(chainAssign8, seqId8, atomId8, False, 'a dihedral angle pair')
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
+                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
+            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)\
+                if chainId4 is not None else self.assignCoordPolymerSequence(seqId4, atomId4)
+            chainAssign5 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId5, seqId5, atomId5)\
+                if chainId5 is not None else self.assignCoordPolymerSequence(seqId5, atomId5)
+            chainAssign6 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId6, seqId6, atomId6)\
+                if chainId6 is not None else self.assignCoordPolymerSequence(seqId6, atomId6)
+            chainAssign7 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId7, seqId7, atomId7)\
+                if chainId7 is not None else self.assignCoordPolymerSequence(seqId7, atomId7)
+            chainAssign8 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId8, seqId8, atomId8)\
+                if chainId8 is not None else self.assignCoordPolymerSequence(seqId8, atomId8)
 
-        if len(self.atomSelectionSet) < 8:
-            return
+            if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4),
+                     len(chainAssign5), len(chainAssign6), len(chainAssign7), len(chainAssign8)):
+                return
 
-        if not self.areUniqueCoordAtoms('a dihedral angle pair'):
-            return
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'a dihedral angle pair')
+            self.selectCoordAtoms(chainAssign2, seqId2, atomId2, False, 'a dihedral angle pair')
+            self.selectCoordAtoms(chainAssign3, seqId3, atomId3, False, 'a dihedral angle pair')
+            self.selectCoordAtoms(chainAssign4, seqId4, atomId4, False, 'a dihedral angle pair')
+            self.selectCoordAtoms(chainAssign5, seqId5, atomId5, False, 'a dihedral angle pair')
+            self.selectCoordAtoms(chainAssign6, seqId6, atomId6, False, 'a dihedral angle pair')
+            self.selectCoordAtoms(chainAssign7, seqId7, atomId7, False, 'a dihedral angle pair')
+            self.selectCoordAtoms(chainAssign8, seqId8, atomId8, False, 'a dihedral angle pair')
 
-        sf = None
-        if self.__createSfDict:
-            sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+            if len(self.atomSelectionSet) < 8:
+                return
 
-        compId = self.atomSelectionSet[0][0]['comp_id']
-        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            if not self.areUniqueCoordAtoms('a dihedral angle pair'):
+                return
 
-        isNested = len(self.stackNest) > 0
+            sf = None
+            if self.__createSfDict:
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
 
-        if isNested:
-            if self.__debug:
-                print(f"NESTED: {self.stackNest}")
+            compId = self.atomSelectionSet[0][0]['comp_id']
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-        first_item = True
+            isNested = len(self.stackNest) > 0
 
-        atomSelTotal = sum(len(s) for s in self.atomSelectionSet[0:4])
+            if isNested:
+                if self.__debug:
+                    print(f"NESTED: {self.stackNest}")
 
-        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                            self.atomSelectionSet[1],
-                                                            self.atomSelectionSet[2],
-                                                            self.atomSelectionSet[3]):
-            atoms = [atom1, atom2, atom3, atom4]
-            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                   atoms,
-                                                   'plane_like' in dstFunc,
-                                                   self.__cR, self.__ccU,
-                                                   self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+            first_item = True
 
-            if angleName is not None and angleName.startswith('pseudo'):
-                angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
-                                                                                   atoms,
-                                                                                   self.__getCurrentRestraint())
-                self.__f.append(err)
+            atomSelTotal = sum(len(s) for s in self.atomSelectionSet[0:4])
 
-            if angleName in emptyValue and atomSelTotal != 4:
-                continue
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       atoms,
+                                                       'plane_like' in dstFunc,
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
-            if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
-                dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
-                                                                  dstFunc)
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                      f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
-            if self.__createSfDict and sf is not None:
-                if first_item and (not isNested or self.__is_first_nest):
-                    sf['id'] += 1
-                    first_item = False
-                sf['index_id'] += 1
-                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             1, None, angleName,
-                             sf['list_id'], self.__entryId, dstFunc,
-                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                             atom1, atom2, atom3, atom4)
-                sf['loop'].add_data(row)
+                if angleName is not None and angleName.startswith('pseudo'):
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint())
+                    self.__f.append(err)
 
-        compId = self.atomSelectionSet[4][0]['comp_id']
-        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+                if angleName in emptyValue and atomSelTotal != 4:
+                    continue
 
-        atomSelTotal = sum(len(s) for s in self.atomSelectionSet[4:8])
+                if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                    dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                      dstFunc)
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}")
+                if self.__createSfDict and sf is not None:
+                    if first_item and (not isNested or self.__is_first_nest):
+                        sf['id'] += 1
+                        first_item = False
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 1, None, angleName,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
 
-        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
-                                                            self.atomSelectionSet[5],
-                                                            self.atomSelectionSet[6],
-                                                            self.atomSelectionSet[7]):
-            atoms = [atom1, atom2, atom3, atom4]
-            angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                   atoms,
-                                                   'plane_like' in dstFunc,
-                                                   self.__cR, self.__ccU,
-                                                   self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+            compId = self.atomSelectionSet[4][0]['comp_id']
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
-            if angleName is not None and angleName.startswith('pseudo'):
-                angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
-                                                                                   atoms,
-                                                                                   self.__getCurrentRestraint())
-                self.__f.append(err)
+            atomSelTotal = sum(len(s) for s in self.atomSelectionSet[4:8])
 
-            if angleName in emptyValue and atomSelTotal != 4:
-                continue
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
+                                                                self.atomSelectionSet[5],
+                                                                self.atomSelectionSet[6],
+                                                                self.atomSelectionSet[7]):
+                atoms = [atom1, atom2, atom3, atom4]
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       atoms,
+                                                       'plane_like' in dstFunc,
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
-            if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
-                dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
-                                                                  dstFunc)
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
-                      f"atom5={atom1} atom6={atom2} atom7={atom3} atom8={atom4} {dstFunc}")
-            if self.__createSfDict and sf is not None:
-                if first_item:
-                    sf['id'] += 1
-                    first_item = False
-                sf['index_id'] += 1
-                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             2, None, angleName,
-                             sf['list_id'], self.__entryId, dstFunc,
-                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                             atom1, atom2, atom3, atom4)
-                sf['loop'].add_data(row)
+                if angleName is not None and angleName.startswith('pseudo'):
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint())
+                    self.__f.append(err)
+
+                if angleName in emptyValue and atomSelTotal != 4:
+                    continue
+
+                if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                    dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                      dstFunc)
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
+                          f"atom5={atom1} atom6={atom2} atom7={atom3} atom8={atom4} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 2, None, angleName,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
+
+        finally:
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#coordinate_restraints.
     def enterCoordinate_restraints(self, ctx: RosettaMRParser.Coordinate_restraintsContext):  # pylint: disable=unused-argument
@@ -3300,14 +3576,14 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#coordinate_restraint.
-    def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):
+    def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            atomId1 = str(ctx.Simple_name(0)).upper()
-            _seqId1 = str(ctx.Simple_name(1)).upper()
-            atomId2 = str(ctx.Simple_name(2)).upper()
-            _seqId2 = str(ctx.Simple_name(3)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            atomId2 = self.genSimpleNameSelection[1].upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.geoRestraints -= 1
@@ -3317,29 +3593,15 @@ class RosettaMRParserListener(ParseTreeListener):
             cartY = self.numberSelection[1]
             cartZ = self.numberSelection[2]
 
-            if _seqId1.isdecimal():
-                seqId1 = int(_seqId1)
-                fixedChainId1 = None
-            else:
-                g = self.concat_resnum_chain_pat.search(_seqId1).groups()
-                seqId1 = int(g[0])
-                fixedChainId1 = g[1]
-
-            if _seqId2.isdecimal():
-                seqId2 = int(_seqId2)
-                fixedChainId2 = None
-            else:
-                g = self.concat_resnum_chain_pat.search(_seqId2).groups()
-                seqId2 = int(g[0])
-                fixedChainId2 = g[1]
-
             if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -3414,6 +3676,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#local_coordinate_restraints.
     def enterLocal_coordinate_restraints(self, ctx: RosettaMRParser.Local_coordinate_restraintsContext):  # pylint: disable=unused-argument
@@ -3435,12 +3699,12 @@ class RosettaMRParserListener(ParseTreeListener):
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            atomId1 = str(ctx.Simple_name(0)).upper()
-            seqId234 = int(str(ctx.Integer(1)))
-            atomId2 = str(ctx.Simple_name(1)).upper()
-            atomId3 = str(ctx.Simple_name(2)).upper()
-            atomId4 = str(ctx.Simple_name(3)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId234 = int(str(ctx.Integer()))
+            atomId2 = self.genSimpleNameSelection[1].upper()
+            atomId3 = self.genSimpleNameSelection[2].upper()
+            atomId4 = self.genSimpleNameSelection[3].upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.geoRestraints -= 1
@@ -3460,10 +3724,11 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId234, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3)
-            chainAssign4 = self.assignCoordPolymerSequence(seqId234, atomId4)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId234, atomId2, chainId1)
+            chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3, chainId1)
+            chainAssign4 = self.assignCoordPolymerSequence(seqId234, atomId4, chainId1)
 
             if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
                 return
@@ -3518,6 +3783,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#site_restraints.
     def enterSite_restraints(self, ctx: RosettaMRParser.Site_restraintsContext):  # pylint: disable=unused-argument
@@ -3536,81 +3803,89 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#site_restraint.
     def exitSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):
-        seqId1 = int(str(ctx.Integer()))
-        atomId1 = str(ctx.Simple_name(0)).upper()
-        opposingChainId = str(ctx.Simple_name(1)).upper()
 
-        dstFunc = self.validateDistanceRange(1.0)
+        try:
 
-        if dstFunc is None:
-            return
+            seqId, chainId = self.genResNumSelection[0]
+            atomId = self.genSimpleNameSelection[0].upper()
+            opposingChainId = str(ctx.Simple_name()).upper()
 
-        if not self.__hasPolySeq and not self.__hasNonPolySeq:
-            return
+            dstFunc = self.validateDistanceRange(1.0)
 
-        self.__retrieveLocalSeqScheme()
-
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-
-        if len(chainAssign1) == 0:
-            return
-
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
-
-        if len(self.atomSelectionSet) < 1:
-            return
-
-        if not self.__preferAuthSeq:
-            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == opposingChainId), None)
-        else:
-            ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == opposingChainId), None)
-
-        if ps is None:
-            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                            f"The opposing chain {opposingChainId!r} is not found in the coordinates.")
-            return
-
-        for atom1 in self.atomSelectionSet[0]:
-            chainId = atom1['chain_id']
-            if chainId == opposingChainId:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                f"The selected atom {chainId}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} "
-                                f"must not in the opposing chain {opposingChainId!r}.")
+            if dstFunc is None:
                 return
 
-        isNested = len(self.stackNest) > 0
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
 
-        if self.__createSfDict:
-            sf = self.__getSf('ambiguous site restraint (atom to other chain), ROSETTA SiteConstraint')
-            if not isNested or self.__is_first_nest:
-                sf['id'] += 1
-            if len(sf['loop']['tags']) == 0:
-                sf['loop']['tags'] = ['index_id', 'id',
-                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
-                                      'opposing_auth_asym_id',
-                                      'target_value', 'target_value_uncertainty',
-                                      'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                      'list_id']
+            self.__retrieveLocalSeqScheme()
 
-        if isNested:
-            if self.__debug:
-                print(f"NESTED: {self.stackNest}")
+            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId, atomId)\
+                if chainId is not None else self.assignCoordPolymerSequence(seqId, atomId)
 
-        for atom1 in self.atomSelectionSet[0]:
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (Site) id={self.geoRestraints} "
-                      f"atom={atom1} opposingChainId={opposingChainId} {dstFunc}")
-            if self.__createSfDict and sf is not None:
-                sf['index_id'] += 1
-                sf['loop']['data'].append([sf['index_id'], sf['id'],
-                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
-                                           opposingChainId,
-                                           dstFunc.get('target_value'), None,
-                                           dstFunc.get('lower_linear_limit'),
-                                           dstFunc.get('lower_limit'),
-                                           dstFunc.get('upper_limit'),
-                                           dstFunc.get('upper_linear_limit'),
-                                           sf['list_id']])
+            if len(chainAssign) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign, seqId, atomId)
+
+            if len(self.atomSelectionSet) < 1:
+                return
+
+            if not self.__preferAuthSeq:
+                ps = next((ps for ps in self.__polySeq if ps['chain_id'] == opposingChainId), None)
+            else:
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == opposingChainId), None)
+
+            if ps is None:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The opposing chain {opposingChainId!r} is not found in the coordinates.")
+                return
+
+            for atom in self.atomSelectionSet[0]:
+                chainId = atom['chain_id']
+                if chainId == opposingChainId:
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The selected atom {chainId}:{atom['seq_id']}:{atom['comp_id']}:{atom['atom_id']} "
+                                    f"must not in the opposing chain {opposingChainId!r}.")
+                    return
+
+            isNested = len(self.stackNest) > 0
+
+            if self.__createSfDict:
+                sf = self.__getSf('ambiguous site restraint (atom to other chain), ROSETTA SiteConstraint')
+                if not isNested or self.__is_first_nest:
+                    sf['id'] += 1
+                if len(sf['loop']['tags']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                          'opposing_auth_asym_id',
+                                          'target_value', 'target_value_uncertainty',
+                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                          'list_id']
+
+            if isNested:
+                if self.__debug:
+                    print(f"NESTED: {self.stackNest}")
+
+            for atom in self.atomSelectionSet[0]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (Site) id={self.geoRestraints} "
+                          f"atom={atom} opposingChainId={opposingChainId} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom['chain_id'], atom['seq_id'], atom['comp_id'], atom['atom_id'],
+                                               opposingChainId,
+                                               dstFunc.get('target_value'), None,
+                                               dstFunc.get('lower_linear_limit'),
+                                               dstFunc.get('lower_limit'),
+                                               dstFunc.get('upper_limit'),
+                                               dstFunc.get('upper_linear_limit'),
+                                               sf['list_id']])
+
+        finally:
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#site_residues_restraints.
     def enterSite_residues_restraints(self, ctx: RosettaMRParser.Site_residues_restraintsContext):  # pylint: disable=unused-argument
@@ -3629,80 +3904,88 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#site_residues_restraint.
     def exitSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):
-        seqId1 = int(str(ctx.Integer(0)))
-        atomId1 = str(ctx.Simple_name()).upper()
-        seqId2 = int(str(ctx.Integer(1)))
-        seqId3 = int(str(ctx.Integer(2)))
 
-        dstFunc = self.validateDistanceRange(1.0)
+        try:
 
-        if dstFunc is None:
-            return
+            seqId1, chainId1 = self.genResNumSelection[0]
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId2 = int(str(ctx.Integer(0)))
+            seqId3 = int(str(ctx.Integer(1)))
 
-        if not self.__hasPolySeq and not self.__hasNonPolySeq:
-            return
+            dstFunc = self.validateDistanceRange(1.0)
 
-        self.__retrieveLocalSeqScheme()
+            if dstFunc is None:
+                return
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
 
-        if len(chainAssign1) == 0:
-            return
+            self.__retrieveLocalSeqScheme()
 
-        self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
 
-        if len(self.atomSelectionSet) < 1:
-            return
+            if len(chainAssign1) == 0:
+                return
 
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2)
-        chainAssign3 = self.assignCoordPolymerSequence(seqId3)
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
 
-        if 0 in (len(chainAssign2), len(chainAssign3)):
-            return
+            if len(self.atomSelectionSet) < 1:
+                return
 
-        self.selectCoordResidues(chainAssign2, seqId2)
-        self.selectCoordResidues(chainAssign3, seqId3)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, fixedChainId=chainId1)
+            chainAssign3 = self.assignCoordPolymerSequence(seqId3, fixedChainId=chainId1)
 
-        if len(self.atomSelectionSet) < 3:
-            return
+            if 0 in (len(chainAssign2), len(chainAssign3)):
+                return
 
-        isNested = len(self.stackNest) > 0
+            self.selectCoordResidues(chainAssign2, seqId2)
+            self.selectCoordResidues(chainAssign3, seqId3)
 
-        if self.__createSfDict:
-            sf = self.__getSf('ambiguous site restraint (atom to other residue), ROSETTA SiteConstraintResidues')
-            if not isNested or self.__is_first_nest:
-                sf['id'] += 1
-            if len(sf['loop']['tags']) == 0:
-                sf['loop']['tags'] = ['index_id', 'id',
-                                      'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
-                                      'interacting_auth_asym_id_1', 'interacting_auth_seq_id_1', 'interacting_auth_comp_id_1',
-                                      'interacting_auth_asym_id_2', 'interacting_auth_seq_id_2', 'interacting_auth_comp_id_2',
-                                      'target_value', 'target_value_uncertainty',
-                                      'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                      'list_id']
+            if len(self.atomSelectionSet) < 3:
+                return
 
-        if isNested:
-            if self.__debug:
-                print(f"NESTED: {self.stackNest}")
+            isNested = len(self.stackNest) > 0
 
-        for atom1, res2, res3 in itertools.product(self.atomSelectionSet[0],
-                                                   self.atomSelectionSet[1],
-                                                   self.atomSelectionSet[2]):
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} (Site-Residue) id={self.geoRestraints} "
-                      f"atom1={atom1} residue2={res2} residue3={res3} {dstFunc}")
-            if self.__createSfDict and sf is not None:
-                sf['index_id'] += 1
-                sf['loop']['data'].append([sf['index_id'], sf['id'],
-                                           atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
-                                           res2['chain_id'], res2['seq_id'], res2['comp_id'],
-                                           res3['chain_id'], res3['seq_id'], res3['comp_id'],
-                                           dstFunc.get('target_value'), None,
-                                           dstFunc.get('lower_linear_limit'),
-                                           dstFunc.get('lower_limit'),
-                                           dstFunc.get('upper_limit'),
-                                           dstFunc.get('upper_linear_limit'),
-                                           sf['list_id']])
+            if self.__createSfDict:
+                sf = self.__getSf('ambiguous site restraint (atom to other residue), ROSETTA SiteConstraintResidues')
+                if not isNested or self.__is_first_nest:
+                    sf['id'] += 1
+                if len(sf['loop']['tags']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
+                                          'interacting_auth_asym_id_1', 'interacting_auth_seq_id_1', 'interacting_auth_comp_id_1',
+                                          'interacting_auth_asym_id_2', 'interacting_auth_seq_id_2', 'interacting_auth_comp_id_2',
+                                          'target_value', 'target_value_uncertainty',
+                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                          'list_id']
+
+            if isNested:
+                if self.__debug:
+                    print(f"NESTED: {self.stackNest}")
+
+            for atom1, res2, res3 in itertools.product(self.atomSelectionSet[0],
+                                                       self.atomSelectionSet[1],
+                                                       self.atomSelectionSet[2]):
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (Site-Residue) id={self.geoRestraints} "
+                          f"atom1={atom1} residue2={res2} residue3={res3} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               res2['chain_id'], res2['seq_id'], res2['comp_id'],
+                                               res3['chain_id'], res3['seq_id'], res3['comp_id'],
+                                               dstFunc.get('target_value'), None,
+                                               dstFunc.get('lower_linear_limit'),
+                                               dstFunc.get('lower_limit'),
+                                               dstFunc.get('upper_limit'),
+                                               dstFunc.get('upper_linear_limit'),
+                                               sf['list_id']])
+
+        finally:
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
     def enterMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -3720,12 +4003,12 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
-    def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):
+    def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            seqId2 = int(str(ctx.Integer(1)))
+            seqId1, chainId1 = self.genResNumSelection[0]
+            seqId2, chainId2 = self.genResNumSelection[0]
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.geoRestraints -= 1
@@ -3738,8 +4021,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -3809,6 +4094,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#big_bin_restraints.
     def enterBig_bin_restraints(self, ctx: RosettaMRParser.Big_bin_restraintsContext):  # pylint: disable=unused-argument
@@ -3830,7 +4116,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         try:
 
-            seqId = int(str(ctx.Integer()))
+            seqId, chainId = self.genResNumSelection[0]
             binChar = str(ctx.Simple_name())
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
@@ -3844,7 +4130,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign = self.assignCoordPolymerSequence(seqId)
+            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId)\
+                if chainId is not None else self.assignCoordPolymerSequence(seqId)
 
             if len(chainAssign) == 0:
                 return
@@ -3911,6 +4198,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#nested_restraints.
     def enterNested_restraints(self, ctx: RosettaMRParser.Nested_restraintsContext):  # pylint: disable=unused-argument
@@ -4832,14 +5120,14 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#rdc_restraint.
-    def exitRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):
+    def exitRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            atomId1 = str(ctx.Simple_name(0)).upper()
-            seqId2 = int(str(ctx.Integer(1)))
-            atomId2 = str(ctx.Simple_name(1)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            atomId2 = self.genSimpleNameSelection[1].upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.rdcRestraints -= 1
@@ -4873,8 +5161,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -4988,11 +5278,13 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
-        except (ValueError, IndexError):
+        except (ValueError, IndexError, AttributeError):
             self.rdcRestraints -= 1
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     def areUniqueCoordAtoms(self, subtype_name: str, allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
         """ Check whether atom selection sets are uniquely assigned.
@@ -5039,24 +5331,22 @@ class RosettaMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
-    def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):
+    def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):  # pylint: disable=unused-argument
 
         try:
 
-            try:
-                seqId1 = int(str(ctx.Integer(0)))
-                seqId2 = int(str(ctx.Integer(1)))
-            except ValueError:
-                self.ssbondRestraints -= 1
-                return
+            seqId1, chainId1 = self.genResNumSelection[0]
+            seqId2, chainId2 = self.genResNumSelection[1]
 
             if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)\
+                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)\
+                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -5172,8 +5462,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.atomSelectionSet.clear()
+            self.genResNumSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraints.
     def enterAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
 
@@ -5196,11 +5486,11 @@ class RosettaMRParserListener(ParseTreeListener):
         try:
 
             seqId1 = int(str(ctx.Integer(0)))
-            atomId1 = str(ctx.Simple_name(0)).upper()
-            chainId1 = str(ctx.Simple_name(1))
+            atomId1 = self.genSimpleNameSelection[0].upper()
+            chainId1 = self.genSimpleNameSelection[1]
             seqId2 = int(str(ctx.Integer(1)))
-            atomId2 = str(ctx.Simple_name(2)).upper()
-            chainId2 = str(ctx.Simple_name(3))
+            atomId2 = self.genSimpleNameSelection[2].upper()
+            chainId2 = self.genSimpleNameSelection[3]
 
             if len(self.atomSelectionInComment) == 2:
                 matched = True
@@ -5222,8 +5512,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1.split('|', 1)[0], fixedChainId=chainId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2.split('|', 1)[0], fixedChainId=chainId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -5364,6 +5654,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.atomSelectionInComment.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#number.
     def enterNumber(self, ctx: RosettaMRParser.NumberContext):  # pylint: disable=unused-argument
@@ -5406,6 +5697,42 @@ class RosettaMRParserListener(ParseTreeListener):
             return float(str(ctx.Integer()))
 
         return None
+
+    # Enter a parse tree produced by RosettaMRParser#gen_res_num.
+    def enterGen_res_num(self, ctx: RosettaMRParser.Gen_res_numContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by RosettaMRParser#gen_res_num.
+    def exitGen_res_num(self, ctx: RosettaMRParser.Gen_res_numContext):
+        if ctx.Integer():
+            self.genResNumSelection.append((int(str(ctx.Integer())), None))
+
+        elif ctx.Integer_capital():
+            self.genResNumSelection.append((int(str(ctx.Integer_capital())[:-1]), str(ctx.Integer_capital())[-1]))
+
+        elif ctx.Capital_integer():
+            self.genResNumSelection.append((int(str(ctx.Capital_integer())[1:]), str(ctx.Capital_integer())[0]))
+
+        else:
+            self.genResNumSelection.append((None, None))
+
+    # Enter a parse tree produced by RosettaMRParser#gen_simple_name.
+    def enterGen_simple_name(self, ctx: RosettaMRParser.Gen_simple_nameContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by RosettaMRParser#gen_simple_name.
+    def exitGen_simple_name(self, ctx: RosettaMRParser.Gen_simple_nameContext):
+        if ctx.Simple_name():
+            self.genSimpleNameSelection.append(str(ctx.Simple_name()))
+
+        elif ctx.Integer_capital():
+            self.genSimpleNameSelection.append(str(ctx.Integer_capital()))
+
+        elif ctx.Capital_integer():
+            self.genSimpleNameSelection.append(str(ctx.Capital_integer()))
+
+        else:
+            self.genSimpleNameSelection.append(None)
 
     def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':

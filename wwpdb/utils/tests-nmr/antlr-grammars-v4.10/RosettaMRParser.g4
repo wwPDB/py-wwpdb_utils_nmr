@@ -1,6 +1,6 @@
 /*
- ROSETTA MR (Magnetic Restraint) parser grammar for ANTLR v4.
- Copyright 2022 Masashi Yokochi
+ ROSETTA MR (Magnetic Restraint - extended for multiple chains) parser grammar for ANTLR v4.
+ Copyright 2025 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -33,7 +33,7 @@ rosetta_mr:
 	big_bin_restraints |
 	nested_restraints |
 	rdc_restraints |			// used only in CS-ROSETTA
-	disulfide_bond_linkages |		// used only in CS-ROSETTA
+	disulfide_bond_linkages | 		// used only in CS-ROSETTA
 	atom_pair_w_chain_restraints		// wwpdb.utils.nmr's format extension for restraint remediation
 	)*
 	EOF;
@@ -48,64 +48,64 @@ atom_pair_restraints:
 	atom_pair_restraint+;
 
 atom_pair_restraint:
-	(AtomPair | NamedAtomPair | AmbiguousNMRDistance) Simple_name Integer Simple_name Integer func_type_def;
+	(AtomPair | NamedAtomPair | AmbiguousNMRDistance) gen_simple_name gen_res_num gen_simple_name gen_res_num func_type_def;
 
 angle_restraints:
 	angle_restraint+;
 
 angle_restraint:
-	(Angle | NamedAngle) Simple_name Integer Simple_name Integer Simple_name Integer func_type_def;
+	(Angle | NamedAngle) gen_simple_name gen_res_num gen_simple_name gen_res_num gen_simple_name gen_res_num func_type_def;
 
 dihedral_restraints:
 	dihedral_restraint+;
 
 dihedral_restraint:
-	Dihedral Simple_name Integer Simple_name Integer Simple_name Integer Simple_name Integer func_type_def;
+	Dihedral gen_simple_name gen_res_num gen_simple_name gen_res_num gen_simple_name gen_res_num gen_simple_name gen_res_num func_type_def;
 
 dihedral_pair_restraints:
 	dihedral_pair_restraint+;
 
 dihedral_pair_restraint:
-	DihedralPair Simple_name Integer Simple_name Integer Simple_name Integer Simple_name Integer
-	Simple_name Integer Simple_name Integer Simple_name Integer Simple_name Integer func_type_def;
+	DihedralPair gen_simple_name gen_res_num gen_simple_name gen_res_num gen_simple_name gen_res_num gen_simple_name gen_res_num
+	gen_simple_name gen_res_num gen_simple_name gen_res_num gen_simple_name gen_res_num gen_simple_name gen_res_num func_type_def;
 
 coordinate_restraints:
 	coordinate_restraint+;
 
 coordinate_restraint:
-	CoordinateConstraint Simple_name Simple_name Simple_name Simple_name	// The 2nd and 4th Simple_names represent Residue_num[Chain_ID]
+	CoordinateConstraint gen_simple_name gen_res_num gen_simple_name gen_res_num
 	number number number func_type_def;
 
 local_coordinate_restraints:
 	local_coordinate_restraint+;
 
 local_coordinate_restraint:
-	LocalCoordinateConstraint Simple_name Integer Simple_name Simple_name Simple_name Integer
+	LocalCoordinateConstraint gen_simple_name gen_res_num gen_simple_name gen_simple_name gen_simple_name Integer
 	number number number func_type_def;
 
 site_restraints:
 	site_restraint+;
 
 site_restraint:
-	SiteConstraint Simple_name Integer Simple_name func_type_def;	// the last Simple_name represent Opposing_chain
+	SiteConstraint gen_simple_name gen_res_num Simple_name func_type_def;	// the last Simple_name represent Opposing_chain
 
 site_residues_restraints:
 	site_residues_restraint+;
 
 site_residues_restraint:
-	SiteConstraintResidues Integer Simple_name Integer Integer func_type_def;
+	SiteConstraintResidues gen_res_num gen_simple_name Integer Integer func_type_def;
 
 min_residue_atomic_distance_restraints:
 	min_residue_atomic_distance_restraint+;
 
 min_residue_atomic_distance_restraint:
-	MinResidueAtomicDistance Integer Integer number;
+	MinResidueAtomicDistance gen_res_num gen_res_num number;
 
 big_bin_restraints:
 	big_bin_restraint+;
 
 big_bin_restraint:
-	BigBin Integer Simple_name number; // Simple_name must be a single uppercase letter selected from 'O', 'G', 'E', 'A', and 'B'
+	BigBin gen_res_num Simple_name number; // Simple_name must be a single uppercase letter selected from 'O', 'G', 'E', 'A', and 'B'
 
 /* Rosetta Constraint File - Constraint Types - Nested constraints
  See also https://www.rosettacommons.org/docs/latest/rosetta_basics/file_types/constraint-file
@@ -162,7 +162,7 @@ rdc_restraints:
 	rdc_restraint+;
 
 rdc_restraint:
-	Integer Simple_name Integer Simple_name number;
+	gen_res_num gen_simple_name gen_res_num gen_simple_name number;
 
 /* CS-ROSETTA Installation Files
  See also https://spin.niddk.nih.gov/bax/software/CSROSETTA/#faq and https://csrosetta.bmrb.io/format_help
@@ -171,7 +171,7 @@ disulfide_bond_linkages:
 	disulfide_bond_linkage+;
 
 disulfide_bond_linkage:
-	Integer Integer;
+	gen_res_num gen_res_num;
 
 /* wwpdb.utils.nmr's format extension for restraint remediation
 */
@@ -179,7 +179,7 @@ atom_pair_w_chain_restraints:
 	atom_pair_w_chain_restraint+;
 
 atom_pair_w_chain_restraint:
-	(AtomPair | NamedAtomPair | AmbiguousNMRDistance) Simple_name Integer Simple_name Simple_name Integer Simple_name func_type_def;
+	(AtomPair | NamedAtomPair | AmbiguousNMRDistance) gen_simple_name Integer gen_simple_name gen_simple_name Integer gen_simple_name func_type_def;
 
 /* number expression in restrains */
 number:	Float | Integer;
@@ -187,4 +187,12 @@ number:	Float | Integer;
 /* number expression in functions */
 number_f:
 	Float | Integer;
+
+/* residue number allowing chain identification */
+gen_res_num:
+	Integer | Integer_capital | Capital_integer;
+
+/* residue name or atom name */
+gen_simple_name:
+	Simple_name | Integer_capital | Capital_integer;
 

@@ -1,6 +1,6 @@
 /*
- ROSETTA MR (Magnetic Restraint) lexer grammar for ANTLR v4.
- Copyright 2022 Masashi Yokochi
+ ROSETTA MR (Magnetic Restraint - extended for multiple chains) lexer grammar for ANTLR v4.
+ Copyright 2025 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -96,6 +96,9 @@ EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 //SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
 COMMENT:		';'+ -> mode(COMMENT_MODE);
+
+Capital_integer:	[A-Z] DECIMAL;
+Integer_capital:	DECIMAL [A-Z];
 
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;

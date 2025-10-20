@@ -7527,6 +7527,7 @@ class CyanaEMRParserListener(ParseTreeListener):
         else:
             self.numberSelection.append(None)
 
+    # Enter a parse tree produced by CyanaEMRParser#gen_res_num.
     def enterGen_res_num(self, ctx: CyanaEMRParser.Gen_res_numContext):  # pylint: disable=unused-argument
         pass
 

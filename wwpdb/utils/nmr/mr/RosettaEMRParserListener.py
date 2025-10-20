@@ -5251,7 +5251,7 @@ class RosettaEMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
-        except (ValueError, IndexError):
+        except (ValueError, IndexError, AttributeError):
             self.rdcRestraints -= 1
 
         finally:
@@ -5477,6 +5477,7 @@ class RosettaEMRParserListener(ParseTreeListener):
 
         return None
 
+    # Enter a parse tree produced by RosettaEMRParser#gen_res_num.
     def enterGen_res_num(self, ctx: RosettaEMRParser.Gen_res_numContext):  # pylint: disable=unused-argument
         pass
 

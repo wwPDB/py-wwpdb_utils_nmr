@@ -268,7 +268,7 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
 
-                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                        if self.cur_constraint_type is not None and self.cur_constraint_type.startswith('ambiguous'):
                             sf['constraint_subsubtype'] = 'ambi'
 
                         if isinstance(combinationId, int)\

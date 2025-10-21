@@ -369,6 +369,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
     __cachedDictForStarAtom = {}
 
+    __atom_sel_comment_pattern = re.compile(r'([A-Za-z]+)(\d+)(\S+)$')
+
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
@@ -477,12 +479,8 @@ class RosettaMRParserListener(ParseTreeListener):
         self.geoRestraints = 0       # ROSETTA: Coordinate geometry restraints
         self.ssbondRestraints = 0    # ROSETTA: Disulfide bond geometry restraints
 
-        self.concat_resnum_chain_pat = re.compile(r'^(\d+)(\S+)$')
-
         self.__dist_lb_greater_than_ub = False
         self.__dist_ub_always_positive = True
-
-        self.__atom_sel_comment_pattern = re.compile(r'([A-Za-z]+)(\d+)(\S+)$')
 
         self.sfDict = {}
 

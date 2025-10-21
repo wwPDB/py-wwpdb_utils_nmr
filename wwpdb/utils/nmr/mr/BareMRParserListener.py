@@ -74,10 +74,6 @@ except ImportError:
                                emptyValue)
 
 
-reduced_residue_name_pattern = re.compile(r'([A-Za-z]+)(\d+)')
-rev_reduced_residue_name_pattern = re.compile(r'(\d+)([A-Za-z]+)')
-
-
 # This class defines a complete listener for a parse tree produced by BareMRParser.
 class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
@@ -89,6 +85,9 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
     __col_name = None
     __col_order = None
+
+    __reduced_residue_name_pattern = re.compile(r'([A-Za-z]+)(\d+)')
+    __rev_reduced_residue_name_pattern = re.compile(r'(\d+)([A-Za-z]+)')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -264,8 +263,8 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if isinstance(self.anySelection[idx], int):
                             seqIds.append(self.anySelection[idx])
                         elif isinstance(self.anySelection[idx], str):
-                            if self.__col_order.count('residue_name') == 0 and reduced_residue_name_pattern.match(self.anySelection[idx]):
-                                g = reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                            if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = self.__reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[1]))
                                 compId = g[0]
                                 if len(compId) == 1:
@@ -277,8 +276,8 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         compId = 'D' + compId
                                 compIds.append(compId)
-                            elif self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
-                                g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                            elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = self.__rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[0]))
                                 compId = g[1]
                                 if len(compId) == 1:
@@ -563,8 +562,8 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if isinstance(self.anySelection[idx], int):
                             seqIds.append(self.anySelection[idx])
                         elif isinstance(self.anySelection[idx], str):
-                            if self.__col_order.count('residue_name') == 0 and reduced_residue_name_pattern.match(self.anySelection[idx]):
-                                g = reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                            if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = self.__reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[1]))
                                 compId = g[0]
                                 if len(compId) == 1:
@@ -576,8 +575,8 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         compId = 'D' + compId
                                 compIds.append(compId)
-                            elif self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
-                                g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                            elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = self.__rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[0]))
                                 compId = g[1]
                                 if len(compId) == 1:

@@ -19,6 +19,8 @@ import copy
 from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.XMLParser import XMLParser
@@ -545,6 +547,10 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         if len(longest_substr) == 0:
             return ref_atom_id
+
+        if self.pA is None:
+            self.pA = PairwiseAlign()
+            self.pA.setVerbose(self.verbose)
 
         self.pA.setReferenceSequence(list(longest_substr), 'REFNAME')
         self.pA.addTestSequence(list(max_str), 'NAME')

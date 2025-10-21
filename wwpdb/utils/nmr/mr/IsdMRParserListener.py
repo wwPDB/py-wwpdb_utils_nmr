@@ -64,11 +64,10 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
-atom_sele_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)([A-Z][0-9A-Z]*)')
-
-
 # This class defines a complete listener for a parse tree produced by IsdMRParser.
 class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+
+    __atom_sel_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)([A-Z][0-9A-Z]*)')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -245,7 +244,7 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            g = atom_sele_pat.search(atomSelection.upper()).groups()
+            g = self.__atom_sel_pat.search(atomSelection.upper()).groups()
 
             return int(g[1]), g[0], g[2]
 

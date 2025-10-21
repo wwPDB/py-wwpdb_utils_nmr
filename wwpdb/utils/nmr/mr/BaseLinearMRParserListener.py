@@ -238,7 +238,7 @@ class BaseLinearMRParserListener():
     nefT = None
 
     # Pairwise align
-    __pA = None
+    pA = None
 
     # reasons for re-parsing request from the previous trial
     reasons = None
@@ -252,6 +252,13 @@ class BaseLinearMRParserListener():
     # CIF reader
     cR = None
     hasCoord = False
+
+    # experimental method
+    exptlMethod = ''
+    # whether solid-state NMR is applied to symmetric samples such as fibrils
+    symmetric = 'no'
+    # auth_asym_id of fibril like polymer (exptl methods should contain SOLID-STATE NMR, ELECTRON MICROSCOPY)
+    fibril_chain_ids = []
 
     # data item name for model ID in 'atom_site' category
     modelNumName = None
@@ -366,12 +373,16 @@ class BaseLinearMRParserListener():
     # current Insight II restraint declaration (BIOSYM specific)
     cur_ins_decl = None
 
-    # current target values (ARIA/BIOSYM/ISD specific)
+    # current boudary values (ARIA/BIOSYM/ISD specific)
     cur_lower_limit = None
     cur_upper_limit = None
 
     # current weight value (ARIA specific)
     cur_weight = 1.0
+
+    # current target values (ARIA/XML specific)
+    cur_target_value = None
+    cur_target_value_uncertainty = None
 
     # collection of Insight II's atom selection (BIOSYM specific)
     insAtomSelection = []
@@ -451,6 +462,25 @@ class BaseLinearMRParserListener():
             self.__splitLigand = ret['split_ligand']
             self.__entityAssembly = ret['entity_assembly']
 
+            exptl = cR.getDictList('exptl')
+            if len(exptl) > 0:
+                for item in exptl:
+                    if 'method' in item:
+                        if 'NMR' in item['method']:
+                            self.exptlMethod = item['method']
+                            break
+                if self.exptlMethod == 'SOLID-STATE NMR' and len(self.polySeq) >= 8:
+                    fibril_chain_ids = []
+                    for item in exptl:
+                        if 'method' in item:
+                            if item['method'] == 'ELECTRON MICROSCOPY':
+                                for ps in self.polySeq:
+                                    if 'identical_chain_id' in ps:
+                                        fibril_chain_ids.append(ps['auth_chain_id'])
+                                        fibril_chain_ids.extend(ps['identical_chain_id'])
+                    if len(fibril_chain_ids) > 0:
+                        self.fibril_chain_ids = list(set(fibril_chain_ids))
+
         self.offsetHolder = {}
 
         self.hasPolySeq = self.polySeq is not None and len(self.polySeq) > 0
@@ -501,8 +531,8 @@ class BaseLinearMRParserListener():
 
         # Pairwise align
         if self.hasPolySeq:
-            self.__pA = PairwiseAlign()
-            self.__pA.setVerbose(verbose)
+            self.pA = PairwiseAlign()
+            self.pA.setVerbose(verbose)
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
             self.polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
@@ -635,9 +665,9 @@ class BaseLinearMRParserListener():
                 sortPolySeqRst(self.__polySeqRst,
                                None if self.reasons is None else self.reasons.get('non_poly_remap'))
 
-                self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.polySeq, self.__polySeqRst,
+                self.__seqAlign, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRst,
                                                           resolvedMultimer=self.reasons is not None)
-                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeq, self.__polySeqRst, self.__seqAlign)
+                self.__chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.__polySeqRst, self.__seqAlign)
 
                 if len(message) > 0:
                     self.f.extend(message)
@@ -661,9 +691,9 @@ class BaseLinearMRParserListener():
                                 if ps['chain_id'] in chain_mapping:
                                     ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.polySeq, self.__polySeqRst,
+                            self.__seqAlign, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRst,
                                                                       resolvedMultimer=self.reasons is not None)
-                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeq, self.__polySeqRst, self.__seqAlign)
+                            self.__chainAssign, _ = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.__polySeqRst, self.__seqAlign)
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
@@ -751,7 +781,7 @@ class BaseLinearMRParserListener():
                                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
                         if any(ps for ps in self.polySeq if 'identical_chain_id' in ps):
-                            polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
+                            polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
 
                             if polySeqRst is not None and (not self.__hasNonPoly or len(self.polySeq) // len(self.__nonPoly) in (1, 2)):
                                 self.__polySeqRst = polySeqRst
@@ -760,7 +790,7 @@ class BaseLinearMRParserListener():
 
                         if len(self.polySeq) == 1 and len(self.__polySeqRst) == 1:
                             polySeqRst, chainIdMapping, modelChainIdExt =\
-                                splitPolySeqRstForExactNoes(self.__pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
+                                splitPolySeqRstForExactNoes(self.pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
@@ -787,7 +817,7 @@ class BaseLinearMRParserListener():
                                                     self.reasonsForReParsing['non_poly_remap'][k][k2] = v2
 
                         if self.__hasBranched:
-                            polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.polySeq, self.branched, self.__polySeqRst,
+                            polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.pA, self.polySeq, self.branched, self.__polySeqRst,
                                                                                      self.__chainAssign)
 
                             if polySeqRst is not None:
@@ -801,7 +831,7 @@ class BaseLinearMRParserListener():
                             if not any(f for f in self.f if '[Sequence mismatch]' in f):  # 2n6y
                                 syncCompIdOfPolySeqRst(self.__polySeqRstFailed, self.__compIdMap)  # 2mx9
 
-                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, self.__polySeqRstFailed)
+                            seqAlignFailed, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRstFailed)
 
                             for sa in seqAlignFailed:
                                 if sa['conflict'] == 0:
@@ -816,7 +846,7 @@ class BaseLinearMRParserListener():
                                             _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
                                             updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                             sortPolySeqRst(_polySeqRstFailed)
-                                            _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
+                                            _seqAlignFailed, _ = alignPolymerSequence(self.pA, self.polySeq, _polySeqRstFailed)
                                             _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
                                             if _sa is None or _sa['conflict'] > 0:
                                                 continue
@@ -827,8 +857,8 @@ class BaseLinearMRParserListener():
                                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
                                             sortPolySeqRst(self.__polySeqRstFailed)
 
-                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, self.__polySeqRstFailed)
-                            chainAssignFailed, _ = assignPolymerSequence(self.__pA, self.ccU, self.file_type,
+                            seqAlignFailed, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRstFailed)
+                            chainAssignFailed, _ = assignPolymerSequence(self.pA, self.ccU, self.file_type,
                                                                          self.polySeq, self.__polySeqRstFailed, seqAlignFailed)
 
                             if chainAssignFailed is not None:

@@ -64,6 +64,9 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
+atom_sele_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)([A-Z][0-9A-Z]*)')
+
+
 # This class defines a complete listener for a parse tree produced by IsdMRParser.
 class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
@@ -82,8 +85,6 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.file_type = 'nm-res-isd'
         self.software_name = 'ISD'
-
-        self.atom_sele_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)([A-Z][0-9A-Z]*)')
 
     # Enter a parse tree produced by IsdMRParser#biosym_mr.
     def enterIsd_mr(self, ctx: IsdMRParser.Isd_mrContext):  # pylint: disable=unused-argument
@@ -244,7 +245,7 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            g = self.atom_sele_pat.search(atomSelection.upper()).groups()
+            g = atom_sele_pat.search(atomSelection.upper()).groups()
 
             return int(g[1]), g[0], g[2]
 

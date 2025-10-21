@@ -64,6 +64,9 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
+atom_sele_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)\.([A-Z][0-9A-Z]*)')
+
+
 # This class defines a complete listener for a parse tree produced by SybylMRParser.
 class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
@@ -82,8 +85,6 @@ class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.file_type = 'nm-res-syb'
         self.software_name = 'SYBYL'
-
-        self.atom_sele_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)\.([A-Z][0-9A-Z]*)')
 
     # Enter a parse tree produced by SybylMRParser#biosym_mr.
     def enterSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
@@ -251,7 +252,7 @@ class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            g = self.atom_sele_pat.search(atomSelection.upper()).groups()
+            g = atom_sele_pat.search(atomSelection.upper()).groups()
 
             return int(g[1]), g[0], g[2]
 

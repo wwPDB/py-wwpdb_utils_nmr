@@ -366,9 +366,12 @@ class BaseLinearMRParserListener():
     # current Insight II restraint declaration (BIOSYM specific)
     cur_ins_decl = None
 
-    # current target values (BIOSYM/ISD specific)
+    # current target values (ARIA/BIOSYM/ISD specific)
     cur_lower_limit = None
     cur_upper_limit = None
+
+    # current weight value (ARIA specific)
+    cur_weight = 1.0
 
     # collection of Insight II's atom selection (BIOSYM specific)
     insAtomSelection = []

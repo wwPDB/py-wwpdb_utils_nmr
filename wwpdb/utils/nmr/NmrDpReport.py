@@ -109,8 +109,8 @@
 # 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for Bare PDB file acting as AMBER/CHARMM/GROMACS topology definition (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add 'nm-res-arx' file type for ARIA NOE restraint (XML) file (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file (DAOTHER-7829, 9785, NMR data remediation)
-# 03-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints as 'nm-res-cye' (DAOTHER-7829, 9785, NMR data remediation)
 # 20-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in ROSETTA restraints (DAOTHER-7829, 9785, NMR data remediation)
+# 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints (DAOTHER-7829, 9785, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1865,9 +1865,9 @@ class NmrDpReportInputSource:
                            'nef', 'nmr-star',
                            'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb', 'nm-aux-xea',
                            'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar', 'nm-res-bio',
-                           'nm-res-cha', 'nm-res-cns', 'nm-res-cya', 'nm-res-cye', 'nm-res-dyn',
-                           'nm-res-gro', 'nm-res-isd', 'nm-res-mr', 'nm-res-noa', 'nm-res-oth',
-                           'nm-res-ros', 'nm-res-sax', 'nm-res-sch', 'nm-res-syb', 'nm-res-xpl',
+                           'nm-res-cha', 'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
+                           'nm-res-isd', 'nm-res-mr', 'nm-res-noa', 'nm-res-oth', 'nm-res-ros',
+                           'nm-res-sax', 'nm-res-sch', 'nm-res-syb', 'nm-res-xpl',
                            'nm-pea-any', 'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
                            'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top',
                            'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',

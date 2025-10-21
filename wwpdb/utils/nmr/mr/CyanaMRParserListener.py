@@ -1,6 +1,6 @@
 ##
 # File: CyanaMRParserListener.py
-# Date: 27-Jan-2022
+# Date: 03-Oct-2025
 #
 # Updates:
 """ ParserLister class for CYANA MR files.
@@ -261,7 +261,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
-    def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
+    def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
 
         if self.cur_subtype in ('dist', 'noepk') and (self.cur_dist_type == 'cco' or len(self.numberSelection) == 6):
             if self.cur_subtype == 'dist':
@@ -282,11 +282,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     self.noepkRestraints -= 1
                 return
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
             atomId1 = self.genAtomNameSelection[0].upper()
-            seqId2 = int(str(ctx.Integer(1)))
-            compId2 = str(ctx.Simple_name(1)).upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            compId2 = self.genSimpleNameSelection[1].upper()
             atomId2 = self.genAtomNameSelection[1].upper()
 
             if len(compId1) == 1 and len(compId2) == 1 and compId1.isalpha() and compId2.isalpha():
@@ -295,14 +295,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     one_letter_na = False
                     if self.hasPolySeq\
                        and (compId1 in ('A', 'C', 'G', 'I', 'T', 'U') or compId2 in ('A', 'C', 'G', 'I', 'T', 'U')):
-                        chainAssign1, _ = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0], False)
+                        chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0], False)
                         for cifChainId, cifSeqId, cifCompId, isPolySeq in chainAssign1:
                             if isPolySeq:
                                 seqKey = (cifChainId, cifSeqId, cifCompId)
                                 if seqKey in self.authToEntityType and 'ribonucleotide' in self.authToEntityType[seqKey]:
                                     one_letter_na = True
                                     break
-                        chainAssign2, _ = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0], False)
+                        chainAssign2, _ = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0], False)
                         for cifChainId, cifSeqId, cifCompId, isPolySeq in chainAssign2:
                             if isPolySeq:
                                 seqKey = (cifChainId, cifSeqId, cifCompId)
@@ -331,8 +331,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 self.retrieveLocalSeqScheme()
 
-                chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
                 if len(chainAssign1) > 0 and len(chainAssign2) > 0:
 
@@ -523,8 +523,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 self.retrieveLocalSeqScheme()
 
-                chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
-                chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
@@ -804,8 +804,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 self.retrieveLocalSeqScheme()
 
-                chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
@@ -917,7 +917,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                      asis1=asis1, asis2=asis1, asis3=asis2, asis4=asis2)
                         sf['loop'].add_data(row)
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.cur_subtype == 'dist':
                 self.distRestraints -= 1
             elif self.cur_subtype == 'jcoup':
@@ -927,6 +927,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
             self.genAtomNameSelection.clear()
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
@@ -1567,7 +1569,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            _compId = str(ctx.Simple_name(0)).upper()
+            _compId = self.genSimpleNameSelection[0].upper()
             compId = translateToStdResName(_compId, ccU=self.ccU)
             if _compId != compId:
                 _types = self.csStat.getTypeOfCompId(_compId)
@@ -1575,15 +1577,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     compId = _compId
 
             if self.cur_subtype_altered:  # invoked from exitCco_restraint()
-                try:
-                    seqId = int(str(ctx.Integer()))
-                except ValueError:
-                    seqId = int(str(ctx.Integer(0)))
-                chainId = str(ctx.Simple_name(1)).upper()
-                angleName = str(ctx.Simple_name(2)).upper()
+                seqId, _ = self.genResNumSelection[0]
+                chainId = self.genSimpleNameSelection[1]
+                angleName = self.genSimpleNameSelection[2].upper()
             else:
-                seqId = int(str(ctx.Integer(0)))
-                angleName = str(ctx.Simple_name(1)).upper()
+                seqId, chainId = self.genResNumSelection[0]
+                angleName = self.genSimpleNameSelection[1].upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
@@ -1649,7 +1648,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                  f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}, "
+                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}, "
                                   "of which CYANA residue library should be uploaded.")
                     return
 
@@ -1738,7 +1737,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}, "
+                                      f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}, "
                                       "of which CYANA residue library should be uploaded.")
                         return
 
@@ -1856,7 +1855,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "Please update the sequence in the Macromolecules page.")
                                 elif _compId in monDict3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}.")
+                                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
@@ -1994,7 +1993,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {_compId!r}.")
+                                      f"The angle identifier {self.genSimpleNameSelection[1]!r} did not match with residue {_compId!r}.")
                         return
 
                     for atomId, offset in zip(atomNames, seqOffset):
@@ -2039,7 +2038,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "Please update the sequence in the Macromolecules page.")
                                 elif _compId in monDict3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}.")
+                                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
@@ -2115,11 +2114,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if self.createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                         sf['loop'].data[-1] = resetCombinationId(self.cur_subtype, sf['loop'].data[-1])
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.dihedRestraints -= 1
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
@@ -2144,7 +2145,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         orientation = self.cur_rdc_orientation = int(str(ctx.Integer(0)))
         magnitude = self.numberSelection[0]
         rhombicity = self.numberSelection[1]
-        orientationCenterSeqId = int(str(ctx.Integer(1))) if ctx.Integer(1) else str(ctx.Simple_name())
+        orientationCenterSeqId = int(str(ctx.Integer(1))) if ctx.Integer(1)\
+            else str(ctx.Capital_integer()) if ctx.Capital_integer()\
+            else str(ctx.Integer_capital()) if ctx.Integer_capital()\
+            else str(ctx.Simple_name())
 
         self.rdcParameterDict[orientation] = {'magnitude': magnitude,
                                               'rhombicity': rhombicity,
@@ -2173,12 +2177,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = str(ctx.Simple_name(1)).upper()
-            seqId2 = int(str(ctx.Integer(1)))
-            compId2 = str(ctx.Simple_name(2)).upper()
-            atomId2 = str(ctx.Simple_name(3)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
+            atomId1 = self.genSimpleNameSelection[1].upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            compId2 = self.genSimpleNameSelection[2].upper()
+            atomId2 = self.genSimpleNameSelection[3].upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.rdcRestraints -= 1
@@ -2187,7 +2191,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target = self.numberSelection[0]
             error = abs(self.numberSelection[1])
             weight = self.numberSelection[2]
-            orientation = int(str(ctx.Integer(2)))
+            orientation = int(str(ctx.Integer()))
 
             if weight < 0.0:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -2226,8 +2230,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-            chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -2343,11 +2347,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if self.createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.cur_subtype, sf['loop'].data[-1])
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.rdcRestraints -= 1
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#pcs_restraints.
     def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
@@ -2372,7 +2378,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         orientation = int(str(ctx.Integer(0)))
         magnitude = self.numberSelection[0]
         rhombicity = self.numberSelection[1]
-        orientationCenterSeqId = int(str(ctx.Integer(1))) if ctx.Integer(1) else str(ctx.Simple_name())
+        orientationCenterSeqId = int(str(ctx.Integer(1))) if ctx.Integer(1)\
+            else str(ctx.Capital_integer()) if ctx.Capital_integer()\
+            else str(ctx.Integer_capital()) if ctx.Integer_capital()\
+            else str(ctx.Simple_name())
 
         self.pcsParameterDict[orientation] = {'magnitude': magnitude,
                                               'rhombicity': rhombicity,
@@ -2401,9 +2410,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            seqId = int(str(ctx.Integer(0)))
-            compId = str(ctx.Simple_name(0)).upper()
-            atomId = str(ctx.Simple_name(1)).upper()
+            seqId, chainId = self.genResNumSelection[0]
+            compId = self.genSimpleNameSelection[0].upper()
+            atomId = self.genSimpleNameSelection[1].upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.pcsRestraints -= 1
@@ -2412,11 +2421,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target = self.numberSelection[0]
             error = abs(self.numberSelection[1])
             weight = self.numberSelection[2]
-            orientation = int(str(ctx.Integer(1)))
+            orientation = int(str(ctx.Integer()))
 
             if weight < 0.0:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"The relative weight value of '{weight}' must not be a negative value.")
+                              "The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
@@ -2446,7 +2455,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign, asis = self.assignCoordPolymerSequence(seqId, compId, atomId)
+            chainAssign, asis = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, atomId)
 
             if len(chainAssign) == 0:
                 return
@@ -2474,11 +2483,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                  atom, asis1=asis)
                     sf['loop'].add_data(row)
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.pcsRestraints -= 1
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def enterFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -2503,12 +2514,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraint.
-    def exitFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):
+    def exitFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
 
             int_col = 1
             str_col = 1
@@ -2525,10 +2536,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             asis1 = asis2 = False
 
             for num_col, value in enumerate(self.numberSelection):
-                atomId1 = str(ctx.Simple_name(str_col)).upper()
-                seqId2 = int(str(ctx.Integer(int_col)))
-                compId2 = str(ctx.Simple_name(str_col + 1)).upper()
-                atomId2 = str(ctx.Simple_name(str_col + 2)).upper()
+                atomId1 = self.genSimpleNameSelection[str_col].upper()
+                seqId2, chainId2 = self.genResNumSelection[int_col]
+                compId2 = self.genSimpleNameSelection[str_col + 1].upper()
+                atomId2 = self.genSimpleNameSelection[str_col + 2].upper()
 
                 target_value = None
                 lower_limit = None
@@ -2591,8 +2602,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -2649,8 +2660,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     self.retrieveLocalSeqScheme()
 
-                    chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                    chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+                    chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
                     if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
@@ -2748,7 +2759,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 int_col += 1
                 str_col += 3
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.cur_subtype == 'dist':
                 self.distRestraints -= 1
             else:
@@ -2756,6 +2767,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
     def enterFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -2780,12 +2793,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
-    def exitFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext):
+    def exitFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
 
             int_col = 1
             str_col = 1
@@ -2802,10 +2815,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             asis1 = asis2 = False
 
             for num_col in range(0, len(self.numberSelection), 2):
-                atomId1 = str(ctx.Simple_name(str_col)).upper()
-                seqId2 = int(str(ctx.Integer(int_col)))
-                compId2 = str(ctx.Simple_name(str_col + 1)).upper()
-                atomId2 = str(ctx.Simple_name(str_col + 2)).upper()
+                atomId1 = self.genSimpleNameSelection[str_col].upper()
+                seqId2, chainId2 = self.genResNumSelection[int_col]
+                compId2 = self.genSimpleNameSelection[str_col + 1].upper()
+                atomId2 = self.genSimpleNameSelection[str_col + 2].upper()
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
@@ -2942,8 +2955,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -3003,8 +3016,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     self.retrieveLocalSeqScheme()
 
-                    chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                    chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+                    chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
                     if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
@@ -3102,7 +3115,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 int_col += 1
                 str_col += 3
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.cur_subtype == 'dist':
                 self.distRestraints -= 1
             else:
@@ -3110,6 +3123,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
     def enterFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -3134,12 +3149,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
-    def exitFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext):
+    def exitFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
 
             int_col = 1
             str_col = 1
@@ -3156,10 +3171,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             asis1 = asis2 = False
 
             for num_col in range(0, len(self.numberSelection), 3):
-                atomId1 = str(ctx.Simple_name(str_col)).upper()
-                seqId2 = int(str(ctx.Integer(int_col)))
-                compId2 = str(ctx.Simple_name(str_col + 1)).upper()
-                atomId2 = str(ctx.Simple_name(str_col + 2)).upper()
+                atomId1 = self.genSimpleNameSelection[str_col].upper()
+                seqId2, chainId2 = self.genResNumSelection[int_col]
+                compId2 = self.genSimpleNameSelection[str_col + 1].upper()
+                atomId2 = self.genSimpleNameSelection[str_col + 2].upper()
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
@@ -3205,8 +3220,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -3264,8 +3279,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     self.retrieveLocalSeqScheme()
 
-                    chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                    chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+                    chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
                     if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
@@ -3363,7 +3378,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 int_col += 1
                 str_col += 3
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.cur_subtype == 'dist':
                 self.distRestraints -= 1
             else:
@@ -3371,6 +3386,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
     def enterFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -3395,13 +3412,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
-    def exitFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):
+    def exitFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = str(ctx.Simple_name(1)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
+            atomId1 = self.genSimpleNameSelection[1].upper()
 
             int_col = 1
             str_col = 2
@@ -3418,9 +3435,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             asis1 = asis2 = False
 
             for num_col, value in enumerate(self.numberSelection):
-                seqId2 = int(str(ctx.Integer(int_col)))
-                compId2 = str(ctx.Simple_name(str_col)).upper()
-                atomId2 = str(ctx.Simple_name(str_col + 1)).upper()
+                seqId2, chainId2 = self.genResNumSelection[int_col]
+                compId2 = self.genSimpleNameSelection[str_col].upper()
+                atomId2 = self.genSimpleNameSelection[str_col + 1].upper()
 
                 target_value = None
                 lower_limit = None
@@ -3483,8 +3500,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -3541,8 +3558,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     self.retrieveLocalSeqScheme()
 
-                    chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                    chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+                    chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
                     if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
@@ -3640,7 +3657,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 int_col += 1
                 str_col += 2
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.cur_subtype == 'dist':
                 self.distRestraints -= 1
             else:
@@ -3648,6 +3665,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
     def enterFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -3672,13 +3691,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
-    def exitFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext):
+    def exitFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = str(ctx.Simple_name(1)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
+            atomId1 = self.genSimpleNameSelection[1].upper()
 
             int_col = 1
             str_col = 2
@@ -3695,9 +3714,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             asis1 = asis2 = False
 
             for num_col in range(0, len(self.numberSelection), 2):
-                seqId2 = int(str(ctx.Integer(int_col)))
-                compId2 = str(ctx.Simple_name(str_col)).upper()
-                atomId2 = str(ctx.Simple_name(str_col + 1)).upper()
+                seqId2, chainId2 = self.genResNumSelection[int_col]
+                compId2 = self.genSimpleNameSelection[str_col].upper()
+                atomId2 = self.genSimpleNameSelection[str_col + 1].upper()
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
@@ -3834,8 +3853,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -3895,8 +3914,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     self.retrieveLocalSeqScheme()
 
-                    chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                    chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+                    chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
                     if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
@@ -3994,7 +4013,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 int_col += 1
                 str_col += 2
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.cur_subtype == 'dist':
                 self.distRestraints -= 1
             else:
@@ -4002,6 +4021,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
     def enterFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -4026,13 +4047,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
-    def exitFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext):
+    def exitFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = str(ctx.Simple_name(1)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
+            atomId1 = self.genSimpleNameSelection[1].upper()
 
             int_col = 1
             str_col = 2
@@ -4049,9 +4070,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             asis1 = asis2 = False
 
             for num_col in range(0, len(self.numberSelection), 3):
-                seqId2 = int(str(ctx.Integer(int_col)))
-                compId2 = str(ctx.Simple_name(str_col)).upper()
-                atomId2 = str(ctx.Simple_name(str_col + 1)).upper()
+                seqId2, chainId2 = self.genResNumSelection[int_col]
+                compId2 = self.genSimpleNameSelection[str_col].upper()
+                atomId2 = self.genSimpleNameSelection[str_col + 1].upper()
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
@@ -4097,8 +4118,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -4156,8 +4177,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     self.retrieveLocalSeqScheme()
 
-                    chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-                    chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                    chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+                    chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
                     if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
@@ -4255,7 +4276,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 int_col += 1
                 str_col += 2
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.cur_subtype == 'dist':
                 self.distRestraints -= 1
             else:
@@ -4263,6 +4284,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
     def enterQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -4279,18 +4302,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#qconvr_distance_restraint.
-    def exitQconvr_distance_restraint(self, ctx: CyanaMRParser.Qconvr_distance_restraintContext):
+    def exitQconvr_distance_restraint(self, ctx: CyanaMRParser.Qconvr_distance_restraintContext):  # pylint: disable=unused-argument
 
         try:
 
             upl = bool(ctx.NoeUpp())
 
-            seqId1 = int(str(ctx.Integer(0)))
-            compId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = str(ctx.Simple_name(1)).upper()
-            seqId2 = int(str(ctx.Integer(1)))
-            compId2 = str(ctx.Simple_name(2)).upper()
-            atomId2 = str(ctx.Simple_name(3)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
+            atomId1 = self.genSimpleNameSelection[1].upper()
+            seqId2, chainId2 = self.genResNumSelection[1]
+            compId2 = self.genSimpleNameSelection[2].upper()
+            atomId2 = self.genSimpleNameSelection[3].upper()
 
             target_value = None
             lower_limit = None
@@ -4319,8 +4342,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
-            chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -4432,11 +4455,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if self.createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
                 sf['loop'].data[-1] = resetMemberId(self.cur_subtype, sf['loop'].data[-1])
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.distRestraints -= 1
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
     def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext):  # pylint: disable=unused-argument
@@ -4480,7 +4505,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             seqId2 = int(str(ctx.Integer(1)))
             jVal = [''] * 6
             for j in range(6):
-                jVal[j] = str(ctx.Simple_name(j)).upper()
+                jVal[j] = self.genSimpleNameSelection[j].upper()
 
             minLenCompId = 2 if self.polyPeptide else (1 if self.polyDeoxyribonucleotide else 0)
             if minLenCompId == 0:
@@ -5324,7 +5349,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                      asis1=asis1, asis2=asis1, asis3=asis2, asis4=asis2)
                         sf['loop'].add_data(row)
 
-        except ValueError:
+        except (ValueError, AttributeError):
             if self.cur_subtype == 'dist':
                 self.distRestraints -= 1
             else:
@@ -5332,6 +5357,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
     def enterDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext):  # pylint: disable=unused-argument
@@ -5409,11 +5435,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            chainId = str(ctx.Simple_name(0))
+            chainId = self.genSimpleNameSelection[0]
             seqId = int(str(ctx.Integer(0)))
-            compId = str(ctx.Simple_name(1)).upper()
+            compId = self.genSimpleNameSelection[1].upper()
             _compId = translateToStdResName(compId, ccU=self.ccU)
-            angleName = str(ctx.Simple_name(2)).upper()
+            angleName = self.genSimpleNameSelection[2].upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
@@ -5479,7 +5505,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                  f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}, "
+                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}, "
                                   "of which CYANA residue library should be uploaded.")
                     return
 
@@ -5565,7 +5591,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}, "
+                                      f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}, "
                                       "of which CYANA residue library should be uploaded.")
                         return
 
@@ -5683,7 +5709,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "Please update the sequence in the Macromolecules page.")
                                 elif _compId in monDict3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}.")
+                                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
@@ -5821,7 +5847,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {str(ctx.Simple_name(2))!r} did not match with residue {_compId!r}.")
+                                      f"The angle identifier {self.genSimpleNameSelection[2]!r} did not match with residue {_compId!r}.")
                         return
 
                     for atomId, offset in zip(atomNames, seqOffset):
@@ -5866,7 +5892,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "Please update the sequence in the Macromolecules page.")
                                 elif _compId in monDict3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}.")
+                                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
@@ -5942,11 +5968,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if self.createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                         sf['loop'].data[-1] = resetCombinationId(self.cur_subtype, sf['loop'].data[-1])
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.dihedRestraints -= 1
 
         finally:
             self.numberSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#cco_restraints.
     def enterCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument
@@ -5969,10 +5996,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            seqId1 = int(str(ctx.Integer()))
-            compId1 = str(ctx.Simple_name(0)).upper()
-            atomId1 = str(ctx.Simple_name(1)).upper()
-            atomId2 = str(ctx.Simple_name(2)).upper()
+            seqId1, chainId1 = self.genResNumSelection[0]
+            compId1 = self.genSimpleNameSelection[0].upper()
+            atomId1 = self.genSimpleNameSelection[1].upper()
+            atomId2 = self.genSimpleNameSelection[2].upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.jcoupRestraints -= 1
@@ -6019,8 +6046,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-            chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId1, compId1, atomId2)
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -6134,11 +6161,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                  atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis1, asis3=asis2, asis4=asis2)
                     sf['loop'].add_data(row)
 
-        except ValueError:
+        except (ValueError, AttributeError):
             self.jcoupRestraints -= 1
 
         finally:
             self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#ssbond_macro.
     def enterSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):  # pylint: disable=unused-argument
@@ -6386,24 +6415,24 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#link_statement.
-    def exitLink_statement(self, ctx: CyanaMRParser.Link_statementContext):
+    def exitLink_statement(self, ctx: CyanaMRParser.Link_statementContext):  # pylint: disable=unused-argument
 
         try:
 
             self.geoRestraints += 1
 
-            seqId1 = int(str(ctx.Integer(0)))
-            seqId2 = int(str(ctx.Integer(1)))
-            atomId1 = str(ctx.Simple_name(0))
-            atomId2 = str(ctx.Simple_name(1))
+            seqId1, chainId1 = self.genResNumSelection[0]
+            seqId2, chainId2 = self.genResNumSelection[1]
+            atomId1 = self.genSimpleNameSelection[0]
+            atomId2 = self.genSimpleNameSelection[1]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -6547,6 +6576,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.atomSelectionSet.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#stereoassign_macro.
     def enterStereoassign_macro(self, ctx: CyanaMRParser.Stereoassign_macroContext):  # pylint: disable=unused-argument
@@ -6806,10 +6837,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         pass
 
     # Enter a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
-    def enterUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):
-        self.cur_resname_for_mapping = str(ctx.Simple_name()).upper()
+    def enterUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        if len(self.genSimpleNameSelection) == 0:
+            return
+
+        self.cur_resname_for_mapping = self.genSimpleNameSelection[0].upper()
 
         self.cur_comment_inlined = True
+
+        self.genSimpleNameSelection.clear()
 
     # Exit a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
     def exitUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):  # pylint: disable=unused-argument
@@ -6837,10 +6873,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.unambigAtomNameMapping[self.cur_resname_for_mapping][atomName] = list(iupacName)
 
     # Enter a parse tree produced by CyanaMRParser#ambig_atom_name_mapping.
-    def enterAmbig_atom_name_mapping(self, ctx: CyanaMRParser.Ambig_atom_name_mappingContext):
-        self.cur_resname_for_mapping = str(ctx.Simple_name()).upper()
+    def enterAmbig_atom_name_mapping(self, ctx: CyanaMRParser.Ambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        if len(self.genSimpleNameSelection) == 0:
+            return
+
+        self.cur_resname_for_mapping = self.genSimpleNameSelection[0].upper()
 
         self.cur_comment_inlined = True
+
+        self.genSimpleNameSelection.clear()
 
     # Exit a parse tree produced by CyanaMRParser#ambig_atom_name_mapping.
     def exitAmbig_atom_name_mapping(self, ctx: CyanaMRParser.Ambig_atom_name_mappingContext):  # pylint: disable=unused-argument
@@ -6896,6 +6937,42 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         else:
             self.numberSelection.append(None)
 
+    # Enter a parse tree produced by CyanaMRParser#gen_res_num.
+    def enterGen_res_num(self, ctx: CyanaMRParser.Gen_res_numContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#gen_res_num.
+    def exitGen_res_num(self, ctx: CyanaMRParser.Gen_res_numContext):
+        if ctx.Integer():
+            self.genResNumSelection.append((int(str(ctx.Integer())), None))
+
+        elif ctx.Capital_integer():
+            self.genResNumSelection.append((int(str(ctx.Capital_integer())[1:]), str(ctx.Capital_integer())[0]))
+
+        elif ctx.Integer_capital():
+            self.genResNumSelection.append((int(str(ctx.Integer_capital())[:-1]), str(ctx.Integer_capital())[-1]))
+
+        else:
+            self.genResNumSelection.append((None, None))
+
+    # Enter a parse tree produced by CyanaMRParser#gen_simple_name.
+    def enterGen_simple_name(self, ctx: CyanaMRParser.Gen_simple_nameContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by CyanaMRParser#gen_simple_name.
+    def exitGen_simple_name(self, ctx: CyanaMRParser.Gen_simple_nameContext):
+        if ctx.Simple_name():
+            self.genSimpleNameSelection.append(str(ctx.Simple_name()))
+
+        elif ctx.Capital_integer():
+            self.genSimpleNameSelection.append(str(ctx.Capital_integer()))
+
+        elif ctx.Integer_capital():
+            self.genSimpleNameSelection.append(str(ctx.Integer_capital()))
+
+        else:
+            self.genSimpleNameSelection.append(None)
+
     # Enter a parse tree produced by CyanaMRParser#gen_atom_name.
     def enterGen_atom_name(self, ctx: CyanaMRParser.Gen_atom_nameContext):  # pylint: disable=unused-argument
         pass
@@ -6904,6 +6981,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
     def exitGen_atom_name(self, ctx: CyanaMRParser.Gen_atom_nameContext):
         if ctx.Simple_name():
             self.genAtomNameSelection.append(str(ctx.Simple_name()))
+
+        elif ctx.Capital_integer():
+            self.genAtomNameSelection.append(str(ctx.Capital_integer()))
+
+        elif ctx.Integer_capital():
+            self.genAtomNameSelection.append(str(ctx.Integer_capital()))
 
         elif ctx.Ambig_code():
             self.genAtomNameSelection.append(str(ctx.Ambig_code()))

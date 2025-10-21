@@ -234,6 +234,32 @@ if __name__ == "__main__":
     reader = CyanaMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/1znu/1znu-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/1znu/1znu.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1znu/1znu-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/1znu/1znu.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2nao/2nao-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2nao/2nao.cif')
+
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mjg/2mjg-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2mjg/2mjg.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mjg/2mjg-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2mjg/2mjg.cif')
+
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2mh0/2mh0-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2mh0/2mh0.cif')
     print(reader_listener.getReasonsForReparsing())

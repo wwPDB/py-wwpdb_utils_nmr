@@ -630,7 +630,7 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
         return 'CHARMM restraint'
     if fileType == 'nm-res-cns':
         return 'CNS/XPLOR-NIH restraint' if ambig else 'CNS restraint'
-    if fileType in ('nm-res-cya', 'nm-res-cye'):
+    if fileType == 'nm-res-cya':
         return 'CYANA restraint'
     if fileType == 'nm-res-dyn':
         return 'DYNAMO/PALES/TALOS restraint'

@@ -2020,6 +2020,9 @@ class BaseLinearMRParserListener():
         """ Assign polymer sequences of the coordinates.
         """
 
+        if refChainId is None:
+            return self.assignCoordPolymerSequence(seqId, compId, atomId, enableWarning)
+
         _refChainId = refChainId
 
         chainAssign = set()
@@ -2778,7 +2781,7 @@ class BaseLinearMRParserListener():
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                     if fixedSeqId is None and 'seq_id_remap' in self.reasons:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], chainId, seqId)
+                        _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], None, seqId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id'] or fixedCompId is not None:
@@ -2845,7 +2848,7 @@ class BaseLinearMRParserListener():
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                         if fixedSeqId is None and 'seq_id_remap' in self.reasons:
-                            _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], chainId, seqId)
+                            _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], None, seqId)
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
@@ -2997,7 +3000,7 @@ class BaseLinearMRParserListener():
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                     if fixedSeqId is None and 'seq_id_remap' in self.reasons:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], chainId, seqId)
+                        _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], None, seqId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id'] or fixedCompId is not None:
@@ -3066,7 +3069,7 @@ class BaseLinearMRParserListener():
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                         if fixedSeqId is None and 'seq_id_remap' in self.reasons:
-                            _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], chainId, seqId)
+                            _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], None, seqId)
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
@@ -3361,7 +3364,7 @@ class BaseLinearMRParserListener():
                         if fixedSeqId is not None:
                             refChainId = fixedChainId
                     if fixedSeqId is None and 'seq_id_remap' in self.reasons:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], refChainId, seqId)
+                        _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], _refChainId, seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 

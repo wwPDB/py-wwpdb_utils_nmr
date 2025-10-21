@@ -322,7 +322,6 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-cha`|`nm-res-cha`|`nmr-restraints` / `charmm`|Restraint file in CHARMM format
 `nm-res-cns`|`nm-res-cns`|`nmr-restraints` / `cns`|Restraint file in CNS format
 `nm-res-cya`|`nm-res-cya`|`nmr-restraints` / `cyana`|Restraint file in CYANA format
-`nm-res-cye`|**internal use**|`nmr-restraints` / `cyana`|Restraint file in CYANA format (extended to allow concatenated notation of chain code and sequence code)
 `nm-res-dyn`|`nm-res-dyn`|`nmr-restraints` / `dynamo`|Restraint file in DYNAMO/PALES/TALOS format
 `nm-aux-gro`|`nm-aux-gro`|`nmr-restraints` / `any`|Topology file in GROMACS format
 `nm-res-gro`|`nm-res-gro`|`nmr-restraints` / `gromacs`|Restraint file in GROMACS format

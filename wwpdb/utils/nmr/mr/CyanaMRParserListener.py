@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import re
@@ -6829,6 +6829,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             iupacName.add(str(ctx.Simple_name_MP(i)).upper())
             i += 1
 
+        if self.cur_resname_for_mapping in emptyValue:
+            return
+
         if self.cur_resname_for_mapping not in self.unambigAtomNameMapping:
             self.unambigAtomNameMapping[self.cur_resname_for_mapping] = {}
         self.unambigAtomNameMapping[self.cur_resname_for_mapping][atomName] = list(iupacName)
@@ -6867,6 +6870,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 'seq_id': int(str(ctx.Integer_MP(j)))})
                 i += 1
                 j += 1
+
+            if self.cur_resname_for_mapping in emptyValue:
+                return
 
             if self.cur_resname_for_mapping not in self.ambigAtomNameMapping:
                 self.ambigAtomNameMapping[self.cur_resname_for_mapping] = {}

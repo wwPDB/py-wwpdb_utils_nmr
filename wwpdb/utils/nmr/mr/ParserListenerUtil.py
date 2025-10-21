@@ -3903,7 +3903,7 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
     """ Translate software specific residue name to standard residue name of CCD.
     """
 
-    if compId is None:
+    if compId in emptyValue:
         return None
 
     lenCompId = len(compId)
@@ -4068,7 +4068,7 @@ def backTranslateFromStdResName(compId: str) -> Set[str]:
     """ Back translate standard residue name to software specific name.
     """
 
-    if compId is None:
+    if compId in emptyValue:
         return set()
 
     if compId == 'DA':

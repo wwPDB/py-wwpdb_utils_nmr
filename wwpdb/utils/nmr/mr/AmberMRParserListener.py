@@ -11019,6 +11019,9 @@ class AmberMRParserListener(ParseTreeListener):
             iupacName.add(str(ctx.Simple_name_MP(i)).upper())
             i += 1
 
+        if self.__cur_resname_for_mapping in emptyValue:
+            return
+
         if self.__cur_resname_for_mapping not in self.unambigAtomNameMapping:
             self.unambigAtomNameMapping[self.__cur_resname_for_mapping] = {}
         self.unambigAtomNameMapping[self.__cur_resname_for_mapping][atomName] = list(iupacName)
@@ -11053,6 +11056,9 @@ class AmberMRParserListener(ParseTreeListener):
                                 'seq_id': int(str(ctx.Integer_MP(j)))})
                 i += 1
                 j += 1
+
+            if self.__cur_resname_for_mapping in emptyValue:
+                return
 
             if self.__cur_resname_for_mapping not in self.ambigAtomNameMapping:
                 self.ambigAtomNameMapping[self.__cur_resname_for_mapping] = {}

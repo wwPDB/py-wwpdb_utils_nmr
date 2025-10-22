@@ -184,7 +184,7 @@ class BiosymMRReader:
             listener.debug = self.__debug
             listener.createSfDict = createSfDict
             if createSfDict:
-                listener.originaFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
+                listener.originalFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                 if listIdCounter is not None:
                     listener.listIdCounter = listIdCounter
                 if entryId is not None:

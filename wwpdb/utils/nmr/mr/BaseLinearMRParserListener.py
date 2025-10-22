@@ -639,7 +639,7 @@ class BaseLinearMRParserListener():
         return self.__originalFileName
 
     @originalFileName.setter
-    def originaFileName(self, originalFileName: str):
+    def originalFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
     @property

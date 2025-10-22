@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import re
@@ -873,12 +873,13 @@ class BasePKParserListener():
     file_type = None
     software_name = None
 
-    debug = False
-    ass_expr_debug = False
-    internal = False
-    ignore_diagonal = True
+    __debug = False
+    __verbose_debug = False
+    __internal = False
+    __ignore_diagonal = True
 
-    createSfDict__ = False
+    __createSfDict = False
+    __enforcePeakRowFormat = False
 
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
@@ -922,8 +923,8 @@ class BasePKParserListener():
     __coordUnobsAtom = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
-    authToStarSeq = None
-    authToOrigSeq = None
+    __authToStarSeq = None
+    __authToOrigSeq = None
     __modResidue = None
     __splitLigand = None
 
@@ -938,7 +939,7 @@ class BasePKParserListener():
 
     __uniqAtomIdToSeqKey = None
 
-    offsetHolder = None
+    __offsetHolder = None
     __shiftNonPosSeq = None
     __defaultSegId = None
     __defaultSegId__ = None
@@ -975,7 +976,6 @@ class BasePKParserListener():
     cur_list_id = -1
     cur_spectral_dim = {}
     use_peak_row_format = True
-    enforce_peak_row_format = False
     null_value = None
     null_string = None
 
@@ -1033,7 +1033,7 @@ class BasePKParserListener():
     listIdInternal = {}
 
     # entry ID
-    entryId = '.'
+    __entryId = '.'
 
     # dictionary of pynmrstar saveframes
     sfDict = {}
@@ -1081,8 +1081,8 @@ class BasePKParserListener():
             self.__coordUnobsAtom = ret['coord_unobs_atom'] if 'coord_unobs_atom' in ret else {}
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
-            self.authToStarSeq = ret['auth_to_star_seq']
-            self.authToOrigSeq = ret['auth_to_orig_seq']
+            self.__authToStarSeq = ret['auth_to_star_seq']
+            self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__modResidue = ret['mod_residue']
             self.__splitLigand = ret['split_ligand']
             self.__entityAssembly = ret['entity_assembly']
@@ -1094,7 +1094,7 @@ class BasePKParserListener():
                         if 'NMR' in item['method']:
                             self.exptlMethod = item['method']
 
-        self.offsetHolder = {}
+        self.__offsetHolder = {}
 
         self.hasPolySeq = self.polySeq is not None and len(self.polySeq) > 0
         self.hasNonPoly = self.nonPoly is not None and len(self.nonPoly) > 0
@@ -1190,31 +1190,84 @@ class BasePKParserListener():
 
         self.__cachedDictForStarAtom = {}
 
-    def setDebugMode(self, debug: bool):
-        self.debug = debug
+    @property
+    def debug(self):
+        return self.__debug
 
-    def enforsePeakRowFormat(self, enforce_peak_row_format: bool):
-        self.enforce_peak_row_format = enforce_peak_row_format
+    @debug.setter
+    def debug(self, debug: bool):
+        self.__debug = debug
 
-    def setInternalMode(self, internal: bool):
-        self.internal = internal
+    @property
+    def verbose_debug(self):
+        return self.__verbose_debug
 
+    @verbose_debug.setter
+    def verbose_debug(self, verbose_debug: bool):
+        self.__verbose_debug = verbose_debug
+
+    @property
+    def internal(self):
+        return self.__internal
+
+    @internal.setter
+    def internal(self, internal: bool):
+        self.__internal = internal
+
+    @property
+    def createSfDict(self):
+        return self.__createSfDict
+
+    @createSfDict.setter
     def createSfDict(self, createSfDict: bool):
-        self.createSfDict__ = createSfDict
+        self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName: str):
+    @property
+    def enforcePeakRowFormat(self):
+        return self.__enforcePeakRowFormat
+
+    @enforcePeakRowFormat.setter
+    def enforcePeakRowFormat(self, enforcePeakRowFormat: bool):
+        self.__enforcePeakRowFormat = enforcePeakRowFormat
+
+    @property
+    def originalFileName(self):
+        return self.__originalFileName
+
+    @originalFileName.setter
+    def originalFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter: dict):
+    @property
+    def listIdCounter(self):
+        return self.__listIdCounter
+
+    @listIdCounter.setter
+    def listIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setReservedListIds(self, reservedListIds: dict):
+    @property
+    def reservedListIds(self):
+        return self.__reservedListIds
+
+    @reservedListIds.setter
+    def reservedListIds(self, reservedListIds: dict):
         self.__reservedListIds = reservedListIds
 
-    def setEntryId(self, entryId: str):
-        self.entryId = entryId
+    @property
+    def entryId(self):
+        return self.__entryId
 
-    def setCsLoops(self, csLoops: List[dict]):
+    @entryId.setter
+    def entryId(self, entryId: str):
+        self.__entryId = entryId
+
+    @property
+    def csLoops(self):
+        return self.__csLoops
+
+    @csLoops.setter
+    def csLoops(self, csLoops: List[dict]):
         self.__csLoops = csLoops
 
         if self.__csLoops is None or len(self.__csLoops) == 0:
@@ -1908,7 +1961,7 @@ class BasePKParserListener():
             for d, v in self.spectral_dim.items():
                 for _id, cur_spectral_dim in v.items():
 
-                    if self.debug:
+                    if self.__debug:
                         print(f'original file name: {self.__originalFileName}{", spectrum name: " + str(spectrum_names[d][_id]) if spectrum_names is not None else ""}')
 
                     file_name = self.__originalFileName.lower()
@@ -2454,7 +2507,7 @@ class BasePKParserListener():
                         if 'freq_hint' in __v:
                             del __v['freq_hint']
 
-                    if self.debug:
+                    if self.__debug:
                         print(f'num_of_dim: {d}, list_id: {_id}')
                         print('spectral_dim')
                         for __d, __v in cur_spectral_dim.items():
@@ -2530,7 +2583,7 @@ class BasePKParserListener():
                                 exp_class = f'{v_1["atom_type"]}_{v_2["atom_type"]}.{primary_dim_transfer}'
                                 break
 
-                    if self.debug:
+                    if self.__debug:
                         print(f'experiment class: {exp_class}')
 
                     if self.software_name == 'PIPP' and any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
@@ -2571,7 +2624,7 @@ class BasePKParserListener():
                                     self.reasonsForReParsing['onebond_resolved'][offset * 2] = hvy_axis - 1
                                     self.reasonsForReParsing['onebond_resolved'][offset * 2 + 1] = pro_axis - 1
 
-                    if self.createSfDict__:
+                    if self.__createSfDict:
                         self.cur_subtype = f'peak{d}d'
                         self.cur_list_id = _id
 
@@ -2594,7 +2647,7 @@ class BasePKParserListener():
                             continue
 
                         for _dim_id, _dict in cur_spectral_dim.items():
-                            aux_lp.add_data(getSpectralDimRow(_dim_id, list_id, self.entryId, _dict))
+                            aux_lp.add_data(getSpectralDimRow(_dim_id, list_id, self.__entryId, _dict))
 
                         sf['saveframe'].add_loop(aux_lp)
 
@@ -2604,7 +2657,7 @@ class BasePKParserListener():
                             continue
 
                         for _dict in cur_spectral_dim_transfer:
-                            aux_lp.add_data(getSpectralDimTransferRow(list_id, self.entryId, _dict))
+                            aux_lp.add_data(getSpectralDimTransferRow(list_id, self.__entryId, _dict))
 
                         sf['saveframe'].add_loop(aux_lp)
 
@@ -4934,7 +4987,7 @@ class BasePKParserListener():
         if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
-        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
+        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.__internal:
             self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
                           "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
@@ -5033,7 +5086,7 @@ class BasePKParserListener():
         if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
-        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
+        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.__internal:
             self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
                           "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
@@ -5151,7 +5204,7 @@ class BasePKParserListener():
         if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
-        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
+        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.__internal:
             self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
                           "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
@@ -5234,7 +5287,7 @@ class BasePKParserListener():
         _diff = None
 
         for atom in self.atomSelectionSet[0]:
-            star_atom = getStarAtom(self.authToStarSeq, self.authToOrigSeq, self.offsetHolder, atom)
+            star_atom = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, atom)
 
             if star_atom is None:
                 continue
@@ -5876,7 +5929,7 @@ class BasePKParserListener():
                            asis1: Optional[bool], asis2: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
 
-        if self.debug:
+        if self.__debug:
             if not has_assignments:
                 print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
                       f"{debug_label}None None {dstFunc}")
@@ -5890,7 +5943,7 @@ class BasePKParserListener():
                           f"{debug_label}{atomSelectionSet[0]} "
                           f"{atomSelectionSet[1]} {dstFunc}")
 
-        if self.createSfDict__:
+        if self.__createSfDict:
             sf = self.getSf()
 
             if sf is not None:
@@ -5948,8 +6001,8 @@ class BasePKParserListener():
                         sf['row_index_id'] += 1
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                       sf['list_id'], self.__entryId, dstFunc,
+                                       self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                        atom1, atom2, asis1=asis1, asis2=asis2,
                                        ambig_code1=ambig_code1, ambig_code2=ambig_code2,
                                        details=details)
@@ -5979,8 +6032,8 @@ class BasePKParserListener():
                         atom1 = atom2 = None
 
                     row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
-                                   sf['list_id'], self.entryId, dstFunc,
-                                   self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                   sf['list_id'], self.__entryId, dstFunc,
+                                   self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                    atom1, atom2, asis1=asis1, asis2=asis2,
                                    ambig_code1=ambig_code1, ambig_code2=ambig_code2,
                                    details=details)
@@ -5992,19 +6045,19 @@ class BasePKParserListener():
 
                 sf['index_id'] += 1
 
-                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
+                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.__entryId, dstFunc)
                 if row is not None:
                     sf['alt_loops'][0].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, 'volume')
                 if row is not None:
                     sf['alt_loops'][1].add_data(row)
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, 'height')
                 if row is not None:
                     sf['alt_loops'][1].add_data(row)
 
                 for idx in range(self.num_of_dim):
-                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
                     history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
@@ -6043,8 +6096,8 @@ class BasePKParserListener():
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atom:
                                         ambig_code = common_atom['ambig_code']
-                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
-                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, set_id, idx + 1,
+                                                            self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                                             common_atom, asis, ambig_code)
                                     if row is None:
                                         continue
@@ -6106,8 +6159,8 @@ class BasePKParserListener():
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atoms[idx]:
                                         ambig_code = common_atoms[idx]['ambig_code']
-                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
-                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, set_id, idx + 1,
+                                                            self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                                             common_atom, asis, ambig_code)
                                     if row is None:
                                         continue
@@ -6119,7 +6172,7 @@ class BasePKParserListener():
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
 
-        if self.debug:
+        if self.__debug:
             if not has_assignments:
                 print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
                       f"{debug_label}None None None {dstFunc}")
@@ -6135,7 +6188,7 @@ class BasePKParserListener():
                           f"{atomSelectionSet[1]} "
                           f"{atomSelectionSet[2]} {dstFunc}")
 
-        if self.createSfDict__:
+        if self.__createSfDict:
             sf = self.getSf()
 
             if sf is not None:
@@ -6203,8 +6256,8 @@ class BasePKParserListener():
                         sf['row_index_id'] += 1
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                       sf['list_id'], self.__entryId, dstFunc,
+                                       self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                        atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
                                        ambig_code1=ambig_code1, ambig_code2=ambig_code2,
                                        ambig_code3=ambig_code3,
@@ -6242,8 +6295,8 @@ class BasePKParserListener():
                         atom1 = atom2 = atom3 = None
 
                     row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
-                                   sf['list_id'], self.entryId, dstFunc,
-                                   self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                   sf['list_id'], self.__entryId, dstFunc,
+                                   self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                    atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
                                    ambig_code1=ambig_code1, ambig_code2=ambig_code2,
                                    ambig_code3=ambig_code3,
@@ -6256,19 +6309,19 @@ class BasePKParserListener():
 
                 sf['index_id'] += 1
 
-                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
+                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.__entryId, dstFunc)
                 if row is not None:
                     sf['alt_loops'][0].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, 'volume')
                 if row is not None:
                     sf['alt_loops'][1].add_data(row)
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, 'height')
                 if row is not None:
                     sf['alt_loops'][1].add_data(row)
 
                 for idx in range(self.num_of_dim):
-                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
                     history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
@@ -6307,8 +6360,8 @@ class BasePKParserListener():
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atom:
                                         ambig_code = common_atom['ambig_code']
-                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
-                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, set_id, idx + 1,
+                                                            self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                                             common_atom, asis, ambig_code)
                                     if row is None:
                                         continue
@@ -6373,8 +6426,8 @@ class BasePKParserListener():
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atoms[idx]:
                                         ambig_code = common_atoms[idx]['ambig_code']
-                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
-                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, set_id, idx + 1,
+                                                            self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                                             common_atom, asis, ambig_code)
                                     if row is None:
                                         continue
@@ -6386,7 +6439,7 @@ class BasePKParserListener():
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool], asis4: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
 
-        if self.debug:
+        if self.__debug:
             if not has_assignments:
                 print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
                       f"{debug_label}None None None None {dstFunc}")
@@ -6404,7 +6457,7 @@ class BasePKParserListener():
                           f"{atomSelectionSet[2]} "
                           f"{atomSelectionSet[3]} {dstFunc}")
 
-        if self.createSfDict__:
+        if self.__createSfDict:
             sf = self.getSf()
 
             if sf is not None:
@@ -6491,8 +6544,8 @@ class BasePKParserListener():
                         sf['row_index_id'] += 1
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                       sf['list_id'], self.__entryId, dstFunc,
+                                       self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                        atom1, atom2, atom3, atom4,
                                        asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4,
                                        ambig_code1=ambig_code1, ambig_code2=ambig_code2,
@@ -6538,8 +6591,8 @@ class BasePKParserListener():
                         atom1 = atom2 = atom3 = atom4 = None
 
                     row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                   sf['list_id'], self.entryId, dstFunc,
-                                   self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                   sf['list_id'], self.__entryId, dstFunc,
+                                   self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                    atom1, atom2, atom3, atom4,
                                    asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4,
                                    ambig_code1=ambig_code1, ambig_code2=ambig_code2,
@@ -6553,19 +6606,19 @@ class BasePKParserListener():
 
                 sf['index_id'] += 1
 
-                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
+                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.__entryId, dstFunc)
                 if row is not None:
                     sf['alt_loops'][0].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, 'volume')
                 if row is not None:
                     sf['alt_loops'][1].add_data(row)
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, 'height')
                 if row is not None:
                     sf['alt_loops'][1].add_data(row)
 
                 for idx in range(self.num_of_dim):
-                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
                     history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
@@ -6609,8 +6662,8 @@ class BasePKParserListener():
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atom:
                                         ambig_code = common_atom['ambig_code']
-                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
-                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, set_id, idx + 1,
+                                                            self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                                             common_atom, asis, ambig_code)
                                     if row is None:
                                         continue
@@ -6686,8 +6739,8 @@ class BasePKParserListener():
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atoms[idx]:
                                         ambig_code = common_atoms[idx]['ambig_code']
-                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
-                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.__entryId, dstFunc, set_id, idx + 1,
+                                                            self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder,
                                                             common_atom, asis, ambig_code)
                                     if row is None:
                                         continue
@@ -7606,7 +7659,7 @@ class BasePKParserListener():
                     _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][0]:]}"
                     return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
 
-            if self.ass_expr_debug:
+            if self.__verbose_debug:
                 print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '
                       f'resid:{resIdLike[idx]} {term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else ""}, '
                       f'resname:{resNameLike[idx]} {term[resNameSpan[idx][0]:resNameSpan[idx][1]] if resNameLike[idx] else ""}, '
@@ -7765,7 +7818,7 @@ class BasePKParserListener():
                     if resIdSpan[idx][1] > atomNameSpan[idx][0]:
                         resIdLike[idx] = False
 
-            if self.ass_expr_debug:
+            if self.__verbose_debug:
                 print(f' -> {idx} segid:{segIdLike[idx]}, resid:{resIdLike[idx]}, resname:{resNameLike[idx]}, '
                       f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, __atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
 
@@ -7798,7 +7851,7 @@ class BasePKParserListener():
                             resIdLater = False
                         break
 
-        if self.ass_expr_debug:
+        if self.__verbose_debug:
             print(f'num_of_dim: {numOfDim}, resid_count: {resIdCount}, resid_later:{resIdLater}')
 
         def is_valid_chain_assign(chain_assign, res_name):
@@ -7918,12 +7971,12 @@ class BasePKParserListener():
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        if self.ignore_diagonal:
+                        if self.__ignore_diagonal:
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        if self.ignore_diagonal:
+                        if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
@@ -8025,12 +8078,12 @@ class BasePKParserListener():
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        if self.ignore_diagonal:
+                        if self.__ignore_diagonal:
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        if self.ignore_diagonal:
+                        if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
@@ -8132,12 +8185,12 @@ class BasePKParserListener():
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        if self.ignore_diagonal:
+                        if self.__ignore_diagonal:
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        if self.ignore_diagonal:
+                        if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
@@ -8241,12 +8294,12 @@ class BasePKParserListener():
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        if self.ignore_diagonal:
+                        if self.__ignore_diagonal:
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        if self.ignore_diagonal:
+                        if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
@@ -8348,12 +8401,12 @@ class BasePKParserListener():
                         if details is not None:
                             atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                         if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                            if self.ignore_diagonal:
+                            if self.__ignore_diagonal:
                                 continue
                         ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                     else:
                         if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                            if self.ignore_diagonal:
+                            if self.__ignore_diagonal:
                                 continue
                         ass = {'dim': dimId, 'atom_id': atomName}
                         if segId is not None:
@@ -8368,7 +8421,7 @@ class BasePKParserListener():
         multiple = len(ret) > numOfDim
 
         if multiple:
-            if self.createSfDict__ and self.use_peak_row_format and not self.enforce_peak_row_format:
+            if self.__createSfDict and self.use_peak_row_format and not self.__enforcePeakRowFormat:
                 sf = self.getSf()
                 sf['peak_row_format'] = self.use_peak_row_format = False
 
@@ -10784,7 +10837,7 @@ class BasePKParserListener():
 
         sf_framecode = (f'{self.software_name}_' if self.software_name is not None else '') + restraint_name.replace(' ', '_') + f'_{list_id}'
 
-        sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.entryId, self.__originalFileName,
+        sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           numOfDim=self.num_of_dim, spectrumName=self.spectrum_name)
 
         lp = getPkLoop(self.cur_subtype)

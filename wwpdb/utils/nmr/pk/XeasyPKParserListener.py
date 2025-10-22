@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import re
@@ -229,7 +229,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # type = str(ctx.type_code())
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
-                if self.createSfDict__ and self.use_peak_row_format:
+                if self.createSfDict and self.use_peak_row_format:
                     sf = self.getSf()
                     sf['peak_row_format'] = self.use_peak_row_format = False
 
@@ -332,7 +332,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # type = str(ctx.type_code())
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
-                if self.createSfDict__ and self.use_peak_row_format:
+                if self.createSfDict and self.use_peak_row_format:
                     sf = self.getSf()
                     sf['peak_row_format'] = self.use_peak_row_format = False
 
@@ -437,7 +437,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # type = str(ctx.type_code())
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
-                if self.createSfDict__ and self.use_peak_row_format:
+                if self.createSfDict and self.use_peak_row_format:
                     sf = self.getSf()
                     sf['peak_row_format'] = self.use_peak_row_format = False
 
@@ -625,7 +625,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:
-                        if self.ass_expr_debug:
+                        if self.verbose_debug:
                             print(f'{last_comment!r} -> {assignments}')
                         if isinstance(self.__comment_offset, int):
                             for idx, factor in enumerate(assignments, start=self.__comment_offset):
@@ -642,7 +642,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:
-                        if self.ass_expr_debug:
+                        if self.verbose_debug:
                             print(f'{last_comment!r} -> {assignments}')
                         if isinstance(self.__comment_offset, int):
                             for idx, factor in enumerate(assignments, start=self.__comment_offset):
@@ -659,7 +659,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:
-                        if self.ass_expr_debug:
+                        if self.verbose_debug:
                             print(f'{last_comment!r} -> {assignments}')
                         if isinstance(self.__comment_offset, int):
                             for idx, factor in enumerate(assignments, start=self.__comment_offset):
@@ -674,7 +674,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             assignments = self.extractPeakAssignment(self.num_of_dim, __last_comment,
                                                      self.__index - 1 if isinstance(self.__index, int) else 1)
             if assignments is not None and self.__atomNumberDict is None:
-                if self.ass_expr_debug:
+                if self.verbose_debug:
                     print(f'{__last_comment!r} -> {assignments}')
                 if isinstance(self.__comment_offset, int):
                     for idx, factor in enumerate(assignments, start=self.__comment_offset):

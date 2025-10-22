@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import re
@@ -130,10 +130,10 @@ class BaseCSParserListener():
     file_type = None
     software_name = None
 
-    debug = False
-    ass_expr_debug = False
+    __debug = False
+    __verbose_debug = False
 
-    createSfDict__ = False
+    __createSfDict = False
 
     # CCD accessing utility
     ccU = None
@@ -221,7 +221,7 @@ class BaseCSParserListener():
     __reservedListIds = {}
 
     # entry ID
-    entryId = '.'
+    __entryId = '.'
 
     # dictionary of pynmrstar saveframes
     sfDict = {}
@@ -303,23 +303,61 @@ class BaseCSParserListener():
 
         self.__cachedDictForStarAtom = {}
 
-    def setDebugMode(self, debug: bool):
-        self.debug = debug
+    @property
+    def debug(self):
+        return self.__debug
 
+    @debug.setter
+    def debug(self, debug: bool):
+        self.__debug = debug
+
+    @property
+    def verbose_debug(self):
+        return self.__verbose_debug
+
+    @verbose_debug.setter
+    def verbose_debug(self, verbose_debug: bool):
+        self.__verbose_debug = verbose_debug
+
+    @property
+    def createSfDict(self):
+        return self.__createSfDict
+
+    @createSfDict.setter
     def createSfDict(self, createSfDict: bool):
-        self.createSfDict__ = createSfDict
+        self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName: str):
+    @property
+    def originalFileName(self):
+        return self.__originalFileName
+
+    @originalFileName.setter
+    def originalFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter: dict):
+    @property
+    def listIdCounter(self):
+        return self.__listIdCounter
+
+    @listIdCounter.setter
+    def listIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setReservedListIds(self, reservedListIds: dict):
+    @property
+    def reservedListIds(self):
+        return self.__reservedListIds
+
+    @reservedListIds.setter
+    def reservedListIds(self, reservedListIds: dict):
         self.__reservedListIds = reservedListIds
 
-    def setEntryId(self, entryId: str):
-        self.entryId = entryId
+    @property
+    def entryId(self):
+        return self.__entryId
+
+    @entryId.setter
+    def entryId(self, entryId: str):
+        self.__entryId = entryId
 
     def enter(self):
         self.polySeqCs = []
@@ -750,7 +788,7 @@ class BaseCSParserListener():
     def addCsRow(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool, auth_seq_id_map: dict,
                  debug_label: Optional[str], details: Optional[str] = None, default_ambig_code: Optional[int] = None):
 
-        if self.debug:
+        if self.__debug:
             if not has_assignments:
                 print(f"subtype={self.cur_subtype} id={self.chemShifts + 1} (index={index}) "
                       f"{debug_label}None None {dstFunc}")
@@ -762,7 +800,7 @@ class BaseCSParserListener():
                     print(f"subtype={self.cur_subtype} id={self.chemShifts + 1} (index={index}) "
                           f"{debug_label}{atomSelectionSet[0]} {dstFunc}")
 
-        if self.createSfDict__:
+        if self.__createSfDict:
             sf = self.getSf()
 
             if sf is not None:
@@ -782,7 +820,7 @@ class BaseCSParserListener():
                 if len(auth_seq_id_map) > 0 and atom['seq_id'] in auth_seq_id_map:
                     atom['auth_seq_id'] = auth_seq_id_map[atom['seq_id']]
 
-                row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.entryId,
+                row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
                                dstFunc, self.entityAssembly,
                                atom, ambig_code=ambig_code, details=details)
                 sf['loop'].add_data(row)
@@ -1572,7 +1610,7 @@ class BaseCSParserListener():
                                 __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
                                 break
 
-            if self.ass_expr_debug:
+            if self.__verbose_debug:
                 print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '
                       f'resid:{resIdLike[idx]} {term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else ""}, '
                       f'resname:{resNameLike[idx]} {term[resNameSpan[idx][0]:resNameSpan[idx][1]] if resNameLike[idx] else ""}, '
@@ -1731,7 +1769,7 @@ class BaseCSParserListener():
                     if resIdSpan[idx][1] > atomNameSpan[idx][0]:
                         resIdLike[idx] = False
 
-            if self.ass_expr_debug:
+            if self.__verbose_debug:
                 print(f' -> {idx} segid:{segIdLike[idx]}, resid:{resIdLike[idx]}, resname:{resNameLike[idx]}, '
                       f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, __atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
 
@@ -1764,7 +1802,7 @@ class BaseCSParserListener():
                             resIdLater = False
                         break
 
-        if self.ass_expr_debug:
+        if self.__verbose_debug:
             print(f'num_of_dim: {numOfDim}, resid_count: {resIdCount}, resid_later:{resIdLater}')
 
         def is_valid_chain_assign(chain_assign, res_name):
@@ -3848,7 +3886,7 @@ class BaseCSParserListener():
 
         sf_framecode = (f'{self.software_name}_' if self.software_name is not None else '') + restraint_name.replace(' ', '_') + f'_{list_id}'
 
-        sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.entryId, self.__originalFileName)
+        sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
 
         lp = getLoop(self.cur_subtype)
 

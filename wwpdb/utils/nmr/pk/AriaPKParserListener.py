@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 
@@ -214,7 +214,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.__proton1_atoms is not None:
                         assignments[idx] = self.__proton1_atoms
                         if len(self.__proton1_atoms) > 1:
-                            if self.createSfDict__ and self.use_peak_row_format:
+                            if self.createSfDict and self.use_peak_row_format:
                                 sf = self.getSf()
                                 sf['peak_row_format'] = self.use_peak_row_format = False
                     idx += 1
@@ -224,7 +224,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.__proton2_atoms is not None:
                         assignments[idx] = self.__proton2_atoms
                         if len(self.__proton2_atoms) > 1:
-                            if self.createSfDict__ and self.use_peak_row_format:
+                            if self.createSfDict and self.use_peak_row_format:
                                 sf = self.getSf()
                                 sf['peak_row_format'] = self.use_peak_row_format = False
                     idx += 1
@@ -234,7 +234,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.__hetero1_atoms is not None:
                         assignments[idx] = self.__hetero1_atoms
                         if len(self.__hetero1_atoms) > 1:
-                            if self.createSfDict__ and self.use_peak_row_format:
+                            if self.createSfDict and self.use_peak_row_format:
                                 sf = self.getSf()
                                 sf['peak_row_format'] = self.use_peak_row_format = False
                     idx += 1
@@ -244,7 +244,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.__hetero2_atoms is not None:
                         assignments[idx] = self.__hetero2_atoms
                         if len(self.__hetero2_atoms) > 1:
-                            if self.createSfDict__ and self.use_peak_row_format:
+                            if self.createSfDict and self.use_peak_row_format:
                                 sf = self.getSf()
                                 sf['peak_row_format'] = self.use_peak_row_format = False
 

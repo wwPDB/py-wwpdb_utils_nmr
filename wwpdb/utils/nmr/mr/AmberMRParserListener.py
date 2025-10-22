@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import copy
@@ -883,25 +883,54 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.sfDict = {}
 
-    def setDebugMode(self, debug: bool):
+    @property
+    def debug(self):
+        return self.__debug
+
+    @debug.setter
+    def debug(self, debug: bool):
         self.__debug = debug
 
-    def setInternalMode(self, internal: bool):
+    @property
+    def internal(self):
+        return self.__internal
+
+    @internal.setter
+    def internal(self, internal: bool):
         self.__internal = internal
 
+    @property
+    def createSfDict(self):
+        return self.__createSfDict
+
+    @createSfDict.setter
     def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName: str):
+    @property
+    def originalFileName(self):
+        return self.__originalFileName
+
+    @originalFileName.setter
+    def originalFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter: dict):
+    @property
+    def listIdCounter(self):
+        return self.__listIdCounter
+
+    @listIdCounter.setter
+    def listIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId: str):
+    @property
+    def entryId(self):
+        return self.__entryId
+
+    @entryId.setter
+    def entryId(self, entryId: str):
         self.__entryId = entryId
 
-    # Enter a parse tree produced by AmberMRParser#amber_mr.
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
         self.__polySeqRst = []
         self.__polySeqRstFailed = []

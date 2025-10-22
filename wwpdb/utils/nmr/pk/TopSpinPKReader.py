@@ -9,7 +9,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import os
@@ -64,7 +64,7 @@ class TopSpinPKReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
-        self.__enforce_peak_row_format = False
+        self.__enforcePeakRowFormat = False
         self.__internal = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
@@ -98,8 +98,8 @@ class TopSpinPKReader:
     def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def enforcePeakRowFormat(self, enforce_peak_row_format: bool):
-        self.__enforce_peak_row_format = enforce_peak_row_format
+    def enforcePeakRowFormat(self, enforcePeakRowFormat: bool):
+        self.__enforcePeakRowFormat = enforcePeakRowFormat
 
     def setInternalMode(self, internal: bool):
         self.__internal = internal
@@ -188,19 +188,19 @@ class TopSpinPKReader:
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                self.__reasons)
-            listener.setDebugMode(self.__debug)
-            listener.enforsePeakRowFormat(self.__enforce_peak_row_format)
-            listener.setInternalMode(self.__internal)
-            listener.createSfDict(createSfDict)
+            listener.debug = self.__debug
+            listener.internalMode = self.__internal
+            listener.createSfDict = createSfDict
+            listener.enforcePeakRowFormat = self.__enforcePeakRowFormat
             if createSfDict:
                 if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
+                    listener.originalFileName = originalFileName
                 if listIdCounter is not None:
-                    listener.setListIdCounter(listIdCounter)
+                    listener.listIdCounter = listIdCounter
                 if reservedListIds is not None:
-                    listener.setReservedListIds(reservedListIds)
+                    listener.reservedListIds = reservedListIds
                 if entryId is not None:
-                    listener.setEntryId(entryId)
+                    listener.entryId = entryId
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

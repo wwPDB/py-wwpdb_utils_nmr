@@ -197,7 +197,7 @@ class CyanaMRReader:
             listener.remediate = self.__remediate
             listener.createSfDict = createSfDict
             if createSfDict:
-                listener.originaFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
+                listener.originalFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                 if listIdCounter is not None:
                     listener.listIdCounter = listIdCounter
                 if entryId is not None:
@@ -231,6 +231,13 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mks/2mks-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2mks/2mks.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = CyanaMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
@@ -606,16 +613,12 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/6wa5/FIV-myr_minus-NOS.upl',
                  '../../tests-nmr/mock-data-remediation/6wa5/6wa5.cif')
 
-    reader = CyanaMRReader(False)
-    reader.setDebugMode(False)
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2mxu/2mxu-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2mxu/2mxu.cif')
     print(reader_listener.getReasonsForReparsing())
-    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2mxu/2mxu-corrected.mr',
-                 '../../tests-nmr/mock-data-remediation/2mxu/2mxu.cif')
 
     reasons_ = {'chain_seq_id_remap': [{'chain_id': 'B',
                                         'seq_id_dict': {1200: 1120, 1201: 1121, 1202: 1122, 1203: 1123, 1204: 1124, 1205: 1125, 1206: 1126,

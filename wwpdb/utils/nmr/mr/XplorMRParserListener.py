@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import re
@@ -363,9 +363,9 @@ class XplorMRParserListener(ParseTreeListener):
     __debug = False
     __remediate = False
     __internal = False
-    __sel_expr_debug = False
+    __verbose_debug = False
 
-    __nmr_vs_model = None
+    __nmrVsModel = None
 
     __createSfDict = True
     __omitDistLimitOutlier = True
@@ -886,28 +886,76 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.sfDict = {}
 
-    def setDebugMode(self, debug: bool):
+    @property
+    def debug(self):
+        return self.__debug
+
+    @debug.setter
+    def debug(self, debug: bool):
         self.__debug = debug
 
-    def setRemediateMode(self, remediate: bool):
+    @property
+    def verbose_debug(self):
+        return self.__verbose_debug
+
+    @verbose_debug.setter
+    def verbose_debug(self, verbose_debug: bool):
+        self.__verbose_debug = verbose_debug
+
+    @property
+    def remediate(self):
+        return self.__remediate
+
+    @remediate.setter
+    def remediate(self, remediate: bool):
         self.__remediate = remediate
 
-    def setInternalMode(self, internal: bool):
+    @property
+    def internal(self):
+        return self.__internal
+
+    @internal.setter
+    def internal(self, internal: bool):
         self.__internal = internal
 
-    def setNmrChainAssignments(self, nmr_vs_model: Optional[List[dict]]):
-        self.__nmr_vs_model = nmr_vs_model
+    @property
+    def nmrVsModel(self):
+        return self.__nmrVsModel
 
+    @nmrVsModel.setter
+    def nmrVsModel(self, nmrVsModel: Optional[List[dict]]):
+        self.__nmrVsModel = nmrVsModel
+
+    @property
+    def createSfDict(self):
+        return self.__createSfDict
+
+    @createSfDict.setter
     def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName: str):
+    @property
+    def originalFileName(self):
+        return self.__originalFileName
+
+    @originalFileName.setter
+    def originalFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter: dict):
+    @property
+    def listIdCounter(self):
+        return self.__listIdCounter
+
+    @listIdCounter.setter
+    def listIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId: str):
+    @property
+    def entryId(self):
+        return self.__entryId
+
+    @entryId.setter
+    def entryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
@@ -10006,7 +10054,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + "enter_selection")
 
         if self.inVector3D:
@@ -10021,7 +10069,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + "exit_selection")
 
         if 'or' in self.stackSelections:
@@ -10111,7 +10159,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 atomSelection = sorted(atomSelection, key=itemgetter('chain_id', 'seq_id', 'atom_id'))
 
-            if self.__sel_expr_debug:
+            if self.__verbose_debug:
                 print("  " * self.depth + f"atom selection: {atomSelection}")
 
             self.atomSelectionSet.append(atomSelection)
@@ -10176,7 +10224,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             atomSelection = sorted(atomSelection, key=itemgetter('chain_id', 'seq_id', 'atom_id'))
 
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + f"atom selection: {atomSelection}")
 
         if self.inVector3D:
@@ -10203,7 +10251,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.depth > 0 and self.__cur_union_expr:
             self.unionFactor = {}
 
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + f"enter_sel_expr, union: {self.__cur_union_expr}")
 
         if self.depth > 0 and len(self.factor) > 0:
@@ -10218,7 +10266,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#selection_expression.
     def exitSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + "exit_sel_expr")
 
         _atomSelection = []
@@ -10251,7 +10299,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#term.
     def enterTerm(self, ctx: XplorMRParser.TermContext):
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
 
         self.stackFactors = []
@@ -10262,7 +10310,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#term.
     def exitTerm(self, ctx: XplorMRParser.TermContext):  # pylint: disable=unused-argument
         self.depth -= 1
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + "exit_term")
 
         if self.depth == 1 and self.__top_union_expr:
@@ -11793,7 +11841,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         no_nonpoly = not self.__hasNonPolySeq\
                                             or not any(_seqId in np['auth_seq_id'] for np in self.__nonPolySeq if np['auth_chain_id'] == _chainId)  # 2mco
                                         if ps is not None and _seqId not in ps['auth_seq_id'] and no_nonpoly:
-                                            if self.__nmr_vs_model is not None and not ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
+                                            if self.__nmrVsModel is not None and not ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
                                                 nmr_offset = ps['seq_id'][0] - ps['auth_seq_id'][0]  # 2lzn
                                                 if self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                                                    and _chainId in self.__reasons['global_auth_sequence_offset']:
@@ -11804,7 +11852,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                 elif self.__reasons is not None and 'label_sequence_offset' in self.__reasons\
                                                         and _chainId in self.__reasons['label_sequence_offset']:
                                                     nmr_offset += self.__reasons['label_sequence_offset'][_chainId]
-                                                item = next((item for item in self.__nmr_vs_model
+                                                item = next((item for item in self.__nmrVsModel
                                                              if item['test_auth_chain_id' if 'test_auth_chain_id' in item else 'test_chain_id'] == _chainId), None)
                                                 if item is not None and item['conflict'] == 0 and item['unmapped'] > 0 and 'unmapped_sequence' in item:
                                                     refCompId = next((u['ref_comp_id'] for u in item['unmapped_sequence']
@@ -13677,7 +13725,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
         if ctx.Not_op():
@@ -13699,11 +13747,11 @@ class XplorMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by XplorMRParser#factor.
     def exitFactor(self, ctx: XplorMRParser.FactorContext):
         self.depth -= 1
-        if self.__sel_expr_debug:
+        if self.__verbose_debug:
             print("  " * self.depth + "exit_factor")
 
         def set_store(num):
-            if self.__sel_expr_debug:
+            if self.__verbose_debug:
                 print("  " * self.depth + f"--> store{num}")
             if len(self.storeSet[num]) == 0:
                 self.factor['atom_id'] = [None]
@@ -13730,7 +13778,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             if ctx.All() or ctx.Known():
                 clauseName = 'all' if ctx.All() else 'known'
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + f"--> {clauseName}")
                 if not self.__hasCoord:
                     return
@@ -13782,7 +13830,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             elif ctx.Around() or ctx.Saround():
                 clauseName = 'around' if ctx.Around() else 'saround'
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + f"--> {clauseName}")
                 if not self.__hasCoord:
                     return
@@ -13931,7 +13979,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             f"The {clauseName!r} clause has no effect.")
 
             elif ctx.Atom():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> atom")
                 if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
@@ -14138,7 +14186,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.consumeFactor_expressions("'atom' clause", False)
 
             elif ctx.Attribute():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> attribute")
                 if not self.__hasCoord:
                     return
@@ -14365,7 +14413,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.")
 
             elif ctx.BondedTo():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> bondedto")
                 if not self.__hasCoord:
                     return
@@ -14565,7 +14613,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     "The 'bondedto' clause has no effect because no atom is selected.")
 
             elif ctx.ByGroup():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> bygroup")
                 if not self.__hasCoord:
                     return
@@ -14669,7 +14717,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     "The 'bygroup' clause has no effect because no atom is selected.")
 
             elif ctx.ByRes():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> byres")
                 if not self.__hasCoord:
                     return
@@ -14736,7 +14784,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     "The 'byres' clause has no effect because no atom is selected.")
 
             elif ctx.Chemical():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> chemical")
                 if ctx.Colon():  # range expression
                     self.factor['type_symbols'] = [str(ctx.Simple_name(0)).upper(), str(ctx.Simple_name(1)).upper()]
@@ -14768,7 +14816,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.consumeFactor_expressions("'chemical' clause", False)
 
             elif ctx.Hydrogen():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> hydrogen")
                 if not self.__hasCoord:
                     return
@@ -14787,7 +14835,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.consumeFactor_expressions("'hydrogen' clause", False)
 
             elif ctx.Id():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> id")
                 self.factor['atom_id'] = [None]
                 self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
@@ -14795,7 +14843,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 "because the internal atom number is not included in the coordinate file.")
 
             elif ctx.Name():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> name")
 
                 eval_factor = False
@@ -14875,7 +14923,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             f"and {getReadableFactor(_factor)}.")
 
             elif ctx.Not_op():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> not")
                 if not self.__hasCoord:
                     return
@@ -14984,7 +15032,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         "The 'not' clause has no effect.")
 
             elif ctx.Point():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> point")
                 if not self.__hasCoord:
                     return
@@ -15097,7 +15145,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.vector3D = None
 
             elif ctx.Previous():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> previous")
                 self.factor['atom_id'] = [None]
                 self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
@@ -15105,7 +15153,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 "because the internal atom selection is fragile in the restraint file.")
 
             elif ctx.Pseudo():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> pseudo")
                 if not self.__hasCoord:
                     return
@@ -15148,7 +15196,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     "The 'pseudo' clause has no effect.")
 
             elif ctx.Residue():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> residue")
 
                 eval_factor = False
@@ -15209,7 +15257,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             f"and {getReadableFactor(_factor)}.")
 
             elif ctx.Resname():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> resname")
 
                 eval_factor = False
@@ -15270,7 +15318,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             f"and {getReadableFactor(_factor)}.")
 
             elif ctx.SegIdentifier():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> segidentifier")
                 if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
@@ -15476,7 +15524,7 @@ class XplorMRParserListener(ParseTreeListener):
                 set_store(9)
 
             elif ctx.Tag():
-                if self.__sel_expr_debug:
+                if self.__verbose_debug:
                     print("  " * self.depth + "--> tag")
                 if not self.__hasCoord:
                     return

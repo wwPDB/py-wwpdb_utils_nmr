@@ -234,7 +234,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.7.0"
+__version__ = "4.8.0"
 
 import sys
 import os
@@ -36566,7 +36566,7 @@ class NmrDpUtility:
                                         charmmAtomNumberDict,
                                         reasons)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                reader.setNmrChainAssignments(nmr_vs_model)
+                reader.setNmrVsModel(nmr_vs_model)
                 if file_path in self.__sll_pred_forced:
                     reader.setSllPredMode(True)
 
@@ -36591,7 +36591,7 @@ class NmrDpUtility:
                                                 charmmAtomNumberDict,
                                                 None)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                        reader.setNmrChainAssignments(nmr_vs_model)
+                        reader.setNmrVsModel(nmr_vs_model)
                         if file_path in self.__sll_pred_forced:
                             reader.setSllPredMode(True)
 
@@ -36622,7 +36622,7 @@ class NmrDpUtility:
                                                 charmmAtomNumberDict,
                                                 reasons)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                        reader.setNmrChainAssignments(nmr_vs_model)
+                        reader.setNmrVsModel(nmr_vs_model)
                         if file_path in self.__sll_pred_forced:
                             reader.setSllPredMode(True)
 
@@ -36670,7 +36670,7 @@ class NmrDpUtility:
                                      self.__ccU, self.__csStat, self.__nefT,
                                      reasons)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                reader.setNmrChainAssignments(nmr_vs_model)
+                reader.setNmrVsModel(nmr_vs_model)
                 if file_path in self.__sll_pred_forced:
                     reader.setSllPredMode(True)
 
@@ -36694,7 +36694,7 @@ class NmrDpUtility:
                                              self.__ccU, self.__csStat, self.__nefT,
                                              None)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                        reader.setNmrChainAssignments(nmr_vs_model)
+                        reader.setNmrVsModel(nmr_vs_model)
                         if file_path in self.__sll_pred_forced:
                             reader.setSllPredMode(True)
 
@@ -36724,7 +36724,7 @@ class NmrDpUtility:
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                        reader.setNmrChainAssignments(nmr_vs_model)
+                        reader.setNmrVsModel(nmr_vs_model)
                         if file_path in self.__sll_pred_forced:
                             reader.setSllPredMode(True)
 
@@ -37253,7 +37253,7 @@ class NmrDpUtility:
                                              self.__ccU, self.__csStat, self.__nefT,
                                              pdbAtomNumberDict, reasons)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                reader.setNmrChainAssignments(nmr_vs_model)
+                reader.setNmrVsModel(nmr_vs_model)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -37275,7 +37275,7 @@ class NmrDpUtility:
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      pdbAtomNumberDict, None)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                        reader.setNmrChainAssignments(nmr_vs_model)
+                        reader.setNmrVsModel(nmr_vs_model)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37303,7 +37303,7 @@ class NmrDpUtility:
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      pdbAtomNumberDict, reasons)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                        reader.setNmrChainAssignments(nmr_vs_model)
+                        reader.setNmrVsModel(nmr_vs_model)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37418,7 +37418,7 @@ class NmrDpUtility:
                                        reasons)
                 reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                reader.setNmrChainAssignments(nmr_vs_model)
+                reader.setNmrVsModel(nmr_vs_model)
                 if file_path in self.__sll_pred_forced:
                     reader.setSllPredMode(True)
 
@@ -37443,7 +37443,7 @@ class NmrDpUtility:
                                                None)
                         reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                        reader.setNmrChainAssignments(nmr_vs_model)
+                        reader.setNmrVsModel(nmr_vs_model)
                         if file_path in self.__sll_pred_forced:
                             reader.setSllPredMode(True)
 
@@ -37474,7 +37474,7 @@ class NmrDpUtility:
                                                reasons)
                         reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
-                        reader.setNmrChainAssignments(nmr_vs_model)
+                        reader.setNmrVsModel(nmr_vs_model)
                         if file_path in self.__sll_pred_forced:
                             reader.setSllPredMode(True)
 
@@ -50590,14 +50590,31 @@ class NmrDpUtility:
 
             elif not self.__annotation_mode:
 
-                err = "No sequence alignment found."
+                poly_seq = input_source_dic['polymer_sequence']
 
-                self.report.error.appendDescription('sequence_mismatch',
-                                                    {'file_name': cif_file_name, 'description': err})
-                self.report.setError()
+                single_ligand = len(poly_seq) == 1 and len(poly_seq[0]['seq_id']) == 1 and poly_seq[0]['comp_id'][0] not in monDict3
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Error  - {err}\n")
+                if single_ligand:
+
+                    err = "Failed in sequence alignment because of single ligand."
+
+                    self.report.warning.appendDescription('sequence_mismatch',
+                                                          {'file_name': cif_file_name, 'description': err})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
+
+                else:
+
+                    err = "No polymer sequence alignments found."
+
+                    self.report.error.appendDescription('sequence_mismatch',
+                                                        {'file_name': cif_file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Error  - {err}\n")
 
                 return False
 

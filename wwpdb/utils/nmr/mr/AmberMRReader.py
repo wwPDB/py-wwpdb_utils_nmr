@@ -9,7 +9,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import os
@@ -211,15 +211,15 @@ class AmberMRReader:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  self.__atomNumberDict, self.__reasons)
-                listener.setDebugMode(self.__debug)
-                listener.setInternalMode(self.__internal)
-                listener.createSfDict(createSfDict)
+                listener.debug = self.__debug
+                listener.internal = self.__internal
+                listener.createSfDict = createSfDict
                 if createSfDict:
-                    listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
+                    listener.originalFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                     if listIdCounter is not None:
-                        listener.setListIdCounter(copy.copy(listIdCounter))
+                        listener.listIdCounter = copy.copy(listIdCounter)
                     if entryId is not None:
-                        listener.setEntryId(entryId)
+                        listener.entryId = entryId
                 walker.walk(listener, tree)
 
                 messageList = parser_error_listener.getMessageList()
@@ -307,15 +307,16 @@ class AmberMRReader:
                                                      or 'global_sequence_offset' in self.__reasons__
                                                      or 'chain_seq_id_remap' in self.__reasons__
                                                      or 'use_alt_poly_seq' in self.__reasons__ else self.__reasons__)
-                    listener.setDebugMode(self.__debug)
-                    listener.createSfDict(createSfDict)
+                    listener.debug = self.__debug
+                    listener.internal = self.__internal
+                    listener.createSfDict = createSfDict
                     if createSfDict:
                         if originalFileName is not None:
-                            listener.setOriginaFileName(originalFileName)
+                            listener.originalFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                         if listIdCounter is not None:
-                            listener.setListIdCounter(copy.copy(listIdCounter))
+                            listener.listIdCounter = copy.copy(listIdCounter)
                         if entryId is not None:
-                            listener.setEntryId(entryId)
+                            listener.entryId = entryId
                     walker.walk(listener, tree)
 
                     messageList = parser_error_listener.getMessageList()
@@ -358,6 +359,12 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2miv/RST',
+                 '../../tests-nmr/mock-data-remediation/2miv/2miv.cif',
+                 None)
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/8wa4/bmr36593/work/data/D_1300040831_mr-upload_P1.amber.V1',

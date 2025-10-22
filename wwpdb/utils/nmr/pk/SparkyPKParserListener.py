@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 
@@ -777,7 +777,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.debug:
                         print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
 
-                    if self.createSfDict__:
+                    if self.createSfDict:
                         sf = self.getSf()
 
                         if sf is not None:
@@ -892,7 +892,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.debug:
                         print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
 
-                    if self.createSfDict__:
+                    if self.createSfDict:
                         sf = self.getSf()
 
                         if sf is not None:
@@ -1018,7 +1018,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.debug:
                         print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
 
-                    if self.createSfDict__:
+                    if self.createSfDict:
                         sf = self.getSf()
 
                         if sf is not None:

@@ -9,7 +9,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import os
@@ -69,7 +69,7 @@ class SchrodingerMRReader:
         self.__internal = False
         self.__sll_pred = False
 
-        self.__nmr_vs_model = None
+        self.__nmrVsModel = None
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -108,8 +108,8 @@ class SchrodingerMRReader:
     def setInternalMode(self, internal: bool):
         self.__internal = internal
 
-    def setNmrChainAssignments(self, nmr_vs_model: Optional[List[dict]]):
-        self.__nmr_vs_model = nmr_vs_model
+    def setNmrVsModel(self, nmrVsModel: Optional[List[dict]]):
+        self.__nmrVsModel = nmrVsModel
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
@@ -197,16 +197,16 @@ class SchrodingerMRReader:
                                                    self.__cR, self.__caC,
                                                    self.__ccU, self.__csStat, self.__nefT,
                                                    self.__atomNumberDict, self.__reasons)
-            listener.setDebugMode(self.__debug)
-            listener.setInternalMode(self.__internal)
-            listener.setNmrChainAssignments(self.__nmr_vs_model)
-            listener.createSfDict(createSfDict)
+            listener.debug = self.__debug
+            listener.internal = self.__internal
+            listener.nmrVsModel = self.__nmrVsModel
+            listener.createSfDict = createSfDict
             if createSfDict:
-                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
+                listener.originalFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                 if listIdCounter is not None:
-                    listener.setListIdCounter(listIdCounter)
+                    listener.listIdCounter = listIdCounter
                 if entryId is not None:
-                    listener.setEntryId(entryId)
+                    listener.entryId = entryId
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

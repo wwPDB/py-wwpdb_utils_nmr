@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import sys
 import re
@@ -486,22 +486,52 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.__cachedDictForStarAtom = {}
 
-    def setDebugMode(self, debug: bool):
+    @property
+    def debug(self):
+        return self.__debug
+
+    @debug.setter
+    def debug(self, debug: bool):
         self.__debug = debug
 
-    def setRemediateMode(self, remediate: bool):
+    @property
+    def remediate(self):
+        return self.__remediate
+
+    @remediate.setter
+    def remediate(self, remediate: bool):
         self.__remediate = remediate
 
+    @property
+    def createSfDict(self):
+        return self.__createSfDict
+
+    @createSfDict.setter
     def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName: str):
+    @property
+    def originalFileName(self):
+        return self.__originalFileName
+
+    @originalFileName.setter
+    def originalFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter: dict):
+    @property
+    def listIdCounter(self):
+        return self.__listIdCounter
+
+    @listIdCounter.setter
+    def listIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId: str):
+    @property
+    def entryId(self):
+        return self.__entryId
+
+    @entryId.setter
+    def entryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by RosettaMRParser#rosetta_mr.
@@ -1090,10 +1120,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1.split('|', 1)[0])
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])\
-                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2.split('|', 1)[0])
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -1542,8 +1570,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 pass
         return ps['auth_chain_id'], seqId, None
 
-    def assignCoordPolymerSequence(self, seqId: int, atomId: Optional[str] = None, fixedChainId: Optional[str] = None
-                                   ) -> List[Tuple[str, int, str, bool]]:
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None, fixedChainId: Optional[str] = None
+                                                ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -1790,7 +1818,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if atomId is not None:
                 if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                     if atomId in aminoProtonCode and atomId != 'H1':
-                        return self.assignCoordPolymerSequence(seqId, 'H1', fixedChainId)
+                        return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1', fixedChainId)
                 if len(self.__polySeq) == 1 and seqId < 1:
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -1863,6 +1891,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                                            ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
+
+        if fixedChainId is None:
+            return self.assignCoordPolymerSequenceWithoutCompId(seqId, atomId)
 
         chainAssign = set()
         _seqId = seqId
@@ -2965,12 +2996,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
-                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
-                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)
 
             if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3)):
                 return
@@ -3252,14 +3280,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
-                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
-                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
-            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)\
-                if chainId4 is not None else self.assignCoordPolymerSequence(seqId4, atomId4)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)
+            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)
 
             if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
                 return
@@ -3420,22 +3444,14 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
-                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)\
-                if chainId3 is not None else self.assignCoordPolymerSequence(seqId3, atomId3)
-            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)\
-                if chainId4 is not None else self.assignCoordPolymerSequence(seqId4, atomId4)
-            chainAssign5 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId5, seqId5, atomId5)\
-                if chainId5 is not None else self.assignCoordPolymerSequence(seqId5, atomId5)
-            chainAssign6 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId6, seqId6, atomId6)\
-                if chainId6 is not None else self.assignCoordPolymerSequence(seqId6, atomId6)
-            chainAssign7 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId7, seqId7, atomId7)\
-                if chainId7 is not None else self.assignCoordPolymerSequence(seqId7, atomId7)
-            chainAssign8 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId8, seqId8, atomId8)\
-                if chainId8 is not None else self.assignCoordPolymerSequence(seqId8, atomId8)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId3, seqId3, atomId3)
+            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId4, seqId4, atomId4)
+            chainAssign5 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId5, seqId5, atomId5)
+            chainAssign6 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId6, seqId6, atomId6)
+            chainAssign7 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId7, seqId7, atomId7)
+            chainAssign8 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId8, seqId8, atomId8)
 
             if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4),
                      len(chainAssign5), len(chainAssign6), len(chainAssign7), len(chainAssign8)):
@@ -3596,10 +3612,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
-                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -3722,11 +3736,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(seqId234, atomId2, chainId1)
-            chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3, chainId1)
-            chainAssign4 = self.assignCoordPolymerSequence(seqId234, atomId4, chainId1)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId234, atomId2, chainId1)
+            chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(seqId234, atomId3, chainId1)
+            chainAssign4 = self.assignCoordPolymerSequenceWithoutCompId(seqId234, atomId4, chainId1)
 
             if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
                 return
@@ -3818,8 +3831,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId, atomId)\
-                if chainId is not None else self.assignCoordPolymerSequence(seqId, atomId)
+            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId, atomId)
 
             if len(chainAssign) == 0:
                 return
@@ -3920,8 +3932,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
 
             if len(chainAssign1) == 0:
                 return
@@ -3931,8 +3942,8 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 1:
                 return
 
-            chainAssign2 = self.assignCoordPolymerSequence(seqId2, fixedChainId=chainId1)
-            chainAssign3 = self.assignCoordPolymerSequence(seqId3, fixedChainId=chainId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, fixedChainId=chainId1)
+            chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(seqId3, fixedChainId=chainId1)
 
             if 0 in (len(chainAssign2), len(chainAssign3)):
                 return
@@ -4019,10 +4030,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)\
-                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -4128,8 +4137,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId)\
-                if chainId is not None else self.assignCoordPolymerSequence(seqId)
+            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId, seqId)
 
             if len(chainAssign) == 0:
                 return
@@ -5159,10 +5167,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)\
-                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, atomId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -5341,10 +5347,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)\
-                if chainId1 is not None else self.assignCoordPolymerSequence(seqId1)
-            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)\
-                if chainId2 is not None else self.assignCoordPolymerSequence(seqId2)
+            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1)
+            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return

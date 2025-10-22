@@ -189,7 +189,7 @@ class SparkyNPKReader:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                self.__reasons)
             listener.debug = self.__debug
-            listener.internalMode = self.__internal
+            listener.internal = self.__internal
             listener.createSfDict = createSfDict
             listener.enforcePeakRowFormat = self.__enforcePeakRowFormat
             if createSfDict:

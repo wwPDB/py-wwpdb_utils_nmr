@@ -2708,6 +2708,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
     def enterDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext):
         self.distRestraints += 1
 
+        self.atomSelectionSet.clear()
+
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
 
         if self.__atomNumberDict is None:
@@ -3049,6 +3051,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
     def enterDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext):
         self.dihedRestraints += 1
 
+        self.atomSelectionSet.clear()
+
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2))), int(str(ctx.Integer(3)))]
 
         if self.__atomNumberDict is None:
@@ -3171,6 +3175,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by SchrodingerMRParser#angle_assign_by_number.
     def enterAngle_assign_by_number(self, ctx: SchrodingerMRParser.Angle_assign_by_numberContext):
         self.angRestraints += 1
+
+        self.atomSelectionSet.clear()
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
 
@@ -3395,6 +3401,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
     def enterFxdi_assign_by_number(self, ctx: SchrodingerMRParser.Fxdi_assign_by_numberContext):
         self.distRestraints += 1
 
+        self.atomSelectionSet.clear()
+
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
 
         if self.__atomNumberDict is None:
@@ -3602,6 +3610,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by SchrodingerMRParser#fxta_assign_by_number.
     def enterFxta_assign_by_number(self, ctx: SchrodingerMRParser.Fxta_assign_by_numberContext):
         self.dihedRestraints += 1
+
+        self.atomSelectionSet.clear()
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2))), int(str(ctx.Integer(3)))]
 
@@ -3829,6 +3839,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by SchrodingerMRParser#fxhb_assign_by_number.
     def enterFxhb_assign_by_number(self, ctx: SchrodingerMRParser.Fxhb_assign_by_numberContext):
         self.hbondRestraints += 1
+
+        self.atomSelectionSet.clear()
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
 

@@ -3803,6 +3803,11 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
     if len(coord) == 0:
         return None
 
+    def check_apostrophe(name1, name2):
+        stat1 = "'" in name1 or '"' in name1
+        stat2 = "'" in name2 or '"' in name2
+        return stat1 == stat2
+
     atom_name_mapping = []
 
     for rev in range(first, last):
@@ -3851,11 +3856,7 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
                             'original_atom_id': c_prev['atom_id'],
                             'original_comp_id': c_prev['comp_id'],
                             'original_seq_id': c_prev['seq_id']}
-                apostrophe = "'" in c['atom_id'] or '"' in c['atom_id']
-                apostrophe_prev = "'" in c_prev['atom_id'] or '"' in c_prev['atom_id']
-                if apostrophe != apostrophe_prev:
-                    continue
-                if atom_map not in atom_name_mapping:
+                if check_apostrophe(c['atom_id'], c_prev['atom_id']) and atom_map not in atom_name_mapping:
                     atom_name_mapping.append(atom_map)
 
     if len(atom_name_mapping) == 0:
@@ -3940,6 +3941,11 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
         if len(nstd_residues_prev) == 0:
             return None
 
+    def check_apostrophe(name1, name2):
+        stat1 = "'" in name1 or '"' in name1
+        stat2 = "'" in name2 or '"' in name2
+        return stat1 == stat2
+
     coord_prev = cR_prev.getDictListWithFilter('atom_site',
                                                [{'name': auth_seq_id, 'type': 'int', 'alt_name': 'seq_id'},
                                                 {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
@@ -3968,7 +3974,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                         'original_atom_id': c_prev['atom_id'],
                         'original_comp_id': c_prev['comp_id'],
                         'original_seq_id': c_prev['seq_id']}
-            if atom_map not in atom_name_mapping:
+            if check_apostrophe(c['atom_id'], c_prev['atom_id']) and atom_map not in atom_name_mapping:
                 atom_name_mapping.append(atom_map)
 
     if len(atom_name_mapping) == 0:
@@ -4000,7 +4006,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                             'original_atom_id': c_prev['atom_id'],
                             'original_comp_id': c_prev['comp_id'],
                             'original_seq_id': c_prev['seq_id']}
-                if atom_map not in atom_name_mapping:
+                if check_apostrophe(c['atom_id'], c_prev['atom_id']) and atom_map not in atom_name_mapping:
                     atom_name_mapping.append(atom_map)
 
     if cR_prev.hasItem('atom_site', 'pdbx_auth_atom_name'):
@@ -4029,7 +4035,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                         'original_comp_id': c_prev['comp_id'],
                         'original_seq_id': c_prev['seq_id']}
 
-            if atom_map not in atom_name_mapping:
+            if check_apostrophe(c['atom_id'], c_prev['atom_id']) and atom_map not in atom_name_mapping:
                 atom_name_mapping.append(atom_map)
 
             c_prev['done'] = True

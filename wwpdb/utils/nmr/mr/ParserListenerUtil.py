@@ -3322,7 +3322,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     elif _score == score and _conflict == conflict:
                         _atomId_.append(_atomId)
                 if len(_atomId_) == 1 and (score > 1 or len(canAtomIdList) == 1):
-                    return _atomId_[0]
+                    apostrophe = "'" in _atomId_[0] or '"' in _atomId_[0]
+                    apostrophe_prev = "'" in atomId or '"' in atomId
+                    if apostrophe == apostrophe_prev:
+                        return _atomId_[0]
         if atomId == 'X':  # micelle cennter
             if 'UNK' in refAtomIdList:  # 2mjq, 2mjr, 2mjs
                 return 'UNK'

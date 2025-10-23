@@ -1627,6 +1627,9 @@ class CifReader:
 
                             _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
+                            if len(_atom_site_p) != len(_atom_site_q):
+                                continue
+
                             _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 
                         mean_rmsd = np.mean(np.array(_rmsd))
@@ -1732,6 +1735,9 @@ class CifReader:
                     _atom_site_test = _atom_site_dict[test_model_id]
                     _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
+                    if len(_atom_site_p) != len(_atom_site_q):
+                        continue
+
                     _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
                     _bb_atom_site_q = [_a for _a in _bb_atom_site_test if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
@@ -1804,6 +1810,9 @@ class CifReader:
                                    key=itemgetter(0, 1))
                 _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
+                if len(_bb_atom_site_p) == 0:
+                    continue
+
                 for test_model_id in range(2, _total_models + 1):
 
                     if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
@@ -1814,6 +1823,9 @@ class CifReader:
 
                     _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
                     _bb_atom_site_q = [_a for _a in _bb_atom_site_test if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+
+                    if len(_bb_atom_site_p) != len(_bb_atom_site_q):
+                        continue
 
                     _rmsd_ = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q)
 
@@ -1839,18 +1851,23 @@ class CifReader:
 
             _rmsd = []
 
-            for test_model_id in eff_model_ids:
+            if len(_bb_atom_site_p) > 0:
 
-                if ref_model_id == test_model_id:
-                    continue
+                for test_model_id in eff_model_ids:
 
-                # _atom_site_test = _atom_site_dict[test_model_id]
-                # _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
+                    if ref_model_id == test_model_id:
+                        continue
 
-                _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
-                _bb_atom_site_q = [_a for _a in _bb_atom_site_test if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+                    # _atom_site_test = _atom_site_dict[test_model_id]
+                    # _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
-                _rmsd.append(calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q))
+                    _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
+                    _bb_atom_site_q = [_a for _a in _bb_atom_site_test if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+
+                    if len(_bb_atom_site_p) != len(_bb_atom_site_q):
+                        continue
+
+                    _rmsd.append(calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q))
 
             if len(_rmsd) > 0:
                 item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")

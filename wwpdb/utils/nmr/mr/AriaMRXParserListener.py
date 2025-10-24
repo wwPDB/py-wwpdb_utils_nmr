@@ -735,7 +735,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                             except Exception as e:
                                 if self.verbose:
-                                    self.lfh.write(f"+{self.__class_name__}.exitDistance_restraint() ++ Error  - {str(e)}")
+                                    self.log.write(f"+{self.__class_name__}.exitDistance_restraint() ++ Error  - {str(e)}")
 
             combinationId = memberId = memberLogicCode = '.'
             if self.createSfDict:

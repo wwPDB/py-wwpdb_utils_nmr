@@ -80,10 +80,6 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.file_type = 'nm-res-noa'
         self.software_name = 'CYANA'
 
-        self.cur_subtype = ''
-
-        self.distRestraints = 0      # CYANA: NOE file
-
         self.noeAssignments = []
         self.asisList = []
         self.weights = []

@@ -1620,7 +1620,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                     if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
             if fixedChainId is not None and chainId != fixedChainId:
@@ -1722,7 +1722,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                         if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
-                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
@@ -1942,7 +1942,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                     if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id'] or fixedCompId is not None:
@@ -2011,7 +2011,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                         if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
-                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:

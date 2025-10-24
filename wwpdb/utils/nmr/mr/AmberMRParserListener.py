@@ -538,6 +538,135 @@ class AmberMRParserListener(ParseTreeListener):
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
+    __dist_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+) '
+                                   r'(-?\d+) (\S+) (\S+) ?'
+                                   r'([-+]?\d*\.?\d+)?.*')
+
+    __dist_sander_pat2 = re.compile(r'(-?\d+) (\S+) ([\S ]+ )'
+                                    r'(-?\d+) (\S+) ([\S ]+ ) ?'
+                                    r'([-+]?\d*\.?\d+)?.*')
+
+    __dist_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s* '
+                                            r'(bond length|distance) for residue(.*) (-?\d+).*')
+
+    __dist_amb_sel_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+) '
+                                           r'\(\s*(-?\d+) (\S+) (\S+) or (-?\d+) (\S+) (\S+)\s*\) '
+                                           r'\S+ factor= ?([-+]?\d*\.?\d+) ([-+]?\d*\.?\d+).*')
+
+    __dist_sander_w_range_pat = re.compile(r'(-?\d+) (\S+) (\S+) '
+                                           r'(-?\d+) (\S+) (\S+) '
+                                           r'([-+]?\d*\.?\d+) '
+                                           r'([-+]?\d*\.?\d+).*')
+
+    __dist_sander_w_chain_pat = re.compile(r'([A-Z]) (-?\d+) (\S+) (\S+) '
+                                           r'([A-Z]) (-?\d+) (\S+) (\S+) ?'
+                                           r'([-+]?\d*\.?\d+)?.*')
+
+    __ang_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+): '
+                                  r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                  r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                  r'\(\s*(-?\d+) (\S+) (\S+)\s*\).*')  # r'([-+]?\d*\.?\d+) [-+]?\d*\.?\d+).*')
+
+    __ang_sander_pat2 = re.compile(r'angle (\S+) '
+                                   r'(\S+), (-?\d+) '
+                                   r'(\S+), (-?\d+) '
+                                   r'(\S+), (-?\d+) ?'
+                                   r'([-+]?\d*\.?\d+)?.*')
+
+    __ang_sander_w_chain_pat = re.compile(r'([A-Z]) (-?\d+) (\S+) (\S+): '
+                                          r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                          r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                          r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\).*')
+
+    __ang_nang_sander_pat = re.compile(r'N angles for residue (-?\d+).*')
+
+    __ang_nang_sander_w_chain_pat = re.compile(r'N angles for residue ([A-Z]) (-?\d+).*')
+
+    __ang_nang_atoms = [['H', 'N', 'C'],
+                        ['H', 'N', 'CA']
+                        ]
+
+    __ang_cang_sander_pat = re.compile(r'C angles for residue (-?\d+).*')
+
+    __ang_cang_sander_w_chain_pat = re.compile(r'C angles for residue ([A-Z]) (-?\d+).*')
+
+    __ang_cang_atoms = {'Y': [["H1'", "C1'", 'N1'],  # for pyrimidines (i.e. C, T, U)
+                              ["H1'", "C1'", "C2'"],
+                              ["H1'", "C1'", "O4'"]],
+                        'R': [["H1'", "C1'", 'N9'],  # for purines (i.e. G, A)
+                              ["H1'", "C1'", "C2'"],
+                              ["H1'", "C1'", "O4'"]]
+                        }
+
+    __ang_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s* '
+                                           r'angle restraint for residue(.*) (-?\d+).*')
+
+    __dihed_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+): '
+                                    r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                    r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                    r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                    r'\(\s*(-?\d+) (\S+) (\S+)\s*\) ?'
+                                    r'([-+]?\d*\.?\d+)? ?'
+                                    r'([-+]?\d*\.?\d+)?.*')
+
+    __dihed_sander_pat2 = re.compile(r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                     r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                     r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                     r'\(\s*(-?\d+) (\S+) (\S+)\s*\) ?'
+                                     r'([-+]?\d*\.?\d+)? ?'
+                                     r'([-+]?\d*\.?\d+)?.*')
+
+    __dihed_sander_pat3 = re.compile(r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                     r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                     r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                     r'\(\s*(-?\d+) (\S+) (\S+)\s*\)'
+                                     r'(\S+)?.*')
+
+    __dihed_sander_pat4 = re.compile(r'\s*(-?\d+) (\S+) (\S+)\s* '
+                                     r'\s*(-?\d+) (\S+) (\S+)\s* '
+                                     r'\s*(-?\d+) (\S+) (\S+)\s* '
+                                     r'\s*(-?\d+) (\S+) (\S+)\s*'
+                                     r'(\S+)?.*')
+
+    __dihed_sander_pat5 = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s* '
+                                     r'restraint for residue(.*) (-?\d+).*')
+
+    __dihed_sander_lig_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+).*')
+
+    __dihed_sander_w_chain_pat = re.compile(r'([A-Z]) (-?\d+) (\S+) (\S+): '
+                                            r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\) ?'
+                                            r'([-+]?\d*\.?\d+)? ?'
+                                            r'([-+]?\d*\.?\d+)?.*')
+
+    __dihed_chiral_sander_pat = re.compile(r'chirality for residue (-?\d+) atoms: '
+                                           r'(\S+) (\S+) (\S+) (\S+).*')
+
+    __dihed_chiral_sander_w_chain_pat = re.compile(r'chirality for residue ([A-Z]) (-?\d+) atoms: '
+                                                   r'(\S+) (\S+) (\S+) (\S+).*')
+
+    __dihed_tomega_sander_pat = re.compile(r'trans-omega constraint for residue (-?\d+).*')
+
+    __dihed_tomega_sander_w_chain_pat = re.compile(r'trans-omega constraint for residue ([A-Z]) (-?\d+).*')
+
+    __dihed_tomega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
+
+    __dihed_comega_sander_pat = re.compile(r'cis-omega constraint for residue (-?\d+).*')
+
+    __dihed_comega_sander_w_chain_pat = re.compile(r'cis-omega constraint for residue ([A-Z]) (-?\d+).*')
+
+    __dihed_comega_atoms = ['CA', 'N', 'C', 'O']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), O(i-1) (e.g. 2m2d)
+
+    __dihed_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+) '
+                                             r'restraint for residue(.*) (-?\d+).*')
+
+    __dihed_plane_residue_pat = re.compile(r'PLANAR RESTRAINTS FOR RESIDUE (-?\d+).*')
+
+    __dihed_plane_sander_pat = re.compile(r'ANGLE (\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+) -> '
+                                          r'([-+]?\d*\.?\d+).*')
+
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
@@ -751,135 +880,6 @@ class AmberMRParserListener(ParseTreeListener):
         self.taurot = None
         self.taumet = None
         self.id2o = None
-
-        self.dist_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+) '
-                                          r'(-?\d+) (\S+) (\S+) ?'
-                                          r'([-+]?\d*\.?\d+)?.*')
-
-        self.dist_sander_pat2 = re.compile(r'(-?\d+) (\S+) ([\S ]+ )'
-                                           r'(-?\d+) (\S+) ([\S ]+ ) ?'
-                                           r'([-+]?\d*\.?\d+)?.*')
-
-        self.dist_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s* '
-                                                   r'(bond length|distance) for residue(.*) (-?\d+).*')
-
-        self.dist_amb_sel_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+) '
-                                                  r'\(\s*(-?\d+) (\S+) (\S+) or (-?\d+) (\S+) (\S+)\s*\) '
-                                                  r'\S+ factor= ?([-+]?\d*\.?\d+) ([-+]?\d*\.?\d+).*')
-
-        self.dist_sander_w_range_pat = re.compile(r'(-?\d+) (\S+) (\S+) '
-                                                  r'(-?\d+) (\S+) (\S+) '
-                                                  r'([-+]?\d*\.?\d+) '
-                                                  r'([-+]?\d*\.?\d+).*')
-
-        self.dist_sander_w_chain_pat = re.compile(r'([A-Z]) (-?\d+) (\S+) (\S+) '
-                                                  r'([A-Z]) (-?\d+) (\S+) (\S+) ?'
-                                                  r'([-+]?\d*\.?\d+)?.*')
-
-        self.ang_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+): '
-                                         r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                         r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                         r'\(\s*(-?\d+) (\S+) (\S+)\s*\).*')  # r'([-+]?\d*\.?\d+) [-+]?\d*\.?\d+).*')
-
-        self.ang_sander_pat2 = re.compile(r'angle (\S+) '
-                                          r'(\S+), (-?\d+) '
-                                          r'(\S+), (-?\d+) '
-                                          r'(\S+), (-?\d+) ?'
-                                          r'([-+]?\d*\.?\d+)?.*')
-
-        self.ang_sander_w_chain_pat = re.compile(r'([A-Z]) (-?\d+) (\S+) (\S+): '
-                                                 r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                                 r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                                 r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\).*')
-
-        self.ang_nang_sander_pat = re.compile(r'N angles for residue (-?\d+).*')
-
-        self.ang_nang_sander_w_chain_pat = re.compile(r'N angles for residue ([A-Z]) (-?\d+).*')
-
-        self.ang_nang_atoms = [['H', 'N', 'C'],
-                               ['H', 'N', 'CA']
-                               ]
-
-        self.ang_cang_sander_pat = re.compile(r'C angles for residue (-?\d+).*')
-
-        self.ang_cang_sander_w_chain_pat = re.compile(r'C angles for residue ([A-Z]) (-?\d+).*')
-
-        self.ang_cang_atoms = {'Y': [["H1'", "C1'", 'N1'],  # for pyrimidines (i.e. C, T, U)
-                                     ["H1'", "C1'", "C2'"],
-                                     ["H1'", "C1'", "O4'"]],
-                               'R': [["H1'", "C1'", 'N9'],  # for purines (i.e. G, A)
-                                     ["H1'", "C1'", "C2'"],
-                                     ["H1'", "C1'", "O4'"]]
-                               }
-
-        self.ang_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s* '
-                                                  r'angle restraint for residue(.*) (-?\d+).*')
-
-        self.dihed_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+): '
-                                           r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                           r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                           r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                           r'\(\s*(-?\d+) (\S+) (\S+)\s*\) ?'
-                                           r'([-+]?\d*\.?\d+)? ?'
-                                           r'([-+]?\d*\.?\d+)?.*')
-
-        self.dihed_sander_pat2 = re.compile(r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\) ?'
-                                            r'([-+]?\d*\.?\d+)? ?'
-                                            r'([-+]?\d*\.?\d+)?.*')
-
-        self.dihed_sander_pat3 = re.compile(r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)'
-                                            r'(\S+)?.*')
-
-        self.dihed_sander_pat4 = re.compile(r'\s*(-?\d+) (\S+) (\S+)\s* '
-                                            r'\s*(-?\d+) (\S+) (\S+)\s* '
-                                            r'\s*(-?\d+) (\S+) (\S+)\s* '
-                                            r'\s*(-?\d+) (\S+) (\S+)\s*'
-                                            r'(\S+)?.*')
-
-        self.dihed_sander_pat5 = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s* '
-                                            r'restraint for residue(.*) (-?\d+).*')
-
-        self.dihed_sander_lig_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+).*')
-
-        self.dihed_sander_w_chain_pat = re.compile(r'([A-Z]) (-?\d+) (\S+) (\S+): '
-                                                   r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                                   r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                                   r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                                   r'\(\s*([A-Z]) (-?\d+) (\S+) (\S+)\s*\) ?'
-                                                   r'([-+]?\d*\.?\d+)? ?'
-                                                   r'([-+]?\d*\.?\d+)?.*')
-
-        self.dihed_chiral_sander_pat = re.compile(r'chirality for residue (-?\d+) atoms: '
-                                                  r'(\S+) (\S+) (\S+) (\S+).*')
-
-        self.dihed_chiral_sander_w_chain_pat = re.compile(r'chirality for residue ([A-Z]) (-?\d+) atoms: '
-                                                          r'(\S+) (\S+) (\S+) (\S+).*')
-
-        self.dihed_tomega_sander_pat = re.compile(r'trans-omega constraint for residue (-?\d+).*')
-
-        self.dihed_tomega_sander_w_chain_pat = re.compile(r'trans-omega constraint for residue ([A-Z]) (-?\d+).*')
-
-        self.dihed_tomega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
-
-        self.dihed_comega_sander_pat = re.compile(r'cis-omega constraint for residue (-?\d+).*')
-
-        self.dihed_comega_sander_w_chain_pat = re.compile(r'cis-omega constraint for residue ([A-Z]) (-?\d+).*')
-
-        self.dihed_comega_atoms = ['CA', 'N', 'C', 'O']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), O(i-1) (e.g. 2m2d)
-
-        self.dihed_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+) '
-                                                    r'restraint for residue(.*) (-?\d+).*')
-
-        self.dihed_plane_residue_pat = re.compile(r'PLANAR RESTRAINTS FOR RESIDUE (-?\d+).*')
-
-        self.dihed_plane_sander_pat = re.compile(r'ANGLE (\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+) -> '
-                                                 r'([-+]?\d*\.?\d+).*')
 
         self.sfDict = {}
 
@@ -1153,8 +1153,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.metalIonMapping = {}
                     self.metalIonMapping[self.lastElemName] = []
 
-            if self.dihed_plane_residue_pat.match(self.lastComment):
-                g = self.dihed_plane_residue_pat.search(self.lastComment).groups()
+            if self.__dihed_plane_residue_pat.match(self.lastComment):
+                g = self.__dihed_plane_residue_pat.search(self.lastComment).groups()
                 self.lastPlaneSeqId = int(g[0])
 
     # Enter a parse tree produced by AmberMRParser#nmr_restraint.
@@ -1969,24 +1969,24 @@ class AmberMRParserListener(ParseTreeListener):
                         e = self.lastElemName
 
                         g = None\
-                            if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
-                            else self.dist_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dist_sander_pat.match(self.lastComment)\
+                            else self.__dist_sander_pat.search(self.lastComment).groups()
 
                         g2 = None\
-                            if self.lastComment is None or g is not None or not self.dist_sander_pat2.match(self.lastComment)\
-                            else self.dist_sander_pat2.search(self.lastComment).groups()
+                            if self.lastComment is None or g is not None or not self.__dist_sander_pat2.match(self.lastComment)\
+                            else self.__dist_sander_pat2.search(self.lastComment).groups()
 
                         gac = None\
-                            if self.lastComment is None or g is not None or not self.dist_amb_comp_sander_pat.match(self.lastComment)\
-                            else self.dist_amb_comp_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or g is not None or not self.__dist_amb_comp_sander_pat.match(self.lastComment)\
+                            else self.__dist_amb_comp_sander_pat.search(self.lastComment).groups()
 
                         gas = None\
-                            if self.lastComment is None or g is not None or not self.dist_amb_sel_sander_pat.match(self.lastComment)\
-                            else self.dist_amb_sel_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or g is not None or not self.__dist_amb_sel_sander_pat.match(self.lastComment)\
+                            else self.__dist_amb_sel_sander_pat.search(self.lastComment).groups()
 
                         gwc = None\
-                            if self.lastComment is None or g is not None or not self.dist_sander_w_chain_pat.match(self.lastComment)\
-                            else self.dist_sander_w_chain_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or g is not None or not self.__dist_sander_w_chain_pat.match(self.lastComment)\
+                            else self.__dist_sander_w_chain_pat.search(self.lastComment).groups()
 
                         failed = False
                         factor1 = factor2 = None
@@ -2296,8 +2296,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                     around = float(g[6]) + 1.0
 
                                                                     gr = None\
-                                                                        if self.lastComment is None or not self.dist_sander_w_range_pat.match(self.lastComment)\
-                                                                        else self.dist_sander_w_range_pat.search(self.lastComment).groups()
+                                                                        if self.lastComment is None or not self.__dist_sander_w_range_pat.match(self.lastComment)\
+                                                                        else self.__dist_sander_w_range_pat.search(self.lastComment).groups()
 
                                                                     if gr is not None:
                                                                         _around = max(float(gr[6]), float(gr[7]))
@@ -2536,68 +2536,68 @@ class AmberMRParserListener(ParseTreeListener):
                         subtype_name = 'angle restraint'
 
                         g = None\
-                            if self.lastComment is None or not self.ang_sander_pat.match(self.lastComment)\
-                            else self.ang_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_sander_pat.match(self.lastComment)\
+                            else self.__ang_sander_pat.search(self.lastComment).groups()
 
                         g2 = None\
-                            if self.lastComment is None or not self.ang_sander_pat2.match(self.lastComment)\
-                            else self.ang_sander_pat2.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_sander_pat2.match(self.lastComment)\
+                            else self.__ang_sander_pat2.search(self.lastComment).groups()
 
                         gn = None\
-                            if self.lastComment is None or not self.ang_nang_sander_pat.match(self.lastComment)\
-                            else self.ang_nang_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_nang_sander_pat.match(self.lastComment)\
+                            else self.__ang_nang_sander_pat.search(self.lastComment).groups()
 
                         _gn = None\
                             if self.lastComment is not None or gn is not None or self.prevComment is None\
-                            or not self.ang_nang_sander_pat.match(self.prevComment)\
-                            else self.ang_nang_sander_pat.search(self.prevComment).groups()
+                            or not self.__ang_nang_sander_pat.match(self.prevComment)\
+                            else self.__ang_nang_sander_pat.search(self.prevComment).groups()
 
                         gc = None\
-                            if self.lastComment is None or not self.ang_cang_sander_pat.match(self.lastComment)\
-                            else self.ang_cang_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_cang_sander_pat.match(self.lastComment)\
+                            else self.__ang_cang_sander_pat.search(self.lastComment).groups()
 
                         _gc = None\
                             if self.lastComment is not None or gc is not None or self.prevComment is None\
-                            or not self.ang_cang_sander_pat.match(self.prevComment)\
-                            else self.ang_cang_sander_pat.search(self.prevComment).groups()
+                            or not self.__ang_cang_sander_pat.match(self.prevComment)\
+                            else self.__ang_cang_sander_pat.search(self.prevComment).groups()
 
                         __gc = None\
                             if self.lastComment is not None or gc is not None\
                             or self.prevComment is not None or _gc is not None or self.ancComment is None\
-                            or not self.ang_cang_sander_pat.match(self.ancComment)\
-                            else self.ang_cang_sander_pat.search(self.ancComment).groups()
+                            or not self.__ang_cang_sander_pat.match(self.ancComment)\
+                            else self.__ang_cang_sander_pat.search(self.ancComment).groups()
 
                         gac = None\
-                            if self.lastComment is None or not self.ang_amb_comp_sander_pat.match(self.lastComment)\
-                            else self.ang_amb_comp_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_amb_comp_sander_pat.match(self.lastComment)\
+                            else self.__ang_amb_comp_sander_pat.search(self.lastComment).groups()
 
                         gwc = None\
-                            if self.lastComment is None or not self.ang_sander_w_chain_pat.match(self.lastComment)\
-                            else self.ang_sander_w_chain_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_sander_w_chain_pat.match(self.lastComment)\
+                            else self.__ang_sander_w_chain_pat.search(self.lastComment).groups()
 
                         gnwc = None\
-                            if self.lastComment is None or not self.ang_nang_sander_w_chain_pat.match(self.lastComment)\
-                            else self.ang_nang_sander_w_chain_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_nang_sander_w_chain_pat.match(self.lastComment)\
+                            else self.__ang_nang_sander_w_chain_pat.search(self.lastComment).groups()
 
                         _gnwc = None\
                             if self.lastComment is not None or gnwc is not None or self.prevComment is None\
-                            or not self.ang_nang_sander_w_chain_pat.match(self.prevComment)\
-                            else self.ang_nang_sander_w_chain_pat.search(self.prevComment).groups()
+                            or not self.__ang_nang_sander_w_chain_pat.match(self.prevComment)\
+                            else self.__ang_nang_sander_w_chain_pat.search(self.prevComment).groups()
 
                         gcwc = None\
-                            if self.lastComment is None or not self.ang_cang_sander_w_chain_pat.match(self.lastComment)\
-                            else self.ang_cang_sander_w_chain_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_cang_sander_w_chain_pat.match(self.lastComment)\
+                            else self.__ang_cang_sander_w_chain_pat.search(self.lastComment).groups()
 
                         _gcwc = None\
                             if self.lastComment is not None or gcwc is not None or self.prevComment is None\
-                            or not self.ang_cang_sander_w_chain_pat.match(self.prevComment)\
-                            else self.ang_cang_sander_w_chain_pat.search(self.prevComment).groups()
+                            or not self.__ang_cang_sander_w_chain_pat.match(self.prevComment)\
+                            else self.__ang_cang_sander_w_chain_pat.search(self.prevComment).groups()
 
                         __gcwc = None\
                             if self.lastComment is not None or gcwc is not None\
                             or self.prevComment is not None or _gcwc is not None or self.ancComment is None\
-                            or not self.ang_cang_sander_w_chain_pat.match(self.ancComment)\
-                            else self.ang_cang_sander_w_chain_pat.search(self.ancComment).groups()
+                            or not self.__ang_cang_sander_w_chain_pat.match(self.ancComment)\
+                            else self.__ang_cang_sander_w_chain_pat.search(self.ancComment).groups()
 
                         if _gn is not None:
                             for col, iat in enumerate(self.iat):
@@ -2607,7 +2607,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         pass
                                     else:
                                         seqId = int(_gn[0])
-                                        atomId = self.ang_nang_atoms[1][col]
+                                        atomId = self.__ang_nang_atoms[1][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None and not self.__useDefaultWoCompId:
                                             self.__useDefaultWoCompId = True
@@ -2642,7 +2642,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     else:
                                         chainId = _gnwc[0]
                                         seqId = int(_gnwc[1])
-                                        atomId = self.ang_nang_atoms[1][col]
+                                        atomId = self.__ang_nang_atoms[1][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
                                                                                         authChainId=chainId)
                                         if _factor is None:
@@ -2669,10 +2669,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         pass
                                     else:
                                         seqId = int(gn[0])
-                                        atomId = self.ang_nang_atoms[0][col]
+                                        atomId = self.__ang_nang_atoms[0][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
-                                            refAtomIds = self.ang_nang_atoms[0]
+                                            refAtomIds = self.__ang_nang_atoms[0]
                                             polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
@@ -2689,7 +2689,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 self.__useDefaultWoCompId = True
                                                 _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                                 if _factor is None:
-                                                    refAtomIds = self.ang_nang_atoms[0]
+                                                    refAtomIds = self.__ang_nang_atoms[0]
                                                     polySeq = self.__polySeq
                                                     _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                                     for ps in polySeq:
@@ -2732,7 +2732,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     else:
                                         chainId = gnwc[0]
                                         seqId = int(gnwc[1])
-                                        atomId = self.ang_nang_atoms[0][col]
+                                        atomId = self.__ang_nang_atoms[0][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
                                                                                         authChainId=chainId)
                                         if _factor is None:
@@ -2759,7 +2759,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         pass
                                     else:
                                         seqId = int(__gc[0])
-                                        atomId = self.ang_cang_atoms['Y'][2][col]
+                                        atomId = self.__ang_cang_atoms['Y'][2][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None and not self.__useDefaultWoCompId:
                                             self.__useDefaultWoCompId = True
@@ -2794,7 +2794,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     else:
                                         chainId = __gcwc[0]
                                         seqId = int(__gcwc[1])
-                                        atomId = self.ang_cang_atoms['Y'][2][col]
+                                        atomId = self.__ang_cang_atoms['Y'][2][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
                                                                                         authChainId=chainId)
                                         if _factor is None:
@@ -2821,7 +2821,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         pass
                                     else:
                                         seqId = int(_gc[0])
-                                        atomId = self.ang_cang_atoms['Y'][1][col]
+                                        atomId = self.__ang_cang_atoms['Y'][1][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None and not self.__useDefaultWoCompId:
                                             self.__useDefaultWoCompId = True
@@ -2856,7 +2856,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     else:
                                         chainId = _gcwc[0]
                                         seqId = int(_gcwc[1])
-                                        atomId = self.ang_cang_atoms['Y'][1][col]
+                                        atomId = self.__ang_cang_atoms['Y'][1][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
                                                                                         authChainId=chainId)
                                         if _factor is None:
@@ -2884,10 +2884,10 @@ class AmberMRParserListener(ParseTreeListener):
                                     else:
                                         seqId = int(gc[0])
                                         for na in ('Y', 'R'):
-                                            atomId = self.ang_cang_atoms[na][0][col]
+                                            atomId = self.__ang_cang_atoms[na][0][col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None:
-                                                refAtomIds = self.ang_cang_atoms[na][0]
+                                                refAtomIds = self.__ang_cang_atoms[na][0]
                                                 polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                                 _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                                 for ps in polySeq:
@@ -2904,7 +2904,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     self.__useDefaultWoCompId = True
                                                     _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                                     if _factor is None:
-                                                        refAtomIds = self.ang_cang_atoms[na][0]
+                                                        refAtomIds = self.__ang_cang_atoms[na][0]
                                                         polySeq = self.__polySeq
                                                         _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                                         for ps in polySeq:
@@ -2950,7 +2950,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         chainId = gcwc[0]
                                         seqId = int(gcwc[1])
                                         for na in ('Y', 'R'):
-                                            atomId = self.ang_cang_atoms[na][0][col]
+                                            atomId = self.__ang_cang_atoms[na][0][col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
                                                                                             authChainId=chainId)
                                             if _factor is not None:
@@ -3112,65 +3112,65 @@ class AmberMRParserListener(ParseTreeListener):
                         subtype_name = 'torsional angle restraint'
 
                         g = None\
-                            if self.lastComment is None or not self.dihed_sander_pat.match(self.lastComment)\
-                            else self.dihed_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat.match(self.lastComment)\
+                            else self.__dihed_sander_pat.search(self.lastComment).groups()
 
                         g2 = None\
-                            if self.lastComment is None or not self.dihed_sander_pat2.match(self.lastComment)\
-                            else self.dihed_sander_pat2.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat2.match(self.lastComment)\
+                            else self.__dihed_sander_pat2.search(self.lastComment).groups()
 
                         g3 = None\
-                            if self.lastComment is None or not self.dihed_sander_pat3.match(self.lastComment)\
-                            else self.dihed_sander_pat3.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat3.match(self.lastComment)\
+                            else self.__dihed_sander_pat3.search(self.lastComment).groups()
 
                         g4 = None\
-                            if self.lastComment is None or not self.dihed_sander_pat4.match(self.lastComment)\
-                            else self.dihed_sander_pat4.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat4.match(self.lastComment)\
+                            else self.__dihed_sander_pat4.search(self.lastComment).groups()
 
                         g5 = None\
-                            if self.lastComment is None or not self.dihed_sander_pat5.match(self.lastComment)\
-                            else self.dihed_sander_pat5.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat5.match(self.lastComment)\
+                            else self.__dihed_sander_pat5.search(self.lastComment).groups()
 
                         gl = None\
                             if self.lastComment is None or not self.__hasNonPoly or g5 is not None\
-                            or not self.dihed_sander_lig_pat.match(self.lastComment)\
-                            else self.dihed_sander_lig_pat.search(self.lastComment).groups()
+                            or not self.__dihed_sander_lig_pat.match(self.lastComment)\
+                            else self.__dihed_sander_lig_pat.search(self.lastComment).groups()
 
                         gc = None\
-                            if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
-                            else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_chiral_sander_pat.match(self.lastComment)\
+                            else self.__dihed_chiral_sander_pat.search(self.lastComment).groups()
 
                         gto = None\
-                            if self.lastComment is None or not self.dihed_tomega_sander_pat.match(self.lastComment)\
-                            else self.dihed_tomega_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_tomega_sander_pat.match(self.lastComment)\
+                            else self.__dihed_tomega_sander_pat.search(self.lastComment).groups()
 
                         gco = None\
-                            if self.lastComment is None or not self.dihed_comega_sander_pat.match(self.lastComment)\
-                            else self.dihed_comega_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_comega_sander_pat.match(self.lastComment)\
+                            else self.__dihed_comega_sander_pat.search(self.lastComment).groups()
 
                         gac = None\
-                            if self.lastComment is None or not self.dihed_amb_comp_sander_pat.match(self.lastComment)\
-                            else self.dihed_amb_comp_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_amb_comp_sander_pat.match(self.lastComment)\
+                            else self.__dihed_amb_comp_sander_pat.search(self.lastComment).groups()
 
                         gp = None\
-                            if self.lastComment is None or self.lastPlaneSeqId is None or not self.dihed_plane_sander_pat.match(self.lastComment)\
-                            else self.dihed_plane_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or self.lastPlaneSeqId is None or not self.__dihed_plane_sander_pat.match(self.lastComment)\
+                            else self.__dihed_plane_sander_pat.search(self.lastComment).groups()
 
                         gwc = None\
-                            if self.lastComment is None or not self.dihed_sander_w_chain_pat.match(self.lastComment)\
-                            else self.dihed_sander_w_chain_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_w_chain_pat.match(self.lastComment)\
+                            else self.__dihed_sander_w_chain_pat.search(self.lastComment).groups()
 
                         gcwc = None\
-                            if self.lastComment is None or not self.dihed_chiral_sander_w_chain_pat.match(self.lastComment)\
-                            else self.dihed_chiral_sander_w_chain_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_chiral_sander_w_chain_pat.match(self.lastComment)\
+                            else self.__dihed_chiral_sander_w_chain_pat.search(self.lastComment).groups()
 
                         gtowc = None\
-                            if self.lastComment is None or not self.dihed_tomega_sander_w_chain_pat.match(self.lastComment)\
-                            else self.dihed_tomega_sander_w_chain_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_tomega_sander_w_chain_pat.match(self.lastComment)\
+                            else self.__dihed_tomega_sander_w_chain_pat.search(self.lastComment).groups()
 
                         gcowc = None\
-                            if self.lastComment is None or not self.dihed_comega_sander_w_chain_pat.match(self.lastComment)\
-                            else self.dihed_comega_sander_w_chain_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_comega_sander_w_chain_pat.match(self.lastComment)\
+                            else self.__dihed_comega_sander_w_chain_pat.search(self.lastComment).groups()
 
                         if gp is not None:
                             for col, iat in enumerate(self.iat):
@@ -3203,15 +3203,15 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqId = int(gto[0])
                                             if col >= 2:
                                                 seqId -= 1
-                                            atomId = self.dihed_tomega_atoms[col]
+                                            atomId = self.__dihed_tomega_atoms[col]
                                         else:
                                             seqId = int(gco[0])
                                             if col >= 2:
                                                 seqId -= 1
-                                            atomId = self.dihed_comega_atoms[col]
+                                            atomId = self.__dihed_comega_atoms[col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
-                                            refAtomIds = self.dihed_tomega_atoms if gto is not None else self.dihed_comega_atoms
+                                            refAtomIds = self.__dihed_tomega_atoms if gto is not None else self.__dihed_comega_atoms
                                             polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
@@ -3228,7 +3228,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 self.__useDefaultWoCompId = True
                                                 _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                                 if _factor is None:
-                                                    refAtomIds = self.dihed_tomega_atoms if gto is not None else self.dihed_comega_atoms
+                                                    refAtomIds = self.__dihed_tomega_atoms if gto is not None else self.__dihed_comega_atoms
                                                     polySeq = self.__polySeq
                                                     _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                                     for ps in polySeq:
@@ -3274,13 +3274,13 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqId = int(gtowc[1])
                                             if col >= 2:
                                                 seqId -= 1
-                                            atomId = self.dihed_tomega_atoms[col]
+                                            atomId = self.__dihed_tomega_atoms[col]
                                         else:
                                             chainId = gcowc[0]
                                             seqId = int(gcowc[1])
                                             if col >= 2:
                                                 seqId -= 1
-                                            atomId = self.dihed_comega_atoms[col]
+                                            atomId = self.__dihed_comega_atoms[col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
                                                                                         authChainId=chainId)
                                         if _factor is None:
@@ -4264,8 +4264,8 @@ class AmberMRParserListener(ParseTreeListener):
                         subtype_name = 'distance restraint'
 
                         g = None\
-                            if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
-                            else self.dist_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dist_sander_pat.match(self.lastComment)\
+                            else self.__dist_sander_pat.search(self.lastComment).groups()
 
                         for col, funcExpr in enumerate(self.funcExprs):
                             offset = col * 3
@@ -4311,40 +4311,40 @@ class AmberMRParserListener(ParseTreeListener):
                         subtype_name = 'angle restraint'
 
                         g = None\
-                            if self.lastComment is None or not self.ang_sander_pat.match(self.lastComment)\
-                            else self.ang_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_sander_pat.match(self.lastComment)\
+                            else self.__ang_sander_pat.search(self.lastComment).groups()
 
                         g2 = None\
-                            if self.lastComment is None or not self.ang_sander_pat2.match(self.lastComment)\
-                            else self.ang_sander_pat2.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_sander_pat2.match(self.lastComment)\
+                            else self.__ang_sander_pat2.search(self.lastComment).groups()
 
                         gn = None\
-                            if self.lastComment is None or not self.ang_nang_sander_pat.match(self.lastComment)\
-                            else self.ang_nang_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_nang_sander_pat.match(self.lastComment)\
+                            else self.__ang_nang_sander_pat.search(self.lastComment).groups()
 
                         _gn = None\
                             if self.lastComment is not None or gn is not None or self.prevComment is None\
-                            or not self.ang_nang_sander_pat.match(self.prevComment)\
-                            else self.ang_nang_sander_pat.search(self.prevComment).groups()
+                            or not self.__ang_nang_sander_pat.match(self.prevComment)\
+                            else self.__ang_nang_sander_pat.search(self.prevComment).groups()
 
                         gc = None\
-                            if self.lastComment is None or not self.ang_cang_sander_pat.match(self.lastComment)\
-                            else self.ang_cang_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_cang_sander_pat.match(self.lastComment)\
+                            else self.__ang_cang_sander_pat.search(self.lastComment).groups()
 
                         _gc = None\
                             if self.lastComment is not None or gc is not None or self.prevComment is None\
-                            or not self.ang_cang_sander_pat.match(self.prevComment)\
-                            else self.ang_cang_sander_pat.search(self.prevComment).groups()
+                            or not self.__ang_cang_sander_pat.match(self.prevComment)\
+                            else self.__ang_cang_sander_pat.search(self.prevComment).groups()
 
                         __gc = None\
                             if self.lastComment is not None or gc is not None\
                             or self.prevComment is not None or _gc is not None or self.ancComment is None\
-                            or not self.ang_cang_sander_pat.match(self.ancComment)\
-                            else self.ang_cang_sander_pat.search(self.ancComment).groups()
+                            or not self.__ang_cang_sander_pat.match(self.ancComment)\
+                            else self.__ang_cang_sander_pat.search(self.ancComment).groups()
 
                         gac = None\
-                            if self.lastComment is None or not self.ang_amb_comp_sander_pat.match(self.lastComment)\
-                            else self.ang_amb_comp_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__ang_amb_comp_sander_pat.match(self.lastComment)\
+                            else self.__ang_amb_comp_sander_pat.search(self.lastComment).groups()
 
                         if _gn is not None:
                             for col, funcExpr in enumerate(self.funcExprs):
@@ -4356,7 +4356,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             pass
                                         else:
                                             seqId = int(_gn[0])
-                                            atomId = self.ang_nang_atoms[1][col]
+                                            atomId = self.__ang_nang_atoms[1][col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None:
                                                 if not self.__useDefaultWoCompId:
@@ -4387,7 +4387,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             pass
                                         else:
                                             seqId = int(gn[0])
-                                            atomId = self.ang_nang_atoms[0][col]
+                                            atomId = self.__ang_nang_atoms[0][col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None and not self.__useDefaultWoCompId:
                                                 self.__useDefaultWoCompId = True
@@ -4417,7 +4417,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             pass
                                         else:
                                             seqId = int(_gc[0])
-                                            atomId = self.ang_cang_atoms['Y'][2][col]
+                                            atomId = self.__ang_cang_atoms['Y'][2][col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None:
                                                 if not self.__useDefaultWoCompId:
@@ -4448,7 +4448,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             pass
                                         else:
                                             seqId = int(_gc[0])
-                                            atomId = self.ang_cang_atoms['Y'][1][col]
+                                            atomId = self.__ang_cang_atoms['Y'][1][col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None:
                                                 if not self.__useDefaultWoCompId:
@@ -4480,7 +4480,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         else:
                                             seqId = int(gc[0])
                                             for na in ('Y', 'R'):
-                                                atomId = self.ang_cang_atoms[na][0][col]
+                                                atomId = self.__ang_cang_atoms[na][0][col]
                                                 _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                                 if _factor is None and not self.__useDefaultWoCompId:
                                                     self.__useDefaultWoCompId = True
@@ -4595,45 +4595,45 @@ class AmberMRParserListener(ParseTreeListener):
                         subtype_name = 'torsional angle restraint'
 
                         g = None\
-                            if self.lastComment is None or not self.dihed_sander_pat.match(self.lastComment)\
-                            else self.dihed_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat.match(self.lastComment)\
+                            else self.__dihed_sander_pat.search(self.lastComment).groups()
 
                         g2 = None\
-                            if self.lastComment is None or not self.dihed_sander_pat2.match(self.lastComment)\
-                            else self.dihed_sander_pat2.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat2.match(self.lastComment)\
+                            else self.__dihed_sander_pat2.search(self.lastComment).groups()
 
                         g3 = None\
-                            if self.lastComment is None or not self.dihed_sander_pat3.match(self.lastComment)\
-                            else self.dihed_sander_pat3.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat3.match(self.lastComment)\
+                            else self.__dihed_sander_pat3.search(self.lastComment).groups()
 
                         g4 = None\
-                            if self.lastComment is None or not self.dihed_sander_pat4.match(self.lastComment)\
-                            else self.dihed_sander_pat4.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat4.match(self.lastComment)\
+                            else self.__dihed_sander_pat4.search(self.lastComment).groups()
 
                         g5 = None\
-                            if self.lastComment is None or not self.dihed_sander_pat5.match(self.lastComment)\
-                            else self.dihed_sander_pat5.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_sander_pat5.match(self.lastComment)\
+                            else self.__dihed_sander_pat5.search(self.lastComment).groups()
 
                         gl = None\
                             if self.lastComment is None or not self.__hasNonPoly or g5 is not None\
-                            or not self.dihed_sander_lig_pat.match(self.lastComment)\
-                            else self.dihed_sander_lig_pat.search(self.lastComment).groups()
+                            or not self.__dihed_sander_lig_pat.match(self.lastComment)\
+                            else self.__dihed_sander_lig_pat.search(self.lastComment).groups()
 
                         gc = None\
-                            if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
-                            else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_chiral_sander_pat.match(self.lastComment)\
+                            else self.__dihed_chiral_sander_pat.search(self.lastComment).groups()
 
                         gto = None\
-                            if self.lastComment is None or not self.dihed_tomega_sander_pat.match(self.lastComment)\
-                            else self.dihed_tomega_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_tomega_sander_pat.match(self.lastComment)\
+                            else self.__dihed_tomega_sander_pat.search(self.lastComment).groups()
 
                         gco = None\
-                            if self.lastComment is None or not self.dihed_comega_sander_pat.match(self.lastComment)\
-                            else self.dihed_comega_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_comega_sander_pat.match(self.lastComment)\
+                            else self.__dihed_comega_sander_pat.search(self.lastComment).groups()
 
                         gac = None\
-                            if self.lastComment is None or not self.dihed_amb_comp_sander_pat.match(self.lastComment)\
-                            else self.dihed_amb_comp_sander_pat.search(self.lastComment).groups()
+                            if self.lastComment is None or not self.__dihed_amb_comp_sander_pat.match(self.lastComment)\
+                            else self.__dihed_amb_comp_sander_pat.search(self.lastComment).groups()
 
                         if gc is not None:
                             for col, funcExpr in enumerate(self.funcExprs):
@@ -4678,12 +4678,12 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqId = int(gto[0])
                                                 if col >= 2:
                                                     seqId -= 1
-                                                atomId = self.dihed_tomega_atoms[col]
+                                                atomId = self.__dihed_tomega_atoms[col]
                                             else:
                                                 seqId = int(gco[0])
                                                 if col >= 2:
                                                     seqId -= 1
-                                                atomId = self.dihed_comega_atoms[col]
+                                                atomId = self.__dihed_comega_atoms[col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None and not self.__useDefaultWoCompId:
                                                 self.__useDefaultWoCompId = True

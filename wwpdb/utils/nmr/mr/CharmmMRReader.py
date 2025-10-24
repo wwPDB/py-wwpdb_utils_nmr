@@ -254,15 +254,6 @@ class CharmmMRReader:
 if __name__ == "__main__":
     reader = CharmmMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2bgo/2bgo-corrected.mr', None)
-
-    reader = CharmmMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2bgo/2bgo-corrected.mr',
-                 '../../tests-nmr/mock-data-remediation/2bgo/2bgo.cif')
-
-    reader = CharmmMRReader(True)
-    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2ms6/2ms6-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/2ms6/2ms6.cif')
 

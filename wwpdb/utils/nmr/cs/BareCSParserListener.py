@@ -36,10 +36,6 @@ except ImportError:
     from nmr.AlignUtil import monDict3
 
 
-reduced_residue_name_pattern = re.compile(r'([A-Za-z]+)(\d+)')
-rev_reduced_residue_name_pattern = re.compile(r'(\d+)([A-Za-z]+)')
-
-
 # This class defines a complete listener for a parse tree produced by BareCSParser.
 class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
@@ -48,6 +44,10 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     # collection of column name
     columnNameSelection = []
+
+    __reduced_residue_name_pat = re.compile(r'([A-Za-z]+)(\d+)')
+
+    __rev_reduced_residue_name_pat = re.compile(r'(\d+)([A-Za-z]+)')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
@@ -234,8 +234,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
                             elif isinstance(self.anySelection[idx], str):
-                                if self.__col_order.count('residue_name') == 0 and reduced_residue_name_pattern.match(self.anySelection[idx]):
-                                    g = reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
+                                    g = self.__reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[1])
                                     comp_id = g[0]
                                     if len(comp_id) == 1:
@@ -246,8 +246,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             comp_id = 'D' + comp_id
-                                elif self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
-                                    g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
+                                    g = self.__rev_reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[0])
                                     comp_id = g[1]
                                     if len(comp_id) == 1:
@@ -337,8 +337,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
                             elif isinstance(self.anySelection[idx], str):
-                                if self.__col_order.count('residue_name') == 0 and reduced_residue_name_pattern.match(self.anySelection[idx]):
-                                    g = reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
+                                    g = self.__reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[1])
                                     comp_id = g[0]
                                     if len(comp_id) == 1:
@@ -349,8 +349,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             comp_id = 'D' + comp_id
-                                elif self.__col_order.count('residue_name') == 0 and rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
-                                    g = rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
+                                    g = self.__rev_reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[0])
                                     comp_id = g[1]
                                     if len(comp_id) == 1:

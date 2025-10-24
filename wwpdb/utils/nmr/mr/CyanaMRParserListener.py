@@ -26,7 +26,6 @@ try:
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import (BaseLinearMRParserListener,
                                                                DIST_RANGE_MIN,
                                                                DIST_RANGE_MAX,
-                                                               DIST_ERROR_MIN,
                                                                DIST_ERROR_MAX)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
@@ -75,7 +74,6 @@ except ImportError:
     from nmr.mr.BaseLinearMRParserListener import (BaseLinearMRParserListener,
                                                    DIST_RANGE_MIN,
                                                    DIST_RANGE_MAX,
-                                                   DIST_ERROR_MIN,
                                                    DIST_ERROR_MAX)
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
@@ -138,44 +136,6 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.file_type = 'nm-res-cya'
         self.software_name = 'CYANA'
-
-        self.allowZeroUpperLimit = False
-
-        self.cur_dist_type = ''
-
-        self.cur_subtype = ''
-        self.cur_subtype_altered = False
-        self.cur_comment_inlined = False
-        self.cur_rdc_orientation = 0
-
-        self.max_dist_value = DIST_ERROR_MIN
-        self.min_dist_value = DIST_ERROR_MAX
-
-        self.dihed_lb_greater_than_ub = False
-        self.dihed_ub_always_positive = True
-
-        self.distRestraints = 0      # CYANA: Distance restraint file (.upl or .lol)
-        self.dihedRestraints = 0     # CYANA: Torsion angle restraint file (.aco)
-        self.rdcRestraints = 0       # CYANA: Residual dipolar coupling restraint file (.rdc)
-        self.pcsRestraints = 0       # CYANA: Pseudocontact shift restraint file (.pcs)
-        self.noepkRestraints = 0     # CYANA: NOESY volume restraint file (.upv or .lov)
-        self.jcoupRestraints = 0     # CYANA: Scalar coupling constant restraint file (.cco)
-        self.geoRestraints = 0       # CYANA: Coordinate geometry restraints
-        self.hbondRestraints = 0     # CYANA: Hydrogen bond geometry restraints
-        self.ssbondRestraints = 0    # CYANA: Disulfide bond geometry restraints
-        self.fchiralRestraints = 0   # CYANA: Floating chiral stereo assignments
-
-        self.rdcParameterDict = None
-
-        self.pcsParameterDict = None
-
-        self.atomSelectionSet = []
-
-        self.numberSelection = []
-
-        self.auxAtomSelectionSet = ''
-
-        self.cur_resname_for_mapping = ''
 
         self.col_order_of_dist_w_chain = {}
 
@@ -6267,7 +6227,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             except Exception as e:
                 if self.verbose:
-                    self.lfh.write(f"+{self.__class_name__}.exitSsbond_macro() ++ Error  - {str(e)}")
+                    self.log.write(f"+{self.__class_name__}.exitSsbond_macro() ++ Error  - {str(e)}")
 
             if self.createSfDict:
                 sf = self.getSf()
@@ -6378,7 +6338,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             except Exception as e:
                 if self.verbose:
-                    self.lfh.write(f"+{self.__class_name__}.exitHbond_macro() ++ Error  - {str(e)}")
+                    self.log.write(f"+{self.__class_name__}.exitHbond_macro() ++ Error  - {str(e)}")
 
             if self.createSfDict:
                 sf = self.getSf()
@@ -6545,7 +6505,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             except Exception as e:
                 if self.verbose:
-                    self.lfh.write(f"+{self.__class_name__}.exitLink_statement() ++ Error  - {str(e)}")
+                    self.log.write(f"+{self.__class_name__}.exitLink_statement() ++ Error  - {str(e)}")
 
             if self.createSfDict:
                 sf = self.getSf('covalent bond linkage')

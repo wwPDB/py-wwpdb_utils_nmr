@@ -334,6 +334,9 @@ class BaseLinearMRParserListener():
     # CYANA specific
     cur_rdc_orientation = 0
 
+    # column_order of distance restraints with chain
+    col_order_of_dist_w_chain = {}
+
     # whether to allow extended sequence temporary
     allow_ext_seq = False
 
@@ -607,7 +610,7 @@ class BaseLinearMRParserListener():
         return self.__verbose
 
     @property
-    def lfh(self):
+    def log(self):
         return self.__lfh
 
     @property

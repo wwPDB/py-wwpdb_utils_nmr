@@ -6410,6 +6410,10 @@ class BaseStackedMRParserListener():
                             elif seqId == 1 and atomId == 'H1' and self.csStat.peptideLike(compId) and 'H' in atomSiteAtomId:
                                 atomIds = ['H']
 
+                        if atomId.startswith('CEN') and len(atomIds) == 1:
+                            peptide, nucleotide, carbohydrate = self.csStat.getTypeOfCompId(compId)
+                            atomIds = self.csStat.getCentroidAtoms(compId, False, peptide, nucleotide, carbohydrate)
+
                         has_nx_local = has_nx_anchor = False
 
                         if self.cur_subtype in ('dist', 'pcs', 'pre', 'prdc', 'pccr')\

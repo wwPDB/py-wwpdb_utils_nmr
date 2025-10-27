@@ -4049,6 +4049,10 @@ class BaseLinearMRParserListener():
                     elif seqId == 1 and atomId_ == 'H1' and self.csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
                         _atomId = ['H']
 
+                if authAtomId.upper().startswith('CEN') and len(_atomId) == 0:
+                    peptide, nucleotide, carbohydrate = self.csStat.getTypeOfCompId(cifCompId)
+                    _atomId = self.csStat.getCentroidAtoms(cifCompId, False, peptide, nucleotide, carbohydrate)
+
                 if coordAtomSite is None and not isPolySeq and self.hasNonPolySeq:
                     try:
                         for np in self.__nonPolySeq:

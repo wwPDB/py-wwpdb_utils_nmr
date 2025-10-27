@@ -51155,6 +51155,7 @@ class NmrDpUtility:
 
         auth_to_star_seq = self.__caC['auth_to_star_seq']
         auth_to_label_seq = self.__caC['auth_to_label_seq']
+        auth_to_orig_seq = self.__caC['auth_to_orig_seq']
         label_to_auth_seq = self.__caC['label_to_auth_seq']
         coord_atom_site = self.__caC['coord_atom_site']
         coord_unobs_res = self.__caC['coord_unobs_res']
@@ -51245,6 +51246,19 @@ class NmrDpUtility:
 
                 if comp_id == cif_comp_id:
                     return True, seq_key, coord_atom_site_
+
+                _seq_key = (chain_id, seq_id, comp_id)
+
+                if _seq_key in auth_to_orig_seq:
+                    _seq_key_ = auth_to_orig_seq[_seq_key]
+
+                    seq_key = (chain_id, _seq_key_[0])
+
+                    if seq_key in coord_atom_site:
+                        _coord_atom_site_ = coord_atom_site[seq_key]
+
+                        if _coord_atom_site_['comp_id'] == comp_id:
+                            return True, seq_key, _coord_atom_site_
 
             if (chain_id, seq_id) in label_to_auth_seq:
                 _chain_id, _seq_id = label_to_auth_seq[(chain_id, seq_id)]

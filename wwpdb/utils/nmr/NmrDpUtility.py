@@ -10959,6 +10959,10 @@ class NmrDpUtility:
                 elif not self.__remediation_mode:
                     err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
 
+                    if self.__validation_server and lp_category == '_Chem_comp_assembly':
+                        err = f"A saveframe with a category {lp_category!r} is missing that indicates {file_name!r} is not NMR unified data file. "\
+                            f"Please re-upload the file as an usual assigned chemical shift file."
+
                     self.report.error.appendDescription('missing_mandatory_content',
                                                         {'file_name': file_name, 'description': err})
                     self.report.setError()
@@ -35220,6 +35224,7 @@ class NmrDpUtility:
             return True
 
         ar_file_path_list = 'atypical_restraint_file_path_list'
+
         if ar_file_path_list not in self.__inputParamDict:
             return True
 

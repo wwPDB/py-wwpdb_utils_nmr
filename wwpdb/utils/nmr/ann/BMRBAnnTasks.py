@@ -1643,6 +1643,14 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'internal reference'
                                     lp.data[idx][isotopic_labeling_col] = 'natural abundance'
                                     default_internal_reference = mol_common_name.upper()
+                                elif 'phosph' in mol_common_name\
+                                    and ('ylethanolamine' in mol_common_name or 'ylcholine' in mol_common_name
+                                         or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
+                                         or 'lipid' in mol_common_name):
+                                    lp.data[idx][type_col] = 'phospholipid'
+                                else:
+                                    if lp.data[idx][type_col] in emptyValue:
+                                        lp.data[idx][type_col] = 'na (not yet decided)'
                         if row[2] not in emptyValue:
                             if is_natural_abundance(row[2]):
                                 lp.data[idx][isotopic_labeling_col] = 'natural abundance'

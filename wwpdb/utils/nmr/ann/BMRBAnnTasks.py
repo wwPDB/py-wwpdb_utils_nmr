@@ -1648,9 +1648,6 @@ class BMRBAnnTasks:
                                          or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
                                          or 'lipid' in mol_common_name):
                                     lp.data[idx][type_col] = 'phospholipid'
-                                else:
-                                    if lp.data[idx][type_col] in emptyValue:
-                                        lp.data[idx][type_col] = 'na (not yet decided)'
                         if row[2] not in emptyValue:
                             if is_natural_abundance(row[2]):
                                 lp.data[idx][isotopic_labeling_col] = 'natural abundance'
@@ -1920,6 +1917,32 @@ class BMRBAnnTasks:
                                 _lp.add_data(row)
                                 cur_id += 1
 
+                    tags = ['Entity_ID', 'Type', 'Mol_common_name', 'Isotopic_labeling']
+
+                    data = lp.get_tag(tags)
+
+                    for idx, row in enumerate(data):
+                        if row[0] in emptyValue and row[1] in emptyValue:
+                            entity_id = next((_row[0] for _row in data
+                                              if len([term in _row[2] for term in row[2].split()]) > 2 and row[3] != _row[3]), None)
+                            if entity_id is None:
+                                continue
+                            if isinstance(entity_id, str):
+                                entity_id = int(entity_id)
+                            if entity_id is not None and entity_id in entity_dict:
+                                entity = entity_dict[entity_id]
+                                lp.data[idx][assembly_id_col] = entity['assembly_id']
+                                lp.data[idx][assembly_label_col] = entity['assembly_label']
+                                lp.data[idx][entity_id_col] = entity_id
+                                lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
+                                lp.data[idx][type_col] = entity['sample_type']
+                                _lp.add_data(lp.data[idx])
+                                cur_id += 1
+
+                    tags = ['Entity_ID', 'Type']
+
+                    data = lp.get_tag(tags)
+
                     unsorted_sample_types = []
                     for idx, row in enumerate(data):
                         if row[1] in emptyValue:
@@ -1927,7 +1950,7 @@ class BMRBAnnTasks:
                                 unsorted_sample_types.append('')
                             continue
                         if row[1] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid', 'carbohydrate', 'polysaccharide',
-                                      'reducing agent', 'chelating agent', 'salt', 'buffer', 'internal reference', 'solvent'):
+                                      'reducing agent', 'chelating agent', 'salt', 'buffer', 'phospholipid', 'internal reference', 'solvent'):
                             continue
                         if row[1] not in unsorted_sample_types:
                             unsorted_sample_types.append(row[1])
@@ -1952,7 +1975,7 @@ class BMRBAnnTasks:
                                     _lp.add_data(row)
                                     cur_id += 1
 
-                    for sample_type in ['reducing agent', 'chelating agent', 'salt', 'buffer', 'internal reference', 'solvent']:
+                    for sample_type in ['reducing agent', 'chelating agent', 'salt', 'buffer', 'phospholipid', 'internal reference', 'solvent']:
                         idx_dict = []
                         for idx, row in enumerate(data):
                             if row[1] not in emptyValue and row[1] == sample_type:
@@ -1970,7 +1993,15 @@ class BMRBAnnTasks:
                                 row[id_col] = cur_id
                                 _lp.add_data(row)
                                 cur_id += 1
-
+                    # """
+                    # for idx, row in enumerate(data):
+                    #     if row[1] in emptyValue:
+                    #         _row = lp.data[idx]
+                    #         _row[type_col] = 'na (yet not decided)'
+                    #         _row[id_col] = cur_id
+                    #         _lp.add_data(_row)
+                    #         cur_id += 1
+                    # """
                     if has_mand_concentration_val:
                         del sf[lp]
 

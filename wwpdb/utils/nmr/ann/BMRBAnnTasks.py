@@ -1355,6 +1355,31 @@ class BMRBAnnTasks:
                 or isotopic_labeling.startswith('unlab')\
                 or 'protonated' in isotopic_labeling
 
+        def cross_check_entity(key, entity):
+            for f in entity['fragment'].split():
+                _f = f.lower()
+                if len(f) > 3 and (_f in key or key in _f):
+                    return True
+            for f in entity['mutation'].split():
+                _f = f.lower()
+                if len(f) > 2 and (_f in key or key in _f):
+                    return True
+            for n in entity['common_names']:
+                for f in n.split():
+                    _f = f.lower()
+                    if len(f) > 3 and (_f in key or key in _f):
+                        return True
+            for n in entity['gene_mnemonic']:
+                for f in n.split():
+                    _f = f.lower()
+                    if len(f) > 2 and (_f in key or key in _f):
+                        return True
+            for k in key.split():
+                if any((k in _f or _f in k) for _f in entity['sf_framecode'].lower().split() if len(_f) > 3)\
+                   or any((k in _f or _f in k) for _f in entity['name'].lower().split() if len(_f) > 3):
+                    return True
+            return False
+
         if sf_category in self.__sfCategoryList:
             sf_list = master_entry.get_saveframes_by_category(sf_category)
             is_single_sample_loop = len(sf_list) == 1
@@ -1476,14 +1501,32 @@ class BMRBAnnTasks:
                             del lp.data[idx]
                             break
 
+                    entity_id_remap = {}
+                    if len(entity_dict) > 1:
+                        for idx, row in enumerate(dat):
+                            if row[1] not in emptyValue and row[5] not in emptyValue:
+                                key = row[1].lower()
+                                entity_id = int(row[5]) if isinstance(row[5], str) else row[5]
+                                if entity_id in entity_dict:
+                                    entity = entity_dict[entity_id]
+                                    if cross_check_entity(key, entity):
+                                        continue
+                                    for k, entity in entity_dict.items():
+                                        if k != entity_id and cross_check_entity(key, entity):
+                                            entity_id_remap[entity_id] = k
+                                            if len(entity_dict) == 2:
+                                                entity_id_remap[k] = entity_id
+
                     for idx, row in enumerate(dat):
                         if row[0] in emptyValue:
                             lp.data[idx][id_col] = idx + 1
                         entity_id = None
                         if row[5] not in emptyValue:
-                            entity_id = int(row[5]) if isinstance(row[5], str) else row[5]
+                            entity_id = _entity_id = int(row[5]) if isinstance(row[5], str) else row[5]
+                            entity_id = entity_id_remap.get(entity_id, entity_id)
                             if entity_id in entity_dict:
                                 entity = entity_dict[entity_id]
+                                lp.data[idx][entity_id_col] = entity_id
                                 lp.data[idx][assembly_id_col] = entity['assembly_id']
                                 lp.data[idx][assembly_label_col] = entity['assembly_label']
                                 lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
@@ -1497,74 +1540,28 @@ class BMRBAnnTasks:
                                 h = redundant_solvent_pat.search(row[1])
                                 if h[1] == h[2]:
                                     row[1] = lp.data[idx][mol_common_name_col] = h[1]
-                            _name = row[1].lower()
-                            if _name not in ('nacl', 'kcl', 'cacl2', 'zncl2', 'mgcl2', 'ca+2', 'zn+2', 'mg+2', 'ca2+', 'zn2+', 'mg2+')\
-                               and 'chloride' not in _name:
+                            key = row[1].lower()
+                            if key not in ('nacl', 'kcl', 'cacl2', 'zncl2', 'mgcl2', 'ca+2', 'zn+2', 'mg+2', 'ca2+', 'zn2+', 'mg2+')\
+                               and 'chloride' not in key:
                                 entity_id = next((k for k, v in entity_dict.items()
                                                   if v['sf_framecode'] == row[1] or v['name'] == row[1]
                                                   and k not in touched_entity_id), None)
                                 if entity_id is None:
-                                    for k, v in entity_dict.items():
-                                        for f in v['fragment'].split():
-                                            _f = f.lower()
-                                            if len(f) > 3 and (_f in _name or _name in _f) and k not in touched_entity_id:
-                                                entity_id = k
-                                                break
-                                        if entity_id is not None:
+                                    for k, entity in entity_dict.items():
+                                        if cross_check_entity(key, entity) and k not in touched_entity_id:
+                                            entity_id = k
                                             break
-                                if entity_id is None:
-                                    for k, v in entity_dict.items():
-                                        for f in v['mutation'].split():
-                                            _f = f.lower()
-                                            if len(f) > 2 and (_f in _name or _name in _f) and k not in touched_entity_id:
-                                                entity_id = k
-                                                break
-                                        if entity_id is not None:
-                                            break
-                                if entity_id is None:
-                                    for k, v in entity_dict.items():
-                                        for n in v['common_names']:
-                                            for f in n.split():
-                                                _f = f.lower()
-                                                if len(f) > 3 and (_f in _name or _name in _f) and k not in touched_entity_id:
-                                                    entity_id = k
-                                                    break
-                                            if entity_id is not None:
-                                                break
-                                        if entity_id is not None:
-                                            break
-                                if entity_id is None:
-                                    for k, v in entity_dict.items():
-                                        for n in v['gene_mnemonic']:
-                                            for f in n.split():
-                                                _f = f.lower()
-                                                if len(f) > 2 and (_f in _name or _name in _f) and k not in touched_entity_id:
-                                                    entity_id = k
-                                                    break
-                                            if entity_id is not None:
-                                                break
-                                        if entity_id is not None:
-                                            break
-                                if entity_id is None:
-                                    for _n in _name.split():
-                                        if len(_n) > 3:
-                                            entity_id = next((k for k, v in entity_dict.items()
-                                                              if (any((_n in _f or _f in _n) for _f in v['sf_framecode'].lower().split() if len(_f) > 3)
-                                                                  or any((_n in _f or _f in _n) for _f in v['name'].lower().split() if len(_f) > 3))
-                                                              and k not in touched_entity_id), None)
-                                            if entity_id is not None:
-                                                break
-                            if entity_id is None and any(word in _name for word in protein_related_words):
+                            if entity_id is None and any(word in key for word in protein_related_words):
                                 can_entity_id = [k for k, v in entity_dict.items()
                                                  if k not in touched_entity_id and v['sample_type'] in ('protein', 'peptide')]
                                 if len(can_entity_id) == 1:
                                     entity_id = can_entity_id[0]
-                            if entity_id is None and any(word in _name for word in dna_related_words):
+                            if entity_id is None and any(word in key for word in dna_related_words):
                                 can_entity_id = [k for k, v in entity_dict.items()
                                                  if k not in touched_entity_id and v['sample_type'] == 'DNA']
                                 if len(can_entity_id) == 1:
                                     entity_id = can_entity_id[0]
-                            if entity_id is None and any(word in _name for word in rna_related_words):
+                            if entity_id is None and any(word in key for word in rna_related_words):
                                 can_entity_id = [k for k, v in entity_dict.items()
                                                  if k not in touched_entity_id and v['sample_type'] == 'RNA']
                                 if len(can_entity_id) == 1:
@@ -1929,6 +1926,7 @@ class BMRBAnnTasks:
                                 continue
                             if isinstance(entity_id, str):
                                 entity_id = int(entity_id)
+                            entity_id = entity_id_remap.get(entity_id, entity_id)
                             if entity_id is not None and entity_id in entity_dict:
                                 entity = entity_dict[entity_id]
                                 lp.data[idx][assembly_id_col] = entity['assembly_id']

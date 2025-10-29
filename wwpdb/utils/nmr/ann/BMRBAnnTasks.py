@@ -1592,7 +1592,7 @@ class BMRBAnnTasks:
                                 mol_common_name = row[1].lower()
                                 if mol_common_name in ('nan3', 'nano3') or 'azide' in mol_common_name:
                                     lp.data[idx][type_col] = 'cytocide'
-                                elif mol_common_name in ('k-pi', 'na-pi')\
+                                elif mol_common_name in ('k-pi', 'na-pi', 'kpi', 'napi')\
                                         or 'buffer' in mol_common_name\
                                         or 'acetate' in mol_common_name\
                                         or 'acetic' in mol_common_name\

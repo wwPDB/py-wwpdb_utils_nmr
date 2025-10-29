@@ -1204,9 +1204,19 @@ class NmrDpReport:
         if chain_assigns is None:
             return None
 
+        chain_mapping = {}
+        touched_auth_chain_ids = []
+        for ca in chain_assigns:
+            if 'test_auth_chain_id' not in ca:
+                continue
+            if ca['ref_chain_id'] not in chain_mapping and ca['test_auth_chain_id'] not in touched_auth_chain_ids:
+                chain_mapping[ca['ref_chain_id']] = ca['test_auth_chain_id']
+                touched_auth_chain_ids.append(ca['test_auth_chain_id'])
+
         for ca in chain_assigns:
 
-            if ca['ref_chain_id'] == nmr_chain_id:
+            if ca['ref_chain_id'] == nmr_chain_id and (ca['ref_chain_id'] not in chain_mapping
+                                                       or ca['test_auth_chain_id'] == chain_mapping[ca['ref_chain_id']]):
                 return self.getModelPolymerSequenceOf(ca['test_chain_id'])
 
         return None
@@ -1274,9 +1284,19 @@ class NmrDpReport:
         if chain_assigns is None:
             return None
 
+        chain_mapping = {}
+        touched_auth_chain_ids = []
+        for ca in chain_assigns:
+            if 'test_auth_chain_id' not in ca:
+                continue
+            if ca['ref_chain_id'] not in chain_mapping and ca['test_auth_chain_id'] not in touched_auth_chain_ids:
+                chain_mapping[ca['ref_chain_id']] = ca['test_auth_chain_id']
+                touched_auth_chain_ids.append(ca['test_auth_chain_id'])
+
         for ca in chain_assigns:
 
-            if ca['ref_chain_id'] == nmr_chain_id:
+            if ca['ref_chain_id'] == nmr_chain_id and (ca['ref_chain_id'] not in chain_mapping
+                                                       or ca['test_auth_chain_id'] == chain_mapping[ca['ref_chain_id']]):
                 return self.getModelSeq1LetterCodeOf(ca['test_chain_id'])
 
         return None

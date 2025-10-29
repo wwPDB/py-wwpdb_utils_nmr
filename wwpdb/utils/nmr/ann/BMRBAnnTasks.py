@@ -1400,7 +1400,7 @@ class BMRBAnnTasks:
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
                                         solvent_name = h[1]
-                                solvent_system[solvent_name] = float(g[0])
+                                solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
                                 solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
@@ -1426,7 +1426,7 @@ class BMRBAnnTasks:
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
                                         solvent_name = h[1]
-                                solvent_system[solvent_name] = float(g[0])
+                                solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
                                 solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
@@ -1449,7 +1449,7 @@ class BMRBAnnTasks:
                                 h = redundant_solvent_pat.search(solvent_name)
                                 if h[1] == h[2]:
                                     solvent_name = h[1]
-                            solvent_system[solvent_name] = float(g[0])
+                            solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
                             solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                         else:

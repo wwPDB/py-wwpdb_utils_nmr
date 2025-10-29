@@ -1332,7 +1332,7 @@ class BMRBAnnTasks:
 
         sf_category = 'sample'
 
-        solvent_with_percent_pat = re.compile(r'(\d+)%\s*([\S ]+)')
+        solvent_with_percent_pat = re.compile(r'(\d+|\d+\.\d+)%\s*([\S ]+)')
         deuterated_pat = re.compile(r'(?:[Dd]2[Oo]|\S+(\s\S+)?-[Dd]\d+|.*deuterate.*)')
         perdeuterated_pat = re.compile(r'.*perdeuterate.*')
         percent_value_pat = re.compile(r'(\d+|\d+\.\d+)\s*%')
@@ -1400,7 +1400,7 @@ class BMRBAnnTasks:
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
                                         solvent_name = h[1]
-                                solvent_system[solvent_name] = int(g[0])
+                                solvent_system[solvent_name] = float(g[0])
                                 solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
@@ -1426,7 +1426,7 @@ class BMRBAnnTasks:
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
                                         solvent_name = h[1]
-                                solvent_system[solvent_name] = int(g[0])
+                                solvent_system[solvent_name] = float(g[0])
                                 solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
@@ -1449,7 +1449,7 @@ class BMRBAnnTasks:
                                 h = redundant_solvent_pat.search(solvent_name)
                                 if h[1] == h[2]:
                                     solvent_name = h[1]
-                            solvent_system[solvent_name] = int(g[0])
+                            solvent_system[solvent_name] = float(g[0])
                             solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                         else:

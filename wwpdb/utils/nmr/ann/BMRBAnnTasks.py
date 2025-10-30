@@ -2689,12 +2689,15 @@ class BMRBAnnTasks:
                         _isotope_numbers = set()
 
                         for idx, row in enumerate(dat):
-                            if row[0] in emptyValue or not row[0].isdigit():
-                                continue
-                            _isotope_numbers.add(int(row[0]))
+                            if isinstance(row[0], int):
+                                _isotope_numbers.add(row[0])
+                            else:
+                                if row[0] in emptyValue or not row[0].isdigit():
+                                    continue
+                                _isotope_numbers.add(int(row[0]))
                             if row[1] not in emptyValue:
                                 try:
-                                    n = int(row[0])
+                                    n = int(row[0]) if isinstance(row[0], str) else row[0]
                                     ratio = float(row[1])
                                     if ratio <= 0.0 or ratio >= 1.0:
                                         if n in (1, 19, 31):

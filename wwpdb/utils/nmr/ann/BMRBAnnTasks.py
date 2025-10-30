@@ -1647,6 +1647,9 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'phospholipid'
                                 elif mol_common_name in ('tfe', 'trifluoroethanol'):
                                     lp.data[idx][type_col] = 'solvent'
+                                elif 'deuterate' in mol_common_name and 'd2o' in mol_common_name:
+                                    lp.data[idx][mol_common_name_col] = 'D2O'
+                                    lp.data[idx][type_col] = 'solvent'
 
                         if row[2] not in emptyValue:
                             if is_natural_abundance(row[2]):

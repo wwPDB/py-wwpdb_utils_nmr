@@ -338,8 +338,6 @@ class BMRBAnnTasks:
                             sync_exp_lp_and_sf(row, idx, 2, 3, '_Sample_condition_list')
                             sync_exp_lp_and_sf(row, idx, 4, 5, '_NMR_spectrometer')
 
-                    lp.sort_rows('ID')
-
                 except KeyError:
                     pass
 

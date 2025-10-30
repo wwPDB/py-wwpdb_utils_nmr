@@ -4332,7 +4332,7 @@ class BaseStackedMRParserListener():
 
                 return _factor
 
-        if ('atom_id' in _factor and _factor['atom_id'][0] is None)\
+        if ('atom_id' in _factor and len(_factor['atom_id']) > 0 and _factor['atom_id'][0] is None)\
            or ('atom_selection' in _factor and (_factor['atom_selection'] is None or len(_factor['atom_selection']) == 0)):
             return {'atom_selection': []}
 
@@ -4360,17 +4360,19 @@ class BaseStackedMRParserListener():
 
         if len(self.atomSelectionSet) == 0:
 
-            if self.cur_subtype == 'pcs' and not self.in_block and 'atom_id' in _factor and _factor['atom_id'][0].upper() in ('C', "C'", 'CO'):
-                self.cur_subtype = 'hvycs'
-                self.with_para = False
+            if 'atom_id' in _factor and len(_factor['atom_id']) > 0:
 
-            # for the case dist -> pre transition occurs
-            if 'atom_id' in _factor and _factor['atom_id'][0] not in ('CA', 'CE')\
-               and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] == 'OO'):
-                if self.cur_subtype == 'dist':
-                    self.with_para = True
-                if self.with_para:
-                    self.paramagCenter = copy.copy(_factor)
+                if self.cur_subtype == 'pcs' and not self.in_block and _factor['atom_id'][0].upper() in ('C', "C'", 'CO'):
+                    self.cur_subtype = 'hvycs'
+                    self.with_para = False
+
+                # for the case dist -> pre transition occurs
+                if _factor['atom_id'][0] not in ('CA', 'CE')\
+                   and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] == 'OO'):
+                    if self.cur_subtype == 'dist':
+                        self.with_para = True
+                    if self.with_para:
+                        self.paramagCenter = copy.copy(_factor)
 
         self.retrieveLocalSeqScheme()
 
@@ -5819,7 +5821,7 @@ class BaseStackedMRParserListener():
                                         _seqKey = (_chainId, _seqId)
                                         if _seqKey in self.__coordUnobsRes:
                                             unobs_seq = True  # 2n25
-                                        if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor:
+                                        if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
                                             _atomIds = self.getAtomIdList(_factor, self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
                                             if _atomIds[0] in self.__coordUnobsAtom[_seqKey]['atom_ids']:
                                                 unobs_seq = True
@@ -5858,7 +5860,7 @@ class BaseStackedMRParserListener():
                                             _seqKey = (_chainId, _seqId)
                                             if _seqKey in self.__coordUnobsRes:
                                                 unobs_seq = True  # 2n25
-                                            if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor:
+                                            if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
                                                 _atomIds[0] = self.getAtomIdList(_factor, self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
                                                 if _atomIds in self.__coordUnobsAtom[_seqKey]['atom_ids']:
                                                     unobs_seq = True

@@ -338,6 +338,8 @@ class BMRBAnnTasks:
                             sync_exp_lp_and_sf(row, idx, 2, 3, '_Sample_condition_list')
                             sync_exp_lp_and_sf(row, idx, 4, 5, '_NMR_spectrometer')
 
+                    lp.sort_rows('ID')
+
                 except KeyError:
                     pass
 
@@ -1128,6 +1130,8 @@ class BMRBAnnTasks:
                                 spectrometer_dict[spectrometer_id]['details'] = row[6 if has_serial_number else 5]
                         except ValueError:
                             continue
+
+                    lp.sort_rows('ID')
 
                 except KeyError:
                     continue

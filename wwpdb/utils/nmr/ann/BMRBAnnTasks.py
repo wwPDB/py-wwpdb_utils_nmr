@@ -1640,7 +1640,7 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'internal reference'
                                     lp.data[idx][isotopic_labeling_col] = 'natural abundance'
                                     default_internal_reference = mol_common_name.upper()
-                                elif 'pyridstatin' in mol_common_name:
+                                elif 'pyridostatin' in mol_common_name:
                                     lp.data[idx][type_col] = 'G-quadruplex stabilizing agent'
                                 elif 'phosph' in mol_common_name\
                                     and ('ylethanolamine' in mol_common_name or 'ylcholine' in mol_common_name

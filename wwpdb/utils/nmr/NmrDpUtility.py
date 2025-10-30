@@ -41899,6 +41899,11 @@ class NmrDpUtility:
                 else:
                     ent['exp_type'] = 'Unknown'
 
+                if file_type == 'nmr-star':
+                    exp_class = get_first_sf_tag(sf, 'Experiment_class')
+                    if len(exp_class) > 0:
+                        ent['exp_class'] = exp_class
+
         if content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt'):
 
             sa_name = 'nmr_poly_seq_vs_' + content_subtype

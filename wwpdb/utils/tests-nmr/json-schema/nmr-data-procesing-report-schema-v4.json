@@ -3882,6 +3882,10 @@
           "type": "string",
           "minLength": 1
         },
+        "exp_class": {
+          "type": "string",
+          "minLength": 1
+        },
         "sequence_coverage": {
           "type": "array",
           "items": {

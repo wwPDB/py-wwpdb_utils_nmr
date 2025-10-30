@@ -1267,8 +1267,9 @@ class BMRBAnnTasks:
                                 except ValueError:
                                     pass
 
-                        if row[0] == 'pressure' and row[1] == 'ambient' and row[2] == 'atm':
+                        if row[0] == 'pressure' and isinstance(row[1], str) and row[1].lower() == 'ambient':  # and row[2] == 'atm':
                             lp.data[idx][val_col] = '1'
+                            lp.data[idx][val_unit_col] = 'atm'
 
                         elif row[0] == 'temperature' and row[2] == 'C':
                             try:
@@ -1280,6 +1281,9 @@ class BMRBAnnTasks:
                                 pass
 
                         elif row[0] == 'ionic strength':
+                            if isinstance(row[1], str) and row[1].lower()[0] in ('n', 'u'):
+                                lp.data[idx][val_col] = '.'
+
                             ionic_strength_pat = re.compile(r'\s*(\d+)\s*(mM|M).*')
 
                             if isinstance(lp.data[idx][val_col], float) and lp.data[idx][val_col] > 0.0:
@@ -1315,6 +1319,9 @@ class BMRBAnnTasks:
                                                 _lp.add_data(row)
 
                         elif row[0].startswith('pH') or row[0].startswith('pD'):
+                            if isinstance(row[1], str) and row[1].lower()[0] in ('n', 'u'):
+                                lp.data[idx][val_col] = '.'
+
                             if isinstance(lp.data[idx][val_col], float) and lp.data[idx][val_col] > 0.0:
                                 pH = f'{row[0]}: {lp.data[idx][val_col]!r}'
                             else:

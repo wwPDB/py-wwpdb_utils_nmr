@@ -1645,6 +1645,9 @@ class BMRBAnnTasks:
                                          or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
                                          or 'lipid' in mol_common_name):
                                     lp.data[idx][type_col] = 'phospholipid'
+                                elif mol_common_name in ('tfe', 'trifluoroethanol'):
+                                    lp.data[idx][type_col] = 'solvent'
+
                         if row[2] not in emptyValue:
                             if is_natural_abundance(row[2]):
                                 lp.data[idx][isotopic_labeling_col] = 'natural abundance'

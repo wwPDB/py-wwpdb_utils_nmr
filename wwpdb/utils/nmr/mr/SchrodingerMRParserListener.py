@@ -1909,7 +1909,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     if len(self.fibril_chain_ids) > 0 and not self.hasNonPoly:
                         if chainId[0] in self.fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]
-                    elif len(self.polySeq) == 1 and not self.hasBranched and not self.hasNonPoly:
+                    elif self.monoPolymer and not self.hasBranched and not self.hasNonPoly:
                         self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                         self.factor['auth_chain_id'] = alt_pattern
                     elif self.reasons is not None:

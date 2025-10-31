@@ -6756,7 +6756,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if len(self.fibril_chain_ids) > 0 and not self.hasNonPoly:
                         if chainId[0] in self.fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]
-                    elif len(self.polySeq) == 1 and not self.hasBranched and not self.hasNonPoly:
+                    elif self.monoPolymer and not self.hasBranched and not self.hasNonPoly:
                         self.factor['chain_id'] = self.polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.reasons is not None:
@@ -8090,7 +8090,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 self.factor['chain_id'].append(_chainId)
 
                     if len(self.factor['chain_id']) == 0:
-                        if len(self.polySeq) == 1:
+                        if self.monoPolymer:
                             self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.reasons is not None:
@@ -8174,7 +8174,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if len(self.fibril_chain_ids) > 0 and not self.hasNonPoly:
                             if chainId[0] in self.fibril_chain_ids:
                                 self.factor['chain_id'] = [chainId[0]]
-                        elif len(self.polySeq) == 1 and not self.hasBranched and not self.hasNonPoly:
+                        elif self.monoPolymer and not self.hasBranched and not self.hasNonPoly:
                             self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.reasons is not None:

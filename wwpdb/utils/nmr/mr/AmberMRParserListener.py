@@ -342,6 +342,12 @@ class AmberMRParserListener(ParseTreeListener):
     __authToOrigSeq = None
     __authToInsCode = None
 
+    __monoPolymer = False
+    __multiPolymer = False
+    __lenPolySeq = 0
+    __monoNonPoly = False
+    __lenNonPoly = 0
+
     __offsetHolder = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
@@ -710,10 +716,17 @@ class AmberMRParserListener(ParseTreeListener):
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
 
+            self.__lenPolySeq = len(self.__polySeq)
+            self.__monoPolymer = self.__lenPolySeq == 1
+            self.__multiPolymer = self.__lenPolySeq > 1
+            if self.__nonPoly is not None:
+                self.__lenNonPoly = len(self.__nonPoly)
+                self.__monoNonPoly = self.__lenNonPoly == 1
+
         self.__offsetHolder = {}
 
-        self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
-        self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        self.__hasPolySeq = self.__polySeq is not None and self.__lenPolySeq > 0
+        self.__hasNonPoly = self.__nonPoly is not None and self.__lenNonPoly > 0
         self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
         if self.__hasNonPoly or self.__hasBranched:
             self.__hasNonPolySeq = True
@@ -727,7 +740,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
-            if len(self.__polySeq) > 1:
+            if self.__multiPolymer:
                 self.__concatHetero = True
                 for ps in self.__polySeq:
                     if 'identical_auth_chain_id' in ps:
@@ -953,7 +966,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if self.__chainAssign is not None:
 
-                    if len(self.__polySeq) == len(self.__polySeqRst):
+                    if self.__lenPolySeq == len(self.__polySeqRst):
 
                         chain_mapping = {}
 
@@ -964,7 +977,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if ref_chain_id != test_chain_id:
                                 chain_mapping[test_chain_id] = ref_chain_id
 
-                        if len(chain_mapping) == len(self.__polySeq):
+                        if len(chain_mapping) == self.__lenPolySeq:
 
                             for ps in self.__polySeqRst:
                                 if ps['chain_id'] in chain_mapping:
@@ -6283,7 +6296,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 ligands += 1
                     if ligands == 1:
                         authCompId = __compId
-                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(authCompId, False):
+                    elif self.__monoNonPoly and self.__ccU.updateChemCompDict(authCompId, False):
                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             authCompId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -11307,7 +11320,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 "Please attach ambiguous atom name mapping information generated "
                                 "by 'makeDIST_RST' to the AMBER restraint file.")
             else:
-                if len(self.__polySeq) == 1 and seqId < 1:
+                if self.__monoPolymer and seqId < 1:
                     refAuthChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append("[Atom not found] "
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "

@@ -1498,7 +1498,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     simpleNamesIndex += 1
 
                 if len(self.factor['chain_id']) == 0:
-                    if len(self.polySeq) == 1 and not self.hasBranched and not self.hasNonPoly:
+                    if self.monoPolymer and not self.hasBranched and not self.hasNonPoly:
                         self.factor['chain_id'] = self.polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.reasons is not None:
@@ -2668,7 +2668,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 self.factor['chain_id'].append(_chainId)
 
                     if len(self.factor['chain_id']) == 0:
-                        if len(self.polySeq) == 1:
+                        if self.monoPolymer:
                             self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.reasons is not None:
@@ -2740,7 +2740,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if self.factor['chain_id'] != [chainId]:
                             self.factor['alt_chain_id'] = chainId
                     if len(self.factor['chain_id']) == 0:
-                        if len(self.polySeq) == 1 and not self.hasBranched and not self.hasNonPoly:
+                        if self.monoPolymer and not self.hasBranched and not self.hasNonPoly:
                             self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.reasons is not None:

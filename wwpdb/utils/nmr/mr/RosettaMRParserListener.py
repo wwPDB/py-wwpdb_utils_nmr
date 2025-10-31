@@ -287,6 +287,11 @@ class RosettaMRParserListener(ParseTreeListener):
     __authToOrigSeq = None
     __authToInsCode = None
 
+    __monoPolymer = False
+    __multiPolymer = False
+    __lenPolySeq = 0
+    __lenNonPoly = 0
+
     __offsetHolder = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
@@ -414,10 +419,16 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
 
+            self.__lenPolySeq = len(self.__polySeq)
+            self.__monoPolymer = self.__lenPolySeq == 1
+            self.__multiPolymer = self.__lenPolySeq > 1
+            if self.__nonPoly is not None:
+                self.__lenNonPoly = len(self.__nonPoly)
+
         self.__offsetHolder = {}
 
-        self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
-        self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        self.__hasPolySeq = self.__polySeq is not None and self.__lenPolySeq > 0
+        self.__hasNonPoly = self.__nonPoly is not None and self.__lenNonPoly > 0
         self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
         if self.__hasNonPoly or self.__hasBranched:
             self.__hasNonPolySeq = True
@@ -579,7 +590,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 if self.__chainAssign is not None:
 
-                    if len(self.__polySeq) == len(self.__polySeqRst):
+                    if self.__lenPolySeq == len(self.__polySeqRst):
 
                         chain_mapping = {}
 
@@ -590,7 +601,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             if ref_chain_id != test_chain_id:
                                 chain_mapping[test_chain_id] = ref_chain_id
 
-                        if len(chain_mapping) == len(self.__polySeq):
+                        if len(chain_mapping) == self.__lenPolySeq:
 
                             for ps in self.__polySeqRst:
                                 if ps['chain_id'] in chain_mapping:
@@ -675,12 +686,12 @@ class RosettaMRParserListener(ParseTreeListener):
                         if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
 
-                            if polySeqRst is not None and (not self.__hasNonPoly or len(self.__polySeq) // len(self.__nonPoly) in (1, 2)):
+                            if polySeqRst is not None and (not self.__hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                 self.__polySeqRst = polySeqRst
                                 if 'chain_id_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
-                        if len(self.__polySeq) == 1 and len(self.__polySeqRst) == 1:
+                        if self.__monoPolymer and len(self.__polySeqRst) == 1:
                             polySeqRst, chainIdMapping, modelChainIdExt =\
                                 splitPolySeqRstForExactNoes(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
 
@@ -1792,7 +1803,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
@@ -1819,7 +1830,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1', fixedChainId)
-                if len(self.__polySeq) == 1 and seqId < 1:
+                if self.__monoPolymer and seqId < 1:
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
@@ -1866,7 +1877,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         compIds = guessCompIdFromAtomId([atomId], self.__polySeq, self.__nefT)
                         if compIds is not None:
                             chainId = fixedChainId
-                            if chainId is None and len(self.__polySeq) == 1:
+                            if chainId is None and self.__monoPolymer:
                                 chainId = self.__polySeq[0]['chain_id']
                             if chainId is not None:
                                 if len(compIds) == 1:
@@ -1875,7 +1886,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                     updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
 
             else:
-                if len(self.__polySeq) == 1 and seqId < 1:
+                if self.__monoPolymer and seqId < 1:
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
@@ -2063,7 +2074,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
@@ -2090,7 +2101,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                     "Please attach ambiguous atom name mapping information generated "
                                     "by 'makeDIST_RST' to the CYANA restraint file.")
                 else:
-                    if len(self.__polySeq) == 1 and seqId < 1:
+                    if self.__monoPolymer and seqId < 1:
                         refChainId = self.__polySeq[0]['auth_chain_id']
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{_seqId}:?:{atomId} is not present in the coordinates. "
@@ -2108,7 +2119,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, fixedChainId, seqId, compIds)
 
             else:
-                if len(self.__polySeq) == 1 and seqId < 1:
+                if self.__monoPolymer and seqId < 1:
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in polymer sequence "

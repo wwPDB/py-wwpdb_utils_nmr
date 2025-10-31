@@ -286,6 +286,12 @@ class BaseLinearMRParserListener():
     __modResidue = None
     __splitLigand = None
 
+    __monoPolymer = False
+    __multiPolymer = False
+    __lenPolySeq = 0
+    __monoNonPoly = False
+    __lenNonPoly = 0
+
     __entityAssembly = None
 
     polyPeptide = False
@@ -475,6 +481,13 @@ class BaseLinearMRParserListener():
             self.__splitLigand = ret['split_ligand']
             self.__entityAssembly = ret['entity_assembly']
 
+            self.__lenPolySeq = len(self.polySeq)
+            self.__monoPolymer = self.__lenPolySeq == 1
+            self.__multiPolymer = self.__lenPolySeq > 1
+            if self.__nonPoly is not None:
+                self.__lenNonPoly = len(self.__nonPoly)
+                self.__monoNonPoly = self.__lenNonPoly == 1
+
             exptl = cR.getDictList('exptl')
             if len(exptl) > 0:
                 for item in exptl:
@@ -482,7 +495,7 @@ class BaseLinearMRParserListener():
                         if 'NMR' in item['method']:
                             self.exptlMethod = item['method']
                             break
-                if self.exptlMethod == 'SOLID-STATE NMR' and len(self.polySeq) >= 8:
+                if self.exptlMethod == 'SOLID-STATE NMR' and self.__lenPolySeq >= 8:
                     fibril_chain_ids = []
                     for item in exptl:
                         if 'method' in item:
@@ -496,8 +509,8 @@ class BaseLinearMRParserListener():
 
         self.offsetHolder = {}
 
-        self.hasPolySeq = self.polySeq is not None and len(self.polySeq) > 0
-        self.hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
+        self.hasPolySeq = self.polySeq is not None and self.__lenPolySeq > 0
+        self.hasNonPoly = self.__nonPoly is not None and self.__lenNonPoly > 0
         self.__hasBranched = self.branched is not None and len(self.branched) > 0
         if self.hasNonPoly or self.__hasBranched:
             self.hasNonPolySeq = True
@@ -687,7 +700,7 @@ class BaseLinearMRParserListener():
 
                 if self.__chainAssign is not None:
 
-                    if len(self.polySeq) == len(self.__polySeqRst):
+                    if self.__lenPolySeq == len(self.__polySeqRst):
 
                         chain_mapping = {}
 
@@ -698,7 +711,7 @@ class BaseLinearMRParserListener():
                             if ref_chain_id != test_chain_id:
                                 chain_mapping[test_chain_id] = ref_chain_id
 
-                        if len(chain_mapping) == len(self.polySeq):
+                        if len(chain_mapping) == self.__lenPolySeq:
 
                             for ps in self.__polySeqRst:
                                 if ps['chain_id'] in chain_mapping:
@@ -796,12 +809,12 @@ class BaseLinearMRParserListener():
                         if any(ps for ps in self.polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
 
-                            if polySeqRst is not None and (not self.hasNonPoly or len(self.polySeq) // len(self.__nonPoly) in (1, 2)):
+                            if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                 self.__polySeqRst = polySeqRst
                                 if 'chain_id_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
-                        if len(self.polySeq) == 1 and len(self.__polySeqRst) == 1:
+                        if self.__monoPolymer and len(self.__polySeqRst) == 1:
                             polySeqRst, chainIdMapping, modelChainIdExt =\
                                 splitPolySeqRstForExactNoes(self.pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
 
@@ -1715,7 +1728,7 @@ class BaseLinearMRParserListener():
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
-                    elif len(self.__nonPoly) == 1 and self.ccU.updateChemCompDict(_compId, False):
+                    elif self.__monoNonPoly and self.ccU.updateChemCompDict(_compId, False):
                         if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -1869,7 +1882,7 @@ class BaseLinearMRParserListener():
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.polySeq) > 1):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
             for ps in self.polySeq:
                 if preferNonPoly or pure_ambig:
                     continue
@@ -1924,7 +1937,7 @@ class BaseLinearMRParserListener():
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)
                     max_auth_seq_id = max(auth_seq_id_list)
-                if len(self.polySeq) == 1\
+                if self.__monoPolymer\
                    and (seqId < 1
                         or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
                         or (compId == 'NH2' and seqId == max_auth_seq_id + 1)
@@ -2389,7 +2402,7 @@ class BaseLinearMRParserListener():
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
-                    elif len(self.__nonPoly) == 1 and self.ccU.updateChemCompDict(_compId, False):
+                    elif self.__monoNonPoly and self.ccU.updateChemCompDict(_compId, False):
                         if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -2574,7 +2587,7 @@ class BaseLinearMRParserListener():
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.polySeq) > 1):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
             for ps in self.polySeq:
                 if preferNonPoly or pure_ambig:
                     continue
@@ -2636,7 +2649,7 @@ class BaseLinearMRParserListener():
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)
                     max_auth_seq_id = max(auth_seq_id_list)
-                if len(self.polySeq) == 1\
+                if self.__monoPolymer\
                    and (seqId < 1
                         or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
                         or (compId == 'NH2' and seqId == max_auth_seq_id + 1)
@@ -2903,7 +2916,7 @@ class BaseLinearMRParserListener():
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.polySeq) > 1):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
             for ps in self.polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None and fixedChainId != chainId:
@@ -2929,7 +2942,7 @@ class BaseLinearMRParserListener():
                               "Please attach ambiguous atom name mapping information generated "
                               f"by 'makeDIST_RST' to the {self.software_name} restraint file.")
             elif atomId is not None:
-                if len(self.polySeq) == 1 and seqId < 1:
+                if self.__monoPolymer and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                   f"{_seqId}:?:{atomId} is not present in the coordinates. "
@@ -2942,7 +2955,7 @@ class BaseLinearMRParserListener():
                     compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
                     if compIds is not None:
                         chainId = fixedChainId
-                        if chainId is None and len(self.polySeq) == 1:
+                        if chainId is None and self.__monoPolymer:
                             chainId = self.polySeq[0]['chain_id']
                         if chainId is not None:
                             if len(compIds) == 1:
@@ -3124,7 +3137,7 @@ class BaseLinearMRParserListener():
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.polySeq) > 1):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
             for ps in self.polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
@@ -3150,7 +3163,7 @@ class BaseLinearMRParserListener():
                               "Please attach ambiguous atom name mapping information generated "
                               f"by 'makeDIST_RST' to the {self.software_name} restraint file.")
             else:
-                if len(self.polySeq) == 1 and seqId < 1:
+                if self.__monoPolymer and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                   f"{_seqId}:?:{atomId} is not present in the coordinates. "
@@ -3541,7 +3554,7 @@ class BaseLinearMRParserListener():
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
-                    elif len(self.__nonPoly) == 1 and self.ccU.updateChemCompDict(_compId, False):
+                    elif self.__monoNonPoly and self.ccU.updateChemCompDict(_compId, False):
                         if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -3717,7 +3730,7 @@ class BaseLinearMRParserListener():
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.polySeq) > 1):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
             for ps in self.polySeq:
                 if preferNonPoly:
                     continue
@@ -3771,7 +3784,7 @@ class BaseLinearMRParserListener():
             if len(auth_seq_id_list) > 0:
                 min_auth_seq_id = min(auth_seq_id_list)
                 max_auth_seq_id = max(auth_seq_id_list)
-            if len(self.polySeq) == 1\
+            if self.__monoPolymer\
                and (seqId < 1
                     or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
                     or (compId == 'NH2' and seqId == max_auth_seq_id + 1)

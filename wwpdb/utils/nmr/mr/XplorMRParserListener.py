@@ -339,7 +339,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'plane'
 
         if self.createSfDict:
-            self.addSf(f'planarity restraint, {self.software_name} PLANAR/GROUP statement')
+            self.addSf('planarity restraint')
 
     # Exit a parse tree produced by XplorMRParser#planar_restraint.
     def exitPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
@@ -359,7 +359,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.vector3D = [0.0] * 3
 
         if self.createSfDict:
-            self.addSf(f'NCS restraint, {self.software_name} HARMonic statement')
+            self.addSf('NCS restraint')
 
     # Exit a parse tree produced by XplorMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -378,7 +378,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'adist'
 
         if self.createSfDict:
-            self.addSf('anti-distance restraint, XPLOR-NIH XADC statement')
+            self.addSf('anti-distance restraint')
 
     # Exit a parse tree produced by XplorMRParser#antidistance_restraint.
     def exitAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
@@ -454,8 +454,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'rama'
 
         if self.createSfDict:
-            statement_name = 'RAMAchandran/CONFormation' if self.remediate else 'RAMAchandran'
-            self.addSf(f'dihedral angle database restraint, {self.software_name} {statement_name} statement')
+            # statement_name = 'RAMAchandran/CONFormation' if self.remediate else 'RAMAchandran'
+            self.addSf('dihedral angle database restraint')
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
@@ -472,7 +472,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'radi'
 
         if self.createSfDict:
-            self.addSf('radius of gyration restraint, XPLOR-NIH COLLapse statement')
+            self.addSf('radius of gyration restraint')
 
     # Exit a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def exitRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
@@ -491,7 +491,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'diff'
 
         if self.createSfDict:
-            self.addSf(f'diffusion anisotropy restraint, {self.software_name} DANIsotropy statement')
+            self.addSf('diffusion anisotropy restraint')
 
     # Exit a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
@@ -510,7 +510,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'nbase'
 
         if self.createSfDict:
-            self.addSf('orientation database restraint, XPLOR-NIH ORIEnt statement')
+            self.addSf('orientation database restraint')
 
     # Exit a parse tree produced by XplorMRParser#orientation_db_restraint.
     def exitOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
@@ -642,7 +642,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'pang'
 
         if self.createSfDict:
-            self.addSf('paramagnetic orientation restraint, XPLOR-NIH XANGle statement')
+            self.addSf('paramagnetic orientation restraint')
 
     # Exit a parse tree produced by XplorMRParser#porientation_restraint.
     def exitPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
@@ -2626,7 +2626,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             return
 
         if self.createSfDict:
-            sf = self.getSf(f'planarity restraint, {self.software_name} PLANAR/GROUP statement')
+            sf = self.getSf('planarity restraint')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
@@ -2797,7 +2797,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             return
 
         if self.createSfDict:
-            sf = self.getSf('anti-distance restraint, XPLOR-NIH XADC statement')
+            sf = self.getSf('anti-distance restraint')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
@@ -3873,8 +3873,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
         if self.createSfDict:
-            statement_name = 'RAMAchandran/CONFormation' if self.remediate else 'RAMAchandran'
-            sf = self.getSf(f'dihedral angle database restraint, {self.software_name} {statement_name} statement')
+            # statement_name = 'RAMAchandran/CONFormation' if self.remediate else 'RAMAchandran'
+            sf = self.getSf('dihedral angle database restraint')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id', 'combination_id',
@@ -3984,7 +3984,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if self.createSfDict:
-                sf = self.getSf('radius of gyration restraint, XPLOR-NIH COLLapse statement')
+                sf = self.getSf('radius of gyration restraint')
                 sf['id'] += 1
                 if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
@@ -4163,7 +4163,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
             if self.createSfDict:
-                sf = self.getSf(f'diffusion anisotropy restraint, {self.software_name} DANIsotropy statement')
+                sf = self.getSf('diffusion anisotropy restraint')
                 sf['id'] += 1
                 if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
@@ -4363,7 +4363,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
         if self.createSfDict:
-            sf = self.getSf('orientation database restraint, XPLOR-NIH ORIEnt statement')
+            sf = self.getSf('orientation database restraint')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
@@ -5348,7 +5348,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
             if self.createSfDict:
-                sf = self.getSf('paramagnetic orientation restraint, XPLOR-NIH XANGle statement')
+                sf = self.getSf('paramagnetic orientation restraint')
                 sf['id'] += 1
                 if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
@@ -6047,7 +6047,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'geo'
 
         if self.createSfDict:
-            self.addSf(f'NCS restraint, {self.software_name} NCS/GROUP statement')
+            self.addSf('NCS restraint')
 
     # Exit a parse tree produced by XplorMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
@@ -6116,7 +6116,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             return
 
         if self.createSfDict:
-            sf = self.getSf(f'NCS restraint, {self.software_name} NCS/GROUP statement')
+            sf = self.getSf('NCS restraint')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',

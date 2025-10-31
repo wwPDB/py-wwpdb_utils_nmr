@@ -275,7 +275,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'plane'
 
         if self.createSfDict:
-            self.addSf('planarity restraint, CNS PLANE/GROUP statement')
+            self.addSf('planarity restraint')
 
     # Exit a parse tree produced by CnsMRParser#plane_restraint.
     def exitPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
@@ -291,7 +291,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.vector3D = [0.0] * 3
 
         if self.createSfDict:
-            self.addSf('NCS restraint, CNS HARMonic statement')
+            self.addSf('NCS restraint')
 
     # Exit a parse tree produced by CnsMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
@@ -369,7 +369,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'rama'
 
         if self.createSfDict:
-            self.addSf('dihedral angle database restraint, CNS CONFormation statement')
+            self.addSf('dihedral angle database restraint')
 
     # Exit a parse tree produced by CnsMRParser#conformation_db_restraint.
     def exitConformation_db_restraint(self, ctx: CnsMRParser.Conformation_db_restraintContext):  # pylint: disable=unused-argument
@@ -383,7 +383,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'diff'
 
         if self.createSfDict:
-            self.addSf('diffusion anisotropy restraint, CNS DANIsotropy statement')
+            self.addSf('diffusion anisotropy restraint')
 
     # Exit a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: CnsMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
@@ -1156,7 +1156,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             return
 
         if self.createSfDict:
-            sf = self.getSf('planarity restraint, CNS PLANE/GROUP statement')
+            sf = self.getSf('planarity restraint')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
@@ -2490,7 +2490,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
         if self.createSfDict:
-            sf = self.getSf('dihedral angle database restraint, CNS CONFormation statement')
+            sf = self.getSf('dihedral angle database restraint')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id', 'combination_id',
@@ -2676,7 +2676,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
             if self.createSfDict:
-                sf = self.getSf('diffusion anisotropy restraint, CNS DANIsotropy statement')
+                sf = self.getSf('diffusion anisotropy restraint')
                 sf['id'] += 1
                 if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
@@ -2754,7 +2754,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype = 'geo'
 
         if self.createSfDict:
-            self.addSf('NCS restraint, CNS NCS/GROUP statement')
+            self.addSf('NCS restraint')
 
     # Exit a parse tree produced by CnsMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: CnsMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
@@ -2821,7 +2821,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             return
 
         if self.createSfDict:
-            sf = self.getSf('NCS restraint, CNS NCS/GROUP statement')
+            sf = self.getSf('NCS restraint')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',

@@ -1132,7 +1132,7 @@ class gen_auth_view_onedep:
             print(f"{self.__bmrb_id}: {report['information']['status']}\n content_mismatch: {report['error']['content_mismatch'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'internal_error' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n internal_error: {report['error']['internal_error'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n internal_error: {report['error']['internal_error'][0]}")
             os.remove(self.__annotated_star_file_path)
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}

@@ -44,7 +44,6 @@ try:
                                                        fixBackboneAtomsOfDihedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRdcCode,
-                                                       getReadableFactor,
                                                        getAuxLoops,
                                                        getRow,
                                                        getAuxRow,
@@ -106,7 +105,6 @@ except ImportError:
                                            fixBackboneAtomsOfDihedralRestraint,
                                            isLikePheOrTyr,
                                            getRdcCode,
-                                           getReadableFactor,
                                            getAuxLoops,
                                            getRow,
                                            getAuxRow,
@@ -7655,8 +7653,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'name' clause has no effect for a conjunction of factor {getReadableFactor(__factor)} "
-                                          f"and {getReadableFactor(_factor)}.")
+                                          f"The 'name' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Not_op():
                 if self.verbose_debug:
@@ -7989,8 +7987,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'residue' clause has no effect for a conjunction of factor {getReadableFactor(__factor)} "
-                                          f"and {getReadableFactor(_factor)}.")
+                                          f"The 'residue' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Resname():
                 if self.verbose_debug:
@@ -8050,8 +8048,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'resname' clause has no effect for a conjunction of factor {getReadableFactor(__factor)} "
-                                          f"and {getReadableFactor(_factor)}.")
+                                          f"The 'resname' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.SegIdentifier():
                 if self.verbose_debug:
@@ -8229,8 +8227,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'segidentifier' clause has no effect for a conjunction of factor {getReadableFactor(__factor)} "
-                                          f"and {getReadableFactor(_factor)}.")
+                                          f"The 'segidentifier' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Store1():
                 set_store(1)

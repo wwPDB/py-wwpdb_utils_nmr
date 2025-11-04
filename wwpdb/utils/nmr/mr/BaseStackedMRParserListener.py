@@ -42,8 +42,6 @@ try:
                                                        guessCompIdFromAtomIdWoLimit,
                                                        incListIdCounter,
                                                        decListIdCounter,
-                                                       getReadableFactor,
-                                                       getReadableParamagCenter,
                                                        getSaveframe,
                                                        getLoop,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -142,8 +140,6 @@ except ImportError:
                                            guessCompIdFromAtomIdWoLimit,
                                            incListIdCounter,
                                            decListIdCounter,
-                                           getReadableFactor,
-                                           getReadableParamagCenter,
                                            getSaveframe,
                                            getLoop,
                                            REPRESENTATIVE_MODEL_ID,
@@ -5573,13 +5569,13 @@ class BaseStackedMRParserListener():
                     if cifCheck:
                         if self.cur_union_expr or (self.top_union_expr and ambigAtomSelect):  # 2mws, 2krf
                             self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}.")
+                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
                             if self.__uniqAtomIdToSeqKey is not None and len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
                                 update_np_atom_id_remap()
 
                         else:
                             # self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                            #                 f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}.")
+                            #                 f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
                             if 'alt_chain_id' in _factor:  # 2mnz
                                 for chainId in _factor['chain_id']:
                                     self.updateSegmentIdDict(_factor, chainId, None, False)
@@ -5784,7 +5780,7 @@ class BaseStackedMRParserListener():
                                 if _atomId is not None and _atomId.startswith('X')\
                                    and _atomId not in SYMBOLS_ELEMENT:  # 8bxj
                                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                                  f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}.")
+                                                  f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
                                 else:
                                     no_ext_seq = True
                                     unobs_seq = False
@@ -5817,7 +5813,7 @@ class BaseStackedMRParserListener():
                                                             "Please update the sequence in the Macromolecules page."
                                                         if self.reasons is not None:
                                                             self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
-                                                                          f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}.{hint}")
+                                                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2ls7
                                             if no_ext_seq:
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -5831,7 +5827,7 @@ class BaseStackedMRParserListener():
                                                             "Please update the sequence in the Macromolecules page."
                                                         if self.reasons is not None:
                                                             self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
-                                                                          f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}.{hint}")
+                                                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2law
                                         _seqKey = (_chainId, _seqId)
                                         if _seqKey in self.__coordUnobsRes:
@@ -5870,7 +5866,7 @@ class BaseStackedMRParserListener():
                                                             "Please update the sequence in the Macromolecules page."
                                                         if self.reasons is not None:
                                                             self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
-                                                                          f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}.{hint}")
+                                                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2mps
                                             _seqKey = (_chainId, _seqId)
                                             if _seqKey in self.__coordUnobsRes:
@@ -5892,10 +5888,10 @@ class BaseStackedMRParserListener():
                                             else:
                                                 hint += "Alternatively, try to upload the genuine coordinate file generated by structure determination software without editing."
                                         self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                                      f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}.{hint}")
+                                                      f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
                     else:
                         self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                      f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}. "
+                                      f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}. "
                                       "Please update the sequence in the Macromolecules page.")
                 elif self.cur_subtype == 'plane':
                     if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']
@@ -5905,7 +5901,7 @@ class BaseStackedMRParserListener():
                             hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
                                 if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.file_type)}.{hint}")
+                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
 
         elif len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
             compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
@@ -7847,6 +7843,112 @@ class BaseStackedMRParserListener():
 
         return True
 
+    def getReadableFactor(self, factor: dict) -> str:
+        """ Return human readable XPLOR-NIH/CNS/CHARMM/SCHRODINGER factor expression.
+        """
+
+        _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in factor.items()}
+
+        key_order = ['chain_id', 'auth_chain_id', 'alt_chain_id', 'seq_id', 'comp_id', 'alt_comp_id', 'type_symbol', 'atom_id', 'alt_atom_id']
+
+        key_map = {'chain_id': 'segidentifier',
+                   'auth_chain_id': 'original segidentifier',
+                   'alt_chain_id': 'original segidentifier',
+                   'seq_id': 'residue',
+                   'comp_id': 'resname',
+                   'alt_comp_id': 'original resname',
+                   'type_symbol': 'chemical',
+                   'atom_id': 'name',
+                   'alt_atom_id': 'original name'}
+
+        if self.file_type == 'nm-res-sch':  # DAOTHER-10172: Schrodinger/ASL
+            key_map = {'chain_id': 'chain.name',
+                       'auth_chain_id': 'original chain.name',
+                       'alt_chain_id': 'original chain.name',
+                       'seq_id': 'residue.number',
+                       'comp_id': 'residue.ptype',
+                       'alt_comp_id': 'original residue.ptype',
+                       'type_symbol': 'atom.element',
+                       'atom_id': 'atom.ptype',
+                       'alt_atom_id': 'original atom.ptype'}
+
+        for k in _factor.keys():
+
+            if k in key_map or k == 'is_poly':
+                continue
+
+            key_order.append(k)
+            key_map[k] = k
+
+        __factor = {}
+
+        for k in key_order:
+
+            if k not in _factor:
+                continue
+
+            v = _factor[k]
+
+            if v in emptyValue or (isinstance(v, list) and (len(v) == 0 or v[0] in emptyValue)):
+                continue
+
+            if k == 'atom_id' and 'alt_atom_id' in _factor:
+                _v = _factor['alt_atom_id']
+                if _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')) or (_v.startswith('HT') and len(v) > 1):
+                    continue
+
+            if k in ('chain_id', 'seq_id') and isinstance(v, list) and len(v) > 20:
+                v = 'specified elsewhere or unspecified'
+
+            if k in ('auth_chain_id', 'alt_chain_id'):
+                if v == _factor['chain_id']:
+                    continue
+
+            if k == 'alt_comp_id' and v == _factor['comp_id']:
+                continue
+
+            if k == 'alt_atom_id' and v == _factor['atom_id']:
+                continue
+
+            __factor[key_map[k]] = (v if len(v) > 1 else v[0]) if isinstance(v, list) else v
+
+        return str(__factor)
+
+    def getReadableParamagCenter(self) -> str:
+        """ Return human readable paramagnetic center.
+        """
+
+        _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in self.paramagCenter.items()}
+
+        key_order = ['chain_id', 'seq_id', 'comp_id', 'alt_comp_id', 'atom_id', 'alt_atom_id']
+
+        __factor = []
+
+        for k in key_order:
+
+            if k not in _factor:
+                continue
+
+            v = _factor[k]
+
+            if v in emptyValue or (isinstance(v, list) and (len(v) == 0 or v[0] in emptyValue)):
+                continue
+
+            if k == 'atom_id' and 'alt_atom_id' in _factor:
+                _v = _factor['alt_atom_id']
+                if _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')) or (_v.startswith('HT') and len(v) > 1):
+                    continue
+
+            if k in ('chain_id', 'seq_id') and isinstance(v, list) and len(v) > 20:
+                continue
+
+            __factor.append(str((v if len(v) > 1 else v[0]) if isinstance(v, list) else v))
+
+            if k.startswith('alt'):
+                __factor[-1] = f'({__factor[-1]})'
+
+        return '/'.join(__factor)
+
     def getCurrentRestraint(self) -> str:
         if self.cur_subtype == 'dist' or (self.in_noe and self.cur_subtype_altered):  # resolve side effect derived from rdc -> dist type change (2ljb)
             return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
@@ -8126,7 +8228,7 @@ class BaseStackedMRParserListener():
                 if self.classification not in emptyValue:
                     desc = f'{self.classification},'
                 if self.with_para and self.spinLabeling is not None:
-                    desc += f' {self.spinLabeling[1:-1]}: {getReadableParamagCenter(self.paramagCenter)}'
+                    desc += f' {self.spinLabeling[1:-1]}: {self.getReadableParamagCenter()}'
                 desc = desc.strip()
                 if desc not in emptyValue:
                     set_sf_tag(sf['saveframe'], 'Details', desc)

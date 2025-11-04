@@ -37,7 +37,6 @@ try:
                                                        fixBackboneAtomsOfDihedralRestraint,
                                                        isLikePheOrTyr,
                                                        contentSubtypeOf,
-                                                       getReadableFactor,
                                                        getRow,
                                                        getStarAtom,
                                                        resetCombinationId,
@@ -75,7 +74,6 @@ except ImportError:
                                            fixBackboneAtomsOfDihedralRestraint,
                                            isLikePheOrTyr,
                                            contentSubtypeOf,
-                                           getReadableFactor,
                                            getRow,
                                            getStarAtom,
                                            resetCombinationId,
@@ -2559,8 +2557,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             del __factor['atom_selection']
                         del _factor['atom_selection']
                         self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                      f"The 'residue' clause has no effect for a conjunction of factor {getReadableFactor(__factor)} "
-                                      f"and {getReadableFactor(_factor)}.")
+                                      f"The 'residue' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                      f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Resname():
                 if self.verbose_debug:
@@ -2603,8 +2601,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             del __factor['atom_selection']
                         del _factor['atom_selection']
                         self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                      f"The 'resname' clause has no effect for a conjunction of factor {getReadableFactor(__factor)} "
-                                      f"and {getReadableFactor(_factor)}.")
+                                      f"The 'resname' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                      f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.ISeg():
                 if self.verbose_debug:
@@ -2782,8 +2780,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             del __factor['atom_selection']
                         del _factor['atom_selection']
                         self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                      f"The 'segidentifier' clause has no effect for a conjunction of factor {getReadableFactor(__factor)} "
-                                      f"and {getReadableFactor(_factor)}.")
+                                      f"The 'segidentifier' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                      f"and {self.getReadableFactor(_factor)}.")
 
             if self.depth > 0 and self.cur_union_expr:
                 self.unionFactor = self.factor

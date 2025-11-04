@@ -19718,7 +19718,7 @@ class NmrDpUtility:
 
                     try:
                         seq_id = int(_row[0])
-                        comp_id = _row[1]
+                        comp_id = _row[1].upper()
                         _entity_id = int(_row[2])
                     except ValueError:
                         return False
@@ -19838,7 +19838,7 @@ class NmrDpUtility:
                     chain_ids.add(c)
                     if c not in seq:
                         seq[c] = set()
-                    seq[c].add((int(row[0]), row[1]))
+                    seq[c].add((int(row[0]), row[1].upper()))
                 except (ValueError, TypeError):
                     return False
 
@@ -19916,7 +19916,7 @@ class NmrDpUtility:
                     chain_ids.add(c)
                     if c not in seq:
                         seq[c] = set()
-                    seq[c].add((int(row[0]), row[1]))
+                    seq[c].add((int(row[0]), row[1].upper()))
                 except (ValueError, TypeError):
                     return None
 

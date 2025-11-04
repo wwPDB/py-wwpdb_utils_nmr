@@ -234,6 +234,11 @@ class CcpnPKReader:
 if __name__ == "__main__":
     reader = CcpnPKReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-10371/nnoe_cnoe_cnPACS1_101-273_600uM_pH65_303K_8_dec23_3.txt',
+                 '../../tests-nmr/mock-data-daother-10371/D_800858_model_P1.cif.V3')
+
+    reader = CcpnPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36456/data/D_1300025766_nmr-peaks-upload_P1.dat.V1',
                  '../../tests-nmr/mock-data-combine-at-upload/bmr36456/data/D_1300025766_model-release_P1.cif.V1')
 

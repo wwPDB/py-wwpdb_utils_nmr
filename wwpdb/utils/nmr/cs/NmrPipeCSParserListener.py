@@ -154,9 +154,15 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         index = self.chemShifts + 1
 
-        seq_id = int(str(ctx.Integer()))
-        comp_id = str(ctx.Simple_name(0))
-        atom_id = str(ctx.Simple_name(1))
+        try:
+
+            seq_id = int(str(ctx.Integer()))
+            comp_id = str(ctx.Simple_name(0))
+            atom_id = str(ctx.Simple_name(1))
+
+        except (IndexError, ValueError):
+            return
+
         value = self.__number
 
         if value is None:
@@ -222,10 +228,16 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         index = self.chemShifts + 1
 
-        chain_id = str(ctx.Simple_name(0))
-        seq_id = int(str(ctx.Integer()))
-        comp_id = str(ctx.Simple_name(1))
-        atom_id = str(ctx.Simple_name(2))
+        try:
+
+            chain_id = str(ctx.Simple_name(0))
+            seq_id = int(str(ctx.Integer()))
+            comp_id = str(ctx.Simple_name(1))
+            atom_id = str(ctx.Simple_name(2))
+
+        except (IndexError, ValueError):
+            return
+
         value = self.__number
 
         if value is None:
@@ -291,10 +303,16 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         index = self.chemShifts + 1
 
-        seq_id = int(str(ctx.Integer()))
-        comp_id = str(ctx.Simple_name(0))
-        atom_id = str(ctx.Simple_name(1))
-        chain_id = str(ctx.Simple_name(2))
+        try:
+
+            seq_id = int(str(ctx.Integer()))
+            comp_id = str(ctx.Simple_name(0))
+            atom_id = str(ctx.Simple_name(1))
+            chain_id = str(ctx.Simple_name(2))
+
+        except (IndexError, ValueError):
+            return
+
         value = self.__number
 
         if value is None:

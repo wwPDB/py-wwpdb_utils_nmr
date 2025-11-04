@@ -126,16 +126,16 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            if self.__has_id:
-                index = int(str(ctx.Integer(1 if self.__has_number else 0)))
-            elif self.__has_number:
-                index = int(str(ctx.Integer(0)))
-            else:
-                index = self.peaks2D
-
-            float_offset = 0
-
             try:
+
+                if self.__has_id:
+                    index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+                elif self.__has_number:
+                    index = int(str(ctx.Integer(0)))
+                else:
+                    index = self.peaks2D
+
+                float_offset = 0
 
                 P1 = self.positionSelection[float_offset]
                 P2 = self.positionSelection[float_offset + 1]
@@ -151,7 +151,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 if self.__has_merit:
                     merit = self.positionSelection[float_offset]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks2D -= 1
                 return
 
@@ -294,16 +294,16 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            if self.__has_id:
-                index = int(str(ctx.Integer(1 if self.__has_number else 0)))
-            elif self.__has_number:
-                index = int(str(ctx.Integer(0)))
-            else:
-                index = self.peaks3D
-
-            float_offset = 0
-
             try:
+
+                if self.__has_id:
+                    index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+                elif self.__has_number:
+                    index = int(str(ctx.Integer(0)))
+                else:
+                    index = self.peaks3D
+
+                float_offset = 0
 
                 P1 = self.positionSelection[float_offset]
                 P2 = self.positionSelection[float_offset + 1]
@@ -321,7 +321,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 if self.__has_merit:
                     merit = self.positionSelection[float_offset]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks3D -= 1
                 return
 
@@ -480,16 +480,16 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            if self.__has_id:
-                index = int(str(ctx.Integer(1 if self.__has_number else 0)))
-            elif self.__has_number:
-                index = int(str(ctx.Integer(0)))
-            else:
-                index = self.peaks4D
-
-            float_offset = 0
-
             try:
+
+                if self.__has_id:
+                    index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+                elif self.__has_number:
+                    index = int(str(ctx.Integer(0)))
+                else:
+                    index = self.peaks4D
+
+                float_offset = 0
 
                 P1 = self.positionSelection[float_offset]
                 P2 = self.positionSelection[float_offset + 1]
@@ -509,7 +509,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 if self.__has_merit:
                     merit = self.positionSelection[float_offset]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks4D -= 1
                 return
 

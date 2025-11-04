@@ -1012,14 +1012,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            index = int(str(ctx.Integer()))
-
             try:
+
+                index = int(str(ctx.Integer()))
 
                 x_ppm = self.positionSelection[0 if self.__position_order else 1]
                 y_ppm = self.positionSelection[1 if self.__position_order else 0]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks2D -= 1
                 return
 
@@ -1125,15 +1125,15 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            index = int(str(ctx.Integer()))
-
             try:
+
+                index = int(str(ctx.Integer()))
 
                 x_ppm = self.positionSelection[0 if self.__position_order else 2]
                 y_ppm = self.positionSelection[1]
                 z_ppm = self.positionSelection[2 if self.__position_order else 0]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks3D -= 1
                 return
 
@@ -1240,16 +1240,16 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            index = int(str(ctx.Integer()))
-
             try:
+
+                index = int(str(ctx.Integer()))
 
                 x_ppm = self.positionSelection[0 if self.__position_order else 3]
                 y_ppm = self.positionSelection[1 if self.__position_order else 2]
                 z_ppm = self.positionSelection[2 if self.__position_order else 1]
                 a_ppm = self.positionSelection[3 if self.__position_order else 0]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks4D -= 1
                 return
 

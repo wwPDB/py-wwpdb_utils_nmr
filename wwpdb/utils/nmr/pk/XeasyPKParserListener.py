@@ -218,15 +218,21 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
-            x_ppm = self.positionSelection[0]
-            y_ppm = self.positionSelection[1]
-            # color_code = int(str(ctx.Integer(1)))
-            # spectrum_type = str(ctx.Simple_name(0))
-            vol = self.originalNumberSelection[0]
-            vol_err = self.originalNumberSelection[1]
-            # integral_method = str(ctx.Simple_name(1))
-            # type = str(ctx.type_code())
+            try:
+
+                index = int(str(ctx.Integer(0)))
+                x_ppm = self.positionSelection[0]
+                y_ppm = self.positionSelection[1]
+                # color_code = int(str(ctx.Integer(1)))
+                # spectrum_type = str(ctx.Simple_name(0))
+                vol = self.originalNumberSelection[0]
+                vol_err = self.originalNumberSelection[1]
+                # integral_method = str(ctx.Simple_name(1))
+                # type = str(ctx.type_code())
+
+            except (IndexError, ValueError):
+                self.peaks2D -= 1
+                return
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
                 if self.createSfDict and self.use_peak_row_format:
@@ -320,16 +326,22 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
-            x_ppm = self.positionSelection[0]
-            y_ppm = self.positionSelection[1]
-            z_ppm = self.positionSelection[2]
-            # color_code = int(str(ctx.Integer(1)))
-            # spectrum_type = str(ctx.Simple_name(0))
-            vol = self.originalNumberSelection[0]
-            vol_err = self.originalNumberSelection[1]
-            # integral_method = str(ctx.Simple_name(1))
-            # type = str(ctx.type_code())
+            try:
+
+                index = int(str(ctx.Integer(0)))
+                x_ppm = self.positionSelection[0]
+                y_ppm = self.positionSelection[1]
+                z_ppm = self.positionSelection[2]
+                # color_code = int(str(ctx.Integer(1)))
+                # spectrum_type = str(ctx.Simple_name(0))
+                vol = self.originalNumberSelection[0]
+                vol_err = self.originalNumberSelection[1]
+                # integral_method = str(ctx.Simple_name(1))
+                # type = str(ctx.type_code())
+
+            except (IndexError, ValueError):
+                self.peaks3D -= 1
+                return
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
                 if self.createSfDict and self.use_peak_row_format:
@@ -424,17 +436,23 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
-            x_ppm = self.positionSelection[0]
-            y_ppm = self.positionSelection[1]
-            z_ppm = self.positionSelection[2]
-            a_ppm = self.positionSelection[3]
-            # color_code = int(str(ctx.Integer(1)))
-            # spectrum_type = str(ctx.Simple_name(0))
-            vol = self.originalNumberSelection[0]
-            vol_err = self.originalNumberSelection[1]
-            # integral_method = str(ctx.Simple_name(1))
-            # type = str(ctx.type_code())
+            try:
+
+                index = int(str(ctx.Integer(0)))
+                x_ppm = self.positionSelection[0]
+                y_ppm = self.positionSelection[1]
+                z_ppm = self.positionSelection[2]
+                a_ppm = self.positionSelection[3]
+                # color_code = int(str(ctx.Integer(1)))
+                # spectrum_type = str(ctx.Simple_name(0))
+                vol = self.originalNumberSelection[0]
+                vol_err = self.originalNumberSelection[1]
+                # integral_method = str(ctx.Simple_name(1))
+                # type = str(ctx.type_code())
+
+            except (IndexError, ValueError):
+                self.peaks4D -= 1
+                return
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
                 if self.createSfDict and self.use_peak_row_format:

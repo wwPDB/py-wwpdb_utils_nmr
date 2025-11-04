@@ -239,7 +239,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 # pchi2 = self.originalNumberSelection[15]
                 # type = int(str(ctx.Integer(5)))
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks2D -= 1
                 return
 
@@ -389,7 +389,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 # pchi2 = self.originalNumberSelection[21]
                 # type = int(str(ctx.Integer(7)))
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks3D -= 1
                 return
 
@@ -552,7 +552,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 # pchi2 = self.originalNumberSelection[27]
                 # type = int(str(ctx.Integer(9)))
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks4D -= 1
                 return
 
@@ -736,7 +736,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 y_ppm = self.numberSelection[1]
                 height = self.originalNumberSelection[2]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks2D -= 1
                 return
 
@@ -864,7 +864,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 z_ppm = self.numberSelection[2]
                 height = self.originalNumberSelection[3]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks3D -= 1
                 return
 
@@ -1000,7 +1000,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 a_ppm = self.numberSelection[3]
                 height = self.originalNumberSelection[4]
 
-            except IndexError:
+            except (IndexError, ValueError):
                 self.peaks4D -= 1
                 return
 
@@ -1126,7 +1126,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if ctx.Assignments_PR():
                 ass = str(ctx.Assignments_PR())[1:-1]
 
-        except IndexError:
+        except (IndexError, ValueError):
             self.peaks2D -= 1
             return
 
@@ -1204,7 +1204,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if ctx.Assignments_PR():
                 ass = str(ctx.Assignments_PR())[1:-1]
 
-        except IndexError:
+        except (IndexError, ValueError):
             self.peaks3D -= 1
             return
 
@@ -1290,7 +1290,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if ctx.Assignments_PR():
                 ass = str(ctx.Assignments_PR())[1:-1]
 
-        except IndexError:
+        except (IndexError, ValueError):
             self.peaks4D -= 1
             return
 

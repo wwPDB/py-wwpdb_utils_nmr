@@ -138,7 +138,11 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.peaks2D -= 1
             return
 
-        index = int(str(ctx.Integer()))
+        try:
+            index = int(str(ctx.Integer()))
+        except ValueError:
+            self.peaks2D -= 1
+            return
 
         if ctx.Float(self.__f1_ppm_col):
             f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))
@@ -210,7 +214,11 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.peaks3D -= 1
             return
 
-        index = int(str(ctx.Integer()))
+        try:
+            index = int(str(ctx.Integer()))
+        except ValueError:
+            self.peaks3D -= 1
+            return
 
         if ctx.Float(self.__f1_ppm_col):
             f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))
@@ -289,7 +297,11 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.peaks4D -= 1
             return
 
-        index = int(str(ctx.Integer()))
+        try:
+            index = int(str(ctx.Integer()))
+        except ValueError:
+            self.peaks4D -= 1
+            return
 
         if ctx.Float(self.__f1_ppm_col):
             f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))

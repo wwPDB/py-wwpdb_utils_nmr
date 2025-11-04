@@ -103,7 +103,7 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, self.__auth_seq_id_map,
                           f'{L} -> ')
 
-        except (ValueError, TypeError):
+        except (IndexError, ValueError, TypeError):
             self.chemShifts -= 1
 
     # Enter a parse tree produced by XeasyPROTParser#residue.

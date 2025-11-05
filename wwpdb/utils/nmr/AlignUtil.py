@@ -471,9 +471,8 @@ def getScoreOfSeqAlign(myAlign: list) -> Tuple[int, int, int, int, int]:
     aligned = [True] * length
 
     for p in range(length):
-        myPr = myAlign[p]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
+        myPr0, myPr1 = str(myAlign[p][0]), str(myAlign[p][1])
+
         if myPr0 == '.' or myPr1 == '.':
             aligned[p] = False
         elif myPr0 != myPr1:
@@ -486,9 +485,8 @@ def getScoreOfSeqAlign(myAlign: list) -> Tuple[int, int, int, int, int]:
     matched = unmapped = conflict = offset1 = offset2 = 0
 
     for p in range(length):
-        myPr = myAlign[p]
-        myPr0 = str(myPr[0])
-        myPr1 = str(myPr[1])
+        myPr0, myPr1 = str(myAlign[p][0]), str(myAlign[p][1])
+
         if myPr0 == '.' or myPr1 == '.':
             if notAligned and not aligned[p]:
                 if myPr0 == '.' and myPr1 != '.'\
@@ -1186,15 +1184,15 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                         else:
                             idx1 = idx2 = 0
                             for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
+                                myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                                 if myPr1 != '.':
                                     if myPr0 != '.':
                                         polySeqRst[i2]['comp_id'][idx2] = ps1['comp_id'][idx1]
                                     idx2 += 1
                                 if myPr0 != '.':
                                     idx1 += 1
+
                         myAlign = copy.deepcopy(_myAlign)
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
@@ -1207,9 +1205,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
             if not_decided_ps2_comp_id:  # AMBER/GROMACS topology
                 idx2 = 0
                 for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
+                    myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                     if myPr1 != '.':
                         while idx2 < len(ps2['seq_id']):
                             if ps2['comp_id'][idx2] == myPr1:
@@ -1312,9 +1309,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                         idx1 = idx2 = 0
                         beg = -1
                         for i in range(length):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
+                            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                             if idx1 < len(ps1[seq_id_name]):
                                 if ps1[seq_id_name][idx1] == s_p:
                                     beg = idx2
@@ -1330,6 +1326,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                         idx2 += 1
                                         break
                                     idx2 += 1
+
                         if beg >= 0 and beg + 1 < len(_ps2['seq_id']) and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
                             beg = ps2['seq_id'].index(s_p)
                             end = ps2['seq_id'].index(s_q)
@@ -1367,9 +1364,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     auth_comp_id2 = []
                 idx1 = idx2 = 0
                 for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
+                    myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                     if myPr0 != '.':
                         while idx1 < len(_ps1['seq_id']):
                             if _ps1[comp_id_name1][idx1] == myPr0:
@@ -1389,6 +1385,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                         comp_id1.append('.')
                         if has_auth_comp_id1:
                             auth_comp_id1.append('.')
+
                     if myPr1 != '.':
                         while idx2 < len(_ps2['seq_id']):
                             if _ps2[comp_id_name2][idx2] == myPr1:
@@ -1601,9 +1598,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
             if not_decided_ps2_comp_id:  # AMBER/GROMACS topology
                 idx2 = 0
                 for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
+                    myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                     if myPr1 != '.':
                         while idx2 < len(ps2['seq_id']):
                             if ps2['comp_id'][idx2] == myPr1:
@@ -1705,9 +1701,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                         idx1 = idx2 = 0
                         beg = -1
                         for i in range(length):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
+                            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                             if idx1 < len(ps1[seq_id_name]):
                                 if ps1[seq_id_name][idx1] == s_p:
                                     beg = idx2
@@ -1723,6 +1718,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                                         idx2 += 1
                                         break
                                     idx2 += 1
+
                         if beg >= 0 and beg + 1 < len(_ps2['seq_id']) and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
                             beg = ps2['seq_id'].index(s_p)
                             end = ps2['seq_id'].index(s_q)
@@ -1757,9 +1753,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                     auth_comp_id2 = []
                 idx1 = idx2 = 0
                 for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
+                    myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                     if myPr0 != '.':
                         while idx1 < len(_ps1['seq_id']):
                             if _ps1['comp_id'][idx1] == myPr0:
@@ -1779,6 +1774,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                         comp_id1.append('.')
                         if has_auth_comp_id1:
                             auth_comp_id1.append('.')
+
                     if myPr1 != '.':
                         while idx2 < len(_ps2['seq_id']):
                             if _ps2['comp_id'][idx2] == myPr1:
@@ -1798,6 +1794,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                         comp_id2.append('.')
                         if has_auth_comp_id2:
                             auth_comp_id2.append('.')
+
                 ref_code = getOneLetterCodeCanSequence(comp_id1)
                 test_code = getOneLetterCodeCanSequence(comp_id2)
                 mid_code = getMiddleCode(ref_code, test_code)
@@ -2016,9 +2013,8 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
                     seq_id2.append(None)
 
             for i in range(length):
-                myPr = myAlign[i]
-                myPr0 = str(myPr[0])
-                myPr1 = str(myPr[1])
+                myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                 if myPr0 == '.' or myPr1 == '.':
                     aligned[i] = False
                 elif myPr0 != myPr1:
@@ -2027,9 +2023,8 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
                     break
 
             for i in reversed(range(length)):
-                myPr = myAlign[i]
-                myPr0 = str(myPr[0])
-                myPr1 = str(myPr[1])
+                myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                 if myPr0 == '.' or myPr1 == '.':
                     aligned[i] = False
                 elif myPr0 != myPr1:
@@ -2062,31 +2057,35 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
             unmapped, conflict = [], []
 
             for i in range(length):
-                myPr = myAlign[i]
-                if myPr[0] == myPr[1]:
+                cif_comp_id, mr_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
+
+                if cif_comp_id == mr_comp_id:
                     continue
 
-                cif_comp_id = str(myPr[0])
-                mr_comp_id = str(myPr[1])
+                _seq_id1, _seq_id2 = seq_id1[i], seq_id2[i]
 
                 if mr_comp_id == '.' and cif_comp_id != '.':
 
-                    unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
+                    unmapped.append({'ref_seq_id': _seq_id1, 'ref_comp_id': cif_comp_id})
 
                 elif mr_comp_id != cif_comp_id and aligned[i]:
 
-                    comp_ids = [comp_id for seq_id, comp_id in zip(ps1[_seq_id_name], ps1['comp_id']) if seq_id == seq_id1[i]]
+                    comp_ids = [comp_id for seq_id, comp_id in zip(ps1[_seq_id_name], ps1['comp_id']) if seq_id == _seq_id1]
 
                     if mr_comp_id in comp_ids:
                         continue
 
-                    conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
-                                     'test_seq_id': seq_id2[i], 'test_comp_id': mr_comp_id})
+                    if _seq_id1 == _seq_id2 and len(mr_comp_id) + 1 == len(cif_comp_id)\
+                       and cif_comp_id.startswith(mr_comp_id) and cif_comp_id[-1] in ('5', '3'):
+                        continue
 
-                    cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
+                    conflict.append({'ref_seq_id': _seq_id1, 'ref_comp_id': cif_comp_id,
+                                     'test_seq_id': _seq_id2, 'test_comp_id': mr_comp_id})
+
+                    cif_seq_code = f"{chain_id}:{_seq_id1}:{cif_comp_id}"
                     if cif_comp_id == '.':
                         cif_seq_code += ', insertion error'
-                    mr_seq_code = f"{chain_id2}:{seq_id2[i]}:{mr_comp_id}"
+                    mr_seq_code = f"{chain_id2}:{_seq_id2}:{mr_comp_id}"
                     if mr_comp_id == '.':
                         mr_seq_code += ', insertion error'
 
@@ -3027,9 +3026,8 @@ def splitPolySeqRstForMultimers(pA, polySeqModel: List[dict], polySeqRst: List[d
                 ref_seq_ids, test_seq_ids = [], []
                 idx1 = idx2 = 0
                 for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
+                    myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                     if myPr0 != '.':
                         while idx1 < len(ref_ps['auth_seq_id']):
                             if ref_ps['comp_id'][idx1] == myPr0:
@@ -3039,6 +3037,7 @@ def splitPolySeqRstForMultimers(pA, polySeqModel: List[dict], polySeqRst: List[d
                             idx1 += 1
                     else:
                         ref_seq_ids.append(None)
+
                     if myPr1 != '.':
                         while idx2 < len(_test_ps_['seq_id']):
                             if _test_ps_['comp_id'][idx2] == myPr1:
@@ -3179,9 +3178,8 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
                     ref_seq_ids, test_seq_ids = [], []
                     idx1 = idx2 = 0
                     for i in range(length):
-                        myPr = myAlign[i]
-                        myPr0 = str(myPr[0])
-                        myPr1 = str(myPr[1])
+                        myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                         if myPr0 != '.':
                             while idx1 < len(ref_ps['auth_seq_id']):
                                 if ref_ps['comp_id'][idx1] == myPr0:
@@ -3191,6 +3189,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
                                 idx1 += 1
                         else:
                             ref_seq_ids.append(None)
+
                         if myPr1 != '.':
                             while idx2 < len(test_ps['seq_id']):
                                 if test_ps['comp_id'][idx2] == myPr1:
@@ -3245,9 +3244,8 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
                 ref_seq_ids, test_seq_ids = [], []
                 idx1 = idx2 = 0
                 for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
+                    myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                     if myPr0 != '.':
                         while idx1 < len(ref_ps['auth_seq_id']):
                             if ref_ps['comp_id'][idx1] == myPr0:
@@ -3257,6 +3255,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
                             idx1 += 1
                     else:
                         ref_seq_ids.append(None)
+
                     if myPr1 != '.':
                         while idx2 < len(_test_ps_['seq_id']):
                             if _test_ps_['comp_id'][idx2] == myPr1:
@@ -3587,9 +3586,8 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
             if matched > 0:
 
                 for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
+                    myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                     if myPr0 != '.':
                         while idx1 < len(ref_ps['auth_seq_id']):
                             if ref_ps['comp_id'][idx1] == myPr0:
@@ -3599,6 +3597,7 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
                             idx1 += 1
                     else:
                         ref_seq_ids.append(None)
+
                     if myPr1 != '.':
                         while idx2 < len(_test_ps['seq_id']):
                             if _test_ps['comp_id'][idx2] == myPr1:
@@ -3612,9 +3611,8 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
             if b_matched > 0:
 
                 for i in range(b_length):
-                    myPr = myAlignB[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
+                    myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                     if myPr0 != '.':
                         while b_idx1 < len(ref_br['auth_seq_id']):
                             if ref_br['comp_id'][b_idx1] == myPr0:
@@ -3624,6 +3622,7 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
                             b_idx1 += 1
                     else:
                         b_ref_seq_ids.append(None)
+
                     if myPr1 != '.':
                         while b_idx2 < len(_test_ps['seq_id']):
                             if _test_ps['comp_id'][b_idx2] == myPr1:

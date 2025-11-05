@@ -20932,9 +20932,8 @@ class NmrDpUtility:
 
         idx1 = idx2 = 0
         for i in range(length):
-            myPr = myAlign[i]
-            myPr0 = str(myPr[0])
-            myPr1 = str(myPr[1])
+            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
             if myPr0 != '.':
                 while idx1 < len_ps1:
                     if ps1['comp_id'][idx1] == myPr0:
@@ -20946,6 +20945,7 @@ class NmrDpUtility:
             else:
                 seq_id1.append(None)
                 comp_id1.append('.')
+
             if myPr1 != '.':
                 while idx2 < len_ps2:
                     if ps2['comp_id'][idx2] == myPr1:
@@ -20957,6 +20957,7 @@ class NmrDpUtility:
             else:
                 seq_id2.append(None)
                 comp_id2.append('.')
+
         seq_id_conv_dict = {str(_s2): str(_s1) for _s1, _s2
                             in zip(seq_id1, seq_id2) if _s1 is not None and _s2 is not None}
         if ps1['seq_id'] != list(range(ps1['seq_id'][0], ps1['seq_id'][-1] + 1))\
@@ -35770,12 +35771,10 @@ class NmrDpUtility:
                                 cif_auth_seq_ids.append(None)
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0] == myPr[1]:
-                                continue
+                            nmr_comp_id, cif_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                            nmr_comp_id = str(myPr[0])
-                            cif_comp_id = str(myPr[1])
+                            if nmr_comp_id == cif_comp_id:
+                                continue
 
                             if cif_comp_id == '.' and nmr_comp_id != '.':
                                 nmr_seq_id = nmr_seq_ids[i] - offset_1 if nmr_seq_ids[i] is not None else None
@@ -37903,12 +37902,10 @@ class NmrDpUtility:
                                 cif_auth_seq_ids.append(None)
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0] == myPr[1]:
-                                continue
+                            nmr_comp_id, cif_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                            nmr_comp_id = str(myPr[0])
-                            cif_comp_id = str(myPr[1])
+                            if nmr_comp_id == cif_comp_id:
+                                continue
 
                             if cif_comp_id == '.' and nmr_comp_id != '.':
                                 nmr_seq_id = nmr_seq_ids[i] - offset_1 if nmr_seq_ids[i] is not None else None
@@ -48901,9 +48898,8 @@ class NmrDpUtility:
 
                     idx1 = idx2 = 0
                     for i in range(length):
-                        myPr = myAlign[i]
-                        myPr0 = str(myPr[0])
-                        myPr1 = str(myPr[1])
+                        myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                         if myPr0 != '.':
                             while idx1 < len_ps1:
                                 if _ps1['comp_id'][idx1] == myPr0:
@@ -48915,6 +48911,7 @@ class NmrDpUtility:
                         else:
                             seq_id1.append(None)
                             comp_id1.append('.')
+
                         if myPr1 != '.':
                             while idx2 < len_ps2:
                                 if _ps2['comp_id'][idx2] == myPr1:
@@ -48926,6 +48923,7 @@ class NmrDpUtility:
                         else:
                             seq_id2.append(None)
                             comp_id2.append('.')
+
                     ref_code = getOneLetterCodeCanSequence(comp_id1)
                     test_code = getOneLetterCodeCanSequence(comp_id2)
                     mid_code = getMiddleCode(ref_code, test_code)
@@ -49055,9 +49053,8 @@ class NmrDpUtility:
 
                     idx1 = idx2 = 0
                     for i in range(length):
-                        myPr = myAlign[i]
-                        myPr0 = str(myPr[0])
-                        myPr1 = str(myPr[1])
+                        myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                         if myPr0 != '.':
                             while idx1 < len_ps1:
                                 if _ps1['comp_id'][idx1] == myPr0:
@@ -49069,6 +49066,7 @@ class NmrDpUtility:
                         else:
                             seq_id1.append(None)
                             comp_id1.append('.')
+
                         if myPr1 != '.':
                             while idx2 < len_ps2:
                                 if _ps2['comp_id'][idx2] == myPr1:
@@ -49080,6 +49078,7 @@ class NmrDpUtility:
                         else:
                             seq_id2.append(None)
                             comp_id2.append('.')
+
                     ref_code = getOneLetterCodeCanSequence(comp_id1)
                     test_code = getOneLetterCodeCanSequence(comp_id2)
                     mid_code = getMiddleCode(ref_code, test_code)
@@ -49133,9 +49132,7 @@ class NmrDpUtility:
 
         idx2 = 0
         for p in range(length):
-            myPr = myAlign[p]
-            myPr0 = str(myPr[0])
-            myPr1 = str(myPr[1])
+            myPr0, myPr1 = str(myAlign[p][0]), str(myAlign[p][1])
 
             if myPr0 == myPr1:
                 pass
@@ -49463,9 +49460,8 @@ class NmrDpUtility:
                                 seq_id2.append(None)
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
+                            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                             if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                             elif myPr0 != myPr1:
@@ -49474,9 +49470,8 @@ class NmrDpUtility:
                                 break
 
                         for i in reversed(range(length)):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
+                            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                             if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                             elif myPr0 != myPr1:
@@ -49489,12 +49484,10 @@ class NmrDpUtility:
                             _conflicts = 0
 
                             for i in range(length):
-                                myPr = myAlign[i]
-                                if myPr[0] == myPr[1]:
-                                    continue
+                                cif_comp_id, nmr_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                                cif_comp_id = str(myPr[0])
-                                nmr_comp_id = str(myPr[1])
+                                if cif_comp_id == nmr_comp_id:
+                                    continue
 
                                 if nmr_comp_id == '.' and cif_comp_id != '.':
                                     pass
@@ -49512,12 +49505,10 @@ class NmrDpUtility:
                         unmapped, conflict = [], []
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0] == myPr[1]:
-                                continue
+                            cif_comp_id, nmr_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                            cif_comp_id = str(myPr[0])
-                            nmr_comp_id = str(myPr[1])
+                            if cif_comp_id == nmr_comp_id:
+                                continue
 
                             if nmr_comp_id == '.' and cif_comp_id != '.':
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
@@ -49749,9 +49740,8 @@ class NmrDpUtility:
                                 seq_id2.append(None)
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
+                            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                             if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                             elif myPr0 != myPr1:
@@ -49760,9 +49750,8 @@ class NmrDpUtility:
                                 break
 
                         for i in reversed(range(length)):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
+                            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                             if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                             elif myPr0 != myPr1:
@@ -49789,12 +49778,10 @@ class NmrDpUtility:
                             _conflicts = 0
 
                             for i in range(length):
-                                myPr = myAlign[i]
-                                if myPr[0] == myPr[1]:
-                                    continue
+                                nmr_comp_id, cif_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                                nmr_comp_id = str(myPr[0])
-                                cif_comp_id = str(myPr[1])
+                                if nmr_comp_id == cif_comp_id:
+                                    continue
 
                                 if cif_comp_id == '.' and nmr_comp_id != '.':
                                     pass
@@ -49812,12 +49799,10 @@ class NmrDpUtility:
                         unmapped, conflict = [], []
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0] == myPr[1]:
-                                continue
+                            nmr_comp_id, cif_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                            nmr_comp_id = str(myPr[0])
-                            cif_comp_id = str(myPr[1])
+                            if nmr_comp_id == cif_comp_id:
+                                continue
 
                             if cif_comp_id == '.' and nmr_comp_id != '.':
 
@@ -50296,9 +50281,8 @@ class NmrDpUtility:
                                 seq_id2.append(None)
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
+                            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                             if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                             elif myPr0 != myPr1:
@@ -50307,9 +50291,8 @@ class NmrDpUtility:
                                 break
 
                         for i in reversed(range(length)):
-                            myPr = myAlign[i]
-                            myPr0 = str(myPr[0])
-                            myPr1 = str(myPr[1])
+                            myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
                             if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                             elif myPr0 != myPr1:
@@ -50322,12 +50305,10 @@ class NmrDpUtility:
                             _conflicts = 0
 
                             for i in range(length):
-                                myPr = myAlign[i]
-                                if myPr[0] == myPr[1]:
-                                    continue
+                                cif_comp_id, nmr_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                                cif_comp_id = str(myPr[0])
-                                nmr_comp_id = str(myPr[1])
+                                if cif_comp_id == nmr_comp_id:
+                                    continue
 
                                 if nmr_comp_id == '.' and cif_comp_id != '.':
                                     pass
@@ -50345,12 +50326,10 @@ class NmrDpUtility:
                         unmapped, conflict = [], []
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0] == myPr[1]:
-                                continue
+                            cif_comp_id, nmr_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                            cif_comp_id = str(myPr[0])
-                            nmr_comp_id = str(myPr[1])
+                            if cif_comp_id == nmr_comp_id:
+                                continue
 
                             if nmr_comp_id == '.' and cif_comp_id != '.':
 
@@ -54627,12 +54606,10 @@ class NmrDpUtility:
                                 cif_auth_seq_ids.append(None)
 
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0] == myPr[1]:
-                                continue
+                            nmr_comp_id, cif_comp_id = str(myAlign[i][0]), str(myAlign[i][1])
 
-                            nmr_comp_id = str(myPr[0])
-                            cif_comp_id = str(myPr[1])
+                            if nmr_comp_id == cif_comp_id:
+                                continue
 
                             if cif_comp_id == '.' and nmr_comp_id != '.':
                                 nmr_seq_id = nmr_seq_ids[i] - offset_1 if nmr_seq_ids[i] is not None else None

@@ -28023,6 +28023,9 @@ class NmrDpUtility:
                     auth_comp_id = row[auth_comp_id_col]
                     auth_atom_id = row[auth_atom_id_col]
 
+                    if not auth_seq_id.isdigit():
+                        continue
+
                     auth_seq_id_ = int(auth_seq_id)
                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                     try:
@@ -28048,6 +28051,9 @@ class NmrDpUtility:
                         auth_seq_id = row[auth_seq_id_col]
                         auth_comp_id = row[auth_comp_id_col]
                         auth_atom_id = row[auth_atom_id_col]
+
+                        if not auth_seq_id.isdigit():
+                            continue
 
                         auth_seq_id_ = int(auth_seq_id)
                         seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
@@ -49840,6 +49846,10 @@ class NmrDpUtility:
                                 if _seq_id1 is None and _seq_id2 is None:
                                     continue
 
+                                if _seq_id1 == _seq_id2 and len(nmr_comp_id) + 1 == len(cif_comp_id)\
+                                   and cif_comp_id.startswith(nmr_comp_id) and cif_comp_id[-1] in ('5', '3'):
+                                    continue
+
                                 conflict.append({'ref_seq_id': _seq_id1, 'ref_comp_id': nmr_comp_id,
                                                  'test_seq_id': _seq_id2, 'test_comp_id': cif_comp_id})
 
@@ -50372,6 +50382,10 @@ class NmrDpUtility:
                                 _seq_id2 = seq_id2[i]
 
                                 if _seq_id1 is None and _seq_id2 is None:
+                                    continue
+
+                                if _seq_id1 == _seq_id2 and len(nmr_comp_id) + 1 == len(cif_comp_id)\
+                                   and cif_comp_id.startswith(nmr_comp_id) and cif_comp_id[-1] in ('5', '3'):
                                     continue
 
                                 conflict.append({'ref_seq_id': _seq_id1, 'ref_comp_id': cif_comp_id,

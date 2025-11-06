@@ -23,7 +23,8 @@ try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.BarePDBParser import BarePDBParser
     from wwpdb.utils.nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
+                                                       REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -37,7 +38,8 @@ except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.BarePDBParser import BarePDBParser
     from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
-    from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
+    from nmr.mr.ParserListenerUtil import (translateToStdResName,
+                                           REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -238,10 +240,15 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
                 chainId = concat_string[:concat_string.index(integers[0])]
 
             atomId = self.atomNameSelection[0]
-            compId = self.atomNameSelection[1]
 
             if atomId is None:
                 return
+
+            compId = self.atomNameSelection[1]
+
+            if atomId.endswith('*'):
+                _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
+                atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
             atom = {'atom_number': nr + self.__ter_offset,
                     'auth_chain_id': chainId,

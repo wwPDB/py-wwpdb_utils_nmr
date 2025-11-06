@@ -16283,6 +16283,12 @@ class NmrDpUtility:
                             continue
 
                         if footer:
+
+                            def check_apostrophe(name1, name2):
+                                stat1 = "'" in name1 or '"' in name1
+                                stat2 = "'" in name2 or '"' in name2
+                                return stat1 == stat2
+
                             fofh.write(line)
                             col = line.split()
                             len_col = len(col)
@@ -16296,7 +16302,7 @@ class NmrDpUtility:
                                                     'original_atom_id': col[4].upper(),
                                                     'original_comp_id': original_comp_id,
                                                     'original_seq_id': int(col[6])}
-                                        if atom_map not in self.__mr_atom_name_mapping:
+                                        if check_apostrophe(col[1], col[4]) and atom_map not in self.__mr_atom_name_mapping:
                                             self.__mr_atom_name_mapping.append(atom_map)
                                     except ValueError:
                                         pass
@@ -16326,7 +16332,7 @@ class NmrDpUtility:
                                                         'original_atom_id': col[3].upper(),
                                                         'original_comp_id': orig_comp_id.upper(),
                                                         'original_seq_id': orig_seq_id}
-                                            if atom_map not in self.__mr_atom_name_mapping:
+                                            if check_apostrophe(col[1], col[3]) and atom_map not in self.__mr_atom_name_mapping:
                                                 self.__mr_atom_name_mapping.append(atom_map)
                                     elif len_col == 9:
                                         if auth_comp_id is not None and col[4] not in monDict3:
@@ -16337,7 +16343,7 @@ class NmrDpUtility:
                                                             'original_atom_id': col[3].upper(),
                                                             'original_comp_id': col[4].upper(),
                                                             'original_seq_id': int(col[5])}
-                                                if atom_map not in self.__mr_atom_name_mapping:
+                                                if check_apostrophe(col[1], col[3]) and atom_map not in self.__mr_atom_name_mapping:
                                                     self.__mr_atom_name_mapping.append(atom_map)
                                             except ValueError:
                                                 pass
@@ -16351,7 +16357,7 @@ class NmrDpUtility:
                                                         'original_atom_id': col[4].upper(),
                                                         'original_comp_id': orig_comp_id.upper(),
                                                         'original_seq_id': orig_seq_id}
-                                            if atom_map not in self.__mr_atom_name_mapping:
+                                            if check_apostrophe(col[1], col[4]) and atom_map not in self.__mr_atom_name_mapping:
                                                 self.__mr_atom_name_mapping.append(atom_map)
                                         except ValueError:
                                             pass

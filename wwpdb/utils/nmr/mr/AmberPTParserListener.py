@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -25,8 +25,6 @@ try:
     from wwpdb.utils.nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
@@ -39,8 +37,6 @@ except ImportError:
     from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
@@ -58,6 +54,58 @@ def chunk_string(line: str, length: int = 4) -> List[str]:
 
 # This class defines a complete listener for a parse tree produced by AmberPTParser.
 class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
+    __slots__ = ('versionStatements',
+                 'amberAtomTypeStatements',
+                 'angleEquilValueStatements',
+                 'angleForceConstantStatements',
+                 'anglesIncHydrogenStatements',
+                 'anglesWithoutHydrogenStatements',
+                 'atomicNumberStatements',
+                 'atomNameStatements',
+                 'atomTypeIndexStatements',
+                 'atomsPerMoleculeStatements',
+                 'bondEquilValueStatements',
+                 'bondForceConstantStatements',
+                 'bondsIncHydrogenStatements',
+                 'bondsWithoutHydrogenStatements',
+                 'boxDimensionsStatements',
+                 'capInfoStatements',
+                 'capInfo2Statements',
+                 'chargeStatements',
+                 'cmapCountStatements',
+                 'cmapResolutionStatements',
+                 'cmapParameterStatements',
+                 'cmapIndexStatements',
+                 'dihedralForceConstantStatements',
+                 'dihedralPeriodicityStatements',
+                 'dihedralPhaseStatements',
+                 'dihedralsIncHydrogenStatements',
+                 'dihedralsWithoutHydrogenStatements',
+                 'excludedAtomsListStatements',
+                 'hbcutStatements',
+                 'hbondAcoefStatements',
+                 'hbondBcoefStatements',
+                 'ipolStatements',
+                 'irotatStatements',
+                 'joinArrayStatements',
+                 'lennardJonesAcoefStatements',
+                 'lennardJonesBcoefStatements',
+                 'massStatements',
+                 'nonbondedParmIndexStatements',
+                 'numberExcludedAtomsStatements',
+                 'pointersStatements',
+                 'polarizabilityStatements',
+                 'radiiStatements',
+                 'radiusSetStatements',
+                 'residueLabelStatements',
+                 'residuePointerStatements',
+                 'sceeScaleFactorStatements',
+                 'scnbScaleFactorStatements',
+                 'screenStatements',
+                 'soltyStatements',
+                 'solventPointersStatements',
+                 'titleStatements',
+                 'treeChainClassificationStatements')
 
     # version information
     __version = None
@@ -94,13 +142,13 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None):
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT)
+                         cR, caC, nefT)
 
         self.file_type = 'nm-aux-amb'
 
@@ -159,7 +207,7 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
 
     # Enter a parse tree produced by AmberPTParser#amber_pt.
     def enterAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by AmberPTParser#amber_pt.
     def exitAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument

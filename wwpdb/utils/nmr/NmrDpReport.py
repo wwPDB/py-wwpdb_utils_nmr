@@ -119,7 +119,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.8.0"
+__version__ = "4.8.1"
 
 import sys
 import json
@@ -146,6 +146,20 @@ except ImportError:
 class NmrDpReport:
     """ Wrapper class for data processing report of NMR data.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__immutable',
+                 '__report',
+                 'status_codes',
+                 'input_sources',
+                 'sequence_alignment',
+                 'chain_assignment',
+                 'output_statistics',
+                 'error',
+                 'warning',
+                 'corrected_warning')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__
@@ -1870,6 +1884,14 @@ class NmrDpReport:
 class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR data (input source).
     """
+    __slots__ = ('__class_name__',
+                 '__verbose',
+                 '__lfh',
+                 'items',
+                 'file_types',
+                 'content_types',
+                 'content_subtypes',
+                 '__contents')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__
@@ -1996,6 +2018,11 @@ class NmrDpReportInputSource:
 class NmrDpReportSequenceAlignment:
     """ Wrapper class for data processing report of NMR data (sequence alignment).
     """
+    __slots__ = ('__class_name__',
+                 '__verbose',
+                 '__lfh',
+                 'items',
+                 '__contents')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__
@@ -2049,6 +2076,12 @@ class NmrDpReportSequenceAlignment:
 class NmrDpReportChainAssignment:
     """ Wrapper class for data processing report of NMR data (chain assignment).
     """
+    __slots__ = ('__class_name__',
+                 '__verbose',
+                 '__lfh',
+                 'items',
+                 'file_types',
+                 '__contents')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__
@@ -2088,6 +2121,11 @@ class NmrDpReportChainAssignment:
 class NmrDpReportOutputStatistics:
     """ Wrapper class for data processing report of NMR data (output statistics).
     """
+    __slots__ = ('__class_name__',
+                 '__verbose',
+                 '__lfh',
+                 'items',
+                 '__contents')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__
@@ -2131,6 +2169,14 @@ class NmrDpReportOutputStatistics:
 class NmrDpReportError:
     """ Wrapper class for data processing report of NMR data (error).
     """
+    __slots__ = ('__class_name__',
+                 '__verbose',
+                 '__lfh',
+                 'items',
+                 'group_items',
+                 '__contents',
+                 'chk_row_pat',
+                 'chk_rows_pat')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__
@@ -2447,6 +2493,15 @@ class NmrDpReportError:
 class NmrDpReportWarning:
     """ Wrapper class for data processing report of NMR data (warning).
     """
+    __slots__ = ('__class_name__',
+                 '__verbose',
+                 '__lfh',
+                 'items',
+                 'group_items',
+                 'mr_err_items',
+                 '__contents',
+                 'chk_row_pat',
+                 'chk_rows_pat')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__

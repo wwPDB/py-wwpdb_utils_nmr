@@ -13,7 +13,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Zukang Feng, Masashi Yokochi"
 __email__ = "zfeng@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 import sys
 import os
@@ -60,6 +60,13 @@ def abandon_symbolic_labels(containerList: list):
 class mmCIFUtil:
     """ Accessor methods for manipulating CIF files containing multiple datablocks.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__dBlockList',
+                 '__dBlockNameList',
+                 '__dBlockMap')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr, filePath: Optional[str] = None):
         self.__class_name__ = self.__class__.__name__

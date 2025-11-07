@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -27,8 +27,6 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
@@ -39,20 +37,18 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by XeasyPKParser.
 class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
+    __slots__ = ('__atomNumberDict', )
 
     __spectrum_names = None
     __index = None
     __labels = None
     __axis_order = None
-    __atomNumberDict = None
     __last_comment = None
     __comment_offset = None
     __g = None
@@ -61,11 +57,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
         super().__init__(verbose, log, representativeModelId, representativeAltId,
-                         mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
+                         mrAtomNameMapping, cR, caC, nefT, reasons)
 
         self.file_type = 'nm-pea-xea'
         self.software_name = 'XEASY'
@@ -76,7 +72,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
         self.__spectrum_names = {}
 
-        self.enter()
         self.__g = []
 
     # Exit a parse tree produced by XeasyPKParser#xeasy_pk.

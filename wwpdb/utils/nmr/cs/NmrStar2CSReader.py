@@ -9,7 +9,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import os
@@ -42,6 +42,20 @@ except ImportError:
 class NmrStar2CSReader:
     """ Accessor methods for parsing NMR-STAR V2.1 CS files.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__debug',
+                 '__maxLexerErrorReport',
+                 '__maxParserErrorReport',
+                 '__polySeq',
+                 '__entityAssembly',
+                 '__ccU',
+                 '__caC',
+                 '__csStat',
+                 '__nefT',
+                 '__reasons')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
@@ -143,7 +157,7 @@ class NmrStar2CSReader:
             walker = ParseTreeWalker()
             listener = NmrStar2CSParserListener(self.__verbose, self.__lfh,
                                                 self.__polySeq, self.__entityAssembly,
-                                                self.__ccU, self.__csStat, self.__nefT,
+                                                self.__nefT,
                                                 self.__reasons)
             listener.debug = self.__debug
             listener.createSfDict = createSfDict

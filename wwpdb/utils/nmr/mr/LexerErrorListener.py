@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 from antlr4.error.ErrorListener import ErrorListener
 from typing import List, Optional
@@ -24,6 +24,7 @@ except ImportError:
 
 
 class LexerErrorListener(ErrorListener):
+    __slots__ = ()
 
     __messageList = None
     __errorLineNumber = None

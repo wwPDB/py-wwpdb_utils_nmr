@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 import copy
@@ -26,8 +26,6 @@ try:
                                                        REPRESENTATIVE_ALT_ID,
                                                        SPECTRAL_DIM_TEMPLATE,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
@@ -38,14 +36,13 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID,
                                            SPECTRAL_DIM_TEMPLATE,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by PonderosaPKParser.
 class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
+    __slots__ = ()
 
     __spectrum_names = None
 
@@ -53,11 +50,11 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
         super().__init__(verbose, log, representativeModelId, representativeAltId,
-                         mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
+                         mrAtomNameMapping, cR, caC, nefT, reasons)
 
         self.file_type = 'nm-pea-pon'
         self.software_name = 'PONDEROSA'
@@ -65,8 +62,6 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by PonderosaPKParser#ponderosa_pk.
     def enterPonderosa_pk(self, ctx: PonderosaPKParser.Ponderosa_pkContext):  # pylint: disable=unused-argument
         self.__spectrum_names = {}
-
-        self.enter()
 
     # Exit a parse tree produced by PonderosaPKParser#ponderosa_pk.
     def exitPonderosa_pk(self, ctx: PonderosaPKParser.Ponderosa_pkContext):  # pylint: disable=unused-argument

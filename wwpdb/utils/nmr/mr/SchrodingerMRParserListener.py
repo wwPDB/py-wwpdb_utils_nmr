@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -51,8 +51,6 @@ try:
                                                        CARTN_DATA_ITEMS,
                                                        AUTH_ATOM_DATA_ITEMS,
                                                        AUTH_ATOM_CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            monDict3,
@@ -89,8 +87,6 @@ except ImportError:
                                            CARTN_DATA_ITEMS,
                                            AUTH_ATOM_DATA_ITEMS,
                                            AUTH_ATOM_CARTN_DATA_ITEMS)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (emptyValue,
                                monDict3,
@@ -103,9 +99,7 @@ except ImportError:
 
 # This class defines a complete listener for a parse tree produced by SchrodingerMRParser.
 class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
-
-    # atom number dictionary
-    __atomNumberDict = None
+    __slots__ = ('__atomNumberDict', )
 
     __compIdSet = None
     __altCompIdSet = None
@@ -120,14 +114,14 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT, reasons)
+                         cR, caC, nefT, reasons)
 
         self.file_type = 'nm-res-sch'
         self.software_name = 'SCHRODINGER/ASL'
@@ -136,11 +130,14 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.__atomNumberDict = atomNumberDict
             self.offsetHolder = None
 
+        else:
+            self.__atomNumberDict = {}
+
         self.storeSet = {}
 
     # Enter a parse tree produced by SchrodingerMRParser#schrodinger_mr
     def enterSchrodinger_mr(self, ctx: SchrodingerMRParser.Schrodinger_mrContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by SchrodingerMRParser#schrodinger_mr.
     def exitSchrodinger_mr(self, ctx: SchrodingerMRParser.Schrodinger_mrContext):  # pylint: disable=unused-argument
@@ -380,7 +377,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
 
-        if self.__atomNumberDict is None:
+        if len(self.__atomNumberDict) == 0:
             self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                           "The 'FXDI' clause has no effect "
                           f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
@@ -555,7 +552,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2))), int(str(ctx.Integer(3)))]
 
-        if self.__atomNumberDict is None:
+        if len(self.__atomNumberDict) == 0:
             self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                           "The 'FXTA' clause has no effect "
                           f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
@@ -680,7 +677,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
 
-        if self.__atomNumberDict is None:
+        if len(self.__atomNumberDict) == 0:
             self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                           "The 'FXBA' clause has no effect "
                           f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
@@ -905,7 +902,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
 
-        if self.__atomNumberDict is None:
+        if len(self.__atomNumberDict) == 0:
             self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                           "The 'FXDI' clause has no effect "
                           f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
@@ -1115,7 +1112,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2))), int(str(ctx.Integer(3)))]
 
-        if self.__atomNumberDict is None:
+        if len(self.__atomNumberDict) == 0:
             self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                           "The 'FXTA' clause has no effect "
                           f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")
@@ -1344,7 +1341,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
 
-        if self.__atomNumberDict is None:
+        if len(self.__atomNumberDict) == 0:
             self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                           "The 'FXHB' clause has no effect "
                           f"because atom number dictionary is necessary to interpret the internal atom selection {atom_sel}.")

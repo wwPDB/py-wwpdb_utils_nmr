@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 
@@ -21,36 +21,33 @@ try:
     from wwpdb.utils.nmr.cs.OliviaCSParser import OliviaCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, monDict3)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.cs.OliviaCSParser import OliviaCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
     from nmr.AlignUtil import (emptyValue, monDict3)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by OliviaCSParser.
 class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
+    __slots__ = ()
 
     __polySeq = None
     __entityAssembly = None
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
-        super().__init__(verbose, log, polySeq, entityAssembly, ccU, csStat, nefT, reasons)
+        super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-shi-oli'
         self.software_name = 'Olivia'
 
     # Enter a parse tree produced by OliviaCSParser#olivia_cs.
     def enterOlivia_cs(self, ctx: OliviaCSParser.Olivia_csContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by OliviaCSParser#olivia_cs.
     def exitOlivia_cs(self, ctx: OliviaCSParser.Olivia_csContext):  # pylint: disable=unused-argument

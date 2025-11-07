@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 
@@ -20,19 +20,16 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.cs.GarretCSParser import GarretCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.cs.GarretCSParser import GarretCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by GarretCSParser.
 class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
+    __slots__ = ()
 
     __seq_id = None
     __comp_id = None
@@ -40,16 +37,14 @@ class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
-        super().__init__(verbose, log, polySeq, entityAssembly, ccU, csStat, nefT, reasons)
+        super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-shi-gar'
 
     # Enter a parse tree produced by GarretCSParser#garret_cs.
     def enterGarret_cs(self, ctx: GarretCSParser.Garret_csContext):  # pylint: disable=unused-argument
-        self.enter()
-
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 

@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 
@@ -20,19 +20,16 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.pk.XeasyPROTParser import XeasyPROTParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.pk.XeasyPROTParser import XeasyPROTParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by XeasyCSParser.
 class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
+    __slots__ = ()
 
     # residue
     __cur_residue = None
@@ -41,17 +38,15 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
-        super().__init__(verbose, log, polySeq, entityAssembly, ccU, csStat, nefT, reasons)
+        super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-aux-xea'
         self.software_name = 'XEASY'
 
     # Enter a parse tree produced by XeasyPROTParser#xeasy_prot.
     def enterXeasy_prot(self, ctx: XeasyPROTParser.Xeasy_protContext):  # pylint: disable=unused-argument
-        self.enter()
-
         self.cur_subtype = 'chem_shift'
 
         self.cur_list_id = max(self.cur_list_id, 0)

@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -26,8 +26,6 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
@@ -41,8 +39,6 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
@@ -53,6 +49,7 @@ except ImportError:
 
 # This class defines a complete listener for a parse tree produced by BarePDBParser.
 class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
+    __slots__ = ('coordinatesStatements', )
 
     # total appearances of TER clause
     __ter_count = 0
@@ -68,13 +65,13 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None):
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT)
+                         cR, caC, nefT)
 
         self.file_type = 'nm-aux-pdb'
 
@@ -82,7 +79,6 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
 
     # Enter a parse tree produced by BarePDBParser#bare_pdb.
     def enterBare_pdb(self, ctx: BarePDBParser.Bare_pdbContext):  # pylint: disable=unused-argument
-        self.enter()
         self.__ter_count = 0
         self.__ter_offset = 0
         self.__end = False

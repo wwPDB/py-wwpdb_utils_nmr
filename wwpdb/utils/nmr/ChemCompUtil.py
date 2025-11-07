@@ -18,7 +18,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import os
 import sys
@@ -52,9 +52,33 @@ except ImportError:
 class ChemCompUtil:
     """ Wrapper class for retrieving chemical component dictionary.
     """
+    __slots__ = ('__cacheFile',
+                 '__ccR',
+                 '__ccR',
+                 'lastCompId',
+                 'lastStatus',
+                 'lastChemCompDict',
+                 'lastAtomList',
+                 'lastBonds',
+                 'ccaAtomId',
+                 'ccaAltAtomId',
+                 'ccaAromaticFlag',
+                 'ccaLeavingAtomFlag',
+                 'ccaTypeSymbol',
+                 'ccaCartnX',
+                 'ccaCartnY',
+                 'ccaCartnZ',
+                 'ccaBackboneAtomFlag',
+                 'ccaNTerminalAtomFlag',
+                 'ccaCTerminalAtomFlag',
+                 'ccbAtomId1',
+                 'ccbAtomId2',
+                 'ccbAromaticFlag',
+                 'ccbValueOrder',
+                 '__cachedDict',
+                 '__failedCompId')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr):
-
         # pickle file name of cached dictionary for standard residues
         self.__cacheFile = os.path.dirname(__file__) + '/chem_comp_util/std_chem_comp.pkl'
 

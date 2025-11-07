@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import sys
 # import csv
@@ -139,6 +139,30 @@ def get_nmr_software(name: str) -> str:
 class OneDepAnnTasks:
     """ Wrapper class for OneDep annotation tasks.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__sfCategoryList',
+                 '__entryId',
+                 '__cifPages',
+                 '__cifRequirements',
+                 '__nmrIfCategories',
+                 '__pages',
+                 '__sfCategory',
+                 '__sfTagPrefix',
+                 '__sfNewFlag',
+                 '__lpCategory',
+                 '__lpNewFlag',
+                 '__sfTagMap',
+                 '__uniqSfTagMap',
+                 '__uniqSfCatMap',
+                 '__sfTagMap',
+                 '__lpTagMap',
+                 '__uniqLpCatMap',
+                 '__defSfTag',
+                 '__defLpTag',
+                 '__allowedSfTags')
 
     def __init__(self, verbose: bool, log: IO,
                  sfCategoryList: List[str], entryId: str):

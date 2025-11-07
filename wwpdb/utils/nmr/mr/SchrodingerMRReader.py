@@ -9,7 +9,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import os
@@ -52,6 +52,26 @@ except ImportError:
 class SchrodingerMRReader:
     """ Accessor methods for parsing SCHRODINGER MR files.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__debug',
+                 '__internal',
+                 '__sll_pred',
+                 '__nmrVsModel',
+                 '__maxLexerErrorReport',
+                 '__maxParserErrorReport',
+                 '__representativeModelId',
+                 '__representativeAltId',
+                 '__mrAtomNameMapping',
+                 '__ccU',
+                 '__cR',
+                 '__caC',
+                 '__csStat',
+                 '__nefT',
+                 '__atomNumberDict',
+                 '__reasons')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -195,7 +215,7 @@ class SchrodingerMRReader:
                                                    self.__representativeAltId,
                                                    self.__mrAtomNameMapping,
                                                    self.__cR, self.__caC,
-                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   self.__nefT,
                                                    self.__atomNumberDict, self.__reasons)
             listener.debug = self.__debug
             listener.internal = self.__internal

@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 
@@ -20,34 +20,29 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.cs.PpmCSParser import PpmCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.cs.PpmCSParser import PpmCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by PpmCSParser.
 class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
+    __slots__ = ()
 
     __number = None
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
-        super().__init__(verbose, log, polySeq, entityAssembly, ccU, csStat, nefT, reasons)
+        super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-shi-ppm'
 
     # Enter a parse tree produced by PpmCSParser#ppm_cs.
     def enterPpm_cs(self, ctx: PpmCSParser.Ppm_csContext):  # pylint: disable=unused-argument
-        self.enter()
-
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 

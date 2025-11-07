@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import itertools
@@ -47,8 +47,6 @@ try:
                                                        DIST_AMBIG_UP,
                                                        KNOWN_ANGLE_ATOM_NAMES,
                                                        KNOWN_ANGLE_SEQ_OFFSET)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
@@ -81,8 +79,6 @@ except ImportError:
                                            DIST_AMBIG_UP,
                                            KNOWN_ANGLE_ATOM_NAMES,
                                            KNOWN_ANGLE_SEQ_OFFSET)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                emptyValue,
@@ -95,26 +91,27 @@ TALOS_PREDICTION_MIN_CLASSES = ('Strong', 'Good')
 
 # This class defines a complete listener for a parse tree produced by DynamoMRParser.
 class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    __slots__ = ()
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT, reasons)
+                         cR, caC, nefT, reasons)
 
         self.file_type = 'nm-res-dyn'
         self.software_name = 'DYNAMO/PALES/TALOS'
 
     # Enter a parse tree produced by DynamoMRParser#dynamo_mr.
     def enterDynamo_mr(self, ctx: DynamoMRParser.Dynamo_mrContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by DynamoMRParser#dynamo_mr.
     def exitDynamo_mr(self, ctx: DynamoMRParser.Dynamo_mrContext):  # pylint: disable=unused-argument

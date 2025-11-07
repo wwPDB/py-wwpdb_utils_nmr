@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 
@@ -24,8 +24,6 @@ try:
     from wwpdb.utils.nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
@@ -38,8 +36,6 @@ except ImportError:
     from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
@@ -50,6 +46,31 @@ except ImportError:
 
 # This class defines a complete listener for a parse tree produced by GromacsPTParser.
 class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
+    __slots__ = ('defaultStatements',
+                 'moleculetypeStatements',
+                 'atomtypesStatements',
+                 'pairtypesStatements',
+                 'bondtypesStatements',
+                 'angletypesStatements',
+                 'dihedraltypesStatements',
+                 'constrainttypesStatements',
+                 'nonbond_paramsStatements',
+                 'atomsStatements',
+                 'bondsStatements',
+                 'pairsStatements',
+                 'pairs_nbStatements',
+                 'anglesStatements',
+                 'dihedralsStatements',
+                 'exclusionsStatements',
+                 'constraintsStatements',
+                 'settlesStatements',
+                 'virtual_sites1Statements',
+                 'virtual_sites2Statements',
+                 'virtual_sites3Statements',
+                 'virtual_sites4Statements',
+                 'virtual_sitesnStatements',
+                 'systemStatements',
+                 'moleculesStatements')
 
     # system
     __system = None
@@ -67,13 +88,13 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None):
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT)
+                         cR, caC, nefT)
 
         self.file_type = 'nm-aux-gro'
 
@@ -105,7 +126,7 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
 
     # Enter a parse tree produced by GromacsPTParser#gromacs_pt.
     def enterGromacs_pt(self, ctx: GromacsPTParser.Gromacs_ptContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by GromacsPTParser#gromacs_pt.
     def exitGromacs_pt(self, ctx: GromacsPTParser.Gromacs_ptContext):  # pylint: disable=unused-argument

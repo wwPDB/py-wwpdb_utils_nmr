@@ -41,7 +41,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 import sys
 import os
@@ -225,6 +225,33 @@ def calculate_uninstanced_coord(p_coord: list, q_coord: list, s_coord: list) -> 
 class CifReader:
     """ Accessor methods for parsing CIF files, extracting polymer sequence, and RMSD calculation.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__debug',
+                 '__use_cache',
+                 '__sub_dir_name_for_cache',
+                 '__filePath',
+                 '__dirPath',
+                 '__dBlockList',
+                 '__dBlockNameList',
+                 '__dBlock',
+                 '__categoryNameList',
+                 '__hashCode',
+                 '__cachePath',
+                 'trueValue',
+                 'itemTypes',
+                 '__random_rotaion_test',
+                 '__single_model_rotation_test',
+                 '__min_features_for_clustering',
+                 '__max_features_for_clustering',
+                 '__min_samples_for_clustering',
+                 '__max_samples_for_clustering',
+                 '__min_monomers_for_domain',
+                 '__rmsd_cutoff',
+                 '__d_cutoff',
+                 '__rmsd_overlaid_exactly')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  use_cache: bool = True,

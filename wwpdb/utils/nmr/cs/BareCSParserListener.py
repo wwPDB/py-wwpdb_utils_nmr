@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -22,22 +22,19 @@ try:
     from wwpdb.utils.nmr.cs.BareCSParser import BareCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import (BaseCSParserListener,
                                                          CHEM_SHIFT_HALF_SPIN_NUCLEUS)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import monDict3
 except ImportError:
     from nmr.cs.BareCSParser import BareCSParser
     from nmr.cs.BaseCSParserListener import (BaseCSParserListener,
                                              CHEM_SHIFT_HALF_SPIN_NUCLEUS)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import monDict3
 
 
 # This class defines a complete listener for a parse tree produced by BareCSParser.
 class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
+    __slots__ = ()
 
     __col_name = None
     __col_order = None
@@ -51,15 +48,15 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
-        super().__init__(verbose, log, polySeq, entityAssembly, ccU, csStat, nefT, reasons)
+        super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-shi-bar'
 
     # Enter a parse tree produced by BareCSParser#bare_cs.
     def enterBare_cs(self, ctx: BareCSParser.Bare_csContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by BareCSParser#bare_cs.
     def exitBare_cs(self, ctx: BareCSParser.Bare_csContext):  # pylint: disable=unused-argument

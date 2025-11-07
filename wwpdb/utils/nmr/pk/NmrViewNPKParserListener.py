@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -27,8 +27,6 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        SPECTRAL_DIM_TEMPLATE)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
@@ -39,14 +37,13 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            SPECTRAL_DIM_TEMPLATE)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by NmrViewNPKParser.
 class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
+    __slots__ = ()
 
     __cur_label_type = None
 
@@ -59,11 +56,11 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
         super().__init__(verbose, log, representativeModelId, representativeAltId,
-                         mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
+                         mrAtomNameMapping, cR, caC, nefT, reasons)
 
         self.file_type = 'nm-pea-vie'
         self.software_name = 'NMRVIEW'
@@ -71,8 +68,6 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by NmrViewNPKParser#nmrview_npk.
     def enterNmrview_npk(self, ctx: NmrViewNPKParser.Nmrview_npkContext):  # pylint: disable=unused-argument
         self.__spectrum_names = {}
-
-        self.enter()
 
     # Exit a parse tree produced by NmrViewNPKParser#nmrview_npk.
     def exitNmrview_npk(self, ctx: NmrViewNPKParser.Nmrview_npkContext):  # pylint: disable=unused-argument

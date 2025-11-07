@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import itertools
@@ -42,8 +42,6 @@ try:
                                                        REPRESENTATIVE_ALT_ID,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
@@ -69,34 +67,33 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by BiosymMRParser.
 class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    __slots__ = ()
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT, reasons)
+                         cR, caC, nefT, reasons)
 
         self.file_type = 'nm-res-bio'
         self.software_name = 'BIOSYM'
 
     # Enter a parse tree produced by BiosymMRParser#biosym_mr.
     def enterBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by BiosymMRParser#biosym_mr.
     def exitBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument

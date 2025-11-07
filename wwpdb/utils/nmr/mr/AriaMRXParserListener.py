@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import itertools
@@ -18,8 +18,6 @@ import copy
 
 from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
-
-from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -52,8 +50,6 @@ try:
                                                        KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                                        KNOWN_ANGLE_CARBO_SEQ_OFFSET,
                                                        CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (MAX_MAG_IDENT_ASYM_ID,
                                            monDict3,
@@ -96,8 +92,6 @@ except ImportError:
                                            KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                            KNOWN_ANGLE_CARBO_SEQ_OFFSET,
                                            CARTN_DATA_ITEMS)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (MAX_MAG_IDENT_ASYM_ID,
                                monDict3,
@@ -113,6 +107,7 @@ except ImportError:
 
 # This class defines a complete listener for a parse tree produced by XMLParser.
 class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    __slots__ = ()
 
     __polySeqRstRef = None
 
@@ -141,22 +136,20 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT, reasons)
+                         cR, caC, nefT, reasons)
 
         self.file_type = 'nm-res-arx'
         self.software_name = 'ARIA'
 
     # Enter a parse tree produced by XMLParser#document.
     def enterDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
-        self.enter()
-
         self.__cur_path = ''
         self.__polySeqRstRef = []
 
@@ -547,10 +540,6 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         if len(longest_substr) == 0:
             return ref_atom_id
-
-        if self.pA is None:
-            self.pA = PairwiseAlign()
-            self.pA.setVerbose(self.verbose)
 
         self.pA.setReferenceSequence(list(longest_substr), 'REFNAME')
         self.pA.addTestSequence(list(max_str), 'NAME')

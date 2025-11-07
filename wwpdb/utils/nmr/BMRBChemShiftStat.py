@@ -25,7 +25,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import sys
 import os
@@ -56,6 +56,42 @@ except ImportError:
 class BMRBChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 'lazy_others',
+                 'stat_dir',
+                 'url_for_bmrb_cs_stat_dir',
+                 'csv_files',
+                 'aa_filt',
+                 'aa_full',
+                 'dna_filt',
+                 'dna_full',
+                 'rna_filt',
+                 'rna_full',
+                 'others',
+                 'extras',
+                 '__aa_comp_ids',
+                 '__dna_comp_ids',
+                 '__rna_comp_ids',
+                 '__oth_comp_ids',
+                 '__ext_comp_ids',
+                 '__std_comp_ids',
+                 '__all_comp_ids',
+                 '__not_comp_ids',
+                 'aa_threshold',
+                 'na_threshold',
+                 'max_count_th',
+                 '__ccU',
+                 '__cachedDictForPeptideLike',
+                 '__cachedDictForTypeOfCompId',
+                 '__cachedDictForSimilarCompId',
+                 '__cachedDictForMethylAtoms',
+                 '__cachedDictForMethylProtons',
+                 '__cachedDictForRepMethylProtons',
+                 '__cachedDictForNonRepMethylProtons',
+                 '__cachedDictForProtonInSameGroup')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr, ccU: Optional[ChemCompUtil] = None):
         self.__class_name__ = self.__class__.__name__

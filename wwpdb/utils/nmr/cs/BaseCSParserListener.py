@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -18,8 +18,6 @@ import copy
 import collections
 
 from typing import IO, List, Tuple, Union, Optional
-
-from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
@@ -40,8 +38,6 @@ try:
                                                        CS_RESTRAINT_RANGE,
                                                        CS_RESTRAINT_ERROR,
                                                        WEIGHT_RANGE)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
@@ -84,8 +80,6 @@ except ImportError:
                                            CS_RESTRAINT_RANGE,
                                            CS_RESTRAINT_ERROR,
                                            WEIGHT_RANGE)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
@@ -126,6 +120,35 @@ CHEM_SHIFT_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 
 
 class BaseCSParserListener():
+    __slots__ = ('polySeq',
+                 'entityAssembly',
+                 'ccU',
+                 'hasPolySeq',
+                 'labelToAuthSeq',
+                 'authToLabelSeq',
+                 'chainIdSet',
+                 'compIdSet',
+                 'cyanaCompIdSet',
+                 'polyPeptide',
+                 'polyDeoxyribonucleotide',
+                 'polyRibonucleotide',
+                 'csStat',
+                 'nefT',
+                 'pA',
+                 'reasons',
+                 '__preferAuthSeqCount',
+                 '__preferLabelSeqCount',
+                 'reasonsForReParsing',
+                 'chemShifts',
+                 'sfDict',
+                 '__cachedDictForStarAtom',
+                 'chainNumberDict',
+                 'offset',
+                 'polySeqCs',
+                 'polySeqCsFailed',
+                 'polySeqCsFailedAmbig',
+                 'compIdMap',
+                 'f')
 
     file_type = None
     software_name = None
@@ -135,50 +158,13 @@ class BaseCSParserListener():
 
     __createSfDict = False
 
-    # CCD accessing utility
-    ccU = None
-
-    # BMRB chemical shift statistics
-    csStat = None
-
-    # NEFTranslator
-    nefT = None
-
-    # Pairwise align
-    pA = None
-
-    # reasons for re-parsing request from the previous trial
-    reasons = None
-
     # data item names for auth_asym_id, auth_seq_id, auth_atom_id in 'atom_site' category
     __authSeqId = None
-
-    polySeq = None
-    entityAssembly = None  # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
-    labelToAuthSeq = None
-    authToLabelSeq = None
-
-    chainIdSet = None
-    compIdSet = None
-    cyanaCompIdSet = None
-    polyPeptide = False
-    polyDeoxyribonucleotide = False
-    polyRibonucleotide = False
 
     __shiftNonPosSeq = None
     __defaultSegId = None
     __defaultSegId__ = None
 
-    hasPolySeq = False
-
-    # chain number dictionary
-    chainNumberDict = None
-
-    # polymer sequence of MR file
-    polySeqCs = None
-    polySeqCsFailed = None
-    polySeqCsFailedAmbig = None
-    compIdMap = None
     __preferAuthSeq = True
     __extendAuthSeq = False
 
@@ -189,7 +175,6 @@ class BaseCSParserListener():
     cur_subtype = ''
     cur_list_id = -1
     cur_line_num = -1
-    offset = None
 
     # whether to allow extended sequence temporary
     __allow_ext_seq = False
@@ -206,10 +191,8 @@ class BaseCSParserListener():
     # collection of any selection
     anySelection = []
 
-    f = None
+    # f = None
     warningMessage = None
-
-    reasonsForReParsing = {}
 
     # original source MR file name
     __originalFileName = '.'
@@ -223,52 +206,49 @@ class BaseCSParserListener():
     # entry ID
     __entryId = '.'
 
-    # dictionary of pynmrstar saveframes
-    sfDict = {}
-
     # default saveframe name for error handling
     __def_err_sf_framecode = None
 
-    __cachedDictForStarAtom = {}
-
-    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,  # pylint: disable=unused-argument
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
 
         self.polySeq = polySeq
-        self.entityAssembly = entityAssembly
+        self.entityAssembly = entityAssembly  # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
 
-        # CCD accessing utility
-        self.ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+        self.nefT = nefT
+        self.ccU = nefT.ccU
+        self.csStat = nefT.csStat
+        self.pA = nefT.pA
 
         self.hasPolySeq = self.polySeq is not None and len(self.polySeq) > 0
 
+        self.polyPeptide = False
+        self.polyDeoxyribonucleotide = False
+        self.polyRibonucleotide = False
+
         if self.hasPolySeq:
-            self.__labelToAuthSeq = {}
+            self.labelToAuthSeq = {}
             for ps in self.polySeq:
                 chainId = ps['chain_id']
                 authChainId = ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id']
                 if 'auth_seq_id' not in ps:
                     for seqId in ps['seq_id']:
-                        self.__labelToAuthSeq[(chainId, seqId)] = (authChainId, seqId)
+                        self.labelToAuthSeq[(chainId, seqId)] = (authChainId, seqId)
                 else:
                     for seqId, authSeqId in zip(ps['seq_id'], ps['auth_seq_id']):
-                        self.__labelToAuthSeq[(chainId, seqId)] = (authChainId, authSeqId)
-            self.authToLabelSeq = {v: k for k, v in self.__labelToAuthSeq.items()}
+                        self.labelToAuthSeq[(chainId, seqId)] = (authChainId, authSeqId)
+            self.authToLabelSeq = {v: k for k, v in self.labelToAuthSeq.items()}
 
             self.chainIdSet = set(ps['chain_id'] for ps in self.polySeq)
             self.compIdSet = set()
-            self.cyanaCompIdSet = set()
 
             def is_data(array: list) -> bool:
                 return not any(d in emptyValue for d in array)
 
             for ps in self.polySeq:
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
-
-            for compId in self.compIdSet:
-                self.cyanaCompIdSet |= backTranslateFromStdResName(compId)
 
             for compId in self.compIdSet:
                 if compId in monDict3:
@@ -279,16 +259,16 @@ class BaseCSParserListener():
                     elif len(compId) == 1:
                         self.polyRibonucleotide = True
 
-        # BMRB chemical shift statistics
-        self.csStat = BMRBChemShiftStat(verbose, log, self.ccU) if csStat is None else csStat
+        else:
+            self.labelToAuthSeq = None
+            self.authToLabelSeq = None
 
-        # NEFTranslator
-        self.nefT = NEFTranslator(verbose, log, self.ccU, self.csStat) if nefT is None else nefT
+            self.chainIdSet = set()
+            self.compIdSet = set(monDict3.keys())
 
-        # Pairwise align
-        if self.hasPolySeq:
-            self.pA = PairwiseAlign()
-            self.pA.setVerbose(verbose)
+        self.cyanaCompIdSet = set()
+        for compId in self.compIdSet:
+            self.cyanaCompIdSet |= backTranslateFromStdResName(compId)
 
         # reasons for re-parsing request from the previous trial
         self.reasons = reasons
@@ -299,9 +279,18 @@ class BaseCSParserListener():
 
         self.chemShifts = 0
 
-        self.sfDict = {}
+        self.sfDict = {}  # dictionary of pynmrstar saveframes
 
         self.__cachedDictForStarAtom = {}
+
+        self.chainNumberDict = {}
+        self.offset = {}
+        self.polySeqCs = []
+        self.polySeqCsFailed = []
+        self.polySeqCsFailedAmbig = []
+        self.compIdMap = {}
+
+        self.f = []
 
     @property
     def debug(self):
@@ -358,13 +347,6 @@ class BaseCSParserListener():
     @entryId.setter
     def entryId(self, entryId: str):
         self.__entryId = entryId
-
-    def enter(self):
-        self.polySeqCs = []
-        self.polySeqCsFailed = []
-        self.polySeqCsFailedAmbig = []
-        self.compIdMap = {}
-        self.f = []
 
     def exit(self):
 
@@ -843,11 +825,6 @@ class BaseCSParserListener():
 
         segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan, siblingAtomName =\
             [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr
-
-        if self.chainIdSet is None:
-            self.chainIdSet = set()
-        if self.compIdSet is None:
-            self.compIdSet = set(monDict3.keys())
 
         oneLetterCodeSet = []
         extMonDict3 = {}
@@ -2339,8 +2316,8 @@ class BaseCSParserListener():
                 _compId = compId[1]
         if not self.__preferAuthSeq:
             seqKey = (ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId)
-            if seqKey in self.__labelToAuthSeq:
-                _chainId, _seqId = self.__labelToAuthSeq[seqKey]
+            if seqKey in self.labelToAuthSeq:
+                _chainId, _seqId = self.labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
                     return _chainId, _seqId, ps['comp_id'][ps['seq_id'].index(seqId)]
                 if seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
@@ -2632,8 +2609,8 @@ class BaseCSParserListener():
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue
                 seqKey = (chainId, _seqId)
-                if seqKey in self.__labelToAuthSeq:
-                    _, seqId = self.__labelToAuthSeq[seqKey]
+                if seqKey in self.labelToAuthSeq:
+                    _, seqId = self.labelToAuthSeq[seqKey]
                     if seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
@@ -2979,8 +2956,8 @@ class BaseCSParserListener():
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue
                 seqKey = (chainId, _seqId)
-                if seqKey in self.__labelToAuthSeq:
-                    _, seqId = self.__labelToAuthSeq[seqKey]
+                if seqKey in self.labelToAuthSeq:
+                    _, seqId = self.labelToAuthSeq[seqKey]
                     if seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
@@ -3212,8 +3189,8 @@ class BaseCSParserListener():
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue
                 seqKey = (chainId, _seqId)
-                if seqKey in self.__labelToAuthSeq:
-                    _, seqId = self.__labelToAuthSeq[seqKey]
+                if seqKey in self.labelToAuthSeq:
+                    _, seqId = self.labelToAuthSeq[seqKey]
                     if seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
                         cifCompId = ps['comp_id'][ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId)]
                         updatePolySeqRst(self.polySeqCs, chainId, seqId, cifCompId)
@@ -3373,8 +3350,8 @@ class BaseCSParserListener():
                 if chainId != fixedChainId:
                     continue
                 seqKey = (chainId, _seqId)
-                if seqKey in self.__labelToAuthSeq:
-                    _, seqId = self.__labelToAuthSeq[seqKey]
+                if seqKey in self.labelToAuthSeq:
+                    _, seqId = self.labelToAuthSeq[seqKey]
                     if seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
                         cifCompId = ps['comp_id'][ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId)]
                         updatePolySeqRst(self.polySeqCs, fixedChainId, seqId, cifCompId)

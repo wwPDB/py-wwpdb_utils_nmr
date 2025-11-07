@@ -9,7 +9,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import os
@@ -52,6 +52,26 @@ except ImportError:
 class CyanaMRReader:
     """ Accessor methods for parsing CYANA MR files.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__debug',
+                 '__remediate',
+                 '__sll_pred',
+                 '__maxLexerErrorReport',
+                 '__maxParserErrorReport',
+                 '__representativeModelId',
+                 '__representativeAltId',
+                 '__mrAtomNameMapping',
+                 '__ccU',
+                 '__cR',
+                 '__caC',
+                 '__csStat',
+                 '__nefT',
+                 '__reasons',
+                 '__upl_or_lol',
+                 '__file_ext')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -191,7 +211,7 @@ class CyanaMRReader:
                                              self.__representativeAltId,
                                              self.__mrAtomNameMapping,
                                              self.__cR, self.__caC,
-                                             self.__ccU, self.__csStat, self.__nefT,
+                                             self.__nefT,
                                              self.__reasons, self.__upl_or_lol, self.__file_ext)
             listener.debug = self.__debug
             listener.remediate = self.__remediate
@@ -231,6 +251,11 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lk6/2lk6-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2lk6/2lk6.cif')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

@@ -116,7 +116,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "4.8.0"
+__version__ = "4.8.1"
 
 import sys
 import os
@@ -611,6 +611,44 @@ def is_good_data(array: list) -> bool:
 class NEFTranslator:
     """ Bi-directional translator between NEF and NMR-STAR
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__remediation_mode',
+                 '__annotation_mode',
+                 '__internal_mode',
+                 '__merge_rescue_mode',
+                 '__bmrb_only',
+                 '__allow_missing_dist_restraint',
+                 '__allow_missing_chem_shift',
+                 'sfCatMap',
+                 'tagMap',
+                 'nefMandatoryTag',
+                 'starMandatoryTag',
+                 'replace_zero_by_null_in_case',
+                 'insert_original_pdb_cs_items',
+                 'insert_original_atom_name_items',
+                 'authChainId',
+                 'authSeqMap',
+                 'selfSeqMap',
+                 'atomIdMap',
+                 'chemCompAtom',
+                 'chemCompBond',
+                 'chemCompTopo',
+                 'authAtomNameToId',
+                 'star2NefChainMapping',
+                 'star2CifChainMapping',
+                 '__pA',
+                 '__pA',
+                 '__ccU',
+                 '__csStat',
+                 '__c2S',
+                 'readableItemType',
+                 '__cachedDictForValidStarAtomInXplor',
+                 '__cachedDictForValidStarAtom',
+                 '__cachedDictForStarAtom',
+                 '__cachedDictForNefAtom')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
@@ -1514,7 +1552,7 @@ class NEFTranslator:
         self.__ccU = ChemCompUtil(self.__verbose, self.__lfh) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh) if csStat is None else csStat
+        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh, self.__ccU) if csStat is None else csStat
 
         # CifToNmrStar
         self.__c2S = CifToNmrStar(self.__lfh) if c2S is None else c2S
@@ -1538,11 +1576,23 @@ class NEFTranslator:
         self.__cachedDictForStarAtom = {}
         self.__cachedDictForNefAtom = {}
 
-    def get_ccu(self):
+    @property
+    def pA(self):
+        """ Get instance of PairwiseAlign.
+        """
+        return self.__pA
+
+    @property
+    def ccU(self):
         """ Get instance of ChemCompUtil.
         """
-
         return self.__ccU
+
+    @property
+    def csStat(self):
+        """ Get instance of BMRBChemShiftStat.
+        """
+        return self.__csStat
 
     def set_remediation_mode(self, flag: bool):
         """ Set remediation mode.

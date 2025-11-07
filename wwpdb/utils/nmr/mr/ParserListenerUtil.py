@@ -6527,7 +6527,7 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
                 if _atomId in emptyValue:
                     return None
                 if _compId not in monDict3:
-                    _atomId = translateToStdAtomName(_atomId, _compId, ccU=nefT.get_ccu())
+                    _atomId = translateToStdAtomName(_atomId, _compId, ccU=nefT.ccU)
                 _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atomId)
                 if len(_atomId) > 0 and details is None:
                     candidates.add(_compId)
@@ -6552,7 +6552,7 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
                 for atomId in atomIds:
                     if atomId in emptyValue:
                         break
-                    _atomId = translateToStdAtomName(atomId, _compId, ccU=nefT.get_ccu())
+                    _atomId = translateToStdAtomName(atomId, _compId, ccU=nefT.ccU)
                     _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atomId)
                     if len(_atomId) == 0 or details is not None:
                         failed = True
@@ -10576,7 +10576,7 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
     _seqId = seqId
 
     for ps in polySeq:
-        chainId, seqId = getRealChainSeqId(nefT.get_ccu(), ps, _seqId, compId)
+        chainId, seqId = getRealChainSeqId(nefT.ccU, ps, _seqId, compId)
         if refChainId != chainId:
             continue
         if seqId in ps['auth_seq_id']:
@@ -10652,7 +10652,7 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                         ligands += np['alt_comp_id'].count(compId)
 
         for np in nonPolySeq:
-            chainId, seqId = getRealChainSeqId(nefT.get_ccu(), np, _seqId, compId)
+            chainId, seqId = getRealChainSeqId(nefT.ccU, np, _seqId, compId)
             if refChainId != chainId:
                 continue
             if seqId in np['auth_seq_id']\
@@ -10843,7 +10843,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
                         _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
-                ccU = nefT.get_ccu()
+                ccU = nefT.ccU
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
@@ -10930,7 +10930,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
             if _atomSelection not in atomSelection:
                 atomSelection.append(_atomSelection)
 
-            warningMessage = testCoordAtomIdConsistency(caC, nefT.get_ccu(), authChainId, chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
+            warningMessage = testCoordAtomIdConsistency(caC, nefT.ccU, authChainId, chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
             if warningMessage is not None and warningMessage.startswith('Ignorable'):
                 warningMessage = None
                 atomSelection.pop()

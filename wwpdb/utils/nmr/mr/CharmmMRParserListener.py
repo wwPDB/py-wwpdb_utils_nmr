@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -54,8 +54,6 @@ try:
                                                        PTNR1_AUTH_ATOM_DATA_ITEMS,
                                                        PTNR2_AUTH_ATOM_DATA_ITEMS,
                                                        NMR_STAR_LP_KEY_ITEMS)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import emptyValue
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
@@ -91,8 +89,6 @@ except ImportError:
                                            PTNR1_AUTH_ATOM_DATA_ITEMS,
                                            PTNR2_AUTH_ATOM_DATA_ITEMS,
                                            NMR_STAR_LP_KEY_ITEMS)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import emptyValue
     from nmr.NmrVrptUtility import (to_np_array,
@@ -101,9 +97,7 @@ except ImportError:
 
 # This class defines a complete listener for a parse tree produced by CharmmMRParser.
 class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
-
-    # CharmmCRDParserListener.getAtomNumberDict()
-    __atomNumberDict = None
+    __slots__ = ('__atomNumberDict', )
 
     # distance
     kMin = 0.0
@@ -124,14 +118,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT, reasons)
+                         cR, caC, nefT, reasons)
 
         self.file_type = 'nm-res-cha'
         self.software_name = 'CHARMM'
@@ -140,9 +134,12 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.__atomNumberDict = atomNumberDict
             self.offsetHolder = None
 
+        else:
+            self.__atomNumberDict = {}
+
     # Enter a parse tree produced by CharmmMRParser#charmm_mr.
     def enterCharmm_mr(self, ctx: CharmmMRParser.Charmm_mrContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by CharmmMRParser#charmm_mr.
     def exitCharmm_mr(self, ctx: CharmmMRParser.Charmm_mrContext):  # pylint: disable=unused-argument
@@ -769,7 +766,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             pass
 
         elif ctx.ByNumber():
-            if self.__atomNumberDict is None:
+            if len(self.__atomNumberDict) == 0:
                 self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                               "The 'bynumber' clause has no effect "
                               "because CHARMM CRD file is not provided.")
@@ -2463,7 +2460,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                       f"The symbol {symbol_name!r} is not defined.")
 
-                if 'atom_num' in self.factor and self.__atomNumberDict is not None:
+                if 'atom_num' in self.factor and len(self.__atomNumberDict) > 0:
                     for ai in self.factor['atom_num']:
                         if ai in self.__atomNumberDict:
                             _factor = copy.copy(self.__atomNumberDict[ai])

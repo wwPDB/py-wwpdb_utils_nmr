@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 
@@ -21,38 +21,35 @@ try:
     from wwpdb.utils.nmr.cs.NmrStar2CSParser import NmrStar2CSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, monDict3)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.cs.NmrStar2CSParser import NmrStar2CSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
     from nmr.AlignUtil import (emptyValue, monDict3)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by NmrStar2CSParser.
 class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
+    __slots__ = ()
 
     __first_seq_id = None
-    __current_seq_ids = None
-    __current_comp_ids = None
+    __cur_seq_ids = None
+    __cur_comp_ids = None
 
     __tag_order = None
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
-        super().__init__(verbose, log, polySeq, entityAssembly, ccU, csStat, nefT, reasons)
+        super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-shi-st2'
 
     # Enter a parse tree produced by NmrStar2CSParser#nmrstar2_cs.
     def enterNmrstar2_cs(self, ctx: NmrStar2CSParser.Nmrstar2_csContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by NmrStar2CSParser#nmrstar2_cs.
     def exitNmrstar2_cs(self, ctx: NmrStar2CSParser.Nmrstar2_csContext):  # pylint: disable=unused-argument
@@ -61,8 +58,8 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
     # Enter a parse tree produced by NmrStar2CSParser#seq_loop.
     def enterSeq_loop(self, ctx: NmrStar2CSParser.Seq_loopContext):  # pylint: disable=unused-argument
         self.__first_seq_id = None
-        self.__current_seq_ids = []
-        self.__current_comp_ids = []
+        self.__cur_seq_ids = []
+        self.__cur_comp_ids = []
 
     # Exit a parse tree produced by NmrStar2CSParser#seq_loop.
     def exitSeq_loop(self, ctx: NmrStar2CSParser.Seq_loopContext):  # pylint: disable=unused-argument
@@ -86,13 +83,13 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
             if any is None:
                 continue
             if isinstance(any, int):
-                self.__current_seq_ids.append(any)
+                self.__cur_seq_ids.append(any)
             elif isinstance(any, str):
-                self.__current_comp_ids.append(any)
+                self.__cur_comp_ids.append(any)
         self.anySelection.clear()
 
-        if self.__first_seq_id is None and len(self.__current_seq_ids) > 0:
-            self.__first_seq_id = self.__current_seq_ids[0]
+        if self.__first_seq_id is None and len(self.__cur_seq_ids) > 0:
+            self.__first_seq_id = self.__cur_seq_ids[0]
 
     # Enter a parse tree produced by NmrStar2CSParser#cs_loop.
     def enterCs_loop(self, ctx: NmrStar2CSParser.Cs_loopContext):  # pylint: disable=unused-argument
@@ -100,7 +97,7 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
         if not self.hasPolySeq and self.__first_seq_id is not None:
             self.hasPolySeq = True
 
-            self.polySeq = [{'chain_id': '1', 'seq_id': self.__current_seq_ids, 'comp_id': self.__current_comp_ids}]
+            self.polySeq = [{'chain_id': '1', 'seq_id': self.__cur_seq_ids, 'comp_id': self.__cur_comp_ids}]
             self.entityAssembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
 
             self.labelToAuthSeq = {}

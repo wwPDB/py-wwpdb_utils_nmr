@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 
@@ -21,19 +21,16 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.pk.XMLParser import XMLParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.pk.XMLParser import XMLParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by XMLParser.
 class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
+    __slots__ = ()
 
     __cur_path = None
 
@@ -53,9 +50,9 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
-        super().__init__(verbose, log, polySeq, entityAssembly, ccU, csStat, nefT, reasons)
+        super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-shi-ari'
         self.software_name = 'ARIA'
@@ -63,8 +60,6 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
     # Enter a parse tree produced by XMLParser#document.
     def enterDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
         self.__cur_path = ''
-
-        self.enter()
 
     # Exit a parse tree produced by XMLParser#document.
     def exitDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument

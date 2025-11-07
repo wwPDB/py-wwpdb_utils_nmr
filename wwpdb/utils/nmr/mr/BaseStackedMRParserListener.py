@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -20,8 +20,6 @@ import copy
 import collections
 
 from typing import IO, List, Tuple, Optional
-
-from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
@@ -77,8 +75,6 @@ try:
                                                        XPLOR_NITROXIDE_NAMES,
                                                        NITROOXIDE_ANCHOR_RES_NAMES,
                                                        CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
                                                    PARAMAGNETIC_ELEMENTS,
                                                    FERROMAGNETIC_ELEMENTS,
@@ -175,8 +171,6 @@ except ImportError:
                                            XPLOR_NITROXIDE_NAMES,
                                            NITROOXIDE_ANCHOR_RES_NAMES,
                                            CARTN_DATA_ITEMS)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import (NEFTranslator,
                                        PARAMAGNETIC_ELEMENTS,
                                        FERROMAGNETIC_ELEMENTS,
@@ -285,12 +279,120 @@ T1T2_ERROR_MAX = T1T2_RESTRAINT_ERROR['max_exclusive']
 
 
 class BaseStackedMRParserListener():
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 'representativeModelId',
+                 'representativeAltId',
+                 'mrAtomNameMapping',
+                 'cR',
+                 'hasCoord',
+                 'ccU',
+                 'modelNumName',
+                 'authAsymId',
+                 'authSeqId',
+                 'authAtomId',
+                 'polySeq',
+                 '__altPolySeq',
+                 '__nonPoly',
+                 '__branched',
+                 '__coordAtomSite',
+                 '__coordUnobsRes',
+                 '__coordUnobsAtom',
+                 '__labelToAuthSeq',
+                 'authToLabelSeq',
+                 'authToStarSeq',
+                 'authToOrigSeq',
+                 'authToInsCode',
+                 '__entityAssembly',
+                 '__lenPolySeq',
+                 'monoPolymer',
+                 '__multiPolymer',
+                 '__lenNonPoly',
+                 'exptlMethod',
+                 'fibril_chain_ids',
+                 'offsetHolder',
+                 'hasPolySeq',
+                 'hasNonPoly',
+                 'hasBranched',
+                 'hasNonPolySeq',
+                 'nonPolySeq',
+                 'atomIdSetPerChain',
+                 'gapInAuthSeq',
+                 '__complexSeqScheme',
+                 '__polyPeptide',
+                 '__polyDeoxyribonucleotide',
+                 '__polyRibonucleotide',
+                 'compIdSet',
+                 'altCompIdSet',
+                 'cyanaCompIdSet',
+                 '__uniqAtomIdToSeqKey',
+                 '__largeModel',
+                 '__representativeAsymId',
+                 'csStat',
+                 'nefT',
+                 '__pA',
+                 '__effSeqIdSet',
+                 'reasons',
+                 '__preferLabelSeqCount',
+                 'reasonsForReParsing',
+                 '__cachedDictForAtomIdList',
+                 '__cachedDictForFactor',
+                 'distRestraints',
+                 'dihedRestraints',
+                 'rdcRestraints',
+                 'planeRestraints',
+                 'adistRestraints',
+                 'jcoupRestraints',
+                 'hvycsRestraints',
+                 'procsRestraints',
+                 'ramaRestraints',
+                 'radiRestraints',
+                 'diffRestraints',
+                 'nbaseRestraints',
+                 'csaRestraints',
+                 'angRestraints',
+                 'preRestraints',
+                 'pcsRestraints',
+                 'prdcRestraints',
+                 'pangRestraints',
+                 'pccrRestraints',
+                 'hbondRestraints',
+                 'geoRestraints',
+                 'distStatements',
+                 'dihedStatements',
+                 'rdcStatements',
+                 'planeStatements',
+                 'adistStatements',
+                 'jcoupStatements',
+                 'hvycsStatements',
+                 'procsStatements',
+                 'ramaStatements',
+                 'radiStatements',
+                 'diffStatements',
+                 'nbaseStatements',
+                 'csaStatements',
+                 'angStatements',
+                 'preStatements',
+                 'pcsStatements',
+                 'prdcStatements',
+                 'pangStatements',
+                 'pccrStatements',
+                 'hbondStatements',
+                 'geoStatements',
+                 'sfDict',
+                 '__polySeqRst',
+                 '__polySeqRstValid',
+                 '__polySeqRstFailed',
+                 '__polySeqRstFailedAmbig',
+                 '__seqAtmRstFailed',
+                 'f',
+                 'g')
 
     file_type = ''
     software_name = ''
 
-    __verbose = None
-    __lfh = None
     __debug = False
     __verbose_debug = False
     __remediate = False
@@ -308,105 +410,15 @@ class BaseStackedMRParserListener():
     # whether to trust the ref_info or the macro for atom nomenclature of ASN/GLN amino group
     __trust_bmrb_ref_info = True
 
-    # atom name mapping of public MR file between the archive coordinates and submitted ones
-    mrAtomNameMapping = None
-
-    # CCD accessing utility
-    ccU = None
-
-    # BMRB chemical shift statistics
-    csStat = None
-
-    # NEFTranslator
-    nefT = None
-
-    # Pairwise align
-    pA = None
-
-    # reasons for re-parsing request from the previous trial
-    reasons = None
-
     in_hbdb_statement = False
     cur_dist_type = False
 
-    # CIF reader
-    cR = None
-    hasCoord = False
-
-    # experimental method
-    exptlMethod = ''
     # whether solid-state NMR is applied to symmetric samples such as fibrils
     symmetric = 'no'
-    # auth_asym_id of fibril like polymer (exptl methods should contain SOLID-STATE NMR, ELECTRON MICROSCOPY)
-    fibril_chain_ids = []
 
-    # data item name for model ID in 'atom_site' category
-    modelNumName = None
-
-    # data item names for auth_asym_id, auth_seq_id, auth_atom_id in 'atom_site' category
-    authAsymId = None
-    authSeqId = None
-    authAtomId = None
-
-    # coordinates information generated by ParserListenerUtil.coordAssemblyChecker()
-    polySeq = None
-    __altPolySeq = None
-    __nonPoly = None
-    __branched = None
-    nonPolySeq = None
-    __coordAtomSite = None
-    __coordUnobsRes = None
-    __coordUnobsAtom = None
-    __labelToAuthSeq = None
-    authToLabelSeq = None
-    authToStarSeq = None
-    authToOrigSeq = None
-    authToInsCode = None
-    atomIdSetPerChain = None
-
-    offsetHolder = None
-    __effSeqIdSet = None
-
-    __representativeModelId = REPRESENTATIVE_MODEL_ID
-    __representativeAltId = REPRESENTATIVE_ALT_ID
-    hasPolySeq = False
-    hasNonPoly = False
-    hasBranched = False
-    hasNonPolySeq = False
     preferAuthSeq = True
-    gapInAuthSeq = False
-
-    monoPolymer = False
-    __multiPolymer = False
-    __lenPolySeq = 0
-    __lenNonPoly = 0
 
     __extendAuthSeq = False
-    __complexSeqScheme = False
-
-    __entityAssembly = None
-
-    # SCHRODINGER specific
-    compIdSet = None
-    altCompIdSet = None
-    cyanaCompIdSet = None
-
-    __polyPeptide = False
-    __polyDeoxyribonucleotide = False
-    __polyRibonucleotide = False
-
-    __uniqAtomIdToSeqKey = None
-
-    # large model
-    __largeModel = False
-    __representativeAsymId = 'A'
-
-    # polymer sequence of MR file
-    __polySeqRst = None
-    __polySeqRstValid = None
-    __polySeqRstFailed = None
-    __polySeqRstFailedAmbig = None
-    __seqAtmRstFailed = None
 
     __seqAlign = None
     __chainAssign = None
@@ -550,7 +562,7 @@ class BaseStackedMRParserListener():
 
     # collection of atom selection
     atomSelectionSet = []
-    lenAtomSelectionSet = 0
+    __lenAtomSelectionSet = 0
 
     # factor of paramagnetic center
     paramagCenter = None
@@ -583,16 +595,11 @@ class BaseStackedMRParserListener():
     # loop control statement
     in_loop = False
 
-    f = g = h = None
+    h = None
     warningMessage = None
 
     # record failed chain id for segment_id assignment
     __failure_chain_ids = []
-
-    reasonsForReParsing = {}
-
-    __cachedDictForAtomIdList = {}
-    __cachedDictForFactor = {}
 
     # original source MR file name
     __originalFileName = '.'
@@ -602,9 +609,6 @@ class BaseStackedMRParserListener():
 
     # entry ID
     __entryId = '.'
-
-    # dictionary of pynmrstar saveframes
-    sfDict = {}
 
     # current constraint type
     cur_constraint_type = None
@@ -641,8 +645,8 @@ class BaseStackedMRParserListener():
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
@@ -657,8 +661,17 @@ class BaseStackedMRParserListener():
         self.cR = cR
         self.hasCoord = cR is not None
 
-        # CCD accessing utility
-        self.ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+        self.nefT = nefT
+        self.ccU = nefT.ccU
+        self.csStat = nefT.csStat
+        self.__pA = nefT.pA
+
+        self.__polyPeptide = False
+        self.__polyDeoxyribonucleotide = False
+        self.__polyRibonucleotide = False
+
+        self.exptlMethod = ''
+        self.fibril_chain_ids = []
 
         if self.hasCoord:
             ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
@@ -706,11 +719,36 @@ class BaseStackedMRParserListener():
                     if len(fibril_chain_ids) > 0:
                         self.fibril_chain_ids = list(set(fibril_chain_ids))
 
+        else:
+            self.modelNumName = None
+            self.authAsymId = None
+            self.authSeqId = None
+            self.authAtomId = None
+            self.polySeq = None
+            self.__altPolySeq = None
+            self.__nonPoly = None
+            self.__branched = None
+            self.__coordAtomSite = None
+            self.__coordUnobsRes = None
+            self.__coordUnobsAtom = None
+            self.__labelToAuthSeq = None
+            self.authToLabelSeq = None
+            self.authToStarSeq = None
+            self.authToOrigSeq = None
+            self.authToInsCode = None
+            self.__entityAssembly = None
+
+            self.__lenPolySeq = 0
+            self.monoPolymer = False
+            self.__multiPolymer = False
+            self.__lenNonPoly = 0
+
         self.offsetHolder = {}
 
         self.hasPolySeq = self.polySeq is not None and self.__lenPolySeq > 0
         self.hasNonPoly = self.__nonPoly is not None and self.__lenNonPoly > 0
         self.hasBranched = self.__branched is not None and len(self.__branched) > 0
+
         if self.hasNonPoly or self.hasBranched:
             self.hasNonPolySeq = True
             if self.hasNonPoly and self.hasBranched:
@@ -720,6 +758,10 @@ class BaseStackedMRParserListener():
                 self.nonPolySeq = self.__nonPoly
             else:
                 self.nonPolySeq = self.__branched
+
+        else:
+            self.hasNonPolySeq = False
+            self.nonPolySeq = None
 
         self.atomIdSetPerChain = {}
         if self.hasCoord and self.__multiPolymer:  # 7d3v
@@ -764,7 +806,6 @@ class BaseStackedMRParserListener():
 
             self.compIdSet = set()
             self.altCompIdSet = set()
-            self.cyanaCompIdSet = set()
 
             def is_data(array: list) -> bool:
                 return not any(d in emptyValue for d in array)
@@ -784,9 +825,16 @@ class BaseStackedMRParserListener():
                     if 'alt_comp_id' in np and np['comp_id'] != np['alt_comp_id']:
                         self.altCompIdSet.update(set(filter(is_data, np['alt_comp_id'])))
 
-            for compId in self.compIdSet:
-                self.cyanaCompIdSet |= backTranslateFromStdResName(compId)
+        else:
+            self.gapInAuthSeq = False
+            self.__complexSeqScheme = False
+            self.compIdSet = self.altCompIdSet = set(monDict3.keys())
 
+        self.cyanaCompIdSet = set()
+        for compId in self.compIdSet:
+            self.cyanaCompIdSet |= backTranslateFromStdResName(compId)
+
+        self.__uniqAtomIdToSeqKey = {}
         if self.hasNonPoly:
             atom_list = []
             for v in self.__coordAtomSite.values():
@@ -794,7 +842,6 @@ class BaseStackedMRParserListener():
             common_atom_list = collections.Counter(atom_list).most_common()
             uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
             if len(uniq_atom_ids) > 0:
-                self.__uniqAtomIdToSeqKey = {}
                 for k, v in self.__coordAtomSite.items():
                     if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
                         for atom_id in v['atom_id']:
@@ -803,18 +850,7 @@ class BaseStackedMRParserListener():
 
         self.__largeModel = self.hasPolySeq and self.__lenPolySeq > LEN_LARGE_ASYM_ID
         if self.__largeModel:
-            self.representativeAsymId = next(c for c in LARGE_ASYM_ID if any(ps for ps in self.polySeq if ps['auth_chain_id'] == c))
-
-        # BMRB chemical shift statistics
-        self.csStat = BMRBChemShiftStat(verbose, log, self.ccU) if csStat is None else csStat
-
-        # NEFTranslator
-        self.nefT = NEFTranslator(verbose, log, self.ccU, self.csStat) if nefT is None else nefT
-
-        # Pairwise align
-        if self.hasPolySeq:
-            self.__pA = PairwiseAlign()
-            self.__pA.setVerbose(verbose)
+            self.__representativeAsymId = next(c for c in LARGE_ASYM_ID if any(ps for ps in self.polySeq if ps['auth_chain_id'] == c))
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
             self.polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
@@ -886,7 +922,17 @@ class BaseStackedMRParserListener():
         self.hbondStatements = 0     # Hydrogen bond geometry/database statements
         self.geoStatements = 0       # Harmonic coordinate/NCS restraints
 
-        self.sfDict = {}
+        self.sfDict = {}  # dictionary of pynmrstar saveframes
+
+        # polymer sequence of MR file
+        self.__polySeqRst = []
+        self.__polySeqRstValid = []
+        self.__polySeqRstFailed = []
+        self.__polySeqRstFailedAmbig = []
+        self.__seqAtmRstFailed = []
+
+        self.f = []
+        self.g = []
 
     @property
     def debug(self):
@@ -963,15 +1009,6 @@ class BaseStackedMRParserListener():
     @entryId.setter
     def entryId(self, entryId: str):
         self.__entryId = entryId
-
-    def enter(self):
-        self.__polySeqRst = []
-        self.__polySeqRstValid = []
-        self.__polySeqRstFailed = []
-        self.__polySeqRstFailedAmbig = []
-        self.__seqAtmRstFailed = []
-        self.f = []
-        self.g = []
 
     def exit(self):
 
@@ -1404,7 +1441,7 @@ class BaseStackedMRParserListener():
 
             pro_hn_atom_not_found_warnings = [f for f in self.f if self.__pro_hn_atom_not_found_pat.match(f) or self.__pro_hn_anomalous_data_pat.match(f)]
             gly_hb_atom_not_found_warnings = [f for f in self.f if self.__gly_hb_atom_not_found_pat.match(f)]
-            any_atom_not_found_warnings = [f for f in self.f if self.__any_atom_not_found_pat.match(f)]
+            any_atom_not_found_warnings = (f for f in self.f if self.__any_atom_not_found_pat.match(f))
 
             if 'segment_id_mismatch' in self.reasonsForReParsing\
                and (len(self.reasonsForReParsing['segment_id_mismatch']) == 0
@@ -4355,7 +4392,7 @@ class BaseStackedMRParserListener():
 
             if len_factor == 2 and 'chain_id' in _factor and len(_factor['chain_id']) == 0:
                 if self.__largeModel:
-                    _factor['chain_id'] = [self.representativeAsymId]
+                    _factor['chain_id'] = [self.__representativeAsymId]
                 else:
                     _factor['atom_selection'] = ['*']
                     del _factor['chain_id']
@@ -4425,7 +4462,7 @@ class BaseStackedMRParserListener():
         chain_not_specified = np_chain_not_specified = 'alt_chain_id' not in _factor
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
-                _factor['chain_id'] = [self.representativeAsymId]
+                _factor['chain_id'] = [self.__representativeAsymId]
             else:
                 _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq]
                 if self.hasNonPolySeq:
@@ -5570,7 +5607,7 @@ class BaseStackedMRParserListener():
                         if self.cur_union_expr or (self.top_union_expr and ambigAtomSelect):  # 2mws, 2krf
                             self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
                                           f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
-                            if self.__uniqAtomIdToSeqKey is not None and len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
+                            if len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
                                 update_np_atom_id_remap()
 
                         else:
@@ -5721,7 +5758,7 @@ class BaseStackedMRParserListener():
                                                     ligands = update_np_seq_id_remap_request(np, ligands)
                                                     break
 
-                                    elif self.__uniqAtomIdToSeqKey is not None and len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
+                                    elif len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
                                         update_np_atom_id_remap()
                                         ligands = 1
 
@@ -6993,7 +7030,7 @@ class BaseStackedMRParserListener():
                                                         continue
                                                     # 2mgt
                                                     if self.hasNonPoly and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
-                                                        if self.__uniqAtomIdToSeqKey is not None and _atomId in self.__uniqAtomIdToSeqKey:  # 7jk8
+                                                        if _atomId in self.__uniqAtomIdToSeqKey:  # 7jk8
                                                             if 'np_atom_id_remap' not in self.reasonsForReParsing:
                                                                 self.reasonsForReParsing['np_atom_id_remap'] = {}
                                                             if _atomId not in self.reasonsForReParsing['np_atom_id_remap']:

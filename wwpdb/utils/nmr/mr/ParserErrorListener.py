@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import re
 
@@ -31,6 +31,7 @@ substitution_pattern = re.compile(r"_(A[APR]|[BIQR][AP]|CM|[DE]A|FO?|HB|MP|PR|V[
 
 
 class ParserErrorListener(ErrorListener):
+    __slots__ = ()
 
     __messageList = None
     __errorLineNumber = None

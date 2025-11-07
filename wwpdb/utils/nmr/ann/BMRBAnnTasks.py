@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import sys
 import re
@@ -82,6 +82,23 @@ allowed_thiol_states = ('all disulfide bound', 'all other bound', 'all free', 'n
 class BMRBAnnTasks:
     """ Wrapper class for BMRB annotation tasks.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__sfCategoryList',
+                 '__entryId',
+                 '__annotationMode',
+                 '__internalMode',
+                 '__enforcePeakRowFormat',
+                 '__sailFlag',
+                 '__report',
+                 '__ccU',
+                 '__csStat',
+                 '__c2S',
+                 '__derivedEntryId',
+                 '__derivedEntryTitle',
+                 '__defSfLabelTag')
 
     def __init__(self, verbose: bool, log: IO,
                  sfCategoryList: List[str], entryId: str,

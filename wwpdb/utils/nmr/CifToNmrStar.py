@@ -19,7 +19,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import sys
 import os
@@ -210,6 +210,13 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
 class CifToNmrStar:
     """ Simple CIF to NMR-STAR converter.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__lfh',
+                 'schema_dir',
+                 'schema',
+                 'category_order',
+                 'category_order_nef')
 
     def __init__(self, log: IO = sys.stderr):
         self.__class_name__ = self.__class__.__name__
@@ -246,14 +253,14 @@ class CifToNmrStar:
             self.category_order = schema.category_order
 
         # NEF category order
-        self.category_order_nef = ['_nef_nmr_meta_data',
+        self.category_order_nef = ('_nef_nmr_meta_data',
                                    '_nef_molecular_system',
                                    '_nef_chemical_shift_list',
                                    '_nef_distance_restraint_list',
                                    '_nef_dihedral_restraint_list',
                                    '_nef_rdc_restraint_list',
                                    '_nef_nmr_spectrum',
-                                   '_nef_peak_restraint_links']
+                                   '_nef_peak_restraint_links')
 
     def write_schema_as_pickles(self):
         """ Retrieve NMR-STAR schema from pynmrstar.Schema, then write schema objects as each pickle file.

@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import copy
@@ -22,8 +22,6 @@ import numpy
 from antlr4 import ParseTreeListener
 from operator import itemgetter
 from typing import IO, List, Tuple, Optional
-
-from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -78,8 +76,6 @@ try:
                                                        NMR_STAR_LP_KEY_ITEMS,
                                                        CARTN_DATA_ITEMS,
                                                        AUTH_ATOM_CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
@@ -157,8 +153,6 @@ except ImportError:
                                            NMR_STAR_LP_KEY_ITEMS,
                                            CARTN_DATA_ITEMS,
                                            AUTH_ATOM_CARTN_DATA_ITEMS)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
@@ -273,11 +267,73 @@ COL_DIST_COORD4 = 8
 
 # This class defines a complete listener for a parse tree produced by AmberMRParser.
 class AmberMRParserListener(ParseTreeListener):
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__representativeModelId',
+                 '__representativeAltId',
+                 '__mrAtomNameMapping',
+                 '__cR',
+                 '__hasCoord',
+                 '__modelNumName',
+                 '__authAsymId',
+                 '__authSeqId',
+                 '__authAtomId',
+                 '__polySeq',
+                 '__altPolySeq',
+                 '__nonPoly',
+                 '__branched',
+                 '__coordAtomSite',
+                 '__coordUnobsRes',
+                 '__coordUnobsAtom',
+                 '__labelToAuthSeq',
+                 '__authToLabelSeq',
+                 '__authToStarSeq',
+                 '__authToOrigSeq',
+                 '__authToInsCode',
+                 '__lenPolySeq',
+                 '__monoPolymer',
+                 '__multiPolymer',
+                 '__lenNonPoly',
+                 '__monoNonPoly',
+                 '__offsetHolder',
+                 '__hasPolySeq',
+                 '__hasNonPoly',
+                 '__hasBranched',
+                 '__hasNonPolySeq',
+                 '__nonPolySeq',
+                 '__gapInAuthSeq',
+                 '__concatHetero',
+                 '__ccU',
+                 '__csStat',
+                 '__nefT',
+                 '__pA',
+                 '__reasons',
+                 '__useDefault',
+                 '__useDefaultWoCompId',
+                 'reasonsForReParsing',
+                 '__atomNumberDict',
+                 '__sanderAtomNumberDict',
+                 'nmrRestraints',
+                 'distRestraints',
+                 'angRestraints',
+                 'dihedRestraints',
+                 'planeRestraints',
+                 'noepkRestraints',
+                 'procsRestraints',
+                 'pcsRestraints',
+                 'rdcRestraints',
+                 'csaRestraints',
+                 'geoRestraints',
+                 'sfDict',
+                 '__polySeqRst',
+                 '__polySeqRstFailed',
+                 '__f',
+                 '__g')
 
     __file_type = 'nm-res-amb'
 
-    __verbose = None
-    __lfh = None
     __debug = False
     __internal = False
 
@@ -285,85 +341,10 @@ class AmberMRParserListener(ParseTreeListener):
     __omitDistLimitOutlier = True
     __correctCircularShift = True
 
-    # atom name mapping of public MR file between the archive coordinates and submitted ones
-    __mrAtomNameMapping = None
-
-    # CCD accessing utility
-    __ccU = None
-
-    # BMRB chemical shift statistics
-    __csStat = None
-
-    # NEFTranslator
-    __nefT = None
-
-    # Pairwise align
-    __pA = None
-
-    # reasons for re-parsing request from the previous trial
-    __reasons = None
-
-    # whether to use alternative polymer sequence
-    __useDefault = True
-    # whether to use alternative polymer sequence when comp_id is not available
-    __useDefaultWoCompId = False
-
-    # AmberPTParserListener.getAtomNumberDict()
-    __atomNumberDict = None
-
-    # AMBER atom number dictionary reconstructing from Sander comments
-    __sanderAtomNumberDict = None
     __hasComments = False
 
-    # CIF reader
-    __cR = None
-    __hasCoord = False
-
-    # data item name for model ID in 'atom_site' category
-    __modelNumName = None
-
-    # data item names for auth_asym_id, auth_seq_id, auth_atom_id in 'atom_site' category
-    __authAsymId = None
-    __authSeqId = None
-    __authAtomId = None
-
-    # coordinates information generated by ParserListenerUtil.coordAssemblyChecker()
-    __polySeq = None
-    __altPolySeq = None
-    __nonPoly = None
-    __branched = None
-    __nonPolySeq = None
-    __coordAtomSite = None
-    __coordUnobsRes = None
-    __coordUnobsAtom = None
-    __labelToAuthSeq = None
-    __authToLabelSeq = None
-    __authToStarSeq = None
-    __authToOrigSeq = None
-    __authToInsCode = None
-
-    __monoPolymer = False
-    __multiPolymer = False
-    __lenPolySeq = 0
-    __monoNonPoly = False
-    __lenNonPoly = 0
-
-    __offsetHolder = None
-
-    __representativeModelId = REPRESENTATIVE_MODEL_ID
-    __representativeAltId = REPRESENTATIVE_ALT_ID
-    __hasPolySeq = False
-    __hasNonPoly = False
-    __hasBranched = False
-    __hasNonPolySeq = False
     __preferAuthSeq = True
-    __gapInAuthSeq = False
-    __concatHetero = False
     __concatHeteroLabel = {}
-
-    # polymer sequence of MR file
-    __polySeqRst = None
-    __polySeqRstFailed = None
 
     __seqAlign = None
     __chainAssign = None
@@ -394,7 +375,7 @@ class AmberMRParserListener(ParseTreeListener):
     igr = None
 
     ixpk = -1
-    inpk = -1
+    nxpk = -1
 
     iresid = 0
 
@@ -518,10 +499,7 @@ class AmberMRParserListener(ParseTreeListener):
     # ambigous atom name mapping
     ambigAtomNameMapping = {}
 
-    __f = __g = None
     warningMessage = None
-
-    reasonsForReParsing = {}
 
     # original source MR file name
     __originalFileName = '.'
@@ -531,9 +509,6 @@ class AmberMRParserListener(ParseTreeListener):
 
     # entry ID
     __entryId = '.'
-
-    # dictionary of pynmrstar saveframes
-    sfDict = {}
 
     # current constraint type
     __cur_constraint_type = None
@@ -677,8 +652,8 @@ class AmberMRParserListener(ParseTreeListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
@@ -693,8 +668,10 @@ class AmberMRParserListener(ParseTreeListener):
         self.__cR = cR
         self.__hasCoord = cR is not None
 
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+        self.__nefT = nefT
+        self.__ccU = nefT.ccU
+        self.__csStat = nefT.csStat
+        self.__pA = nefT.pA
 
         if self.__hasCoord:
             ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
@@ -723,11 +700,36 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__lenNonPoly = len(self.__nonPoly)
                 self.__monoNonPoly = self.__lenNonPoly == 1
 
+        else:
+            self.__modelNumName = None
+            self.__authAsymId = None
+            self.__authSeqId = None
+            self.__authAtomId = None
+            self.__polySeq = None
+            self.__altPolySeq = None
+            self.__nonPoly = None
+            self.__branched = None
+            self.__coordAtomSite = None
+            self.__coordUnobsRes = None
+            self.__coordUnobsAtom = None
+            self.__labelToAuthSeq = None
+            self.__authToLabelSeq = None
+            self.__authToStarSeq = None
+            self.__authToOrigSeq = None
+            self.__authToInsCode = None
+
+            self.__lenPolySeq = 0
+            self.__monoPolymer = False
+            self.__multiPolymer = False
+            self.__lenNonPoly = 0
+            self.__monoNonPoly = False
+
         self.__offsetHolder = {}
 
         self.__hasPolySeq = self.__polySeq is not None and self.__lenPolySeq > 0
         self.__hasNonPoly = self.__nonPoly is not None and self.__lenNonPoly > 0
         self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
+
         if self.__hasNonPoly or self.__hasBranched:
             self.__hasNonPolySeq = True
             if self.__hasNonPoly and self.__hasBranched:
@@ -738,6 +740,11 @@ class AmberMRParserListener(ParseTreeListener):
             else:
                 self.__nonPolySeq = self.__branched
 
+        else:
+            self.__hasNonPolySeq = False
+            self.__nonPolySeq = None
+
+        self.__concatHetero = False
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
             if self.__multiPolymer:
@@ -747,16 +754,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.__concatHetero = False
                         break
 
-        # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
-
-        # NEFTranslator
-        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
-
-        # Pairwise align
-        if self.__hasPolySeq:
-            self.__pA = PairwiseAlign()
-            self.__pA.setVerbose(verbose)
+        else:
+            self.__gapInAuthSeq = False
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -771,7 +770,9 @@ class AmberMRParserListener(ParseTreeListener):
         if atomNumberDict is not None:
             self.__atomNumberDict = atomNumberDict
             self.__offsetHolder = None
+            self.__sanderAtomNumberDict = None
         else:
+            self.__atomNumberDict = {}
             self.__sanderAtomNumberDict = {}
 
         self.nmrRestraints = 0       # AMBER: NMR restraints
@@ -786,115 +787,13 @@ class AmberMRParserListener(ParseTreeListener):
         self.csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
         self.geoRestraints = 0       # AMBER: Generalized distance restraints
 
-        # last Sander comment
-        self.lastComment = None
+        self.sfDict = {}  # dictionary of pynmrstar saveframes
 
-        # IAT
-        self.numIatCol = 0
-        self.setIatCol = None
-        self.iat = None
-
-        self.likeDist = None
-
-        # IGRn
-        self.numIgrCol = None
-        self.setIgrCol = None
-        self.igr = None
-
-        self.ixpk = -1
-        self.nxpk = -1
-
-        self.iresid = 0
-
-        self.numAtnamCol = 0
-        self.setAtnamCol = None
-        self.atnam = None
-
-        self.numGrnamCol = None
-        self.setGrnamCol = None
-        self.grnam = None
-
-        # R1, R2, R3, R4
-        self.lowerLinearLimit = None
-        self.lowerLimit = None
-        self.upperLimit = None
-        self.upperLinearLimit = None
-
-        # dipolar couplings
-        self.id = None
-        self.jd = None
-        self.dobsl = None
-        self.dobsu = None
-        self.dwt = None
-        self.gigj = None
-        self.dij = None
-        self.ndip = None
-        self.dataset = None
-        self.numDatasets = None
-        self.s11 = None
-        self.s12 = None
-        self.s13 = None
-        self.s22 = None
-        self.s23 = None
-
-        # CSA
-        self.icsa = None
-        self.jcsa = None
-        self.kcsa = None
-        self.cobsl = None
-        self.cobsu = None
-        self.cwt = None
-        self.ncsa = None
-        self.datasetc = None
-        self.sigma11 = None
-        self.sigma12 = None
-        self.sigma13 = None
-        self.sigma22 = None
-        self.sigma23 = None
-        self.field = None
-
-        # PCS
-        self.iprot = None
-        self.obs = None
-        self.wt = None
-        self.tolpro = None
-        self.mltpro = None
-        self.nprot = None
-        self.nmpmc = None
-        self.optphi = None
-        self.opttet = None
-        self.optomg = None
-        self.opta1 = None
-        self.opta2 = None
-        self.optkon = None
-        self.nme = None
-
-        # CS
-        self.shrang = None
-        self.iatr = None
-        self.natr = None
-        self.namr = None
-        self._str = None
-        self.nring = None
-        self.nter = None
-        self.cter = None
-
-        # NOESY
-        self.ihp = None
-        self.jhp = None
-        self.aexp = None
-        self.arange = None
-        self.awt = None
-        self.emix = None
-        self.npeak = None
-        self.invwt1 = None
-        self.invwt2 = None
-        self.omega = None
-        self.taurot = None
-        self.taumet = None
-        self.id2o = None
-
-        self.sfDict = {}
+        # polymer sequence of MR file
+        self.__polySeqRst = []
+        self.__polySeqRstFailed = []
+        self.__f = []
+        self.__g = []
 
     @property
     def debug(self):
@@ -945,10 +844,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.__entryId = entryId
 
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
-        self.__polySeqRst = []
-        self.__polySeqRstFailed = []
-        self.__f = []
-        self.__g = []
+        pass
 
     # Exit a parse tree produced by AmberMRParser#amber_mr.
     def exitAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
@@ -988,7 +884,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__atomNumberDict is None and self.__sanderAtomNumberDict is not None and len(self.__polySeqRst) == 0:
+                    if len(self.__atomNumberDict) == 0 and self.__sanderAtomNumberDict is not None and len(self.__polySeqRst) == 0:
 
                         for atomNum in self.__sanderAtomNumberDict.values():
                             updatePolySeqRst(self.__polySeqRst, atomNum['chain_id'], atomNum['seq_id'],
@@ -1357,7 +1253,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                if self.__atomNumberDict is not None or self.iresid == 1:
+                if len(self.__atomNumberDict) > 0 or self.iresid == 1:
 
                     self.__hasComments = True
 
@@ -1398,7 +1294,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     if chk_dihed:
                                         dihed_factors[col] = copy.copy(self.__atomNumberDict[iat])
                                 else:
-                                    warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                    warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                     if chk_dihed:
                                         mis_dihed = True
                                         mis_iat = iat
@@ -1409,7 +1305,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.")
                             elif iat < 0:
                                 varNum = col + 1
-                                warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                 if self.igr is None:
                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
@@ -1433,14 +1329,14 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                         f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.")
                                     else:
-                                        factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col], useDefault=self.__atomNumberDict is None)
+                                        factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col], useDefault=len(self.__atomNumberDict) == 0)
                                         if factor is not None:
                                             atomSelection.append(factor)
 
                             elif iat < 0:
                                 varNum = col + 1
                                 if self.igr is None:
-                                    warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                    warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
@@ -1455,7 +1351,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.")
                                             else:
                                                 for order in range(6):
-                                                    factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam, order, useDefault=self.__atomNumberDict is None)
+                                                    factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam, order, useDefault=len(self.__atomNumberDict) == 0)
                                                     if factor is None:
                                                         break
                                                     atomSelection.append(factor)
@@ -2096,7 +1992,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     elif iat < 0:
                                         varNum = col + 1
                                         if self.igr is None:
-                                            warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                            warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                             f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                         elif varNum in self.igr:
@@ -2129,7 +2025,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     else:
                                         varNum = col + 1
                                         if self.igr is None:
-                                            warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                            warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                             f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                         elif varNum in self.igr:
@@ -2386,7 +2282,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 elif iat < 0:
                                     varNum = col + 1
                                     if self.igr is None:
-                                        warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                        warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                     elif varNum in self.igr:
@@ -3647,7 +3543,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__hasComments = True
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                if self.__atomNumberDict is not None:
+                if len(self.__atomNumberDict) > 0:
 
                     # 1st plane should be processed at first due to plane-point angle restraint
                     if self.__cur_subtype == 'plane':
@@ -3662,7 +3558,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     if iat in self.__atomNumberDict:
                                         atomSelection.append(copy.copy(self.__atomNumberDict[iat]))
                                     else:
-                                        warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                                 else:  # ambmask format
@@ -3692,7 +3588,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if iat in self.__atomNumberDict:
                                     atomSelection.append(copy.copy(self.__atomNumberDict[iat]))
                                 else:
-                                    warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                     f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                             else:  # ambmask format
@@ -3706,7 +3602,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     if igr in self.__atomNumberDict:
                                         atomSelection.append(copy.copy(self.__atomNumberDict[igr]))
                                     else:
-                                        warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.")
                                 else:  # ambmask format
@@ -3819,7 +3715,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if iat in self.__atomNumberDict:
                                             atomSelection.append(copy.copy(self.__atomNumberDict[iat]))
                                         else:
-                                            warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                             f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                                     else:  # ambmask format
@@ -3833,7 +3729,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if igr in self.__atomNumberDict:
                                                 atomSelection.append(copy.copy(self.__atomNumberDict[igr]))
                                             else:
-                                                warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                                warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                                 self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                 f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.")
                                         else:  # ambmask format
@@ -4202,7 +4098,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if iat in self.__atomNumberDict:
                                             atomSelection.append(copy.copy(self.__atomNumberDict[iat]))
                                         else:
-                                            warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                             f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                                     else:  # ambmask format
@@ -5775,7 +5671,7 @@ class AmberMRParserListener(ParseTreeListener):
         """
 
         if self.lastComment is None:
-            warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                             "Failed to recognize AMBER atom numbers in the restraint file "
                             "because neither AMBER parameter/topology file nor Sander comment are available.")
@@ -5788,7 +5684,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 "please attach ambiguous atom name mapping information generated "
                                 "by 'makeDIST_RST' to the AMBER restraint file.")
             else:
-                warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                 self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 "Failed to recognize AMBER atom numbers in the restraint file "
                                 f"because Sander comment {lastComment!r} couldn't be interpreted as a {subtype_name}.")
@@ -8488,7 +8384,7 @@ class AmberMRParserListener(ParseTreeListener):
                         arange = max(self.arange[imix][ipeak], 0.0)
 
                     # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                    if self.__atomNumberDict is not None:
+                    if len(self.__atomNumberDict) > 0:
 
                         self.atomSelectionSet = []
 
@@ -8497,7 +8393,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if _iprot in self.__atomNumberDict:
                             atomSelection.append(copy.copy(self.__atomNumberDict[_iprot]))
                         else:
-                            warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(imix,ipeak)}"
                                             f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -8523,7 +8419,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if _jprot in self.__atomNumberDict:
                             atomSelection.append(copy.copy(self.__atomNumberDict[_jprot]))
                         else:
-                            warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(imix,ipeak)}"
                                             f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -8576,7 +8472,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 sf['loop'].add_data(row)
 
                     elif self.__hasPolySeq:
-                        warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "
                                         "because AMBER parameter/topology file is not available.")
@@ -8849,7 +8745,7 @@ class AmberMRParserListener(ParseTreeListener):
                     shrang = max(self.shrang[n], 0.0)
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                if self.__atomNumberDict is not None:
+                if len(self.__atomNumberDict) > 0:
 
                     self.atomSelectionSet.clear()
 
@@ -8858,7 +8754,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _iprot in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_iprot]))
                     else:
-                        warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(n=n)}"
                                         f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.")
                         continue
@@ -8906,7 +8802,7 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Failed to recognize AMBER atom numbers in the chemical shift restraint file "
                                     "because AMBER parameter/topology file is not available.")
@@ -8937,7 +8833,7 @@ class AmberMRParserListener(ParseTreeListener):
                         continue
 
                     # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                    if self.__atomNumberDict is not None:
+                    if len(self.__atomNumberDict) > 0:
 
                         self.atomSelectionSet.clear()
 
@@ -8946,7 +8842,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if _iat in self.__atomNumberDict:
                             atomSelection.append(copy.copy(self.__atomNumberDict[_iat]))
                         else:
-                            warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                             f"The ring atom 'iatr({n},{r})={_iat}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -8973,7 +8869,7 @@ class AmberMRParserListener(ParseTreeListener):
                                       f"ring_atom={atom}")
 
                     elif self.__hasPolySeq:
-                        warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Failed to recognize AMBER atom numbers in the chemical shift restraint file "
                                         "because AMBER parameter/topology file is not available.")
@@ -9368,7 +9264,7 @@ class AmberMRParserListener(ParseTreeListener):
                     mltpro = 1
 
             # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-            if self.__atomNumberDict is not None:
+            if len(self.__atomNumberDict) > 0:
 
                 self.atomSelectionSet.clear()
 
@@ -9377,7 +9273,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _iprot in self.__atomNumberDict:
                     atomSelection.append(copy.copy(self.__atomNumberDict[_iprot]))
                 else:
-                    warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                     f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.")
                     continue
@@ -9430,7 +9326,7 @@ class AmberMRParserListener(ParseTreeListener):
                         sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
-                warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                 self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 "Failed to recognize AMBER atom numbers in the Psuedocontact shift restraint file "
                                 "because AMBER parameter/topology file is not available.")
@@ -9757,7 +9653,7 @@ class AmberMRParserListener(ParseTreeListener):
                         dwt = 1.0
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                if self.__atomNumberDict is not None:
+                if len(self.__atomNumberDict) > 0:
 
                     self.atomSelectionSet.clear()
 
@@ -9786,7 +9682,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__atomNumberDict[_id] = atom_sel_i
                                     atomSelection.append(atom_sel_i)
                         if atom_id_i is None:
-                            warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.dataset, n)}"
                                             f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -9827,7 +9723,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__atomNumberDict[_jd] = atom_sel_j
                                     atomSelection.append(atom_sel_j)
                         if atom_id_j is None:
-                            warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.dataset, n)}"
                                             f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -9941,7 +9837,7 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "
                                     "because AMBER parameter/topology file is not available.")
@@ -10393,7 +10289,7 @@ class AmberMRParserListener(ParseTreeListener):
                         cwt = 1.0
 
                 # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
-                if self.__atomNumberDict is not None:
+                if len(self.__atomNumberDict) > 0:
 
                     self.atomSelectionSet.clear()
 
@@ -10402,7 +10298,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _icsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_icsa]))
                     else:
-                        warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.")
                         continue
@@ -10423,7 +10319,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _jcsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_jcsa]))
                     else:
-                        warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.")
                         continue
@@ -10444,7 +10340,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _kcsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_kcsa]))
                     else:
-                        warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.")
                         continue
@@ -10612,7 +10508,7 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    warn_title = 'Missing data' if not self.__internal and self.__atomNumberDict is None else 'Unsupported data'
+                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "
                                     "because AMBER parameter/topology file is not available.")

@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -38,8 +38,6 @@ try:
                                                        REPRESENTATIVE_ALT_ID,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.io.CifReader import CifReader
@@ -59,13 +57,12 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by SybylMRParser.
 class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    __slots__ = ()
 
     __atom_sel_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)\.([A-Z][0-9A-Z]*)')
 
@@ -73,21 +70,21 @@ class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT, reasons)
+                         cR, caC, nefT, reasons)
 
         self.file_type = 'nm-res-syb'
         self.software_name = 'SYBYL'
 
     # Enter a parse tree produced by SybylMRParser#biosym_mr.
     def enterSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by SybylMRParser#biosym_mr.
     def exitSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument

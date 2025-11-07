@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -20,8 +20,6 @@ import copy
 import collections
 
 from typing import IO, List, Tuple, Optional
-
-from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
@@ -63,8 +61,6 @@ try:
                                                        CYANA_MR_FILE_EXTS,
                                                        CARTN_DATA_ITEMS,
                                                        HEME_LIKE_RES_NAMES)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
@@ -141,8 +137,6 @@ except ImportError:
                                            CYANA_MR_FILE_EXTS,
                                            CARTN_DATA_ITEMS,
                                            HEME_LIKE_RES_NAMES)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
@@ -210,12 +204,90 @@ PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
 
 
 class BaseLinearMRParserListener():
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 'representativeModelId',
+                 'representativeAltId',
+                 '__mrAtomNameMapping',
+                 'cR',
+                 'hasCoord',
+                 'ccU',
+                 'modelNumName',
+                 'authAsymId',
+                 'authSeqId',
+                 'authAtomId',
+                 'polySeq',
+                 '__altPolySeq',
+                 '__nonPoly',
+                 'branched',
+                 '__coordAtomSite',
+                 '__coordUnobsRes',
+                 '__coordUnobsAtom',
+                 '__labelToAuthSeq',
+                 'authToLabelSeq',
+                 'authToStarSeq',
+                 'authToOrigSeq',
+                 'authToInsCode',
+                 'authToEntityType',
+                 '__modResidue',
+                 '__splitLigand',
+                 '__entityAssembly',
+                 '__lenPolySeq',
+                 '__monoPolymer',
+                 '__multiPolymer',
+                 '__lenNonPoly',
+                 '__monoNonPoly',
+                 'exptlMethod',
+                 'fibril_chain_ids',
+                 'offsetHolder',
+                 'hasPolySeq',
+                 'hasNonPoly',
+                 '__hasBranched',
+                 'hasNonPolySeq',
+                 '__nonPolySeq',
+                 'gapInAuthSeq',
+                 'polyPeptide',
+                 'polyDeoxyribonucleotide',
+                 'polyRibonucleotide',
+                 '__uniqAtomIdToSeqKey',
+                 'csStat',
+                 'nefT',
+                 'pA',
+                 'reasons',
+                 '__preferAuthSeqCount',
+                 '__preferLabelSeqCount',
+                 'reasonsForReParsing',
+                 'upl_or_lol',
+                 'file_ext',
+                 'max_dist_value',
+                 'min_dist_value',
+                 'dihed_lb_greater_than_ub',
+                 'dihed_ub_always_positive',
+                 'distRestraints',
+                 'dihedRestraints',
+                 'rdcRestraints',
+                 'pcsRestraints',
+                 'noepkRestraints',
+                 'jcoupRestraints',
+                 'geoRestraints',
+                 'hbondRestraints',
+                 'ssbondRestraints',
+                 'fchiralRestraints',
+                 'sfDict',
+                 '__cachedDictForStarAtom',
+                 '__chainNumberDict',
+                 'extResKey',
+                 '__polySeqRst',
+                 '__polySeqRstFailed',
+                 '__polySeqRstFailedAmbig',
+                 '__compIdMap',
+                 'f')
 
     file_type = ''
     software_name = ''
 
-    __verbose = None
-    __lfh = None
     __debug = False
     __remediate = False
 
@@ -225,105 +297,16 @@ class BaseLinearMRParserListener():
     __correctCircularShift = True
     applyPdbStatCap = False
 
-    # atom name mapping of public MR file between the archive coordinates and submitted ones
-    __mrAtomNameMapping = None
-
-    # CCD accessing utility
-    ccU = None
-
-    # BMRB chemical shift statistics
-    csStat = None
-
-    # NEFTranslator
-    nefT = None
-
-    # Pairwise align
-    pA = None
-
-    # reasons for re-parsing request from the previous trial
-    reasons = None
-
-    # CYANA specific
-    upl_or_lol = None  # must be one of (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')
-    file_ext = None  # must be one of (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
     cur_dist_type = ''
     local_dist_types = []  # list items must be one of ('upl', 'lol')
 
-    # CIF reader
-    cR = None
-    hasCoord = False
-
-    # experimental method
-    exptlMethod = ''
     # whether solid-state NMR is applied to symmetric samples such as fibrils
     symmetric = 'no'
-    # auth_asym_id of fibril like polymer (exptl methods should contain SOLID-STATE NMR, ELECTRON MICROSCOPY)
-    fibril_chain_ids = []
 
-    # data item name for model ID in 'atom_site' category
-    modelNumName = None
-
-    # data item names for auth_asym_id, auth_seq_id, auth_atom_id in 'atom_site' category
-    authAsymId = None
-    authSeqId = None
-    authAtomId = None
-
-    # coordinates information generated by ParserListenerUtil.coordAssemblyChecker()
-    polySeq = None
-    __altPolySeq = None
-    __nonPoly = None
-    branched = None
-    __nonPolySeq = None
-    __coordAtomSite = None
-    __coordUnobsRes = None
-    __coordUnobsAtom = None
-    __labelToAuthSeq = None
-    authToLabelSeq = None
-    authToStarSeq = None
-    authToOrigSeq = None
-    authToInsCode = None
-    authToEntityType = None
-    __modResidue = None
-    __splitLigand = None
-
-    __monoPolymer = False
-    __multiPolymer = False
-    __lenPolySeq = 0
-    __monoNonPoly = False
-    __lenNonPoly = 0
-
-    __entityAssembly = None
-
-    polyPeptide = False
-    polyDeoxyribonucleotide = False
-    polyRibonucleotide = False
-
-    __uniqAtomIdToSeqKey = None
-
-    offsetHolder = None
     __shiftNonPosSeq = None
 
-    representativeModelId = REPRESENTATIVE_MODEL_ID
-    representativeAltId = REPRESENTATIVE_ALT_ID
-    hasPolySeq = False
-    hasNonPoly = False
-    __hasBranched = False
-    hasNonPolySeq = False
     __preferAuthSeq = True
-    gapInAuthSeq = False
     __extendAuthSeq = False
-
-    # chain number dictionary
-    __chainNumberDict = None
-
-    # extended residue key
-    extResKey = None
-
-    # polymer sequence of MR file
-    __polySeqRst = None
-    __polySeqRstFailed = None
-    __polySeqRstFailedAmbig = None
-    __compIdMap = None
 
     __seqAlign = None
     __chainAssign = None
@@ -406,10 +389,7 @@ class BaseLinearMRParserListener():
     # collection of auxiliary atom selection (DYNAMO specific)
     auxAtomSelectionSet = []
 
-    f = None
     warningMessage = None
-
-    reasonsForReParsing = {}
 
     # original source MR file name
     __originalFileName = '.'
@@ -420,9 +400,6 @@ class BaseLinearMRParserListener():
     # entry ID
     __entryId = '.'
 
-    # dictionary of pynmrstar saveframes
-    sfDict = {}
-
     # current constraint type
     cur_constraint_type = None
 
@@ -432,14 +409,12 @@ class BaseLinearMRParserListener():
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
-    __cachedDictForStarAtom = {}
-
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
@@ -454,8 +429,17 @@ class BaseLinearMRParserListener():
         self.cR = cR
         self.hasCoord = cR is not None
 
-        # CCD accessing utility
-        self.ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+        self.nefT = nefT
+        self.ccU = nefT.ccU
+        self.csStat = nefT.csStat
+        self.pA = nefT.pA
+
+        self.polyPeptide = False
+        self.polyDeoxyribonucleotide = False
+        self.polyRibonucleotide = False
+
+        self.exptlMethod = ''
+        self.fibril_chain_ids = []
 
         if self.hasCoord:
             ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
@@ -507,11 +491,38 @@ class BaseLinearMRParserListener():
                     if len(fibril_chain_ids) > 0:
                         self.fibril_chain_ids = list(set(fibril_chain_ids))
 
+        else:
+            self.modelNumName = None
+            self.authAsymId = None
+            self.authSeqId = None
+            self.authAtomId = None
+            self.polySeq = None
+            self.__altPolySeq = None
+            self.__nonPoly = None
+            self.branched = None
+            self.__coordAtomSite = None
+            self.__coordUnobsRes = None
+            self.__coordUnobsAtom = None
+            self.__labelToAuthSeq = None
+            self.authToLabelSeq = None
+            self.authToStarSeq = None
+            self.authToOrigSeq = None
+            self.authToInsCode = None
+            self.authToEntityType = None
+            self.__modResidue = None
+            self.__splitLigand = None
+            self.__entityAssembly = None
+
+            self.__lenPolySeq = 0
+            self.__monoPolymer = False
+            self.__multiPolymer = False
+
         self.offsetHolder = {}
 
         self.hasPolySeq = self.polySeq is not None and self.__lenPolySeq > 0
         self.hasNonPoly = self.__nonPoly is not None and self.__lenNonPoly > 0
         self.__hasBranched = self.branched is not None and len(self.branched) > 0
+
         if self.hasNonPoly or self.__hasBranched:
             self.hasNonPolySeq = True
             if self.hasNonPoly and self.__hasBranched:
@@ -522,8 +533,12 @@ class BaseLinearMRParserListener():
             else:
                 self.__nonPolySeq = self.branched
 
+        else:
+            self.hasNonPolySeq = False
+            self.__nonPolySeq = None
+
         if self.hasPolySeq:
-            self.gapInAuthSeq = any(ps for ps in self.polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+            self.gapInAuthSeq = self.hasPolySeq and any(ps for ps in self.polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
             for entity in self.__entityAssembly:
                 if 'entity_poly_type' in entity:
@@ -535,6 +550,10 @@ class BaseLinearMRParserListener():
                     elif poly_type == 'polyribonucleotide':
                         self.polyRibonucleotide = True
 
+        else:
+            self.gapInAuthSeq = False
+
+        self.__uniqAtomIdToSeqKey = {}
         if self.hasNonPoly:
             atom_list = []
             for v in self.__coordAtomSite.values():
@@ -542,23 +561,11 @@ class BaseLinearMRParserListener():
             common_atom_list = collections.Counter(atom_list).most_common()
             uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
             if len(uniq_atom_ids) > 0:
-                self.__uniqAtomIdToSeqKey = {}
                 for k, v in self.__coordAtomSite.items():
                     if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
                         for atom_id in v['atom_id']:
                             if atom_id in uniq_atom_ids:
                                 self.__uniqAtomIdToSeqKey[atom_id] = k
-
-        # BMRB chemical shift statistics
-        self.csStat = BMRBChemShiftStat(verbose, log, self.ccU) if csStat is None else csStat
-
-        # NEFTranslator
-        self.nefT = NEFTranslator(verbose, log, self.ccU, self.csStat) if nefT is None else nefT
-
-        # Pairwise align
-        if self.hasPolySeq:
-            self.pA = PairwiseAlign()
-            self.pA.setVerbose(verbose)
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
             self.polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
@@ -614,9 +621,23 @@ class BaseLinearMRParserListener():
         self.ssbondRestraints = 0    # Disulfide bond geometry restraints
         self.fchiralRestraints = 0   # Floating chiral stereo assignments
 
-        self.sfDict = {}
+        self.sfDict = {}  # dictionary of pynmrstar saveframes
 
         self.__cachedDictForStarAtom = {}
+
+        # chain number dictionary
+        self.__chainNumberDict = {}
+
+        # extended residue key
+        self.extResKey = []
+
+        # polymer sequence of MR file
+        self.__polySeqRst = []
+        self.__polySeqRstFailed = []
+        self.__polySeqRstFailedAmbig = []
+        self.__compIdMap = {}
+
+        self.f = []
 
     @property
     def verbose(self):
@@ -673,15 +694,6 @@ class BaseLinearMRParserListener():
     @entryId.setter
     def entryId(self, entryId: str):
         self.__entryId = entryId
-
-    def enter(self):
-        self.__chainNumberDict = {}
-        self.extResKey = []
-        self.__polySeqRst = []
-        self.__polySeqRstFailed = []
-        self.__polySeqRstFailedAmbig = []
-        self.__compIdMap = {}
-        self.f = []
 
     def exit(self):
 
@@ -1736,7 +1748,7 @@ class BaseLinearMRParserListener():
                             if self.__nonPoly[0]['comp_id'][0] in SYMBOLS_ELEMENT:
                                 compId = _compId = self.__nonPoly[0]['comp_id'][0]
                                 ligands = 1
-                if self.reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
+                if self.reasons is None and atomId in self.__uniqAtomIdToSeqKey:
                     seqKey = self.__uniqAtomIdToSeqKey[atomId]
                     if _seqId != seqKey[1]:
                         if 'non_poly_remap' not in self.reasonsForReParsing:
@@ -2410,7 +2422,7 @@ class BaseLinearMRParserListener():
                             if self.__nonPoly[0]['comp_id'][0] in SYMBOLS_ELEMENT:
                                 compId = _compId = self.__nonPoly[0]['comp_id'][0]
                                 ligands = 1
-                if self.reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
+                if self.reasons is None and atomId in self.__uniqAtomIdToSeqKey:
                     seqKey = self.__uniqAtomIdToSeqKey[atomId]
                     if _seqId != seqKey[1]:
                         if 'non_poly_remap' not in self.reasonsForReParsing:
@@ -3562,7 +3574,7 @@ class BaseLinearMRParserListener():
                             if self.__nonPoly[0]['comp_id'][0] in SYMBOLS_ELEMENT:
                                 compId = _compId = self.__nonPoly[0]['comp_id'][0]
                                 ligands = 1
-                if self.reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
+                if self.reasons is None and atomId in self.__uniqAtomIdToSeqKey:
                     seqKey = self.__uniqAtomIdToSeqKey[atomId]
                     if _seqId != seqKey[1]:
                         if 'non_poly_remap' not in self.reasonsForReParsing:

@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import sys
 
@@ -21,22 +21,19 @@ try:
     from wwpdb.utils.nmr.cs.NmrPipeCSParser import NmrPipeCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, monDict3)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.cs.NmrPipeCSParser import NmrPipeCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
     from nmr.AlignUtil import (emptyValue, monDict3)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by NmrPipeCSParser.
 class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
+    __slots__ = ()
 
-    __first_resid = 1
+    __first_seq_id = 1
     __cur_sequence = ''
     __open_sequence = False
     __has_sequence = False
@@ -45,16 +42,16 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None):
-        super().__init__(verbose, log, polySeq, entityAssembly, ccU, csStat, nefT, reasons)
+        super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-shi-npi'
         self.software_name = 'NMRPipe'
 
     # Enter a parse tree produced by NmrPipeCSParser#nmrpipe_cs.
     def enterNmrpipe_cs(self, ctx: NmrPipeCSParser.Nmrpipe_csContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by NmrPipeCSParser#nmrpipe_cs.
     def exitNmrpipe_cs(self, ctx: NmrPipeCSParser.Nmrpipe_csContext):  # pylint: disable=unused-argument
@@ -63,11 +60,11 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
     # Enter a parse tree produced by NmrPipeCSParser#sequence.
     def enterSequence(self, ctx: NmrPipeCSParser.SequenceContext):
         if self.__has_sequence and not self.__open_sequence:
-            self.__first_resid = 1
+            self.__first_seq_id = 1
             self.__cur_sequence = ''
 
         if ctx.First_resid():
-            self.__first_resid = int(str(ctx.Integer_DA()))
+            self.__first_seq_id = int(str(ctx.Integer_DA()))
 
         if ctx.Sequence():
             i = 0
@@ -98,7 +95,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
                 return next((k for k, v in monDict3.items() if v == one_letter_code and len(k) == 3), one_letter_code)
 
             comp_ids = [get_comp_id(one_letter_code) for one_letter_code in self.__cur_sequence]
-            seq_ids = list(range(self.__first_resid, self.__first_resid + len(comp_ids) + 1))
+            seq_ids = list(range(self.__first_seq_id, self.__first_seq_id + len(comp_ids) + 1))
 
             self.polySeq = [{'chain_id': '1', 'seq_id': seq_ids, 'comp_id': comp_ids}]
             self.entityAssembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
@@ -137,7 +134,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_subtype = 'chem_shift'
 
-        self.predictSequenceNumberOffsetByFirstResidue(None, self.__first_resid, None)
+        self.predictSequenceNumberOffsetByFirstResidue(None, self.__first_seq_id, None)
 
         self.closeSequqnce()
 
@@ -211,7 +208,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_subtype = 'chem_shift'
 
-        self.predictSequenceNumberOffsetByFirstResidue(None, self.__first_resid, None)
+        self.predictSequenceNumberOffsetByFirstResidue(None, self.__first_seq_id, None)
 
         self.closeSequqnce()
 
@@ -286,7 +283,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_subtype = 'chem_shift'
 
-        self.predictSequenceNumberOffsetByFirstResidue(None, self.__first_resid, None)
+        self.predictSequenceNumberOffsetByFirstResidue(None, self.__first_seq_id, None)
 
         self.closeSequqnce()
 

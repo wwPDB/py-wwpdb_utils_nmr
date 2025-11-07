@@ -15,7 +15,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 import sys
 import os
@@ -51,6 +51,17 @@ def is_reserved_lig_code(comp_id: str) -> bool:
 class ChemCompReader:
     """ Accessor methods for parsing CCD CIF files.
     """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__lfh',
+                 '__debug',
+                 '__dBlock',
+                 '__topCachePath',
+                 '__filePath',
+                 '__compId',
+                 '__lastCompId',
+                 '__itemDict')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__

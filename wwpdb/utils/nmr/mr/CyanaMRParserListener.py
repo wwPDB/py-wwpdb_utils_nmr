@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import sys
 import re
@@ -59,8 +59,6 @@ try:
                                                        KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                                        KNOWN_ANGLE_CARBO_SEQ_OFFSET,
                                                        CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
@@ -107,8 +105,6 @@ except ImportError:
                                            KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                            KNOWN_ANGLE_CARBO_SEQ_OFFSET,
                                            CARTN_DATA_ITEMS)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                emptyValue,
@@ -120,19 +116,20 @@ except ImportError:
 
 # This class defines a complete listener for a parse tree produced by CyanaMRParser.
 class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    __slots__ = ('col_order_of_dist_w_chain', )
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
-                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None,
+                 nefT: NEFTranslator = None,
                  reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
         super().__init__(verbose, log, representativeModelId, representativeAltId, mrAtomNameMapping,
-                         cR, caC, ccU, csStat, nefT, reasons, upl_or_lol, file_ext)
+                         cR, caC, nefT, reasons, upl_or_lol, file_ext)
 
         self.file_type = 'nm-res-cya'
         self.software_name = 'CYANA'
@@ -141,7 +138,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
-        self.enter()
+        pass
 
     # Exit a parse tree produced by CyanaMRParser#cyana_mr.
     def exitCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument

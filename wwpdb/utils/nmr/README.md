@@ -271,7 +271,6 @@ For example,
 	- chardet
 	- scikit-learn
 	- antlr4-python3-runtime
-	- typing_extensions
 	- striprtf
 	- datetime
 

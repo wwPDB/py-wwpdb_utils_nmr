@@ -48,7 +48,7 @@ setup(
                       "munkres; python_version >= '3'",
                       'mmcif', 'numpy', "scikit-learn",
                       "rmsd", "packaging", "chardet",
-                      "typing_extensions",  # typing_extensions was missing from rmsd 1.5 package
+                      # "typing_extensions",  # typing_extensions was missing from rmsd 1.5 package
                       # "antlr4-python2-runtime; python_version == '2.7'",
                       "antlr4-python3-runtime ~= 4.13.0; python_version >= '3'",
                       "striprtf",

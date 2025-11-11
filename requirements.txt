@@ -14,7 +14,7 @@ scikit-learn
 antlr4-python3-runtime; python_version >= '3'
 striprtf
 # typing_extensions was missing from rmsd 1.5.  Remove someday from here.
-typing_extensions
+# typing_extensions
 #
 # For testing
 testfixtures

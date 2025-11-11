@@ -3488,13 +3488,14 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     _seqId = toRegEx(seqId)
                     _seqIdSelect = set()
                     for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                        if ps is not None:
+                        psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                        for ps in psList:
+                            isPolySeq = ps in self.polySeq
                             found = False
                             for realSeqId in ps['auth_seq_id']:
                                 if realSeqId is None:
                                     continue
-                                realSeqId = self.getRealSeqId(ps, realSeqId)[0]
+                                realSeqId = self.getRealSeqId(ps, realSeqId, isPolySeq)[0]
                                 if re.match(_seqId, str(realSeqId)):
                                     _seqIdSelect.add(realSeqId)
                                     found = True
@@ -3502,86 +3503,42 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 for realSeqId in ps['auth_seq_id']:
                                     if realSeqId is None:
                                         continue
-                                    realSeqId = self.getRealSeqId(ps, realSeqId)[0]
+                                    realSeqId = self.getRealSeqId(ps, realSeqId, isPolySeq)[0]
                                     seqKey = (chainId, realSeqId)
                                     if seqKey in self.authToLabelSeq:
                                         _, realSeqId = self.authToLabelSeq[seqKey]
                                         if re.match(_seqId, str(realSeqId)):
                                             _seqIdSelect.add(realSeqId)
-                    if self.hasNonPolySeq:
-                        for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                            for np in npList:
-                                found = False
-                                for realSeqId in np['auth_seq_id']:
-                                    if realSeqId is None:
-                                        continue
-                                    realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
-                                    if re.match(_seqId, str(realSeqId)):
-                                        _seqIdSelect.add(realSeqId)
-                                        found = True
-                                if not found:
-                                    for realSeqId in np['auth_seq_id']:
-                                        if realSeqId is None:
-                                            continue
-                                        realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
-                                        seqKey = (chainId, realSeqId)
-                                        if seqKey in self.authToLabelSeq:
-                                            _, realSeqId = self.authToLabelSeq[seqKey]
-                                            if re.match(_seqId, str(realSeqId)):
-                                                _seqIdSelect.add(realSeqId)
                     self.factor['seq_id'] = list(_seqIdSelect)
 
                 _atomIdSelect = set()
                 if ctx.Logical():  # 7rno: ON
                     atomId = str(ctx.Logical())
                     for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                        if ps is None:
-                            continue
-                        for seqId in self.factor['seq_id']:
-                            if seqId in ps['auth_seq_id']:
-                                seqId, compId, _ = self.getRealSeqId(ps, seqId)
-                                # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                                if self.ccU.updateChemCompDict(compId):
-                                    if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
-                                        _atomIdSelect.add(atomId)
-                    if self.hasNonPolySeq:
-                        for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                            for np in npList:
-                                for seqId in self.factor['seq_id']:
-                                    if seqId in np['auth_seq_id']:
-                                        seqId, compId, _ = self.getRealSeqId(np, seqId, False)
-                                        # compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                                        if self.ccU.updateChemCompDict(compId):
-                                            if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
-                                                _atomIdSelect.add(atomId)
+                        psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                        for ps in psList:
+                            isPolySeq = ps in self.polySeq
+                            for seqId in self.factor['seq_id']:
+                                if seqId in ps['auth_seq_id']:
+                                    seqId, compId, _ = self.getRealSeqId(ps, seqId, isPolySeq)
+                                    # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                                    if self.ccU.updateChemCompDict(compId):
+                                        if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
+                                            _atomIdSelect.add(atomId)
 
                 if ctx.Simple_name(simpleNameIndex):
                     atomId = str(ctx.Simple_name(simpleNameIndex))
                     for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                        if ps is None:
-                            continue
-                        for seqId in self.factor['seq_id']:
-                            if seqId in ps['auth_seq_id']:
-                                seqId, compId, _ = self.getRealSeqId(ps, seqId)
-                                # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                                if self.ccU.updateChemCompDict(compId):
-                                    if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
-                                        _atomIdSelect.add(atomId)
-                    if self.hasNonPolySeq:
-                        for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                            for np in npList:
-                                for seqId in self.factor['seq_id']:
-                                    if seqId in np['auth_seq_id']:
-                                        seqId, compId, _ = self.getRealSeqId(np, seqId, False)
-                                        # compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                                        if self.ccU.updateChemCompDict(compId):
-                                            if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
-                                                _atomIdSelect.add(atomId)
+                        psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                        for ps in psList:
+                            isPolySeq = ps in self.polySeq
+                            for seqId in self.factor['seq_id']:
+                                if seqId in ps['auth_seq_id']:
+                                    seqId, compId, _ = self.getRealSeqId(ps, seqId, isPolySeq)
+                                    # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                                    if self.ccU.updateChemCompDict(compId):
+                                        if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
+                                            _atomIdSelect.add(atomId)
 
                 elif ctx.Simple_names(simpleNamesIndex):
                     atomId = translateToStdAtomName(str(ctx.Simple_names(simpleNamesIndex)),
@@ -3589,33 +3546,19 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                     ccU=self.ccU)
                     _atomId = toRegEx(atomId)
                     for chainId in self.factor['chain_id']:
-                        ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                        if ps is None:
-                            continue
-                        for seqId in self.factor['seq_id']:
-                            if seqId in ps['auth_seq_id']:
-                                seqId, compId, _ = self.getRealSeqId(ps, seqId)
-                                # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                                if self.ccU.updateChemCompDict(compId):
-                                    for cca in self.ccU.lastAtomList:
-                                        if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                                            realAtomId = cca[self.ccU.ccaAtomId]
-                                            if re.match(_atomId, realAtomId):
-                                                _atomIdSelect.add(realAtomId)
-                    if self.hasNonPolySeq:
-                        for chainId in self.factor['chain_id']:
-                            npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                            for np in npList:
-                                for seqId in self.factor['seq_id']:
-                                    if seqId in np['auth_seq_id']:
-                                        seqId, compId, _ = self.getRealSeqId(np, seqId, False)
-                                        # compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
-                                        if self.ccU.updateChemCompDict(compId):
-                                            for cca in self.ccU.lastAtomList:
-                                                if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                                                    realAtomId = cca[self.ccU.ccaAtomId]
-                                                    if re.match(_atomId, realAtomId):
-                                                        _atomIdSelect.add(realAtomId)
+                        psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                        for ps in psList:
+                            isPolySeq = ps in self.polySeq
+                            for seqId in self.factor['seq_id']:
+                                if seqId in ps['auth_seq_id']:
+                                    seqId, compId, _ = self.getRealSeqId(ps, seqId, isPolySeq)
+                                    # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                                    if self.ccU.updateChemCompDict(compId):
+                                        for cca in self.ccU.lastAtomList:
+                                            if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
+                                                realAtomId = cca[self.ccU.ccaAtomId]
+                                                if re.match(_atomId, realAtomId):
+                                                    _atomIdSelect.add(realAtomId)
 
                 self.factor['atom_id'] = list(_atomIdSelect)
 
@@ -3906,18 +3849,13 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                                 else:
-                                    ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                                    if ps is not None and seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
-                                        seqId = self.getRealSeqId(ps, seqId)[0]
-                                        if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId):
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
-                                    if self.hasNonPolySeq:
-                                        npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                                        for np in npList:
-                                            if seqId in np['auth_seq_id'] and np['comp_id'][np['auth_seq_id'].index(seqId)] == compId:
-                                                seqId = self.getRealSeqId(np, seqId, False)[0]
-                                                if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId):
-                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                    psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                                    for ps in psList:
+                                        isPolySeq = ps in self.polySeq
+                                        if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
+                                            seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
+                                            if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId):
+                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                             # sequential
                             if hasLeaavindAtomId:
@@ -3936,11 +3874,12 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 if len(_origin) == 1:
                                     origin = to_np_array(_origin[0])
 
-                                    ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                                    if ps is not None:
+                                    psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                                    for ps in psList:
+                                        isPolySeq = ps in self.polySeq
                                         for _seqId in [seqId - 1, seqId + 1]:
                                             if _seqId in ps['auth_seq_id']:
-                                                _seqId, _compId, _ = self.getRealSeqId(ps, _seqId)
+                                                _seqId, _compId, _ = self.getRealSeqId(ps, _seqId, isPolySeq)
                                                 # _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                                                 if self.ccU.updateChemCompDict(_compId):
                                                     leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
@@ -3974,46 +3913,6 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                                                         if distance(to_np_array(_neighbor[0]), origin) < 2.5:
                                                             _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
-
-                                    if self.hasNonPolySeq:
-                                        npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                                        for np in npList:
-                                            for _seqId in [seqId - 1, seqId + 1]:
-                                                if _seqId in np['auth_seq_id']:
-                                                    _seqId, _compId, _ = self.getRealSeqId(np, _seqId, False)
-                                                    # _compId = np['comp_id'][np['auth_seq_id'].index(_seqId)]
-                                                    if self.ccU.updateChemCompDict(_compId):
-                                                        leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
-
-                                                        _atomIdSelect = set()
-                                                        for ccb in self.ccU.lastBonds:
-                                                            if ccb[self.ccU.ccbAtomId1] in leavingAtomIds:
-                                                                _atomId = ccb[self.ccU.ccbAtomId2]
-                                                                if _atomId not in leavingAtomIds:
-                                                                    _atomIdSelect.add(_atomId)
-                                                            if ccb[self.ccU.ccbAtomId2] in leavingAtomIds:
-                                                                _atomId = ccb[self.ccU.ccbAtomId1]
-                                                                if _atomId not in leavingAtomIds:
-                                                                    _atomIdSelect.add(_atomId)
-
-                                                        for _atomId in _atomIdSelect:
-                                                            _neighbor =\
-                                                                self.cR.getDictListWithFilter('atom_site',
-                                                                                              CARTN_DATA_ITEMS,
-                                                                                              [{'name': self.authAsymId, 'type': 'str', 'value': chainId},
-                                                                                               {'name': self.authSeqId, 'type': 'int', 'value': _seqId},
-                                                                                               {'name': self.authAtomId, 'type': 'str', 'value': _atomId},
-                                                                                               {'name': self.modelNumName, 'type': 'int',
-                                                                                                'value': self.representativeModelId},
-                                                                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                                                                'enum': (self.representativeAltId,)}
-                                                                                               ])
-
-                                                            if len(_neighbor) != 1:
-                                                                continue
-
-                                                            if distance(to_np_array(_neighbor[0]), origin) < 2.5:
-                                                                _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
 
                         # struct_conn category
                         _atom = self.cR.getDictListWithFilter('struct_conn',
@@ -4194,22 +4093,15 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
 
                         else:
-                            ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                            if ps is not None and seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
-                                seqId = self.getRealSeqId(ps, seqId)[0]
-                                if self.ccU.updateChemCompDict(compId):
-                                    atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
-                                    for atomId in atomIds:
-                                        _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
-                            if self.hasNonPolySeq:
-                                npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                                for np in npList:
-                                    if seqId in np['auth_seq_id'] and np['comp_id'][np['auth_seq_id'].index(seqId)] == compId:
-                                        seqId = self.getRealSeqId(np, seqId, False)[0]
-                                        if self.ccU.updateChemCompDict(compId):
-                                            atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
-                                            for atomId in atomIds:
-                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
+                            psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                            for ps in psList:
+                                isPolySeq = ps in self.polySeq
+                                if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
+                                    seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
+                                    if self.ccU.updateChemCompDict(compId):
+                                        atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                                        for atomId in atomIds:
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
                     self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
                                                                           for atom in _atomSelection

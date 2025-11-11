@@ -2908,7 +2908,7 @@ def retrieveRemappedSeqIdAndCompId(seqIdRemap: List[dict], chainId: str, seqId: 
 
 
 def splitPolySeqRstForMultimers(pA, polySeqModel: List[dict], polySeqRst: List[dict], chainAssign: List[dict]
-                                ) -> Tuple[Optional[List[dict]], Optional[List[dict]]]:
+                                ) -> Tuple[Optional[List[dict]], Optional[dict]]:
     """ Split polymer sequence of the current MR file for multimers.
     """
 

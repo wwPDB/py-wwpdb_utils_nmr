@@ -823,7 +823,7 @@ class BaseLinearMRParserListener():
 
                             if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                 self.__polySeqRst = polySeqRst
-                                if 'chain_id_remap' not in self.reasonsForReParsing:
+                                if 'chain_id_remap' not in self.reasonsForReParsing and len(chainIdMapping) > 0:
                                     self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
                         if self.__monoPolymer and len(self.__polySeqRst) == 1:
@@ -832,9 +832,9 @@ class BaseLinearMRParserListener():
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
-                                if 'chain_id_clone' not in self.reasonsForReParsing:
+                                if 'chain_id_clone' not in self.reasonsForReParsing and len(chainIdMapping) > 0:
                                     self.reasonsForReParsing['chain_id_clone'] = chainIdMapping
-                                if 'model_chain_id_ext' not in self.reasonsForReParsing:
+                                if 'model_chain_id_ext' not in self.reasonsForReParsing and len(modelChainIdExt) > 0:
                                     self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
 
                         if self.hasNonPoly:
@@ -843,7 +843,7 @@ class BaseLinearMRParserListener():
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
-                                if 'non_poly_remap' not in self.reasonsForReParsing:
+                                if 'non_poly_remap' not in self.reasonsForReParsing and len(nonPolyMapping) > 0:
                                     self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
                                 else:
                                     for k, v in nonPolyMapping.items():

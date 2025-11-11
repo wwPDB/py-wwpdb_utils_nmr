@@ -143,7 +143,9 @@ class BaseTopologyParserListener():
         self.noWaterMol = not self.hasNonPolyModel or not any(np['comp_id'][0] == 'HOH' for np in self.nonPolyModel)
 
         self.atomNumberDict = {}
+
         self.polySeqPrmTop = []
+
         self.__f = []
 
         # CHARMM/GROMACS specific

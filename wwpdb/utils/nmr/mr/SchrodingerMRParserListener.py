@@ -1998,7 +1998,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     if int_range is not None:
                         seqIds = set()
 
-                        for ps in self.polySeq:
+                        for ps in self.fullPolySeq:
                             for seqId in ps['auth_seq_id']:
                                 if 'range' in int_range:
                                     if int_range['range'][0] <= seqId <= int_range['range'][1]:
@@ -2015,24 +2015,6 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                 elif 'min_inclusive' in int_range:
                                     if seqId >= int_range['min_inclusive']:
                                         seqIds.add(seqId)
-                        if self.hasNonPolySeq:
-                            for np in self.nonPolySeq:
-                                for seqId in np['auth_seq_id']:
-                                    if 'range' in int_range:
-                                        if int_range['range'][0] <= seqId <= int_range['range'][1]:
-                                            seqIds.add(seqId)
-                                    elif 'max_exclusive' in int_range:
-                                        if seqId < int_range['max_exclusive']:
-                                            seqIds.add(seqId)
-                                    elif 'min_exclusive' in int_range:
-                                        if seqId > int_range['min_exclusive']:
-                                            seqIds.add(seqId)
-                                    elif 'max_incl=usive' in int_range:
-                                        if seqId <= int_range['max_inclusive']:
-                                            seqIds.add(seqId)
-                                    elif 'min_inclusive' in int_range:
-                                        if seqId >= int_range['min_inclusive']:
-                                            seqIds.add(seqId)
 
                         self.factor['seq_id'] = sorted(list(seqIds))
                         if len(self.factor['seq_id']) == 0:
@@ -2382,7 +2364,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     if not eval_factor and 'atom_selection' in self.factor:
                         self.factor = {}
 
-                    for ps in self.polySeq:
+                    for ps in self.fullPolySeq:
                         if 'ins_code' not in ps:
                             continue
                         if inscode in ps['ins_code']:
@@ -2392,18 +2374,6 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                 chainIds.add(ps['auth_chain_id'])
                                 seqIds.add(authSeqId)
                                 compIds.add(compId)
-
-                    if self.hasNonPolySeq:
-                        for np in self.nonPolySeq:
-                            if 'ins_code' not in np:
-                                continue
-                            if inscode in np['ins_code']:
-                                for ins_code, authSeqId, compId in zip(np['ins_code'], np['auth_seq_id'], np['comp_id']):
-                                    if ins_code != inscode:
-                                        continue
-                                    chainIds.add(np['auth_chain_id'])
-                                    seqIds.add(authSeqId)
-                                    compIds.add(compId)
 
                 if len(seqIds) == 0:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"

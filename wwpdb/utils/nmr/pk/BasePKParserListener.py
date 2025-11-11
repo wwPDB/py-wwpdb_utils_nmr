@@ -984,7 +984,6 @@ class BasePKParserListener():
     # collection of assignment (XEASY)
     assignmentSelection = []
 
-    # f = None
     warningMessage = None
 
     # original source MR file name
@@ -1183,17 +1182,21 @@ class BasePKParserListener():
         self.cur_spectral_dim = {}
         self.spectral_dim = {}
         self.spectral_dim_transfer = {}
+
         self.atom_type_history = {}
         self.onebond_idx_history = {}
         self.jcoupling_idx_history = {}
         self.relayed_idx_history = {}
+
         self.listIdInternal = {}
         self.chainNumberDict = {}
         self.extResKey = []
+
         self.polySeqRst = []
         self.polySeqRstFailed = []
         self.polySeqRstFailedAmbig = []
         self.compIdMap = {}
+
         self.f = []
 
         self.__allow_ext_seq = False

@@ -914,6 +914,7 @@ if __name__ == "__main__":
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2b87/2b87-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2b87/2b87.cif')
+
     reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2b87/2b87-corrected.mr',
@@ -934,6 +935,7 @@ if __name__ == "__main__":
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/5jyv/DN-HN_ThCikA_gel_complex_complete.tbl',
                      '../../tests-nmr/mock-data-remediation/5jyv/5jyv.cif')
+
     reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5jyv/DN-HN_ThCikA_gel_complex_complete.tbl',

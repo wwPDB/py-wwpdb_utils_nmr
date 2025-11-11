@@ -191,7 +191,6 @@ class BaseCSParserListener():
     # collection of any selection
     anySelection = []
 
-    # f = None
     warningMessage = None
 
     # original source MR file name
@@ -285,6 +284,7 @@ class BaseCSParserListener():
 
         self.chainNumberDict = {}
         self.offset = {}
+
         self.polySeqCs = []
         self.polySeqCsFailed = []
         self.polySeqCsFailedAmbig = []

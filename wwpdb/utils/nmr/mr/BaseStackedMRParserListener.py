@@ -318,6 +318,7 @@ class BaseStackedMRParserListener():
                  'hasBranched',
                  'hasNonPolySeq',
                  'nonPolySeq',
+                 'fullPolySeq',
                  'atomIdSetPerChain',
                  'gapInAuthSeq',
                  '__complexSeqScheme',
@@ -758,10 +759,13 @@ class BaseStackedMRParserListener():
                 self.nonPolySeq = self.__nonPoly
             else:
                 self.nonPolySeq = self.__branched
+            self.fullPolySeq = copy.deepcopy(self.polySeq)
+            self.fullPolySeq.extend(self.nonPolySeq)
 
         else:
             self.hasNonPolySeq = False
             self.nonPolySeq = None
+            self.fullPolySeq = self.polySeq if self.hasPolySeq else None
 
         self.atomIdSetPerChain = {}
         if self.hasCoord and self.__multiPolymer:  # 7d3v
@@ -1618,7 +1622,7 @@ class BaseStackedMRParserListener():
 
                             if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                 self.__polySeqRst = polySeqRst
-                                if 'chain_id_remap' not in self.reasonsForReParsing:
+                                if 'chain_id_remap' not in self.reasonsForReParsing and len(chainIdMapping) > 0:
                                     self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
                         if self.monoPolymer and len(self.__polySeqRst) == 1:
@@ -1627,9 +1631,9 @@ class BaseStackedMRParserListener():
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
-                                if 'chain_id_clone' not in self.reasonsForReParsing:
+                                if 'chain_id_clone' not in self.reasonsForReParsing and len(chainIdMapping) > 0:
                                     self.reasonsForReParsing['chain_id_clone'] = chainIdMapping
-                                if 'model_chain_id_ext' not in self.reasonsForReParsing:
+                                if 'model_chain_id_ext' not in self.reasonsForReParsing and len(modelChainIdExt) > 0:
                                     self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
 
                         if self.hasNonPoly:
@@ -1638,7 +1642,7 @@ class BaseStackedMRParserListener():
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
-                                if 'non_poly_remap' not in self.reasonsForReParsing:
+                                if 'non_poly_remap' not in self.reasonsForReParsing and len(nonPolyMapping) > 0:
                                     self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
                         if self.hasBranched:
@@ -2054,7 +2058,7 @@ class BaseStackedMRParserListener():
 
                                 if polySeqRst is not None:
                                     self.__polySeqRst = polySeqRst
-                                    if 'non_poly_remap' not in self.reasonsForReParsing:
+                                    if 'non_poly_remap' not in self.reasonsForReParsing and len(nonPolyMapping) > 0:
                                         self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
                             if self.hasBranched:
@@ -4447,13 +4451,14 @@ class BaseStackedMRParserListener():
 
         key = str(_factor)
         if key in self.__cachedDictForFactor:
-            if 'has_nitroxide' in self.__cachedDictForFactor[key]:
+            _factor_ = self.__cachedDictForFactor[key]
+            if 'has_nitroxide' in _factor_:
                 self.has_nx = True
-            if 'has_gd3+' in self.__cachedDictForFactor[key]:
+            elif 'has_gd3+' in _factor_:
                 self.has_gd = True
-            if 'has_lanthanide' in self.__cachedDictForFactor[key]:
+            elif 'has_lanthanide' in _factor_:
                 self.has_la = True
-            return copy.deepcopy(self.__cachedDictForFactor[key])
+            return copy.deepcopy(_factor_)
 
         unambig = self.cur_subtype != 'dist'
 
@@ -4494,41 +4499,22 @@ class BaseStackedMRParserListener():
                 lenCompIds = len(_factor['comp_ids'])
                 _compIdSelect = set()
                 for chainId in _factor['chain_id']:
-                    ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                    if ps is not None:
+                    psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                    for ps in psList:
                         for realSeqId in ps['auth_seq_id']:
                             if realSeqId is None:
                                 continue
                             idx = ps['auth_seq_id'].index(realSeqId)
-                            realCompId = ps['comp_id'][idx]
+                            realCompId = self.getRealCompId(ps['comp_id'][idx])
                             origCompId = ps['auth_comp_id'][idx]
-                            if (lenCompIds == 1
-                                and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU)), realCompId)
-                                     or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU)), origCompId)))\
-                               or (lenCompIds == 2
-                                   and (translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU) <= realCompId
-                                        <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.ccU)
-                                        or translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU) <= origCompId
-                                        <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.ccU))):
-                                _compIdSelect.add(realCompId)
-                if self.hasNonPolySeq:
-                    for chainId in _factor['chain_id']:
-                        npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                        for np in npList:
-                            for realSeqId in np['auth_seq_id']:
-                                if realSeqId is None:
-                                    continue
-                                idx = np['auth_seq_id'].index(realSeqId)
-                                realCompId = self.getRealCompId(np['comp_id'][idx])
-                                origCompId = np['auth_comp_id'][idx]
-                                if (lenCompIds == 1
-                                    and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU)), realCompId)
-                                         or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU)), origCompId)))\
-                                   or (lenCompIds == 2
-                                       and (translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU) <= realCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.ccU)
-                                            or translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU) <= origCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.ccU))):
+                            if lenCompIds == 1:
+                                compIds_ex = toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU))
+                                if re.match(compIds_ex, realCompId) or re.match(compIds_ex, origCompId):
+                                    _compIdSelect.add(realCompId)
+                            elif lenCompIds == 2:
+                                compIds0 = translateToStdResName(_factor['comp_ids'][0], realCompId, self.ccU)
+                                compIds1 = translateToStdResName(_factor['comp_ids'][1], realCompId, self.ccU)
+                                if compIds0 <= realCompId <= compIds1 or compIds0 <= origCompId <= compIds1:
                                     _compIdSelect.add(realCompId)
                 _factor['comp_id'] = list(_compIdSelect)
                 del _factor['comp_ids']
@@ -4539,15 +4525,15 @@ class BaseStackedMRParserListener():
             _seqId = toRegEx(seqId)
             seqIds = []
             for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
+                psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                for ps in psList:
                     found = False
                     for realSeqId in ps['auth_seq_id']:
                         if realSeqId is None:
                             continue
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
-                            realCompId = ps['comp_id'][idx]
+                            realCompId = self.getRealCompId(ps['comp_id'][idx])
                             origCompId = ps['auth_comp_id'][idx]
                             _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
@@ -4564,7 +4550,7 @@ class BaseStackedMRParserListener():
                                 continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = ps['auth_seq_id'].index(realSeqId)
-                                realCompId = ps['comp_id'][idx]
+                                realCompId = self.getRealCompId(ps['comp_id'][idx])
                                 origCompId = ps['auth_comp_id'][idx]
                                 _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
@@ -4577,60 +4563,20 @@ class BaseStackedMRParserListener():
                                 _, realSeqId = self.authToLabelSeq[seqKey]
                                 if re.match(_seqId, str(realSeqId)):
                                     seqIds.append(realSeqId)
-            if self.hasNonPolySeq:
-                for chainId in _factor['chain_id']:
-                    npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                    for np in npList:
-                        found = False
-                        for realSeqId in np['auth_seq_id']:
-                            if realSeqId is None:
-                                continue
-                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                idx = np['auth_seq_id'].index(realSeqId)
-                                realCompId = self.getRealCompId(np['comp_id'][idx])
-                                origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
-                                if realCompId not in _compIdList and origCompId not in _compIdList:
-                                    continue
-                                if set(_factor['comp_id']) != set(_compIdList):
-                                    _factor['alt_comp_id'] = _factor['comp_id']
-                                    _factor['comp_id'] = _compIdList
-                            if re.match(_seqId, str(realSeqId)):
-                                seqIds.append(realSeqId)
-                                found = True
-                        if not found:
-                            for realSeqId in np['auth_seq_id']:
-                                if realSeqId is None:
-                                    continue
-                                if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                    idx = np['auth_seq_id'].index(realSeqId)
-                                    realCompId = self.getRealCompId(np['comp_id'][idx])
-                                    origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
-                                    if realCompId not in _compIdList and origCompId not in _compIdList:
-                                        continue
-                                    if set(_factor['comp_id']) != set(_compIdList):
-                                        _factor['alt_comp_id'] = _factor['comp_id']
-                                        _factor['comp_id'] = _compIdList
-                                seqKey = (chainId, realSeqId)
-                                if seqKey in self.authToLabelSeq:
-                                    _, realSeqId = self.authToLabelSeq[seqKey]
-                                    if re.match(_seqId, str(realSeqId)):
-                                        seqIds.append(realSeqId)
             _factor['seq_id'] = list(set(seqIds))
             del _factor['seq_ids']
 
         if 'seq_id' not in _factor or len(_factor['seq_id']) == 0:
             seqIds = []
             for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
+                psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                for ps in psList:
                     for realSeqId in ps['auth_seq_id']:
                         if realSeqId is None:
                             continue
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
-                            realCompId = ps['comp_id'][idx]
+                            realCompId = self.getRealCompId(ps['comp_id'][idx])
                             origCompId = ps['auth_comp_id'][idx]
                             _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
@@ -4639,24 +4585,6 @@ class BaseStackedMRParserListener():
                                 _factor['alt_comp_id'] = _factor['comp_id']
                                 _factor['comp_id'] = _compIdList
                         seqIds.append(realSeqId)
-            if self.hasNonPolySeq:
-                for chainId in _factor['chain_id']:
-                    npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                    for np in npList:
-                        for realSeqId in np['auth_seq_id']:
-                            if realSeqId is None:
-                                continue
-                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                idx = np['auth_seq_id'].index(realSeqId)
-                                realCompId = self.getRealCompId(np['comp_id'][idx])
-                                origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
-                                if realCompId not in _compIdList and origCompId not in _compIdList:
-                                    continue
-                                if set(_factor['comp_id']) != set(_compIdList):
-                                    _factor['alt_comp_id'] = _factor['comp_id']
-                                    _factor['comp_id'] = _compIdList
-                            seqIds.append(realSeqId)
             _factor['seq_id'] = list(set(seqIds))
 
             if len(_factor['seq_id']) > 0 and 'comp_id' in _factor and 'seq_not_specified' in _factor:  # 2lr1
@@ -4669,14 +4597,9 @@ class BaseStackedMRParserListener():
                 _typeSymbolSelect = set()
                 _compIdSelect = set()
                 for chainId in _factor['chain_id']:
-                    ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                    if ps is not None:
+                    psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                    for ps in psList:
                         _compIdSelect |= set(ps['comp_id'])
-                if self.hasNonPolySeq:
-                    for chainId in _factor['chain_id']:
-                        npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                        for np in npList:
-                            _compIdSelect |= set(np['comp_id'])
                 for compId in _compIdSelect:
                     if self.ccU.updateChemCompDict(compId):
                         for cca in self.ccU.lastAtomList:
@@ -4693,14 +4616,9 @@ class BaseStackedMRParserListener():
                 _atomIdSelect = set()
                 _compIdSelect = set()
                 for chainId in _factor['chain_id']:
-                    ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                    if ps is not None:
+                    psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                    for ps in psList:
                         _compIdSelect |= set(ps['comp_id'])
-                if self.hasNonPolySeq:
-                    for chainId in _factor['chain_id']:
-                        npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                        for np in npList:
-                            _compIdSelect |= set(np['comp_id'])
                 for compId in _compIdSelect:
                     if self.ccU.updateChemCompDict(compId):
                         for cca in self.ccU.lastAtomList:
@@ -4817,8 +4735,8 @@ class BaseStackedMRParserListener():
             lenAtomIds = len(_factor['atom_ids'])
             _compIdSelect = set()
             for chainId in _factor['chain_id']:
-                ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
+                psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
+                for ps in psList:
                     for realSeqId in ps['auth_seq_id']:
                         if realSeqId is None:
                             continue
@@ -4830,7 +4748,7 @@ class BaseStackedMRParserListener():
                                 if realSeqId is None:
                                     continue
                         idx = ps['auth_seq_id'].index(realSeqId)
-                        realCompId = ps['comp_id'][idx]
+                        realCompId = self.getRealCompId(ps['comp_id'][idx])
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             origCompId = ps['auth_comp_id'][idx]
                             _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
@@ -4893,30 +4811,6 @@ class BaseStackedMRParserListener():
                                         _factor['chain_id'].append(wcChainId)
                                         if chainId in _factor['chain_id']:
                                             _factor['chain_id'].remove(chainId)
-
-            if self.hasNonPolySeq:
-                for chainId in _factor['chain_id']:
-                    npList = [np for np in self.nonPolySeq if np['auth_chain_id'] == chainId]
-                    for np in npList:
-                        for realSeqId in np['auth_seq_id']:
-                            if realSeqId is None:
-                                continue
-                            if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
-                                    ptnr = getStructConnPtnr(self.cR, chainId, realSeqId)
-                                    if ptnr is None:
-                                        continue
-                            idx = np['auth_seq_id'].index(realSeqId)
-                            realCompId = self.getRealCompId(np['comp_id'][idx])
-                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                                origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
-                                if realCompId not in _compIdList and origCompId not in _compIdList:
-                                    continue
-                                if set(_factor['comp_id']) != set(_compIdList):
-                                    _factor['alt_comp_id'] = _factor['comp_id']
-                                    _factor['comp_id'] = _compIdList
-                            _compIdSelect.add(realCompId)
 
             _atomIdSelect = set()
             for compId in _compIdSelect:
@@ -6191,18 +6085,18 @@ class BaseStackedMRParserListener():
                                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
 
                     if compId is None:
-                        """ cancel the following code because comp_id prediction conflicts with extended sequence (7zjy)
-                        if isPolySeq and isChainSpecified and self.reasons is None and self.preferAuthSeq:
-                            self.preferAuthSeq = False
-                            seqId, _compId_, _ = self.getRealSeqId(ps, seqId, isPolySeq)
-                            if self.csStat.peptideLike(_compId_):
-                                compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
-                                if compIds is not None and _compId_ in compIds:
-                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['label_seq_scheme'] = {}
-                                    self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
-                            self.preferAuthSeq = True
-                        """
+                        # """ cancel the following code because comp_id prediction conflicts with extended sequence (7zjy)
+                        # if isPolySeq and isChainSpecified and self.reasons is None and self.preferAuthSeq:
+                        #     self.preferAuthSeq = False
+                        #     seqId, _compId_, _ = self.getRealSeqId(ps, seqId, isPolySeq)
+                        #     if self.csStat.peptideLike(_compId_):
+                        #         compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
+                        #         if compIds is not None and _compId_ in compIds:
+                        #             if 'label_seq_scheme' not in self.reasonsForReParsing:
+                        #                 self.reasonsForReParsing['label_seq_scheme'] = {}
+                        #             self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                        #     self.preferAuthSeq = True
+                        # """
                         if isPolySeq and seqSpecified and atomSpecified\
                            and self.reasons is None and self.preferAuthSeq and self.__altPolySeq is not None:
                             if seqId in self.__effSeqIdSet:
@@ -6359,11 +6253,11 @@ class BaseStackedMRParserListener():
                             updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
-                        """
-                        if isinstance(origAtomId, str) and origAtomId.startswith('HT') and coordAtomSite is not None and origAtomId not in atomSiteAtomId:
-                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                continue
-                        """
+                        # """
+                        # if isinstance(origAtomId, str) and origAtomId.startswith('HT') and coordAtomSite is not None and origAtomId not in atomSiteAtomId:
+                        #     if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
+                        #         continue
+                        # """
                         atomId = atomId.upper()
 
                         if not isPolySeq and compId in PARAMAGNETIC_ELEMENTS:

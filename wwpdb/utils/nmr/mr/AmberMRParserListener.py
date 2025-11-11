@@ -792,6 +792,7 @@ class AmberMRParserListener(ParseTreeListener):
         # polymer sequence of MR file
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
+
         self.__f = []
         self.__g = []
 

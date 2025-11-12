@@ -8854,6 +8854,9 @@ class NmrDpUtility:
             if is_done and file_type == 'nmr-star':
                 for sf in self.__star_data[0].get_saveframes_by_category('assembly'):
                     self.__assembly_name = get_first_sf_tag(sf, 'Name', '?')
+                    details = get_first_sf_tag(sf, 'Details')
+                    if details not in emptyValue and ws_pattern.match(details):
+                        set_sf_tag(sf, 'Details', None)
                     break
 
         else:
@@ -25392,7 +25395,7 @@ class NmrDpUtility:
                                     if allowed_ambig_code in (0, 1):
                                         row[ambig_code_col] = '1'
 
-            if file_type == 'nef' or not self.__nonblk_anomalous_cs:
+            if (file_type == 'nef' or not self.__nonblk_anomalous_cs) and len(self.__lp_data[content_subtype]) > 0:
                 lp_data = next(lp['data'] for lp in self.__lp_data[content_subtype]
                                if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode)
 

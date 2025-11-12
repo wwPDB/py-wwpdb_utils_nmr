@@ -1955,6 +1955,7 @@ class NmrDpUtility:
                  '__entry_id__',
                  '__entry_id',
                  '__bmrb_id',
+                 '__assembly_name',
                  '__retain_original',
                  '__leave_intl_note',
                  '__reduced_atom_notation',
@@ -2185,6 +2186,8 @@ class NmrDpUtility:
         self.__entry_id = 'EXTRACT_FROM_COORD'
         # bmrb id (internal use only)
         self.__bmrb_id = None
+        # assembly name
+        self.__assembly_name = '?'
 
         # whether to retain original content if possible
         self.__retain_original = True
@@ -7999,6 +8002,8 @@ class NmrDpUtility:
                 if self.__bmrb_id is not None:
                     self.__entry_id = self.__bmrb_id.strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
+        self.__assembly_name = '?'
+
         entity_name_item = next(item for item in self.sf_tag_items['nmr-star']['entity'] if item['name'] == 'Name')
         entity_name_item['mandatory'] = self.__bmrb_only
 
@@ -8845,6 +8850,11 @@ class NmrDpUtility:
                     os.remove(_srcPath)
                 except OSError:
                     pass
+
+            if is_done and file_type == 'nmr-star':
+                for sf in self.__star_data[0].get_saveframes_by_category('assembly'):
+                    self.__assembly_name = get_first_sf_tag(sf, 'Name', '?')
+                    break
 
         else:
 
@@ -11074,6 +11084,9 @@ class NmrDpUtility:
         for sf_category in self.__sf_category_list:  # DAOTHER-5896
 
             for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+
+                if file_type == 'nmr-star' and sf_category == 'assembly' and self.__assembly_name in emptyValue:
+                    self.__assembly_name = get_first_sf_tag(sf, 'Name', '?')
 
                 for tag in sf.tags:
                     if isinstance(tag[1], str) and len(tag[1]) == 0:
@@ -52725,9 +52738,13 @@ class NmrDpUtility:
 
         details = ''
         for item in entity_assembly:
-            if 'entity_details' in item and item['entity_details'] not in emptyValue and item['entity_details'] + '\n' not in details:
-                if len(details.strip()) > 0:
-                    details += details + '\n'
+            if 'entity_details' not in item:
+                continue
+            _details = item['entity_details'].strip().rstrip('\n')
+            if _details in emptyValue or _details + '\n' in details:
+                continue
+            if len(details.strip()) > 0:
+                details += _details + '\n'
         if len(details) == 0:
             details = '.'
         else:
@@ -52747,8 +52764,8 @@ class NmrDpUtility:
             asm_sf.add_tag('Sf_framecode', sf_framecode)
             asm_sf.add_tag('Entry_ID', self.__entry_id)
             asm_sf.add_tag('ID', 1)
-            assembly_name = '?'
-            if self.__cR.hasItem('struct', 'pdbx_descriptor'):
+            assembly_name = self.__assembly_name
+            if assembly_name in emptyValue and self.__cR.hasItem('struct', 'pdbx_descriptor'):
                 struct = self.__cR.getDictList('struct')
                 assembly_name = struct[0]['pdbx_descriptor']
             asm_sf.add_tag('Name', assembly_name)

@@ -42,13 +42,15 @@ from typing import IO, List, Set, Tuple, Optional
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            protonBeginCode,
-                                           pseProBeginCode)
+                                           pseProBeginCode,
+                                           deepcopy)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.mr.ParserListenerUtil import translateToStdAtomName
 except ImportError:
     from nmr.AlignUtil import (emptyValue,
                                protonBeginCode,
-                               pseProBeginCode)
+                               pseProBeginCode,
+                               deepcopy)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.mr.ParserListenerUtil import translateToStdAtomName
 
@@ -186,13 +188,13 @@ class BMRBChemShiftStat:
             return False
 
         if comp_id in self.__cachedDictForPeptideLike:
-            return copy.deepcopy(self.__cachedDictForPeptideLike[comp_id])
+            return deepcopy(self.__cachedDictForPeptideLike[comp_id])
 
         result = self.__ccU.peptideLike(comp_id)
 
         self.__cachedDictForPeptideLike[comp_id] = result
 
-        return copy.deepcopy(result)
+        return deepcopy(result)
 
     def getTypeOfCompId(self, comp_id: str) -> bool:
         """ Return type of a given comp_id.
@@ -209,13 +211,13 @@ class BMRBChemShiftStat:
             return [False, True, False]
 
         if comp_id in self.__cachedDictForTypeOfCompId:
-            return copy.deepcopy(self.__cachedDictForTypeOfCompId[comp_id])
+            return deepcopy(self.__cachedDictForTypeOfCompId[comp_id])
 
         results = self.__ccU.getTypeOfCompId(comp_id)
 
         self.__cachedDictForTypeOfCompId[comp_id] = results
 
-        return copy.deepcopy(results)
+        return deepcopy(results)
 
     def getSimilarCompIdFromAtomIds(self, atom_ids: List[str]) -> Optional[str]:
         """ Return the most similar comp_id including atom_ids.
@@ -224,7 +226,7 @@ class BMRBChemShiftStat:
 
         key = str(atom_ids)
         if key in self.__cachedDictForSimilarCompId:
-            return copy.deepcopy(self.__cachedDictForSimilarCompId[key])
+            return deepcopy(self.__cachedDictForSimilarCompId[key])
 
         aa_bb = {"C", "CA", "CB", "H", "HA", "HA2", "HA3", "N"}
         dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", "H2'1", "H2'2", 'P'}
@@ -640,13 +642,13 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForMethylAtoms:
-            return copy.deepcopy(self.__cachedDictForMethylAtoms[comp_id])
+            return deepcopy(self.__cachedDictForMethylAtoms[comp_id])
 
         result = self.__ccU.getMethylAtoms(comp_id)
 
         self.__cachedDictForMethylAtoms[comp_id] = result
 
-        return copy.deepcopy(result)
+        return deepcopy(result)
 
     def getMethylProtons(self, comp_id: str) -> List[str]:
         """ Return all protons in methyl group of a given comp_id.
@@ -656,13 +658,13 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForMethylProtons:
-            return copy.deepcopy(self.__cachedDictForMethylProtons[comp_id])
+            return deepcopy(self.__cachedDictForMethylProtons[comp_id])
 
         result = self.__ccU.getMethylProtons(comp_id)
 
         self.__cachedDictForMethylProtons[comp_id] = result
 
-        return copy.deepcopy(result)
+        return deepcopy(result)
 
     def getRepMethylProtons(self, comp_id: str) -> List[str]:
         """ Return representative protons in methyl group of a given comp_id.
@@ -672,13 +674,13 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForRepMethylProtons:
-            return copy.deepcopy(self.__cachedDictForRepMethylProtons[comp_id])
+            return deepcopy(self.__cachedDictForRepMethylProtons[comp_id])
 
         result = self.__ccU.getRepMethylProtons(comp_id)
 
         self.__cachedDictForRepMethylProtons[comp_id] = result
 
-        return copy.deepcopy(result)
+        return deepcopy(result)
 
     def getNonRepMethylProtons(self, comp_id: str) -> List[str]:
         """ Return non-representative protons in methyl group of a given comp_id.
@@ -688,13 +690,13 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForNonRepMethylProtons:
-            return copy.deepcopy(self.__cachedDictForNonRepMethylProtons[comp_id])
+            return deepcopy(self.__cachedDictForNonRepMethylProtons[comp_id])
 
         result = self.__ccU.getNonRepMethylProtons(comp_id)
 
         self.__cachedDictForNonRepMethylProtons[comp_id] = result
 
-        return copy.deepcopy(result)
+        return deepcopy(result)
 
     def getProtonsInSameGroup(self, comp_id: str, atom_id: str, excl_self: bool = False) -> List[str]:
         """ Return protons in the same group of a given comp_id and atom_id.
@@ -705,13 +707,13 @@ class BMRBChemShiftStat:
 
         key = (comp_id, atom_id, excl_self)
         if key in self.__cachedDictForProtonInSameGroup:
-            return copy.deepcopy(self.__cachedDictForProtonInSameGroup[key])
+            return deepcopy(self.__cachedDictForProtonInSameGroup[key])
 
         result = self.__ccU.getProtonsInSameGroup(comp_id, atom_id, excl_self)
 
         self.__cachedDictForProtonInSameGroup[key] = result
 
-        return copy.deepcopy(result)
+        return deepcopy(result)
 
     def getSideChainAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
                           polynucleotide_like: bool = False, carbohydrates_like: bool = False) -> List[str]:
@@ -1159,7 +1161,7 @@ class BMRBChemShiftStat:
 
         # DAOTHER-9317: retrieve missing statistics of geminal, aromatic opposit, and gemenal methyl groups
 
-        __atm_list = copy.deepcopy(atm_list)
+        __atm_list = deepcopy(atm_list)
 
         atm_list = []
 

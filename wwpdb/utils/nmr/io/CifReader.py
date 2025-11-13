@@ -70,9 +70,11 @@ from rmsd.calculate_rmsd import (NAMES_ELEMENT, centroid, check_reflections, rms
                                  quaternion_rotate)
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
+                                           deepcopy)
 except ImportError:
-    from nmr.AlignUtil import emptyValue
+    from nmr.AlignUtil import (emptyValue,
+                               deepcopy)
 
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None
@@ -864,7 +866,7 @@ class CifReader:
                                     unmapSeqIds[c].append((row[altDict['seq_id']], compId))
                                     unmapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
                                 if _rowList is None:
-                                    _rowList = copy.deepcopy(rowList)
+                                    _rowList = deepcopy(rowList)
                         continue
                     if 'default' not in keyItems[j] or keyItems[j]['default'] not in emptyValue:
                         raise ValueError(f"{keyNames[j]} must not be empty.")
@@ -1021,7 +1023,7 @@ class CifReader:
         caRmsd = caWellDefinedRegion = None
         polyPeptideChains, polyPeptideLengths = [], []
 
-        _seqDict = copy.deepcopy(seqDict)
+        _seqDict = deepcopy(seqDict)
 
         asm = []  # assembly of a loop
         for i, c in enumerate(chainIds):

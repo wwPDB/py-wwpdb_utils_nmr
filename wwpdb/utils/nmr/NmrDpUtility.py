@@ -287,6 +287,7 @@ try:
                                            aminoProtonCode,
                                            rdcBbPairCode,
                                            unknownResidue,
+                                           deepcopy,
                                            hasLargeInnerSeqGap,
                                            hasLargeSeqGap,
                                            fillInnerBlankCompId,
@@ -462,6 +463,7 @@ except ImportError:
                                aminoProtonCode,
                                rdcBbPairCode,
                                unknownResidue,
+                               deepcopy,
                                hasLargeInnerSeqGap,
                                hasLargeSeqGap,
                                fillInnerBlankCompId,
@@ -7882,7 +7884,7 @@ class NmrDpUtility:
             self.__has_star_chem_shift = True
 
             if self.__inputParamDictCopy is None:
-                self.__inputParamDictCopy = copy.deepcopy(self.__inputParamDict)
+                self.__inputParamDictCopy = deepcopy(self.__inputParamDict)
 
             for v in self.key_items['nmr-star'].values():
                 if v is None:
@@ -13086,7 +13088,7 @@ class NmrDpUtility:
             for v in self.__sf_tag_data.values():
                 v.clear()
 
-            self.__inputParamDict = copy.deepcopy(self.__inputParamDictCopy)
+            self.__inputParamDict = deepcopy(self.__inputParamDictCopy)
 
             self.__initializeDpReport()
             self.__validateInputSource()
@@ -19818,7 +19820,7 @@ class NmrDpUtility:
                 for chain_id in chain_ids:
                     ps = next(ps for ps in poly_seq if ps['chain_id'] == chain_id)
                     if 'alt_comp_id' not in ps or len(ps['alt_comp_id']) != len(ps['comp_id']):
-                        ps['alt_comp_id'] = copy.deepcopy(ps['comp_id'])
+                        ps['alt_comp_id'] = deepcopy(ps['comp_id'])
                     for ext_seq_key in ext_seq_key_set:
                         if ext_seq_key[0] != chain_id:
                             continue
@@ -39745,7 +39747,7 @@ class NmrDpUtility:
                     pass
 
         if self.__caC is not None:
-            nmr_poly_seq = copy.deepcopy(self.__caC['polymer_sequence'])
+            nmr_poly_seq = deepcopy(self.__caC['polymer_sequence'])
             if self.__caC['branched'] is not None:
                 nmr_poly_seq.extend(self.__caC['branched'])
             if self.__caC['non_polymer'] is not None:
@@ -49892,7 +49894,7 @@ class NmrDpUtility:
                             ps1 = __ps1
 
                     if conflict > 0 and 'gap_in_auth_seq' in _ps2 and _ps2['gap_in_auth_seq'] and 'auth_seq_id' in _ps2:
-                        __ps1 = copy.deepcopy(_ps1)
+                        __ps1 = deepcopy(_ps1)
                         for p in range(len(_ps2['auth_seq_id']) - 1):
                             s_p = _ps2['auth_seq_id'][p]
                             s_q = _ps2['auth_seq_id'][p + 1]
@@ -50425,7 +50427,7 @@ class NmrDpUtility:
                             ps2 = __ps2
 
                     if conflict > 0 and 'gap_in_auth_seq' in _ps1 and _ps1['gap_in_auth_seq'] and 'auth_seq_id' in _ps1:
-                        __ps2 = copy.deepcopy(_ps2)
+                        __ps2 = deepcopy(_ps2)
                         for p in range(len(_ps1['auth_seq_id']) - 1):
                             s_p = _ps1['auth_seq_id'][p]
                             s_q = _ps1['auth_seq_id'][p + 1]
@@ -54667,7 +54669,7 @@ class NmrDpUtility:
 
             if content_subtype_len == 1:  # enable to process text data in place
 
-                _reserved_list_ids = copy.deepcopy(reserved_list_ids)
+                _reserved_list_ids = deepcopy(reserved_list_ids)
                 list_id = get_first_sf_tag(sf, 'ID')
                 _reserved_list_ids[content_subtype].remove(int(list_id) if list_id not in emptyValue else idx)
 

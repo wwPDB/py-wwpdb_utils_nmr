@@ -75,6 +75,7 @@ try:
                                            carboxylCode,
                                            zincIonCode,
                                            calciumIonCode,
+                                           deepcopy,
                                            getOneLetterCode,
                                            updatePolySeqRst,
                                            revertPolySeqRst,
@@ -151,6 +152,7 @@ except ImportError:
                                carboxylCode,
                                zincIonCode,
                                calciumIonCode,
+                               deepcopy,
                                getOneLetterCode,
                                updatePolySeqRst,
                                revertPolySeqRst,
@@ -5415,7 +5417,7 @@ class BasePKParserListener():
                             has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0], dstFunc['position_1'])
                             has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0], dstFunc['position_2'])
                             if has_assignments:
-                                self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
+                                self.atomSelectionSets.append(deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
                                 if self.reasons is not None:
                                     if 'onebond_idx_history' in self.reasons:
@@ -5555,7 +5557,7 @@ class BasePKParserListener():
                             has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0], dstFunc['position_2'])
                             has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0], dstFunc['position_3'])
                             if has_assignments:
-                                self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
+                                self.atomSelectionSets.append(deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
                                 if self.reasons is not None:
                                     if 'onebond_idx_history' in self.reasons:
@@ -5702,7 +5704,7 @@ class BasePKParserListener():
                             has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0], dstFunc['position_3'])
                             has_assignments &= self.validateAtomType(4, self.atomSelectionSet[3][0]['atom_id'][0], dstFunc['position_4'])
                             if has_assignments:
-                                self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
+                                self.atomSelectionSets.append(deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])
                                 if self.reasons is not None:
                                     if 'onebond_idx_history' in self.reasons:
@@ -10297,7 +10299,7 @@ class BasePKParserListener():
             if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
                 key = (chainId, cifSeqId, compId, atomId)
                 if key in self.__cachedDictForStarAtom:
-                    _atomId = copy.deepcopy(self.__cachedDictForStarAtom[key])
+                    _atomId = deepcopy(self.__cachedDictForStarAtom[key])
                 else:
                     pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
                     atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
@@ -10317,7 +10319,7 @@ class BasePKParserListener():
                                                 modelNumName=self.modelNumName):
                                     _atomId.append(_atomId_)
                     if len(_atomId) > 1:
-                        self.__cachedDictForStarAtom[key] = copy.deepcopy(_atomId)
+                        self.__cachedDictForStarAtom[key] = deepcopy(_atomId)
             if len(_atomId) > 1:
                 details = None
             else:

@@ -28,7 +28,8 @@ try:
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
                                                                 CS_ERROR_MIN,
-                                                                CS_ERROR_MAX)
+                                                                CS_ERROR_MAX,
+                                                                deepcopy)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        translateToStdAtomName,
                                                        hasInterChainRestraint,
@@ -78,7 +79,8 @@ except ImportError:
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
                                                     CS_ERROR_MIN,
-                                                    CS_ERROR_MAX)
+                                                    CS_ERROR_MAX,
+                                                    deepcopy)
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
@@ -3195,7 +3197,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                               f"The 'store{num}' clause has no effect "
                               "because the internal vector statement is not set yet.")
             else:
-                self.factor = copy.deepcopy(self.storeSet[num])
+                self.factor = deepcopy(self.storeSet[num])
 
         try:
 
@@ -4386,7 +4388,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
 
                         if 'atom_selection' in self.factor:
-                            _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                            _refAtomSelection = deepcopy(self.factor['atom_selection'])
                             for atom in _refAtomSelection:
                                 if 'is_poly' in atom:
                                     del atom['is_poly']
@@ -4439,7 +4441,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if self.verbose:
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
-                    _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                    _refAtomSelection = deepcopy(self.factor['atom_selection'])
                     for atom in _refAtomSelection:
                         if 'is_poly' in atom:
                             del atom['is_poly']

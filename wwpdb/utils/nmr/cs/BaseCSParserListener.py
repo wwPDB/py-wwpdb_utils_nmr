@@ -46,6 +46,7 @@ try:
                                            pseProBeginCode,
                                            zincIonCode,
                                            calciumIonCode,
+                                           deepcopy,
                                            getOneLetterCode,
                                            updatePolySeqRst,
                                            revertPolySeqRst,
@@ -88,6 +89,7 @@ except ImportError:
                                pseProBeginCode,
                                zincIonCode,
                                calciumIonCode,
+                               deepcopy,
                                getOneLetterCode,
                                updatePolySeqRst,
                                revertPolySeqRst,
@@ -757,7 +759,7 @@ class BaseCSParserListener():
 
                         if len(self.atomSelectionSet) == 1:
                             has_assignments = True
-                            self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
+                            self.atomSelectionSets.append(deepcopy(self.atomSelectionSet))
                         else:
                             has_assignments = False
                             break
@@ -3413,7 +3415,7 @@ class BaseCSParserListener():
             if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
                 key = (chainId, cifSeqId, compId, atomId)
                 if key in self.__cachedDictForStarAtom:
-                    _atomId = copy.deepcopy(self.__cachedDictForStarAtom[key])
+                    _atomId = deepcopy(self.__cachedDictForStarAtom[key])
             if len(_atomId) > 1:
                 details = None
             else:

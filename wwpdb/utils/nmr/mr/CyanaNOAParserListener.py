@@ -37,6 +37,7 @@ try:
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP)
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.AlignUtil import deepcopy
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.CyanaNOAParser import CyanaNOAParser
@@ -55,6 +56,7 @@ except ImportError:
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP)
     from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.AlignUtil import deepcopy
 
 
 # This class defines a complete listener for a parse tree produced by CyanaNOAParser.
@@ -278,7 +280,7 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
-                self.noeAssignments.append(copy.deepcopy(self.atomSelectionSet))
+                self.noeAssignments.append(deepcopy(self.atomSelectionSet))
                 self.asisList.append([asis1, asis2])
                 self.weights.append(float(str(ctx.Integer(2))) / 100.0)
 

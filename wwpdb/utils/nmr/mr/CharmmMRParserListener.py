@@ -25,7 +25,8 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CharmmMRParser import CharmmMRParser
-    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
+    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
+                                                                deepcopy)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        translateToStdAtomName,
                                                        hasInterChainRestraint,
@@ -61,7 +62,8 @@ try:
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.CharmmMRParser import CharmmMRParser
-    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
+    from nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
+                                                    deepcopy)
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
@@ -2169,7 +2171,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
 
                         if 'atom_selection' in self.factor:
-                            _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                            _refAtomSelection = deepcopy(self.factor['atom_selection'])
                             for atom in _refAtomSelection:
                                 if 'is_poly' in atom:
                                     del atom['is_poly']
@@ -2222,7 +2224,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if self.verbose:
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
-                    _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                    _refAtomSelection = deepcopy(self.factor['atom_selection'])
                     for atom in _refAtomSelection:
                         if 'is_poly' in atom:
                             del atom['is_poly']

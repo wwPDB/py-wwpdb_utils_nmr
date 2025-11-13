@@ -26,7 +26,8 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.SchrodingerMRParser import SchrodingerMRParser
-    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
+    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
+                                                                deepcopy)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        hasInterChainRestraint,
                                                        isIdenticalRestraint,
@@ -62,7 +63,8 @@ try:
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.SchrodingerMRParser import SchrodingerMRParser
-    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
+    from nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
+                                                    deepcopy)
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
@@ -3366,7 +3368,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
 
                         if 'atom_selection' in self.factor:
-                            _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                            _refAtomSelection = deepcopy(self.factor['atom_selection'])
                             for atom in _refAtomSelection:
                                 if 'is_poly' in atom:
                                     del atom['is_poly']
@@ -3419,7 +3421,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                         if self.verbose:
                             self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
-                    _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                    _refAtomSelection = deepcopy(self.factor['atom_selection'])
                     for atom in _refAtomSelection:
                         if 'is_poly' in atom:
                             del atom['is_poly']
@@ -3450,7 +3452,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                   f"The '{name}' clause has no effect "
                                   "because the internal statement is not set yet.")
                 else:
-                    self.factor = copy.deepcopy(self.storeSet[name])
+                    self.factor = deepcopy(self.storeSet[name])
 
             if self.depth > 0 and self.cur_union_expr:
                 self.unionFactor = self.factor

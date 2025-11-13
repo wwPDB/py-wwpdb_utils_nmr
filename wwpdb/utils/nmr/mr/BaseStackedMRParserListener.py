@@ -90,6 +90,7 @@ try:
                                            jcoupBbPairCode,
                                            zincIonCode,
                                            calciumIonCode,
+                                           deepcopy,
                                            indexToLetter,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -186,6 +187,7 @@ except ImportError:
                                jcoupBbPairCode,
                                zincIonCode,
                                calciumIonCode,
+                               deepcopy,
                                indexToLetter,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
@@ -759,7 +761,7 @@ class BaseStackedMRParserListener():
                 self.nonPolySeq = self.__nonPoly
             else:
                 self.nonPolySeq = self.__branched
-            self.fullPolySeq = copy.deepcopy(self.polySeq)
+            self.fullPolySeq = deepcopy(self.polySeq)
             self.fullPolySeq.extend(self.nonPolySeq)
 
         else:
@@ -1671,7 +1673,7 @@ class BaseStackedMRParserListener():
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                         _compId = None
                                         for compId in list(compIds):
-                                            _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                            _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
                                             updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                             sortPolySeqRst(_polySeqRstFailed)
                                             _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
@@ -1695,7 +1697,7 @@ class BaseStackedMRParserListener():
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                         _compId = None
                                         for compId in list(compIds):
-                                            _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                            _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
                                             updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                             sortPolySeqRst(_polySeqRstFailed)
                                             _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
@@ -1928,7 +1930,7 @@ class BaseStackedMRParserListener():
                                 for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                     _compId = None
                                     for compId in list(compIds):
-                                        _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                        _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
                                         updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                         sortPolySeqRst(_polySeqRstFailed)
                                         _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
@@ -1952,7 +1954,7 @@ class BaseStackedMRParserListener():
                                 for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                     _compId = None
                                     for compId in list(compIds):
-                                        _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                        _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
                                         updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                         sortPolySeqRst(_polySeqRstFailed)
                                         _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
@@ -2378,7 +2380,7 @@ class BaseStackedMRParserListener():
                     del self.reasonsForReParsing['label_seq_scheme']
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
-                    __f = copy.deepcopy(self.f)
+                    __f = deepcopy(self.f)
                     self.f = []
                     for f in __f:
                         self.f.append(re.sub(r'\[Anomalous data\]', '[Atom not found]', f, 1))
@@ -2587,7 +2589,7 @@ class BaseStackedMRParserListener():
 
             if len(self.reasonsForReParsing) == 0 and self.reasons is None\
                and any('[Insufficient atom selection]' in f and 'Macromolecules page' in f for f in self.f):
-                __f = copy.deepcopy(self.f)
+                __f = deepcopy(self.f)
                 self.f = []
                 for f in __f:
                     if '[Insufficient atom selection]' in f and 'Macromolecules page' in f:
@@ -4165,7 +4167,7 @@ class BaseStackedMRParserListener():
         if factor_has_is_poly != atomsel_has_is_poly\
            or factor_has_auth_atom_id != atomsel_has_auth_atom_id\
            or factor_has_segment_id != atomsel_has_segment_id:
-            refAtomSelection = copy.deepcopy(_factor['atom_selection'])
+            refAtomSelection = deepcopy(_factor['atom_selection'])
             if factor_has_is_poly != atomsel_has_is_poly:
                 if factor_has_is_poly:
                     for _atom in refAtomSelection:
@@ -4257,7 +4259,7 @@ class BaseStackedMRParserListener():
                         _atomSelection.append(_atom)
 
         elif hasAuthAtomId1 and not hasAuthAtomId2:
-            __selection1 = copy.deepcopy(_selection1)
+            __selection1 = deepcopy(_selection1)
             for _atom in __selection1:
                 if 'auth_atom_id' in _atom:
                     _atom.pop('auth_atom_id')
@@ -4273,7 +4275,7 @@ class BaseStackedMRParserListener():
                         _atomSelection.append(_selection1[idx])
 
         elif not hasAuthAtomId1 and hasAuthAtomId2:
-            __selection2 = copy.deepcopy(_selection2)
+            __selection2 = deepcopy(_selection2)
             for idx, _atom in enumerate(__selection2):
                 if 'auth_atom_id' in _atom:
                     _atom.pop('auth_atom_id')
@@ -4289,11 +4291,11 @@ class BaseStackedMRParserListener():
                         _atomSelection.append(_selection2[idx])
 
         else:
-            __selection1 = copy.deepcopy(_selection1)
+            __selection1 = deepcopy(_selection1)
             for _atom in __selection1:
                 if 'auth_atom_id' in _atom:
                     _atom.pop('auth_atom_id')
-            __selection2 = copy.deepcopy(_selection2)
+            __selection2 = deepcopy(_selection2)
             for _atom in __selection2:
                 if 'auth_atom_id' in _atom:
                     _atom.pop('auth_atom_id')
@@ -4458,7 +4460,7 @@ class BaseStackedMRParserListener():
                 self.has_gd = True
             elif 'has_lanthanide' in _factor_:
                 self.has_la = True
-            return copy.deepcopy(_factor_)
+            return deepcopy(_factor_)
 
         unambig = self.cur_subtype != 'dist'
 
@@ -5856,7 +5858,7 @@ class BaseStackedMRParserListener():
             del _factor['alt_atom_id']
 
         if ambigAtomSelect or valid:
-            self.__cachedDictForFactor[key] = copy.deepcopy(_factor)
+            self.__cachedDictForFactor[key] = deepcopy(_factor)
 
         return _factor
 
@@ -6170,7 +6172,7 @@ class BaseStackedMRParserListener():
                         replacedBy = self.getRealCompId(compId)
                         if replacedBy != compId:
                             compId = replacedBy
-                            _coordAtomSite = copy.deepcopy(coordAtomSite)
+                            _coordAtomSite = deepcopy(coordAtomSite)
                             _coordAtomSite['comp_id'] = compId
                             _coordAtomSite['atom_id'] = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
                             _coordAtomSite['alt_atom_id'] = [cca[self.ccU.ccaAltAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']

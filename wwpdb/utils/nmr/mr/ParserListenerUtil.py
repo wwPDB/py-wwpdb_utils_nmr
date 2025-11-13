@@ -45,6 +45,7 @@ try:
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID,
+                                           deepcopy,
                                            letterToDigit,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -61,6 +62,7 @@ except ImportError:
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID,
+                               deepcopy,
                                letterToDigit,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -6732,7 +6734,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
             # PHI or PSI
             if commonSeqId[0][1] == 3 and commonSeqId[1][1] == 1:
-                _atomIds = copy.deepcopy(atomIds)
+                _atomIds = deepcopy(atomIds)
 
                 # PHI
                 prevSeqId = commonSeqId[1][0]

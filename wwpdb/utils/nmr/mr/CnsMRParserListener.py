@@ -3444,13 +3444,13 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.factor['chain_id'] = sorted([k for k, v in _stats.items() if v == _stats[_chainId]])
                         self.factor['alt_chain_id'] = chainId
                     else:
-                        _chainId = toRegEx(chainId)
+                        chainId_ex = toRegEx(chainId)
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq
-                                                   if re.match(_chainId, ps['auth_chain_id'])]
+                                                   if re.match(chainId_ex, ps['auth_chain_id'])]
                         if self.hasNonPolySeq:
                             for np in self.nonPolySeq:
                                 __chainId = np['auth_chain_id']
-                                if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
+                                if re.match(chainId_ex, __chainId) and __chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(__chainId)
                     simpleNamesIndex += 1
 
@@ -3487,7 +3487,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                 if ctx.Integers():
                     seqId = str(ctx.Integers())
-                    _seqId = toRegEx(seqId)
+                    seqId_ex = toRegEx(seqId)
                     _seqIdSelect = set()
                     for chainId in self.factor['chain_id']:
                         psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
@@ -3498,7 +3498,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 if realSeqId is None:
                                     continue
                                 realSeqId = self.getRealSeqId(ps, realSeqId, isPolySeq)[0]
-                                if re.match(_seqId, str(realSeqId)):
+                                if re.match(seqId_ex, str(realSeqId)):
                                     _seqIdSelect.add(realSeqId)
                                     found = True
                             if not found:
@@ -3509,7 +3509,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     seqKey = (chainId, realSeqId)
                                     if seqKey in self.authToLabelSeq:
                                         _, realSeqId = self.authToLabelSeq[seqKey]
-                                        if re.match(_seqId, str(realSeqId)):
+                                        if re.match(seqId_ex, str(realSeqId)):
                                             _seqIdSelect.add(realSeqId)
                     self.factor['seq_id'] = list(_seqIdSelect)
 
@@ -3546,7 +3546,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     atomId = translateToStdAtomName(str(ctx.Simple_names(simpleNamesIndex)),
                                                     None if 'comp_id' not in self.factor else self.factor['comp_id'][0],
                                                     ccU=self.ccU)
-                    _atomId = toRegEx(atomId)
+                    atomId_ex = toRegEx(atomId)
                     for chainId in self.factor['chain_id']:
                         psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
                         for ps in psList:
@@ -3559,7 +3559,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         for cca in self.ccU.lastAtomList:
                                             if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
                                                 realAtomId = cca[self.ccU.ccaAtomId]
-                                                if re.match(_atomId, realAtomId):
+                                                if re.match(atomId_ex, realAtomId):
                                                     _atomIdSelect.add(realAtomId)
 
                 self.factor['atom_id'] = list(_atomIdSelect)
@@ -4817,13 +4817,13 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             self.factor['chain_id'] = sorted([k for k, v in _stats.items() if v == _stats[_chainId]])
                             self.factor['alt_chain_id'] = chainId
                         else:
-                            _chainId = toRegEx(chainId)
+                            chainId_ex = toRegEx(chainId)
                             self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq
-                                                       if re.match(_chainId, ps['auth_chain_id'])]
+                                                       if re.match(chainId_ex, ps['auth_chain_id'])]
                             if self.hasNonPolySeq:
                                 for np in self.nonPolySeq:
                                     __chainId = np['auth_chain_id']
-                                    if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
+                                    if re.match(chainId_ex, __chainId) and __chainId not in self.factor['chain_id']:
                                         self.factor['chain_id'].append(__chainId)
                     if ctx.Symbol_name():
                         symbol_name = chainId = str(ctx.Symbol_name())

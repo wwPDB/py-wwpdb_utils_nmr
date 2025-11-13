@@ -4149,19 +4149,22 @@ class BaseStackedMRParserListener():
         if atomSelection is None or len(atomSelection) == 0:
             _factor['atom_selection'] = []
 
-        elif isinstance(atomSelection[0], str) and atomSelection[0] == '*':
-            return _factor
+        else:
+            atom_sel0 = atomSelection[0]
+            if isinstance(atom_sel0, str) and atom_sel0 == '*':
+                return _factor
 
         factor_has_is_poly = factor_has_auth_atom_id = factor_has_segment_id =\
             atomsel_has_is_poly = atomsel_has_auth_atom_id = atomsel_has_segment_id = None
         if len(_factor['atom_selection']) > 0:
-            factor_has_is_poly = 'is_poly' in _factor['atom_selection'][0]
-            factor_has_auth_atom_id = 'auth_atom_id' in _factor['atom_selection'][0]
-            factor_has_segment_id = 'segment_id' in _factor['atom_selection'][0]
+            _atom_sel0 = _factor['atom_selection'][0]
+            factor_has_is_poly = 'is_poly' in _atom_sel0
+            factor_has_auth_atom_id = 'auth_atom_id' in _atom_sel0
+            factor_has_segment_id = 'segment_id' in _atom_sel0
         if atomSelection is not None and len(atomSelection) > 0:
-            atomsel_has_is_poly = 'is_poly' in atomSelection[0]
-            atomsel_has_auth_atom_id = 'auth_atom_id' in atomSelection[0]
-            atomsel_has_segment_id = 'segment_id' in atomSelection[0]
+            atomsel_has_is_poly = 'is_poly' in atom_sel0
+            atomsel_has_auth_atom_id = 'auth_atom_id' in atom_sel0
+            atomsel_has_segment_id = 'segment_id' in atom_sel0
 
         refAtomSelection = _factor['atom_selection']
         if factor_has_is_poly != atomsel_has_is_poly\
@@ -4196,11 +4199,11 @@ class BaseStackedMRParserListener():
                             pass
             if factor_has_segment_id != atomsel_has_segment_id:
                 if factor_has_segment_id:
-                    segment_id = _factor['atom_selection'][0]['segment_id']
+                    segment_id = _atom_sel0['segment_id']
                     for _atom in atomSelection:
                         _atom['segment_id'] = segment_id
                 if atomsel_has_segment_id:
-                    segment_id = atomSelection[0]['segment_id']
+                    segment_id = atom_sel0['segment_id']
                     for _atom in refAtomSelection:
                         _atom['segment_id'] = segment_id
                     _factor['atom_selection'] = refAtomSelection
@@ -4343,11 +4346,12 @@ class BaseStackedMRParserListener():
                         # _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
-                        _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq if _factor['seq_id'][0] in ps['seq_id']]
+                        _seqId = _factor['seq_id'][0]
+                        _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq if _seqId in ps['seq_id']]
                         if self.hasNonPolySeq:
                             for np in self.nonPolySeq:
                                 _chainId = np['auth_chain_id']
-                                if _chainId not in _factor['chain_id'] and _factor['seq_id'][0] in np['seq_id']:
+                                if _chainId not in _factor['chain_id'] and _seqId in np['seq_id']:
                                     _factor['chain_id'].append(_chainId)
                         if len(_factor['chain_id']) == 0:
                             del _factor['chain_id']
@@ -4365,11 +4369,12 @@ class BaseStackedMRParserListener():
                         # _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
-                        _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq if _factor['seq_id'][0] in ps['seq_id']]
+                        _seqId = _factor['seq_id'][0]
+                        _factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq if _seqId in ps['seq_id']]
                         if self.hasNonPolySeq:
                             for np in self.nonPolySeq:
                                 _chainId = np['auth_chain_id']
-                                if _chainId not in _factor['chain_id'] and _factor['seq_id'][0] in np['seq_id']:
+                                if _chainId not in _factor['chain_id'] and _seqId in np['seq_id']:
                                     _factor['chain_id'].append(_chainId)
                         if len(_factor['chain_id']) == 0:
                             del _factor['chain_id']
@@ -4415,14 +4420,15 @@ class BaseStackedMRParserListener():
         if self.__lenAtomSelectionSet == 0:
 
             if 'atom_id' in _factor and len(_factor['atom_id']) > 0:
+                _atomId0 = _factor['atom_id'][0].upper()
 
-                if self.cur_subtype == 'pcs' and not self.in_block and _factor['atom_id'][0].upper() in ('C', "C'", 'CO'):
+                if self.cur_subtype == 'pcs' and not self.in_block and _atomId0 in ('C', "C'", 'CO'):
                     self.cur_subtype = 'hvycs'
                     self.with_para = False
 
                 # for the case dist -> pre transition occurs
-                if _factor['atom_id'][0] not in ('CA', 'CE')\
-                   and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] == 'OO'):
+                if _atomId0 not in ('CA', 'CE')\
+                   and (_atomId0 in PARAMAGNETIC_ELEMENTS or _atomId0 == 'OO'):
                     if self.cur_subtype == 'dist':
                         self.with_para = True
                     if self.with_para:
@@ -4480,14 +4486,15 @@ class BaseStackedMRParserListener():
                 if len(_factor['chain_id']) == 1:
                     chain_not_specified = False
         elif len(_factor['chain_id']) == 1:
-            if chain_not_specified and any(ps for ps in self.polySeq if ps['auth_chain_id'] == _factor['chain_id'][0]):
+            _chainId = _factor['chain_id'][0]
+            if chain_not_specified and any(ps for ps in self.polySeq if ps['auth_chain_id'] == _chainId):
                 _factor['auth_chain_id'] = _factor['chain_id']
                 chain_not_specified = False
             if self.hasNonPolySeq and np_chain_not_specified:
-                if any(np for np in self.nonPolySeq if np['auth_chain_id'] == _factor['chain_id'][0]):
+                if any(np for np in self.nonPolySeq if np['auth_chain_id'] == _chainId):
                     _factor['auth_chain_id'] = _factor['chain_id']
                     np_chain_not_specified = False
-                elif not chain_not_specified and any(np for np in self.nonPolySeq if np['chain_id'] == _factor['chain_id'][0]):
+                elif not chain_not_specified and any(np for np in self.nonPolySeq if np['chain_id'] == _chainId):
                     _factor['auth_chain_id'] = _factor['chain_id']
                     np_chain_not_specified = False
 
@@ -4524,7 +4531,7 @@ class BaseStackedMRParserListener():
         if 'seq_ids' in _factor and len(_factor['seq_ids']) > 0\
            and ('seq_id' not in _factor or len(_factor['seq_id']) == 0):
             seqId = _factor['seq_ids'][0]
-            _seqId = toRegEx(seqId)
+            seqId_ex = toRegEx(seqId)
             seqIds = []
             for chainId in _factor['chain_id']:
                 psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
@@ -4543,7 +4550,7 @@ class BaseStackedMRParserListener():
                             if set(_factor['comp_id']) != set(_compIdList):
                                 _factor['alt_comp_id'] = _factor['comp_id']
                                 _factor['comp_id'] = _compIdList
-                        if re.match(_seqId, str(realSeqId)):
+                        if re.match(seqId_ex, str(realSeqId)):
                             seqIds.append(realSeqId)
                             found = True
                     if not found:
@@ -4563,7 +4570,7 @@ class BaseStackedMRParserListener():
                             seqKey = (chainId, realSeqId)
                             if seqKey in self.authToLabelSeq:
                                 _, realSeqId = self.authToLabelSeq[seqKey]
-                                if re.match(_seqId, str(realSeqId)):
+                                if re.match(seqId_ex, str(realSeqId)):
                                     seqIds.append(realSeqId)
             _factor['seq_id'] = list(set(seqIds))
             del _factor['seq_ids']
@@ -4602,11 +4609,12 @@ class BaseStackedMRParserListener():
                     psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
                     for ps in psList:
                         _compIdSelect |= set(ps['comp_id'])
+                typeSymBols_ex = toRegEx(_factor['type_symbols'][0]) if lenTypeSymbols == 1 else None
                 for compId in _compIdSelect:
                     if self.ccU.updateChemCompDict(compId):
                         for cca in self.ccU.lastAtomList:
                             realTypeSymbol = cca[self.ccU.ccaTypeSymbol]
-                            if (lenTypeSymbols == 1 and re.match(toRegEx(_factor['type_symbols'][0]), realTypeSymbol))\
+                            if (lenTypeSymbols == 1 and re.match(typeSymBols_ex, realTypeSymbol))\
                                or (lenTypeSymbols == 2 and _factor['type_symbols'][0] <= realTypeSymbol <= _factor['type_symbols'][1]):
                                 _typeSymbolSelect.add(realTypeSymbol)
                 _factor['type_symbol'] = list(_typeSymbolSelect)
@@ -4843,33 +4851,34 @@ class BaseStackedMRParserListener():
                                    and atomId[1].isdigit() and _atomIds[0][1].isdigit() and atomId[1] != _atomIds[0][0]:
                                     pass  # 2lzv
                                 else:
-                                    atomId = _atomId = _atomIds[0]
+                                    atomId = _atomIds[0]
                                     atomIds, details = _atomIds, _details
-                        _atomId = toNefEx(toRegEx(atomId))
-                        if _atomId.endswith('.') and details is None:
-                            _atomId += '$'  # HT# -> H. should match with H1/2/3 and not with HA2/3 (5iew)
-                        elif _atomId.endswith('.*') and details is not None:  # remove excess wild card code e.g. LYS:HB1* -> LYS:HB3 (5kqj)
-                            _atomIds, _, _details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId[:-2], leave_unmatched=True)
+                        atomId_ex = toNefEx(toRegEx(atomId))
+                        if atomId_ex.endswith('.') and details is None:
+                            atomId_ex += '$'  # HT# -> H. should match with H1/2/3 and not with HA2/3 (5iew)
+                        elif atomId_ex.endswith('.*') and details is not None:  # remove excess wild card code e.g. LYS:HB1* -> LYS:HB3 (5kqj)
+                            _atomIds, _, _details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId_ex[:-2], leave_unmatched=True)
                             if len(_atomIds) > 0 and _details is None:
-                                _atomId = _atomIds[0]
+                                atomId_ex = _atomIds[0]
                                 atomIds, details = _atomIds, _details
+                        tmpAtomId_ex = toNefEx(toRegEx(tmpAtomId))
                     elif lenAtomIds == 2:
                         atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
                         atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
                     _atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
                     if lenAtomIds == 1 and nucleotide:
-                        _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
+                        _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(atomId_ex, _atomId_)]
                     matched = False
                     for realAtomId in _atomIds:
                         if lenAtomIds == 1:
-                            if re.match(_atomId, realAtomId):
+                            if re.match(atomId_ex, realAtomId):
                                 if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
                                     continue
                                 _atomIdSelect.add(realAtomId)
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 matched = True
                             elif details is None:
-                                if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):  # len(atomIds) == 1 to allow map HR# to H[DE][12]
+                                if len(atomIds) == 1 and not re.match(tmpAtomId_ex, atomIds[0]):  # len(atomIds) == 1 to allow map HR# to H[DE][12]
                                     continue
                                 _atomIdSelect |= set(atomIds)
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
@@ -4894,9 +4903,8 @@ class BaseStackedMRParserListener():
                                                 continue
                                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                         if coordAtomSite is not None:
-                                            __atomId = toNefEx(toRegEx(tmpAtomId))
                                             for realAtomId in coordAtomSite['atom_id']:
-                                                if re.match(_atomId, realAtomId) or re.match(__atomId, realAtomId):
+                                                if re.match(atomId_ex, realAtomId) or re.match(tmpAtomId_ex, realAtomId):
                                                     if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
                                                         continue
                                                     _atomIdSelect.add(realAtomId)
@@ -4915,9 +4923,8 @@ class BaseStackedMRParserListener():
                                                     continue
                                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                             if coordAtomSite is not None:
-                                                __atomId = toNefEx(toRegEx(tmpAtomId))
                                                 for realAtomId in coordAtomSite['atom_id']:
-                                                    if re.match(_atomId, realAtomId) or re.match(__atomId, realAtomId):
+                                                    if re.match(atomId_ex, realAtomId) or re.match(tmpAtomId_ex, realAtomId):
                                                         if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
                                                             continue
                                                         _atomIdSelect.add(realAtomId)
@@ -5065,22 +5072,23 @@ class BaseStackedMRParserListener():
                             atomIds, _, details = self.nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                             if details is not None:
                                 atomIds, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
-                            _atomId = toNefEx(toRegEx(atomId))
+                            atomId_ex = toNefEx(toRegEx(atomId))
+                            tmpAtomId_ex = toNefEx(toRegEx(tmpAtomId))
                         elif lenAtomIds == 2:
                             atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
                             atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
                         _atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
                         if lenAtomIds == 1 and nucleotide:
-                            _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
+                            _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(atomId_ex, _atomId_)]
                         for realAtomId in _atomIds:
                             if lenAtomIds == 1:
-                                if re.match(_atomId, realAtomId):
+                                if re.match(atomId_ex, realAtomId):
                                     if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
                                         continue
                                     _atomIdSelect.add(realAtomId)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 elif details is None:
-                                    if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
+                                    if len(atomIds) == 1 and not re.match(tmpAtomId_ex, atomIds[0]):
                                         continue
                                     _atomIdSelect |= set(atomIds)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
@@ -5141,10 +5149,11 @@ class BaseStackedMRParserListener():
                             if realSeqId is None:
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                                seqId = _factor['seq_id'][0]
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
-                                    if _factor['seq_id'][0] not in np['seq_id']:
+                                    if seqId not in np['seq_id']:
                                         continue
-                                    realSeqId = np['auth_seq_id'][np['seq_id'].index(_factor['seq_id'][0])]
+                                    realSeqId = np['auth_seq_id'][np['seq_id'].index(seqId)]
                             idx = np['auth_seq_id'].index(realSeqId)
                             realCompId = self.getRealCompId(np['comp_id'][idx])
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -5362,10 +5371,11 @@ class BaseStackedMRParserListener():
                             if realSeqId is None:
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                                seqId = _factor['seq_id'][0]
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
-                                    if _factor['seq_id'][0] not in np['seq_id']:
+                                    if seqId not in np['seq_id']:
                                         continue
-                                    realSeqId = np['auth_seq_id'][np['seq_id'].index(_factor['seq_id'][0])]
+                                    realSeqId = np['auth_seq_id'][np['seq_id'].index(seqId)]
                             idx = np['auth_seq_id'].index(realSeqId)
                             realCompId = self.getRealCompId(np['comp_id'][idx])
                             origCompId = np['auth_comp_id'][idx]
@@ -6349,8 +6359,8 @@ class BaseStackedMRParserListener():
                             if atomId in atomSiteAtomId:
                                 atomIds = [atomId]
                             elif 'alt_atom_id' in _factor:
-                                _atomId_ = toNefEx(toRegEx(_factor['alt_atom_id']))
-                                _atomIds_ = [_atomId for _atomId in atomSiteAtomId if re.match(_atomId_, _atomId)]
+                                altAtomId_ex = toNefEx(toRegEx(_factor['alt_atom_id']))
+                                _atomIds_ = [_atomId for _atomId in atomSiteAtomId if re.match(altAtomId_ex, _atomId)]
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
                             elif seqId == 1 and atomId == 'H1' and self.csStat.peptideLike(compId) and 'H' in atomSiteAtomId:

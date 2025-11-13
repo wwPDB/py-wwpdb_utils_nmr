@@ -6,6 +6,7 @@
 # 07-Apr-2020  M. Yokochi - re-write Zukang's version to being aware of multiple datablocks
 # 30-May-2024  M. Yokochi - resolve duplication of datablock/saveframe name (DAOTHER-9437)
 # 16-Jan-2025  M. Yokochi - abandon symbolic label representations in mmCIF for mutual format conversion
+# 13-Nov-2025  M. Yokochi - add appendAttributeExtendRows() (DAOTHER-8905)
 ##
 """ A collection of classes for manipulating CIF files containing multiple datablocks.
 """
@@ -29,13 +30,6 @@ from mmcif.io.PdbxWriter import PdbxWriter
 
 
 label_symbol_pattern = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
-
-
-def get_ext_block_name(name: str, ext: int = 1) -> str:
-    """ Return unique block name avoiding duplication.
-    """
-
-    return name if ext == 1 else f'{name}_{ext}'
 
 
 def abandon_symbolic_labels(containerList: list):
@@ -67,6 +61,12 @@ class mmCIFUtil:
                  '__dBlockList',
                  '__dBlockNameList',
                  '__dBlockMap')
+
+    def __get_ext_block_name(self, name: str, ext: int = 1) -> str:  # pylint: disable=no-self-use
+        """ Return unique block name avoiding duplication.
+        """
+
+        return name if ext == 1 else f'{name}_{ext}'
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr, filePath: Optional[str] = None):
         self.__class_name__ = self.__class__.__name__
@@ -111,7 +111,7 @@ class mmCIFUtil:
                         else:
                             ext = 2
                             while True:
-                                extBlockName = get_ext_block_name(blockName, ext)
+                                extBlockName = self.__get_ext_block_name(blockName, ext)
                                 if extBlockName not in self.__dBlockMap:
                                     self.__dBlockMap[extBlockName] = idx
                                     break
@@ -143,7 +143,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return None
 
-        return self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]]
+        return self.__dBlockList[self.__dBlockMap[self.__get_ext_block_name(blockName, ext)]]
 
     def getDataBlockStructure(self, blockName: str, ext: int = 1) -> dict:
         """ Get a dictionary {category_name: {"Items": attributes, "Values": rows}}
@@ -294,7 +294,7 @@ class mmCIFUtil:
         """ Add a datablock.
         """
 
-        self.__dBlockMap[get_ext_block_name(blockName, ext)] = len(self.__dBlockList)
+        self.__dBlockMap[self.__get_ext_block_name(blockName, ext)] = len(self.__dBlockList)
         self.__dBlockList.append(DataContainer(blockName))
         self.__dBlockNameList.append(blockName)
 
@@ -319,7 +319,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        idx = self.__dBlockMap[get_ext_block_name(blockName, ext)]
+        idx = self.__dBlockMap[self.__get_ext_block_name(blockName, ext)]
 
         catObj = self.__dBlockList[idx].getObj(catName)
 
@@ -335,7 +335,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        idx = self.__dBlockMap[get_ext_block_name(blockName, ext)]
+        idx = self.__dBlockMap[self.__get_ext_block_name(blockName, ext)]
 
         catObj = self.__dBlockList[idx].getObj(catName)
 
@@ -353,6 +353,20 @@ class mmCIFUtil:
 
         for _catObj in _catObjList:
             self.__dBlockList[idx].append(_catObj)
+
+    def appendAttributeExtendRows(self, blockName: str, catName: str, attr: str, defaultValue="?", ext: int = 1):
+        """ Append an attribute in a given datablock and category.
+        """
+
+        if blockName not in self.__dBlockMap:
+            return
+
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
+
+        if catObj is None:
+            return
+
+        catObj.appendAttributeExtendRows(attr, defaultValue)
 
     def appendRow(self, blockName: str, catName: str, row: list, ext: int = 1):
         """ Append a row in a given datablock and category.

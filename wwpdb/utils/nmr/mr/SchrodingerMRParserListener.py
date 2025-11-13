@@ -26,8 +26,7 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.SchrodingerMRParser import SchrodingerMRParser
-    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
-                                                                deepcopy)
+    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        hasInterChainRestraint,
                                                        isIdenticalRestraint,
@@ -55,6 +54,7 @@ try:
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            monDict3,
+                                           deepcopy,
                                            getOneLetterCode,
                                            protonBeginCode,
                                            updatePolySeqRstFromAtomSelectionSet)
@@ -63,8 +63,7 @@ try:
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.SchrodingerMRParser import SchrodingerMRParser
-    from nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
-                                                    deepcopy)
+    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
@@ -92,6 +91,7 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (emptyValue,
                                monDict3,
+                               deepcopy,
                                getOneLetterCode,
                                protonBeginCode,
                                updatePolySeqRstFromAtomSelectionSet)

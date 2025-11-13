@@ -25,8 +25,7 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CharmmMRParser import CharmmMRParser
-    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
-                                                                deepcopy)
+    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        translateToStdAtomName,
                                                        hasInterChainRestraint,
@@ -56,14 +55,14 @@ try:
                                                        PTNR2_AUTH_ATOM_DATA_ITEMS,
                                                        NMR_STAR_LP_KEY_ITEMS)
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
+                                           deepcopy)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance)
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.CharmmMRParser import CharmmMRParser
-    from nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
-                                                    deepcopy)
+    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
@@ -92,7 +91,8 @@ except ImportError:
                                            PTNR2_AUTH_ATOM_DATA_ITEMS,
                                            NMR_STAR_LP_KEY_ITEMS)
     from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import emptyValue
+    from nmr.AlignUtil import (emptyValue,
+                               deepcopy)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance)
 

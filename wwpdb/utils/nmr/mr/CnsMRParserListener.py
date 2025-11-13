@@ -28,8 +28,7 @@ try:
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
                                                                 CS_ERROR_MIN,
-                                                                CS_ERROR_MAX,
-                                                                deepcopy)
+                                                                CS_ERROR_MAX)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        translateToStdAtomName,
                                                        hasInterChainRestraint,
@@ -71,7 +70,8 @@ try:
                                            emptyValue,
                                            protonBeginCode,
                                            jcoupBbPairCode,
-                                           rdcBbPairCode)
+                                           rdcBbPairCode,
+                                           deepcopy)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance)
 except ImportError:
@@ -79,8 +79,7 @@ except ImportError:
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
                                                     CS_ERROR_MIN,
-                                                    CS_ERROR_MAX,
-                                                    deepcopy)
+                                                    CS_ERROR_MAX)
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
@@ -121,7 +120,8 @@ except ImportError:
                                emptyValue,
                                protonBeginCode,
                                jcoupBbPairCode,
-                               rdcBbPairCode)
+                               rdcBbPairCode,
+                               deepcopy)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance)
 

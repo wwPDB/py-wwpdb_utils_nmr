@@ -18,7 +18,6 @@ import copy
 import json
 import re
 import io
-import pickle
 
 from itertools import zip_longest
 from typing import Any, List, Tuple, Optional
@@ -97,11 +96,26 @@ LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
 # maximum number of magnetically identifiable chain IDs
 MAX_MAG_IDENT_ASYM_ID = 2
 
+try:
 
-def deepcopy(data: Any) -> Any:
-    """ Pickle-based deepcopy function replacing slow copy.deepcopy().
-    """
-    return pickle.loads(pickle.dumps(data, protocol=5))
+    import quickle  # pylint: disable=import-outside-toplevel
+
+    __qklEncoder = quickle.Encoder()
+    __qklDecoder = quickle.Decoder()
+
+    def deepcopy(data: Any) -> Any:
+        """ Quickle-based deepcopy function replacing slow copy.deepcopy().
+        """
+        return __qklDecoder.loads(__qklEncoder.dumps(data))
+
+except ImportError:
+
+    import pickle  # pylint: disable=import-outside-toplevel
+
+    def deepcopy(data: Any) -> Any:
+        """ Pickle-based deepcopy function replacing slow copy.deepcopy().
+        """
+        return pickle.loads(pickle.dumps(data, protocol=5))
 
 
 def hasLargeInnerSeqGap(polySeq: dict, seqIdName: str = 'seq_id') -> bool:

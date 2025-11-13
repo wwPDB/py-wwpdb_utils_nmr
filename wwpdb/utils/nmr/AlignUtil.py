@@ -111,11 +111,16 @@ try:
 except ImportError:
 
     import pickle  # pylint: disable=import-outside-toplevel
+    from packaging import version  # pylint: disable=import-outside-toplevel
+
+    __protocol__ =\
+        5 if version.parse(f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')\
+        >= version.parse("3.8.0") else 4
 
     def deepcopy(data: Any) -> Any:
         """ Pickle-based deepcopy function replacing slow copy.deepcopy().
         """
-        return pickle.loads(pickle.dumps(data, protocol=5))
+        return pickle.loads(pickle.dumps(data, protocol=__protocol__))
 
 
 def hasLargeInnerSeqGap(polySeq: dict, seqIdName: str = 'seq_id') -> bool:

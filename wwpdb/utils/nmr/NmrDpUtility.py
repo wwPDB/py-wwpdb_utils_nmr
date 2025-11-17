@@ -34743,6 +34743,9 @@ class NmrDpUtility:
         atom_id_1_col = loop.tags.index('Auth_atom_ID_1')
 
         ref_chain_id_1_col = loop.tags.index('Entity_assembly_ID_1')
+        ref_seq_id_1_col = loop.tags.index('Comp_index_ID_1')
+        ref_comp_id_1_col = loop.tags.index('Comp_ID_1')
+        ref_atom_id_1_col = loop.tags.index('Atom_ID_1')
 
         chain_id_2_col = loop.tags.index('Auth_asym_ID_2')
         seq_id_2_col = loop.tags.index('Auth_seq_ID_2')
@@ -34750,6 +34753,9 @@ class NmrDpUtility:
         atom_id_2_col = loop.tags.index('Auth_atom_ID_2')
 
         ref_chain_id_2_col = loop.tags.index('Entity_assembly_ID_2')
+        ref_seq_id_2_col = loop.tags.index('Comp_index_ID_2')
+        ref_comp_id_2_col = loop.tags.index('Comp_ID_2')
+        ref_atom_id_2_col = loop.tags.index('Atom_ID_2')
 
         target_val_col = loop.tags.index('Target_val') if 'Target_val' in loop.tags else -1
         target_val_err_col = loop.tags.index('Target_val_uncertainty') if 'Target_val_uncertainty' in loop.tags else -1
@@ -34758,6 +34764,32 @@ class NmrDpUtility:
         lower_limit_col = loop.tags.index('Distance_lower_bound_val') if 'Distance_lower_bound_val' in loop.tags else -1
         upper_limit_col = loop.tags.index('Distance_upper_bound_val') if 'Distance_upper_bound_val' in loop.tags else -1
         weight_col = loop.tags.index('Weight') if 'Weight' in loop.tags else -1
+
+        cs_loops = self.__lp_data['chem_shift']
+
+        def get_cs_value(atom):
+            if cs_loops is None or len(cs_loops) == 0 or len(atom) == 0:
+                return None
+
+            chain_id = atom['ref_chain_id']
+            if isinstance(chain_id, int):
+                chain_id = str(chain_id)
+            seq_id = atom['ref_seq_id']
+            comp_id = atom['ref_comp_id']
+            atom_id = atom['ref_atom_id']
+
+            _atom_ids = self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+            for lp in cs_loops:
+                row = next((row for row in lp['data']
+                            if row['Entity_assembly_ID'] == chain_id and row['Comp_index_ID'] == seq_id
+                            and row['Comp_ID'] == comp_id and row['Atom_ID'] in _atom_ids), None)
+
+                if row is not None:
+                    val = row['Val']
+                    return val if val not in emptyValue else None
+
+            return None
 
         def concat_target_val(row):
             return (str(row[target_val_col]) if target_val_col != -1 else '')\
@@ -34768,7 +34800,7 @@ class NmrDpUtility:
                 + (str(row[upper_limit_col]) if upper_limit_col != -1 else '')\
                 + (str(row[weight_col]) if weight_col != -1 else '')
 
-        _rest_id = _member_logic_code = None
+        _rest_id = _member_logic_code = _cs_val1 = _cs_val2 = None
         _atom1, _atom2 = {}, {}
         _values = ''
 
@@ -34799,7 +34831,10 @@ class NmrDpUtility:
                              'seq_id': int(row[seq_id_1_col]),
                              'comp_id': row[comp_id_1_col],
                              'atom_id': row[atom_id_1_col],
-                             'ref_chain_id': row[ref_chain_id_1_col]}
+                             'ref_chain_id': row[ref_chain_id_1_col],
+                             'ref_seq_id': int(row[ref_seq_id_1_col]),
+                             'ref_comp_id': row[ref_comp_id_1_col],
+                             'ref_atom_id': row[ref_atom_id_1_col]}
                 except (ValueError, TypeError):
                     atom1 = {}
 
@@ -34808,9 +34843,15 @@ class NmrDpUtility:
                              'seq_id': int(row[seq_id_2_col]),
                              'comp_id': row[comp_id_2_col],
                              'atom_id': row[atom_id_2_col],
-                             'ref_chain_id': row[ref_chain_id_2_col]}
+                             'ref_chain_id': row[ref_chain_id_2_col],
+                             'ref_seq_id': int(row[ref_seq_id_2_col]),
+                             'ref_comp_id': row[ref_comp_id_2_col],
+                             'ref_atom_id': row[ref_atom_id_2_col]}
                 except (ValueError, TypeError):
                     atom2 = {}
+
+                cs_val1 = get_cs_value(atom1)
+                cs_val2 = get_cs_value(atom2)
 
                 if member_id not in emptyValue:
                     has_member_id = True
@@ -34819,6 +34860,9 @@ class NmrDpUtility:
                     pass
 
                 elif rest_id != _rest_id and len(atom1) > 0 and len(atom2) > 0:
+
+                    diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
+                    diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
 
                     if member_id in emptyValue or member_logic_code == 'OR':
 
@@ -34829,24 +34873,31 @@ class NmrDpUtility:
                                      and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])
                                     or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat)
                                         and atom2['ref_chain_id'] != _atom1['ref_chain_id'] and atom1['comp_id'] == _atom1['comp_id']))):
-                            try:
 
-                                _row[member_logic_code_col] = 'OR'
-
-                                if _member_logic_code in emptyValue:
-                                    lp.data[-1][member_logic_code_col] = 'OR'
-
-                            except IndexError:
+                            if (not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and diff_cs_val1)\
+                               or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat) and diff_cs_val2):
                                 pass
 
-                            sf_item['id'] -= 1
+                            else:
 
-                            modified = True
+                                try:
+
+                                    _row[member_logic_code_col] = 'OR'
+
+                                    if _member_logic_code in emptyValue:
+                                        lp.data[-1][member_logic_code_col] = 'OR'
+
+                                except IndexError:
+                                    pass
+
+                                sf_item['id'] -= 1
+
+                                modified = True
 
                 elif member_logic_code != 'AND':
 
-                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
-                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
+                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and not diff_cs_val1\
+                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat) and not diff_cs_val2:
 
                         if member_logic_code in emptyValue:
                             modified = True
@@ -34865,7 +34916,8 @@ class NmrDpUtility:
 
                     sf_item['id'] -= 1
 
-                _rest_id, _member_logic_code, _atom1, _atom2, _values = rest_id, member_logic_code, atom1, atom2, values
+                _rest_id, _member_logic_code, _atom1, _atom2, _values, _cs_val1, _cs_val2 =\
+                    rest_id, member_logic_code, atom1, atom2, values, cs_val1, cs_val2
 
             except ValueError:
                 _atom1, _atom2 = {}, {}

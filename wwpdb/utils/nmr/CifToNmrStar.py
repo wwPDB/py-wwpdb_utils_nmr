@@ -1037,8 +1037,9 @@ class CifToNmrStar:
                     self.set_local_sf_id(sf, list_id_dict[sf.category]
                                          if isinstance(list_id, int) or list_id.isdigit() else list_id)
 
-            has_eff_sf_tag = any(tag[1] not in emptyValue for tag in sf.tags
-                                 if tag[0] not in ('Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID'))
+            has_eff_sf_tag = any(True for tag in sf.tags
+                                 if tag[0] not in ('Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID')
+                                 and tag[1] not in emptyValue)
 
             if sf.category == 'NMR_spectrometer_expt':
                 if get_first_sf_tag(sf, 'Name') in emptyValue:
@@ -1127,8 +1128,9 @@ class CifToNmrStar:
                             empty_row_idx.append(idx)
                             continue
 
-                    if any(row[col] not in emptyValue for col in range(len(row))
-                           if col not in (entry_id_col, sf_id_col, list_id_col, id_col)):
+                    if any(True for col in range(len(row))
+                           if col not in (entry_id_col, sf_id_col, list_id_col, id_col)
+                           and row[col] not in emptyValue):
                         continue
 
                     empty_row_idx.append(idx)
@@ -1169,8 +1171,9 @@ class CifToNmrStar:
 
         for sf in strData.frame_list:
 
-            has_eff_sf_tag = any(tag[1] not in emptyValue for tag in sf.tags
-                                 if tag[0] not in ('sf_category', 'sf_framecode'))
+            has_eff_sf_tag = any(True for tag in sf.tags
+                                 if tag[0] not in ('sf_category', 'sf_framecode')
+                                 and tag[1] not in emptyValue)
 
             if len(get_first_sf_tag(sf, 'sf_framecode')) == 0:
                 has_eff_sf_tag = False
@@ -1190,7 +1193,7 @@ class CifToNmrStar:
 
                 for idx, row in enumerate(lp):
 
-                    if any(row[col] not in emptyValue for col in range(len(row)) if col != id_col):
+                    if any(True for col in range(len(row)) if col != id_col and row[col] not in emptyValue):
                         continue
 
                     empty_row_idx.append(idx)

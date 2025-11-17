@@ -28,6 +28,8 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
                                                        translateToStdAtomName,
                                                        translateToLigandName,
                                                        isCyclicPolymer,
@@ -105,6 +107,8 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
                                            translateToStdAtomName,
                                            translateToLigandName,
                                            isCyclicPolymer,
@@ -1053,6 +1057,12 @@ class BaseLinearMRParserListener():
 
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
+
+            self.translateToStdResNameWrapper.cache_clear()
+            self.__getCoordAtomSiteOf.cache_clear()
+
+            translateToStdAtomNameNoRef.cache_clear()
+            translateToStdAtomNameWithRef.cache_clear()
 
     def validateDistanceRange(self, weight: float, target_value: Optional[float],
                               lower_limit: Optional[float], upper_limit: Optional[float],

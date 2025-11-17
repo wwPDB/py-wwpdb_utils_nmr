@@ -2521,14 +2521,14 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                            refAtomIdList: Optional[List[str]] = None,
                            ccU=None, unambig: bool = False) -> str:
     atomId = atomId.upper()
-    return __translateToStdAtomNameNoRef(atomId, refCompId, ccU, unambig)\
+    return translateToStdAtomNameNoRef(atomId, refCompId, ccU, unambig)\
         if refAtomIdList is None or len(refAtomIdList) == 0 else\
-        __translateToStdAtomNameWithRef(atomId, refCompId, ','.join(refAtomIdList), ccU, unambig)
+        translateToStdAtomNameWithRef(atomId, refCompId, ','.join(refAtomIdList), ccU, unambig)
 
 
 @functools.lru_cache(maxsize=2048)
-def __translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
-                                  ccU=None, unambig: bool = False) -> str:
+def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
+                                ccU=None, unambig: bool = False) -> str:
     """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
@@ -3094,9 +3094,9 @@ def __translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
 
 
 @functools.lru_cache(maxsize=2048)
-def __translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
-                                    refAtomIdList_concat: str = None,
-                                    ccU=None, unambig: bool = False) -> str:
+def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
+                                  refAtomIdList_concat: str = None,
+                                  ccU=None, unambig: bool = False) -> str:
     """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
@@ -4465,7 +4465,6 @@ def translateToStdAtomNameOfDmpc(atomId: str, dmpcNameSystemId: int = -1) -> str
     return atomId
 
 
-@functools.lru_cache(maxsize=128)
 def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None) -> str:
     """ Translate software specific residue name to standard residue name of CCD.
     """
@@ -4631,7 +4630,6 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
     return compId
 
 
-@functools.lru_cache(maxsize=128)
 def backTranslateFromStdResName(compId: str) -> Set[str]:
     """ Back translate standard residue name to software specific name.
     """
@@ -4675,7 +4673,6 @@ def backTranslateFromStdResName(compId: str) -> Set[str]:
     return set()
 
 
-@functools.lru_cache(maxsize=128)
 def translateToLigandName(compId: str, refCompId: str, ccU) -> str:
     """ Translate software specific ligand name if possible.
     """
@@ -7709,7 +7706,6 @@ def fixBackboneAtomsOfDihedralRestraint(angleName: str, atoms: List[dict], curre
     return angleName, atoms[1], atoms[2], msg
 
 
-@functools.lru_cache(maxsize=128)
 def isLikePheOrTyr(compId: str, ccU) -> bool:
     """ Return whether a given comp_id is amino acid with flippable symmetrical ring like phenylalanine or tryrosine.
     """
@@ -7730,7 +7726,6 @@ def isLikePheOrTyr(compId: str, ccU) -> bool:
     return False
 
 
-@functools.lru_cache(maxsize=128)
 def isLikeHis(compId: str, ccU) -> bool:
     """ Return whether a given comp_id is like histigine.
     """
@@ -7805,7 +7800,6 @@ def getRdcCode(atoms: List[dict]) -> Optional[str]:
     return 'RDC_other'
 
 
-@functools.lru_cache(maxsize=128)
 def startsWithPdbRecord(line: str, ignoreRemark: bool = False) -> bool:
     """ Return whether a given line string starts with legacy PDB records.
     """

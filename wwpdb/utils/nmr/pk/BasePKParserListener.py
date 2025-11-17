@@ -29,6 +29,8 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
                                                        translateToLigandName,
                                                        backTranslateFromStdResName,
                                                        hasInterChainRestraint,
@@ -106,6 +108,8 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
                                            translateToLigandName,
                                            backTranslateFromStdResName,
                                            hasInterChainRestraint,
@@ -1112,7 +1116,7 @@ class BasePKParserListener():
             self.altCompIdSet = set()
 
             def is_data(array: list) -> bool:
-                return not any(d in emptyValue for d in array)
+                return not any(True for d in array if d in emptyValue)
 
             for ps in self.polySeq:
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
@@ -1632,6 +1636,12 @@ class BasePKParserListener():
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
             if all('(list_id=1, ' in f for f in self.warningMessage):
                 self.warningMessage = [f.replace('(list_id=1, ', '(') for f in self.warningMessage]
+
+            self.translateToStdResNameWrapper.cache_clear()
+            self.__getCoordAtomSiteOf.cache_clear()
+
+            translateToStdAtomNameNoRef.cache_clear()
+            translateToStdAtomNameWithRef.cache_clear()
 
     def initSpectralDim(self):
         if self.num_of_dim not in (2, 3, 4):
@@ -3248,7 +3258,7 @@ class BasePKParserListener():
 
                 for idx, row in enumerate(dat):
 
-                    if any(row[col] in emptyValue for col in range(10)):
+                    if any(True for col in range(10) if row[col] in emptyValue):
                         continue
 
                     chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
@@ -3790,7 +3800,7 @@ class BasePKParserListener():
                 for idx, row in enumerate(dat):
                     dim_id = row[1]
 
-                    if any(row[col] in emptyValue for col in range(7)):
+                    if any(True for col in range(7) if row[col] in emptyValue):
                         continue
 
                     if dim_id == 1:
@@ -4346,7 +4356,7 @@ class BasePKParserListener():
 
                 for idx, row in enumerate(dat):
 
-                    if any(row[col] in emptyValue for col in range(10)):
+                    if any(True for col in range(10) if row[col] in emptyValue):
                         continue
 
                     chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
@@ -4473,7 +4483,7 @@ class BasePKParserListener():
                 for idx, row in enumerate(dat):
                     dim_id = row[1]
 
-                    if any(row[col] in emptyValue for col in range(7)):
+                    if any(True for col in range(7) if row[col] in emptyValue):
                         continue
 
                     if dim_id == 1:
@@ -4604,7 +4614,7 @@ class BasePKParserListener():
 
                 for idx, row in enumerate(dat):
 
-                    if any(row[col] in emptyValue for col in range(10)):
+                    if any(True for col in range(10) if row[col] in emptyValue):
                         continue
 
                     chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
@@ -4734,7 +4744,7 @@ class BasePKParserListener():
                 for idx, row in enumerate(dat):
                     dim_id = row[1]
 
-                    if any(row[col] in emptyValue for col in range(7)):
+                    if any(True for col in range(7) if row[col] in emptyValue):
                         continue
 
                     if dim_id == 1:
@@ -5378,7 +5388,7 @@ class BasePKParserListener():
                 hasChainId = all(all(_a['chain_id'] is not None for _a in a) for a in assignments)
                 hasCompId = all(all(_a['comp_id'] is not None for _a in a) for a in assignments)
 
-                has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
+                has_multiple_assignments = any(True for assignment in assignments if len(assignment) > 1)
 
                 pairs = []
                 if len(assignments[0]) == len(assignments[1]):
@@ -5512,7 +5522,7 @@ class BasePKParserListener():
                 hasChainId = all(all(_a['chain_id'] is not None for _a in a) for a in assignments)
                 hasCompId = all(all(_a['comp_id'] is not None for _a in a) for a in assignments)
 
-                has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
+                has_multiple_assignments = any(True for assignment in assignments if len(assignment) > 1)
 
                 pairs = []
                 if len(assignments[0]) == len(assignments[1]) == len(assignments[2]):
@@ -5653,7 +5663,7 @@ class BasePKParserListener():
                 hasChainId = all(all(_a['chain_id'] is not None for _a in a) for a in assignments)
                 hasCompId = all(all(_a['comp_id'] is not None for _a in a) for a in assignments)
 
-                has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
+                has_multiple_assignments = any(True for assignment in assignments if len(assignment) > 1)
 
                 pairs = []
                 if len(assignments[0]) == len(assignments[1]) == len(assignments[2]) == len(assignments[3]):

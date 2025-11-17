@@ -2202,8 +2202,8 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__distRestDict.items():
 
-                has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
-                has_member_id = any(r for r in restraints if r['member_id'] is not None)
+                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
+                has_member_id = any(True for r in restraints if r['member_id'] is not None)
 
                 self.__distRestDictWithCombKey[rest_key] = {}
 
@@ -2416,7 +2416,7 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__dihedRestDict.items():
 
-                has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
+                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
 
                 self.__dihedRestDictWithCombKey[rest_key] = {}
 
@@ -2577,7 +2577,7 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__rdcRestDict.items():
 
-                has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
+                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
 
                 self.__rdcRestDictWithCombKey[rest_key] = {}
 

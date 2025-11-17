@@ -30,6 +30,8 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (stripQuot,
                                                        coordAssemblyChecker,
                                                        translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
                                                        translateToStdResName,
                                                        translateToLigandName,
                                                        guessCompIdFromAtomIdWoLimit,
@@ -107,6 +109,8 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (stripQuot,
                                            coordAssemblyChecker,
                                            translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
                                            translateToStdResName,
                                            translateToLigandName,
                                            guessCompIdFromAtomIdWoLimit,
@@ -1034,6 +1038,13 @@ class AmberMRParserListener(ParseTreeListener):
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
+
+            self.guessChainIdFromCompId.cache_clear()
+            self.__getCoordAtomSiteOf.cache_clear()
+            self.translateToStdResNameWrapper.cache_clear()
+
+            translateToStdAtomNameNoRef.cache_clear()
+            translateToStdAtomNameWithRef.cache_clear()
 
     # Enter a parse tree produced by AmberMRParser#comment.
     def enterComment(self, ctx: AmberMRParser.CommentContext):  # pylint: disable=unused-argument

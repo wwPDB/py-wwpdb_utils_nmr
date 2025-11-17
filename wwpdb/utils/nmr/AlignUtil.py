@@ -946,7 +946,7 @@ def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
 
         for pos, ps in enumerate(polySeqRst):
             seqIds = [seqId for seqId in ps['seq_id']
-                      if not any(item for item in remapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)]
+                      if not any(True for item in remapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)]
 
             if len(seqIds) == 0:
                 continue
@@ -1133,7 +1133,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
             if i2 >= LEN_LARGE_ASYM_ID:
                 continue
 
-            not_decided_ps2_comp_id = any(c2 for c2 in ps2['comp_id'] if c2.endswith('?'))  # AMBER/GROMACS topology
+            not_decided_ps2_comp_id = any(True for c2 in ps2['comp_id'] if c2.endswith('?'))  # AMBER/GROMACS topology
             if not_decided_ps2_comp_id:
                 ps2['comp_id'] = [c2[:-1] if c2.endswith('?') else c2 for c2 in ps2['comp_id']]
                 if len(ps1['comp_id']) == len(ps2['comp_id']):
@@ -1189,7 +1189,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(_myAlign)
 
                     if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
-                        if any(comp_id in emptyValue for comp_id in ps2['comp_id']):
+                        if any(True for comp_id in ps2['comp_id'] if comp_id in emptyValue):
                             valid_comp_ids = set()  # 2mze: ensure that comp_id_mapping has no side effect
                             comp_id_mapping = {}
                             for comp_id, alt_comp_id in zip(ps1['comp_id'], ps1['alt_comp_id']):
@@ -1263,7 +1263,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                         beg = ps2['seq_id'].index(s_p)
                         end = ps2['seq_id'].index(s_q)
                         comp_ids = ps2['comp_id'][beg + 1:end]
-                        if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                        if not any(True for comp_id in comp_ids if comp_id != '.'):
                             ps2['seq_id'] = ps2['seq_id'][:beg + 1] + ps2['seq_id'][end:]
                             ps2['comp_id'] = ps2['comp_id'][:beg + 1] + ps2['comp_id'][end:]
                             if 'auth_comp_id' in ps2:
@@ -1272,7 +1272,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                         beg = _ps2['seq_id'].index(s_p)
                         end = _ps2['seq_id'].index(s_q)
                         comp_ids = _ps2['comp_id'][beg + 1:end]
-                        if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                        if not any(True for comp_id in comp_ids if comp_id != '.'):
                             _ps2['seq_id'] = _ps2['seq_id'][:beg + 1] + _ps2['seq_id'][end:]
                             _ps2['comp_id'] = _ps2['comp_id'][:beg + 1] + _ps2['comp_id'][end:]
                             if 'auth_comp_id' in _ps2:
@@ -1293,7 +1293,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                             beg = __ps2['seq_id'].index(s_p)
                             end = __ps2['seq_id'].index(s_q)
                             comp_ids = __ps2['comp_id'][beg + 1:end]
-                            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                            if not any(True for comp_id in comp_ids if comp_id != '.'):
                                 __ps2['seq_id'] = __ps2['seq_id'][:beg + 1] + __ps2['seq_id'][end:]
                                 __ps2['comp_id'] = __ps2['comp_id'][:beg + 1] + __ps2['comp_id'][end:]
                                 if 'auth_comp_id' in __ps2:
@@ -1352,7 +1352,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                             beg = ps2['seq_id'].index(s_p)
                             end = ps2['seq_id'].index(s_q)
                             comp_ids = ps2['comp_id'][beg + 1:end]
-                            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                            if not any(True for comp_id in comp_ids if comp_id != '.'):
                                 truncated = (s_p, s_q)
                                 break
 
@@ -1531,7 +1531,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
             end = ps['seq_id'].index(s_q)
             comp_ids = ps['comp_id'][beg + 1:end]
 
-            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+            if not any(True for comp_id in comp_ids if comp_id != '.'):
                 ps['seq_id'] = ps['seq_id'][:beg + 1] + ps['seq_id'][end:]
                 ps['comp_id'] = ps['comp_id'][:beg + 1] + ps['comp_id'][end:]
                 if 'auth_comp_id' in ps:
@@ -1592,7 +1592,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
             if i2 >= LEN_LARGE_ASYM_ID:
                 continue
 
-            not_decided_ps2_comp_id = any(c2 for c2 in ps2['comp_id'] if c2.endswith('?'))  # AMBER/GROMACS topology
+            not_decided_ps2_comp_id = any(True for c2 in ps2['comp_id'] if c2.endswith('?'))  # AMBER/GROMACS topology
             if not_decided_ps2_comp_id:
                 ps2 = deepcopy(ps2)
                 ps2['comp_id'] = [c2[:-1] if c2.endswith('?') else c2 for c2 in ps2['comp_id']]
@@ -1655,7 +1655,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                         beg = ps2['seq_id'].index(s_p)
                         end = ps2['seq_id'].index(s_q)
                         comp_ids = ps2['comp_id'][beg + 1:end]
-                        if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                        if not any(True for comp_id in comp_ids if comp_id != '.'):
                             ps2['seq_id'] = ps2['seq_id'][:beg + 1] + ps2['seq_id'][end:]
                             ps2['comp_id'] = ps2['comp_id'][:beg + 1] + ps2['comp_id'][end:]
                             if 'auth_comp_id' in ps2:
@@ -1664,7 +1664,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                         beg = _ps2['seq_id'].index(s_p)
                         end = _ps2['seq_id'].index(s_q)
                         comp_ids = _ps2['comp_id'][beg + 1:end]
-                        if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                        if not any(True for comp_id in comp_ids if comp_id != '.'):
                             _ps2['seq_id'] = _ps2['seq_id'][:beg + 1] + _ps2['seq_id'][end:]
                             _ps2['comp_id'] = _ps2['comp_id'][:beg + 1] + _ps2['comp_id'][end:]
                             if 'auth_comp_id' in _ps2:
@@ -1685,7 +1685,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                             beg = __ps2['seq_id'].index(s_p)
                             end = __ps2['seq_id'].index(s_q)
                             comp_ids = __ps2['comp_id'][beg + 1:end]
-                            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                            if not any(True for comp_id in comp_ids if comp_id != '.'):
                                 __ps2['seq_id'] = __ps2['seq_id'][:beg + 1] + __ps2['seq_id'][end:]
                                 __ps2['comp_id'] = __ps2['comp_id'][:beg + 1] + __ps2['comp_id'][end:]
                                 if 'auth_comp_id' in __ps2:
@@ -1744,7 +1744,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                             beg = ps2['seq_id'].index(s_p)
                             end = ps2['seq_id'].index(s_q)
                             comp_ids = ps2['comp_id'][beg + 1:end]
-                            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                            if not any(True for comp_id in comp_ids if comp_id != '.'):
                                 truncated = (s_p, s_q)
                                 break
 
@@ -1869,7 +1869,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
             end = ps['seq_id'].index(s_q)
             comp_ids = ps['comp_id'][beg + 1:end]
 
-            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+            if not any(True for comp_id in comp_ids if comp_id != '.'):
                 ps['seq_id'] = ps['seq_id'][:beg + 1] + ps['seq_id'][end:]
                 ps['comp_id'] = ps['comp_id'][:beg + 1] + ps['comp_id'][end:]
                 if 'auth_comp_id' in ps:
@@ -2143,7 +2143,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
 
     if len(chainAssign) > 0 and len(polySeqModel) > 1:
 
-        if any(ps for ps in polySeqModel if 'identical_auth_chain_id' in ps):
+        if any(True for ps in polySeqModel if 'identical_auth_chain_id' in ps):
 
             _chainAssign = copy.copy(chainAssign)
 
@@ -2160,7 +2160,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
 
                     for chain_id in identity:
 
-                        if not any(_ca for _ca in chainAssign if _ca['ref_chain_id'] == chain_id):
+                        if not any(True for _ca in chainAssign if _ca['ref_chain_id'] == chain_id):
                             _ca = copy.copy(ca)
                             _ca['ref_chain_id'] = chain_id
                             chainAssign.append(_ca)
@@ -2556,7 +2556,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
     if len(mapping) == 0:
         return atomId
 
-    if any(item for item in mapping
+    if any(True for item in mapping
            if item['original_atom_id'] is not None
            and len(item['original_atom_id']) > 1
            and item['original_atom_id'][0].isdigit()

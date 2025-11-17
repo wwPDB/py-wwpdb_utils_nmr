@@ -162,6 +162,8 @@ try:
                                                        ALLOWED_AMBIGUITY_CODES,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
                                                        isLikePheOrTyr)
 except ImportError:
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
@@ -188,6 +190,8 @@ except ImportError:
                                            ALLOWED_AMBIGUITY_CODES,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
                                            isLikePheOrTyr)
 
 
@@ -590,7 +594,7 @@ def is_empty(array: list) -> bool:
         @return: True for empty data in the array, False otherwise
     """
 
-    return any(d in emptyValue for d in array)
+    return any(True for d in array if d in emptyValue)
 
 
 def is_data(array: list) -> bool:
@@ -599,7 +603,7 @@ def is_data(array: list) -> bool:
         @return: True for no empty data in the array, False for empty data
     """
 
-    return not any(d in emptyValue for d in array)
+    return not any(True for d in array if d in emptyValue)
 
 
 def is_good_data(array: list) -> bool:
@@ -1638,6 +1642,22 @@ class NEFTranslator:
         """
 
         self.__allow_missing_chem_shift = flag
+
+    def cache_clear(self):
+        """ Clear cache.
+        """
+
+        self.__cachedDictForValidStarAtomInXplor = {}
+        self.__cachedDictForValidStarAtom = {}
+        self.__cachedDictForStarAtom = {}
+        self.__cachedDictForNefAtom = {}
+
+        self.validate_comp_atom.cache_clear()
+        self.get_group.cache_clear()
+        self.get_geminal_group.cache_clear()
+
+        translateToStdAtomNameNoRef.cache_clear()
+        translateToStdAtomNameWithRef.cache_clear()
 
     def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict, auth_atom_name_to_id: dict):
         """ Set chem_comp dictionary derived from ParserListerUtil.coordAssemblyChecker().

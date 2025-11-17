@@ -912,7 +912,7 @@ def is_non_metal_element(comp_id: str, atom_id: str) -> bool:
     if comp_id == atom_id:
         return False
 
-    return any(elem for elem in NON_METAL_ELEMENTS if atom_id.startswith(elem))
+    return any(True for elem in NON_METAL_ELEMENTS if atom_id.startswith(elem))
 
 
 def is_half_spin_nuclei(atom_id: str) -> bool:
@@ -920,7 +920,7 @@ def is_half_spin_nuclei(atom_id: str) -> bool:
         @return: True for spin 1/2 nuclei, False otherwise
     """
 
-    return any(nucl for nucl in HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
+    return any(True for nucl in HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
 
 
 def probability_density(value: float, mean: float, stddev: float) -> float:
@@ -1898,7 +1898,7 @@ def get_atom_name_mapping(lp: pynmrstar.Loop, list_of_tags: List[List[str]]) -> 
 
             history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
 
-            if not any(h for h in history if h['atom_name'] == atom_name):
+            if not any(True for h in history if h['atom_name'] == atom_name):
                 history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
 
             h = next(h for h in history if h['atom_name'] == atom_name)
@@ -7792,7 +7792,7 @@ class NmrDpUtility:
             elif type == 'file_list':
                 self.__inputParamDict[name] = [os.path.abspath(f) for f in value]
             elif type == 'file_dict_list':
-                if any(f for f in value if 'original_file_name' in f):
+                if any(True for f in value if 'original_file_name' in f):
                     self.__inputParamDict[name] = []
                     for f in value:
                         if 'original_file_name' in f:
@@ -7953,6 +7953,7 @@ class NmrDpUtility:
         self.__nefT.set_annotation_mode(self.__annotation_mode)
         self.__nefT.set_internal_mode(self.__internal_mode)
         self.__nefT.set_merge_rescue_mode(op == 'nmr-cs-mr-merge')  # DAOTHER-9927
+        self.__nefT.cache_clear()
 
         if not self.__allow_missing_legacy_dist_restraint and self.__remediation_mode:
             self.__nefT.allow_missing_dist_restraint(True)
@@ -8830,7 +8831,7 @@ class NmrDpUtility:
 
             elif not self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message):
 
-                if any(err_message for err_message in message['error'] if 'The mandatory loop' in err_message):
+                if any(True for err_message in message['error'] if 'The mandatory loop' in err_message):
 
                     # NEFTranslator.validate_file() generates this object internally, but not re-used.
                     _, star_data_type, star_data = self.__nefT.read_input_file(srcPath)
@@ -9336,7 +9337,7 @@ class NmrDpUtility:
 
                 if len(message['error']) > 0:
 
-                    if any(err_message for err_message in message['error'] if 'The mandatory loop' in err_message):
+                    if any(True for err_message in message['error'] if 'The mandatory loop' in err_message):
 
                         err = ''
                         for err_message in message['error']:
@@ -9383,7 +9384,7 @@ class NmrDpUtility:
 
         msg_template = "Saveframe improperly terminated at end of file."
 
-        if any(msg for msg in message['error'] if msg_template in msg):
+        if any(True for msg in message['error'] if msg_template in msg):
             warn = msg_template
 
             self.report.warning.appendDescription('corrected_format_issue',
@@ -9405,7 +9406,7 @@ class NmrDpUtility:
 
         msg_template = "Loop improperly terminated at end of file."
 
-        if any(msg for msg in message['error'] if msg_template in msg):
+        if any(True for msg in message['error'] if msg_template in msg):
             warn = msg_template
 
             self.report.warning.appendDescription('corrected_format_issue',
@@ -9425,9 +9426,10 @@ class NmrDpUtility:
                 _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
 
-        msg_template = "Invalid file. NMR-STAR files must start with 'data_' followed by the data name. Did you accidentally select the wrong file?"
+        msg_template = "Invalid file. NMR-STAR files must start with 'data_' followed by the data name. "\
+            "Did you accidentally select the wrong file?"
 
-        if any(msg for msg in message['error'] if msg_template in msg) or (self.__has_legacy_sf_issue and star_data_type == 'Saveframe'):
+        if any(True for msg in message['error'] if msg_template in msg) or (self.__has_legacy_sf_issue and star_data_type == 'Saveframe'):
             warn = 'The datablock must hook saveframe(s).'
 
             self.report.warning.appendDescription('corrected_format_issue',
@@ -9469,7 +9471,7 @@ class NmrDpUtility:
 
         msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'."
 
-        if any(msg for msg in message['error'] if msg_template in msg):
+        if any(True for msg in message['error'] if msg_template in msg):
             warn = 'A saveframe, instead of the datablock, must hook the loop.'
 
             self.report.warning.appendDescription('corrected_format_issue',
@@ -9494,8 +9496,8 @@ class NmrDpUtility:
                 _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
 
-        msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. "\
-            "Perhaps this is a loop that wasn't properly terminated? Illegal value:"
+        msg_template = "Cannot use keywords as data values unless quoted or semi-colon delimited. "\
+            "Perhaps this is a loop that wasn't properly terminated"
 
         try:
 
@@ -9509,10 +9511,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
-            _msg_template = r"Cannot use keywords as data values unless quoted or semi-colon delineated. "\
-                r"Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
-
-            msg_pattern = re.compile(r'^.*' + _msg_template + r".*on line (\d+).*$")
+            msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
 
             try:
 
@@ -9529,6 +9528,8 @@ class NmrDpUtility:
                             ofh.write('stop_\n')
                         ofh.write(line)
                         i += 1
+                    if i == line_num:
+                        ofh.write('stop_\n')
 
                     _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
@@ -9540,7 +9541,7 @@ class NmrDpUtility:
             pass
 
         msg_template = "Cannot have a tag value start with an underscore unless the entire value is quoted. "\
-            "You may be missing a data value on the previous line. Illegal value:"
+            "You may be missing a data value on the previous line"
 
         try:
 
@@ -9691,7 +9692,8 @@ class NmrDpUtility:
         except StopIteration:
             pass
 
-        msg_template = "'save_' must be followed by saveframe name. You have a 'save_' tag which is illegal without a specified saveframe name."
+        msg_template = "'save_' must be followed by saveframe name. You have a 'save_' tag "\
+            "which is illegal without a specified saveframe name."
 
         try:
 
@@ -10252,7 +10254,7 @@ class NmrDpUtility:
 
             if len(message['error']) > 0:
 
-                if any(err_message for err_message in message['error'] if 'The mandatory loop' in err_message):
+                if any(True for err_message in message['error'] if 'The mandatory loop' in err_message):
 
                     err = ''
                     for err_message in message['error']:
@@ -10385,7 +10387,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
@@ -10498,7 +10500,7 @@ class NmrDpUtility:
 
             elif content_subtype == 'chem_shift':
 
-                if any(tag for tag in sf.tags if tag[0] == 'atom_chemical_shift_units'):
+                if any(True for tag in sf.tags if tag[0] == 'atom_chemical_shift_units'):
                     sf.remove_tag('atom_chemical_shift_units')
 
                 try:
@@ -10777,7 +10779,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category)
@@ -11832,7 +11834,7 @@ class NmrDpUtility:
 
                                         if isinstance(name, list):
 
-                                            if any(n for n in name if n != -1):
+                                            if any(True for n in name if n != -1):
                                                 atom_likes += 1
                                             else:
                                                 atom_unlikes += 1
@@ -13537,7 +13539,7 @@ class NmrDpUtility:
             if os.path.isfile(os.path.join(dir_path, div_file_name))\
                and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
                 div_file_path = os.path.join(dir_path, div_file_name)
-                if not any(ar for ar in self.__inputParamDict[ar_file_path_list] if ar['file_name'] == div_file_path):
+                if not any(True for ar in self.__inputParamDict[ar_file_path_list] if ar['file_name'] == div_file_path):
                     os.remove(div_file_path)
 
         if os.path.exists(src_path):
@@ -13732,7 +13734,7 @@ class NmrDpUtility:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        if any(_err_desc for _err_desc in self.__divide_mr_error_message
+        if any(True for _err_desc in self.__divide_mr_error_message
                if err_desc['file_path'] == _err_desc['file_path']
                and err_desc['line_number'] == _err_desc['line_number']
                and err_desc['column_position'] == _err_desc['column_position']
@@ -14662,7 +14664,7 @@ class NmrDpUtility:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        if any(_err_desc for _err_desc in self.__peel_mr_error_message
+        if any(True for _err_desc in self.__peel_mr_error_message
                if err_desc['file_path'] == _err_desc['file_path']
                and err_desc['line_number'] == _err_desc['line_number']
                and err_desc['column_position'] == _err_desc['column_position']
@@ -16733,7 +16735,7 @@ class NmrDpUtility:
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                        if any(True for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
                                             self.__public_mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
@@ -16914,7 +16916,7 @@ class NmrDpUtility:
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                        if any(True for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
                                             self.__public_mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
@@ -17065,7 +17067,7 @@ class NmrDpUtility:
                             input_source_dic = input_source.get()
                             if 'content_subtype' in input_source_dic:
                                 content_subtype = input_source_dic['content_subtype']
-                                if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                if any(True for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
                                     self.__public_mr_has_valid_star_restraint = True
                                     mr_part_paths.append({'nmr-star': mrPath})
 
@@ -17856,7 +17858,7 @@ class NmrDpUtility:
                                         input_source_dic = input_source.get()
                                         if 'content_subtype' in input_source_dic:
                                             content_subtype = input_source_dic['content_subtype']
-                                            if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            if any(True for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
                                                 mr_part_paths.append({'nmr-star': mrPath,
                                                                       'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
@@ -17989,7 +17991,7 @@ class NmrDpUtility:
                                         input_source_dic = input_source.get()
                                         if 'content_subtype' in input_source_dic:
                                             content_subtype = input_source_dic['content_subtype']
-                                            if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            if any(True for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
                                                 mr_part_paths.append({'nmr-star': mrPath,
                                                                       'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
@@ -18807,7 +18809,7 @@ class NmrDpUtility:
                     for list_id, sf in enumerate(self.__star_data[fileListId].get_saveframes_by_category(sf_category), start=1):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         has_poly_seq |= self.__extractPolymerSequenceInLoop__(fileListId, file_name, file_type, content_subtype, sf,
@@ -19504,7 +19506,7 @@ class NmrDpUtility:
                 if get_first_sf_tag(sf, 'sf_framecode') != sf_framecode:
                     continue
 
-                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
                 self.__fixCompIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
@@ -19674,8 +19676,8 @@ class NmrDpUtility:
                             cs_has_alt_comp_id = True
                     else:
                         for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
-                            if not any(len(item) == 3 for item in common_poly_seq[chain_id]
-                                       if item[0] == seq_id + offset_seq_ids[chain_id] and item[1] == comp_id):
+                            if not any(True for item in common_poly_seq[chain_id]
+                                       if item[0] == seq_id + offset_seq_ids[chain_id] and item[1] == comp_id and len(item) == 3):
                                 common_poly_seq[chain_id].add((seq_id + offset_seq_ids[chain_id], comp_id))
 
         asm = []  # molecular assembly of a loop
@@ -20177,7 +20179,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     self.__extractNonStandardResidue__(file_name, sf_framecode, lp_category, input_source)
@@ -21169,7 +21171,7 @@ class NmrDpUtility:
         seq_id_conv_dict = {str(_s2): str(_s1) for _s1, _s2
                             in zip(seq_id1, seq_id2) if _s1 is not None and _s2 is not None}
         if ps1['seq_id'] != list(range(ps1['seq_id'][0], ps1['seq_id'][-1] + 1))\
-           and not any(k for k in seq_id_conv_dict.keys() if seq_id_conv_dict[k] != k):
+           and not any(True for k in seq_id_conv_dict.keys() if seq_id_conv_dict[k] != k):
             ps2['seq_id'] = ps1['seq_id']
             ref_code = test_code
             mid_code = getMiddleCode(ref_code, test_code)
@@ -21229,7 +21231,7 @@ class NmrDpUtility:
                 if get_first_sf_tag(sf, 'sf_framecode') != sf_framecode:
                     continue
 
-                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
                 self.__fixChainIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
@@ -21346,7 +21348,7 @@ class NmrDpUtility:
                 if get_first_sf_tag(sf, 'sf_framecode') != sf_framecode:
                     continue
 
-                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
                 self.__fixSeqIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
@@ -21503,7 +21505,7 @@ class NmrDpUtility:
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category)  # , first_comp_ids)
@@ -22150,7 +22152,7 @@ class NmrDpUtility:
 
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         self.__fixAtomNomenclature__(fileListId, file_type, content_subtype, sf, lp_category, comp_id, atom_id_conv_dict)
@@ -22274,7 +22276,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     self.__validateAtomTypeOfCsLoop__(file_name, file_type, sf, sf_framecode, lp_category)
@@ -22455,7 +22457,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     modified |= self.__validateAmbigCodeOfCsLoop__(file_name, sf, sf_framecode, lp_category)
@@ -22577,7 +22579,7 @@ class NmrDpUtility:
 
                     aux_lp_category = self.aux_lp_categories['nmr-star']['chem_shift'][0]
 
-                    if any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
+                    if any(True for aux_loop in sf if aux_loop.category == aux_lp_category):
 
                         aux_loop = sf.get_loop(aux_lp_category)
 
@@ -22764,7 +22766,7 @@ class NmrDpUtility:
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         self.__testIndexConsistency__(file_name, sf, sf_framecode, lp_category, index_tag)
@@ -22911,7 +22913,7 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
                         parent_pointer += 1
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, parent_pointer)
@@ -22957,7 +22959,7 @@ class NmrDpUtility:
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             parent_pointer += 1
 
-            if not any(loop for loop in sf.loops if loop.category == lp_category):
+            if not any(True for loop in sf.loops if loop.category == lp_category):
                 continue
 
             self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, parent_pointer)
@@ -23252,7 +23254,7 @@ class NmrDpUtility:
                         for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                            if not any(loop for loop in sf.loops if loop.category == lp_category):
+                            if not any(True for loop in sf.loops if loop.category == lp_category):
                                 continue
 
                             self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category)
@@ -23565,7 +23567,7 @@ class NmrDpUtility:
             for cs_sf in self.__star_data[fileListId].get_saveframes_by_category(cs_sf_category):
                 cs_sf_framecode = get_first_sf_tag(cs_sf, 'sf_framecode')
 
-                if not any(loop for loop in cs_sf.loops if loop.category == cs_lp_category):
+                if not any(True for loop in cs_sf.loops if loop.category == cs_lp_category):
                     continue
 
                 cs_lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
@@ -24876,7 +24878,7 @@ class NmrDpUtility:
                 _pk_char_data = next((lp['data'] for lp in self.__aux_data[content_subtype]
                                       if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode and lp['category'] == _pk_char_category), None)
 
-                if _pk_char_data is None and any(loop for loop in sf.loops if loop.category == _pk_char_category):
+                if _pk_char_data is None and any(True for loop in sf.loops if loop.category == _pk_char_category):
 
                     key_items = self.aux_key_items[file_type][content_subtype][_pk_char_category]
                     data_items = self.aux_data_items[file_type][content_subtype][_pk_char_category]
@@ -25100,7 +25102,7 @@ class NmrDpUtility:
 
                                     if has_key_value(self._sf_tag_items[file_type], content_subtype):
 
-                                        if any(item for item in self._sf_tag_items[file_type][content_subtype] if item == g[0]):
+                                        if any(True for item in self._sf_tag_items[file_type][content_subtype] if item == g[0]):
                                             if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
                                                 ignorable = True  # author provides the meta data through DepUI after upload
 
@@ -25302,7 +25304,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     modified |= self.__validateCsValue__(fileListId, file_name, file_type, content_subtype, sf, sf_framecode, lp_category)
@@ -26731,7 +26733,7 @@ class NmrDpUtility:
                                                 if _atom_id2 in self.__csStat.getProtonsInSameGroup(comp_id, _atom_id):
                                                     continue
 
-                                            if not any(_row_ for _row_ in ambig_set if _row_[chain_id_name] != chain_id
+                                            if not any(True for _row_ in ambig_set if _row_[chain_id_name] != chain_id
                                                and _row_[seq_id_name] == seq_id and _row_[comp_id_name] == comp_id
                                                and _row_[atom_id_name] == atom_id):
 
@@ -27077,7 +27079,7 @@ class NmrDpUtility:
                 for list_id, sf in enumerate(self.__star_data[fileListId].get_saveframes_by_category(sf_category), start=1):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     if file_type == 'nmr-star':
@@ -27311,17 +27313,17 @@ class NmrDpUtility:
                 auth_asym_id, _ = get_auth_seq_scheme(ps['chain_id'], ps['seq_id'][0])
 
                 if self.__caC['polymer_sequence'] is not None\
-                   and any(cif_ps for cif_ps in self.__caC['polymer_sequence']
+                   and any(True for cif_ps in self.__caC['polymer_sequence']
                            if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                     has_ins_code = True
 
                 if self.__caC['branched'] is not None\
-                   and any(cif_ps for cif_ps in self.__caC['branched']
+                   and any(True for cif_ps in self.__caC['branched']
                            if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                     has_ins_code = True
 
                 if self.__caC['non_polymer'] is not None\
-                   and any(cif_ps for cif_ps in self.__caC['non_polymer']
+                   and any(True for cif_ps in self.__caC['non_polymer']
                            if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                     has_ins_code = True
 
@@ -27624,7 +27626,7 @@ class NmrDpUtility:
                                     continue
                                 len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
                                 if len_in_grp == 2 and ambig_code == 2:
-                                    ch2_name_in_xplor = any(r for r, o in zip(atom_id, orig_atom_id) if r == '3' and o == '1')
+                                    ch2_name_in_xplor = any(True for r, o in zip(atom_id, orig_atom_id) if r == '3' and o == '1')
                                 elif len_in_grp == 3 and atom_id[-1] == orig_atom_id[0]:
                                     ch3_name_in_xplor = True
             else:
@@ -28524,7 +28526,7 @@ class NmrDpUtility:
                                         orig_comp_id = comp_id
                                     _row[20], _row[21], _row[22], _row[23] =\
                                         auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                elif any(d in emptyValue for d in orig_dat[idx]):
+                                elif any(True for d in orig_dat[idx] if d in emptyValue):
                                     if seq_key in _auth_to_orig_seq:
                                         _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                     elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self.__ccU) == auth_comp_id:
@@ -28599,7 +28601,7 @@ class NmrDpUtility:
                                                 orig_comp_id = comp_id
                                             _row[20], _row[21], _row[22], _row[23] =\
                                                 auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                        elif any(d in emptyValue for d in orig_dat[idx]):
+                                        elif any(True for d in orig_dat[idx] if d in emptyValue):
                                             if seq_key in _auth_to_orig_seq:
                                                 _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                             if _row[23] in emptyValue:
@@ -28786,7 +28788,7 @@ class NmrDpUtility:
                                     orig_comp_id = comp_id
                                 _row[20], _row[21], _row[22], _row[23] =\
                                     auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                            elif any(d in emptyValue for d in orig_dat[idx]):
+                            elif any(True for d in orig_dat[idx] if d in emptyValue):
                                 if seq_key in _auth_to_orig_seq:
                                     _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                 elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self.__ccU) == auth_comp_id:
@@ -28885,7 +28887,7 @@ class NmrDpUtility:
                                             orig_comp_id = comp_id
                                         _row[20], _row[21], _row[22], _row[23] =\
                                             auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                    elif any(d in emptyValue for d in orig_dat[idx]):
+                                    elif any(True for d in orig_dat[idx] if d in emptyValue):
                                         if seq_key in _auth_to_orig_seq:
                                             _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                         if _row[23] in emptyValue:
@@ -28940,7 +28942,7 @@ class NmrDpUtility:
 
                                 item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq
+                                if item is not None and poly_seq is not None and any(True for _ps in poly_seq
                                                                                      if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                     entity_assembly_id = item['entity_assembly_id']
                                     entity_id = item['entity_id']
@@ -28994,7 +28996,7 @@ class NmrDpUtility:
 
                                     item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                    if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq
+                                    if item is not None and poly_seq is not None and any(True for _ps in poly_seq
                                                                                          if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                         entity_assembly_id = item['entity_assembly_id']
                                         entity_id = item['entity_id']
@@ -29103,7 +29105,7 @@ class NmrDpUtility:
                                                     orig_comp_id = comp_id
                                                 _row[20], _row[21], _row[22], _row[23] =\
                                                     auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                            elif any(d in emptyValue for d in orig_dat[idx]):
+                                            elif any(True for d in orig_dat[idx] if d in emptyValue):
                                                 if seq_key in _auth_to_orig_seq:
                                                     _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                                 if _row[23] in emptyValue:
@@ -29158,7 +29160,7 @@ class NmrDpUtility:
 
                                         item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                        if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq
+                                        if item is not None and poly_seq is not None and any(True for _ps in poly_seq
                                                                                              if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                             entity_assembly_id = item['entity_assembly_id']
                                             entity_id = item['entity_id']
@@ -29213,7 +29215,7 @@ class NmrDpUtility:
 
                                     item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                    if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq_common
+                                    if item is not None and poly_seq is not None and any(True for _ps in poly_seq_common
                                                                                          if _ps['chain_id'] == auth_asym_id
                                                                                          and auth_seq_id in _ps['seq_id']):
                                         entity_assembly_id = item['entity_assembly_id']
@@ -29329,7 +29331,7 @@ class NmrDpUtility:
 
                                 item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq_common
+                                if item is not None and poly_seq is not None and any(True for _ps in poly_seq_common
                                                                                      if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
                                                                                      and ref_auth_seq_id in _ps['seq_id']):
                                     resolved = True
@@ -29451,7 +29453,7 @@ class NmrDpUtility:
 
                                         item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                        if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq_common
+                                        if item is not None and poly_seq is not None and any(True for _ps in poly_seq_common
                                                                                              if _ps['chain_id'] == chain_id
                                                                                              and label_seq_id in _ps['seq_id']):
                                             entity_assembly_id = item['entity_assembly_id']
@@ -29777,7 +29779,7 @@ class NmrDpUtility:
                                         __row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
                                         __row[13] = None
 
-                                if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
+                                if not isinstance(sf, pynmrstar.Loop) and any(True for aux_loop in sf if aux_loop.category == aux_lp_category):
 
                                     aux_loop = sf.get_loop(aux_lp_category)
 
@@ -29990,7 +29992,7 @@ class NmrDpUtility:
 
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         modified |= self.__removeUnusedPdbInsCode__(fileListId, content_subtype, sf, lp_category)
@@ -30089,7 +30091,7 @@ class NmrDpUtility:
 
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
@@ -30394,7 +30396,7 @@ class NmrDpUtility:
 
                                         for atom_id_w_cs in atom_ids_w_cs:
                                             _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
-                                            if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
+                                            if any(True for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
                                                 has_chem_shift = True
                                                 break
 
@@ -30861,7 +30863,7 @@ class NmrDpUtility:
                                 else:
                                     for atom_id_w_cs in atom_ids_w_cs:
                                         _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
-                                        if any(_atom_id_ for _atom_id_ in _atom_ids if _atom_id_ in _atom_id_w_cs):
+                                        if any(True for _atom_id_ in _atom_ids if _atom_id_ in _atom_id_w_cs):
                                             cs_idx = atom_ids_w_cs.index(atom_id_w_cs)
                                             break
 
@@ -30980,7 +30982,7 @@ class NmrDpUtility:
                                                    and self.__ccU.updateChemCompDict(comp_id):
                                                     _atom_ids = self.__getAtomIdList(comp_id, atom_id)
                                                     _atom_ids2 = self.__getAtomIdList(comp_id, atom_id2)
-                                                    if any(b for b in self.__ccU.lastBonds
+                                                    if any(True for b in self.__ccU.lastBonds
                                                            if ((b[self.__ccU.ccbAtomId1] in _atom_ids and b[self.__ccU.ccbAtomId2] in _atom_ids2)
                                                                or (b[self.__ccU.ccbAtomId1] in _atom_ids2 and b[self.__ccU.ccbAtomId2] in _atom_ids))):
                                                         continue
@@ -31354,7 +31356,7 @@ class NmrDpUtility:
                             else:
                                 for atom_id_w_cs in atom_ids_w_cs:
                                     _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
-                                    if any(_atom_id_ for _atom_id_ in _atom_ids if _atom_id_ in _atom_id_w_cs):
+                                    if any(True for _atom_id_ in _atom_ids if _atom_id_ in _atom_id_w_cs):
                                         cs_idx = atom_ids_w_cs.index(atom_id_w_cs)
                                         break
 
@@ -31481,7 +31483,7 @@ class NmrDpUtility:
                                                and self.__ccU.updateChemCompDict(comp_id):
                                                 _atom_ids = self.__getAtomIdList(comp_id, atom_id)
                                                 _atom_ids2 = self.__getAtomIdList(comp_id, atom_id2)
-                                                if any(b for b in self.__ccU.lastBonds
+                                                if any(True for b in self.__ccU.lastBonds
                                                        if ((b[self.__ccU.ccbAtomId1] in _atom_ids and b[self.__ccU.ccbAtomId2] in _atom_ids2)
                                                            or (b[self.__ccU.ccbAtomId1] in _atom_ids2 and b[self.__ccU.ccbAtomId2] in _atom_ids))):
                                                     continue
@@ -31629,7 +31631,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     self.__testRdcVector__(file_name, file_type, content_subtype, sf_framecode, lp_category)
@@ -31873,7 +31875,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     self.__testCoordCovalentBond__(file_name, file_type, content_subtype, sf_framecode, lp_category)
@@ -32173,7 +32175,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
                     self.__testResidueVariant__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category, cif_poly_seq, nmr2ca)
@@ -32864,17 +32866,17 @@ class NmrDpUtility:
                         auth_asym_id, _ = get_auth_seq_scheme(ps['chain_id'], ps['seq_id'][0])
 
                         if self.__caC['polymer_sequence'] is not None\
-                           and any(cif_ps for cif_ps in self.__caC['polymer_sequence']
+                           and any(True for cif_ps in self.__caC['polymer_sequence']
                                    if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                             has_ins_code = True
 
                         if self.__caC['branched'] is not None\
-                           and any(cif_ps for cif_ps in self.__caC['branched']
+                           and any(True for cif_ps in self.__caC['branched']
                                    if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                             has_ins_code = True
 
                         if self.__caC['non_polymer'] is not None\
-                           and any(cif_ps for cif_ps in self.__caC['non_polymer']
+                           and any(True for cif_ps in self.__caC['non_polymer']
                                    if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                             has_ins_code = True
 
@@ -33274,7 +33276,7 @@ class NmrDpUtility:
 
                                     continue
 
-                            if any(d for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
+                            if any(True for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
                                 continue
 
                             sf_item['id'] += 1
@@ -33709,7 +33711,7 @@ class NmrDpUtility:
 
                                     continue
 
-                            if any(d for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
+                            if any(True for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
                                 continue
 
                             sf_item['id'] += 1
@@ -34115,7 +34117,7 @@ class NmrDpUtility:
 
                                 continue
 
-                        if any(d for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
+                        if any(True for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
                             continue
 
                         sf_item['id'] += 1
@@ -35331,7 +35333,7 @@ class NmrDpUtility:
                 sf = master_entry.get_saveframe_by_name(sf_framecode)
                 text_data = get_first_sf_tag(sf, 'Text_data')
 
-                if any(loop for loop in sf.loops if loop.category in ('_Peak_row_format', '_Peak_general_char'))\
+                if any(True for loop in sf.loops if loop.category in ('_Peak_row_format', '_Peak_general_char'))\
                         or text_data not in emptyValue:
 
                     list_id += 1
@@ -37792,8 +37794,8 @@ class NmrDpUtility:
                     poly_type = item['entity_poly_type']
                     if poly_type.startswith('polypeptide'):
                         unknown_residue = 'UNK'
-                    elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
-                            and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
+                    elif any(True for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
+                            and any(True for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
                         unknown_residue = 'DN'
                     elif poly_type == 'polydeoxyribonucleotide':
                         unknown_residue = 'DN'
@@ -37808,7 +37810,7 @@ class NmrDpUtility:
                     max_auth_seq_id = max(auth_seq_ids)
                     for auth_seq_id in range(min_auth_seq_id, max_auth_seq_id + 1):
                         if auth_seq_id not in ps['auth_seq_id']\
-                           and not any(d for d in self.__nmr_ext_poly_seq
+                           and not any(True for d in self.__nmr_ext_poly_seq
                                        if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
                             self.__nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
                                                             'auth_seq_id': auth_seq_id,
@@ -39661,8 +39663,8 @@ class NmrDpUtility:
                     poly_type = item['entity_poly_type']
                     if poly_type.startswith('polypeptide'):
                         unknown_residue = 'UNK'
-                    elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
-                            and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
+                    elif any(True for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
+                            and any(True for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
                         unknown_residue = 'DN'
                     elif poly_type == 'polydeoxyribonucleotide':
                         unknown_residue = 'DN'
@@ -39677,7 +39679,7 @@ class NmrDpUtility:
                     max_auth_seq_id = max(auth_seq_ids)
                     for auth_seq_id in range(min_auth_seq_id, max_auth_seq_id + 1):
                         if auth_seq_id not in ps['auth_seq_id']\
-                           and not any(d for d in self.__nmr_ext_poly_seq
+                           and not any(True for d in self.__nmr_ext_poly_seq
                                        if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
                             self.__nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
                                                             'auth_seq_id': auth_seq_id,
@@ -41961,7 +41963,7 @@ class NmrDpUtility:
                     for list_id, sf in enumerate(self.__star_data[fileListId].get_saveframes_by_category(sf_category), start=1):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             if content_subtype != 'spectral_peak':
                                 continue
 
@@ -43240,14 +43242,14 @@ class NmrDpUtility:
                             if self.__hasCoordSeq(chain_id, seq_id):
                                 cys['in_disulfide_bond'] = False
                                 if has_key_value(input_source_dic, 'disulfide_bond'):
-                                    if any(b for b in input_source_dic['disulfide_bond']
+                                    if any(True for b in input_source_dic['disulfide_bond']
                                            if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id)
                                            or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
                                         cys['in_disulfide_bond'] = True
 
                                 cys['in_other_bond'] = False
                                 if has_key_value(input_source_dic, 'other_bond'):
-                                    if any(b for b in input_source_dic['other_bond']
+                                    if any(True for b in input_source_dic['other_bond']
                                            if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id)
                                            or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
                                         cys['in_other_bond'] = True
@@ -50059,12 +50061,12 @@ class NmrDpUtility:
                                     cif_ps = next(cif_ps for cif_ps in cif_poly_seq if cif_ps['chain_id'] == chain_id2)
                                     if label_seq_id is None:
                                         if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
-                                           and any(mis for mis in self.__caC['missing_polymer_linkage']
+                                           and any(True for mis in self.__caC['missing_polymer_linkage']
                                                    if mis['auth_chain_id'] == (cif_ps['auth_chain_id'] if 'auth_chain_id' in cif_ps else cif_ps['chain_id'])):
                                             continue
                                     else:
                                         if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
-                                           and any(mis for mis in self.__caC['missing_polymer_linkage']
+                                           and any(True for mis in self.__caC['missing_polymer_linkage']
                                                    if mis['auth_chain_id'] == (cif_ps['auth_chain_id'] if 'auth_chain_id' in cif_ps else cif_ps['chain_id'])
                                                    and mis['auth_seq_id_1'] < auth_seq_id < mis['auth_seq_id_2']):
                                             continue
@@ -50130,7 +50132,7 @@ class NmrDpUtility:
                                 ref_chain_id = ca['ref_chain_id']
                                 test_chain_id = ca['test_chain_id']
 
-                                if any(_ca for _ca in chain_assign
+                                if any(True for _ca in chain_assign
                                        if ((_ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id)
                                            or (_ca['ref_chain_id'] != ref_chain_id and _ca['test_chain_id'] == test_chain_id))
                                        and _ca['conflict'] == 0):
@@ -50160,7 +50162,7 @@ class NmrDpUtility:
                                             if msg_idx < len(self.__suspended_warnings_for_lazy_eval):
                                                 del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
-                        if any(ps for ps in cif_poly_seq if 'identical_chain_id' in ps):
+                        if any(True for ps in cif_poly_seq if 'identical_chain_id' in ps):
 
                             _chain_assign = chain_assign.copy()
 
@@ -50178,7 +50180,7 @@ class NmrDpUtility:
 
                                     for _chain_id in identity:
 
-                                        if not any(_ca for _ca in chain_assign if _ca['test_chain_id'] == _chain_id):
+                                        if not any(True for _ca in chain_assign if _ca['test_chain_id'] == _chain_id):
                                             _ca = ca.copy()
                                             _ca['test_chain_id'] = _chain_id
                                             if _auth_chain_id is not None:
@@ -50592,12 +50594,12 @@ class NmrDpUtility:
                                     cif_ps = next(cif_ps for cif_ps in cif_poly_seq if cif_ps['chain_id'] == chain_id)
                                     if label_seq_id is None:
                                         if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
-                                           and any(mis for mis in self.__caC['missing_polymer_linkage']
+                                           and any(True for mis in self.__caC['missing_polymer_linkage']
                                                    if mis['auth_chain_id'] == (cif_ps['auth_chain_id'] if 'auth_chain_id' in cif_ps else cif_ps['chain_id'])):
                                             continue
                                     else:
                                         if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
-                                           and any(mis for mis in self.__caC['missing_polymer_linkage']
+                                           and any(True for mis in self.__caC['missing_polymer_linkage']
                                                    if mis['auth_chain_id'] == (cif_ps['auth_chain_id'] if 'auth_chain_id' in cif_ps else cif_ps['chain_id'])
                                                    and mis['auth_seq_id_1'] < auth_seq_id < mis['auth_seq_id_2']):
                                             continue
@@ -50662,7 +50664,7 @@ class NmrDpUtility:
                                 ref_chain_id = ca['ref_chain_id']
                                 test_chain_id = ca['test_chain_id']
 
-                                if any(_ca for _ca in chain_assign
+                                if any(True for _ca in chain_assign
                                        if ((_ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id)
                                            or (_ca['ref_chain_id'] != ref_chain_id and _ca['test_chain_id'] == test_chain_id))
                                        and _ca['conflict'] == 0):
@@ -50692,7 +50694,7 @@ class NmrDpUtility:
                                             if msg_idx < len(self.__suspended_warnings_for_lazy_eval):
                                                 del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
-                        if any(ps for ps in cif_poly_seq if 'identical_chain_id' in ps):
+                        if any(True for ps in cif_poly_seq if 'identical_chain_id' in ps):
 
                             _chain_assign = chain_assign.copy()
 
@@ -50710,7 +50712,7 @@ class NmrDpUtility:
 
                                     for chain_id in identity:
 
-                                        if not any(_ca for _ca in chain_assign if _ca['ref_chain_id'] == chain_id):
+                                        if not any(True for _ca in chain_assign if _ca['ref_chain_id'] == chain_id):
                                             _ca = ca.copy()
                                             _ca['ref_chain_id'] = chain_id
                                             if auth_chain_id is not None:
@@ -50904,7 +50906,7 @@ class NmrDpUtility:
 
             for list_id, sf in enumerate(self.__star_data[file_list_id].get_saveframes_by_category(sf_category), start=1):
 
-                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
                 try:
@@ -51034,7 +51036,7 @@ class NmrDpUtility:
 
             for list_id, sf in enumerate(self.__star_data[file_list_id].get_saveframes_by_category(sf_category), start=1):
 
-                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
                 try:
@@ -51249,7 +51251,7 @@ class NmrDpUtility:
                     for list_id, sf in enumerate(self.__star_data[fileListId].get_saveframes_by_category(sf_category), start=1):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         modified |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype,
@@ -51979,7 +51981,7 @@ class NmrDpUtility:
 
             for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
                 sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -52608,16 +52610,16 @@ class NmrDpUtility:
 
                 if file_type == 'nef':
                     if 'residue_variant' in orig_lp_data[0]:
-                        if any(_row for _row in orig_lp_data if _row['residue_variant'] not in emptyValue):
+                        if any(True for _row in orig_lp_data if _row['residue_variant'] not in emptyValue):
                             has_res_var_dat = True
 
                 else:
                     if 'Auth_variant_ID' in orig_lp_data[0]:
-                        if any(_row for _row in orig_lp_data if _row['Auth_variant_ID'] not in emptyValue):
+                        if any(True for _row in orig_lp_data if _row['Auth_variant_ID'] not in emptyValue):
                             has_res_var_dat = True
 
                     if 'NEF_index' in orig_lp_data[0]:
-                        if any(_row for _row in orig_lp_data if _row['NEF_index'] not in emptyValue):
+                        if any(True for _row in orig_lp_data if _row['NEF_index'] not in emptyValue):
                             has_nef_index = True
 
                     if 'Entry_ID' in orig_lp_data[0]:
@@ -52671,9 +52673,9 @@ class NmrDpUtility:
 
         chem_comp = self.__cR.getDictList('chem_comp')
 
-        paramag = len(chem_comp) > 0 and any(cc for cc in chem_comp if cc['type'] == 'non-poly' and cc['id'] in PARAMAGNETIC_ELEMENTS)
+        paramag = len(chem_comp) > 0 and any(True for cc in chem_comp if cc['type'] == 'non-poly' and cc['id'] in PARAMAGNETIC_ELEMENTS)
 
-        has_cys = any(cc for cc in chem_comp
+        has_cys = any(True for cc in chem_comp
                       if ((cc['type'] == 'L-peptide linking' and cc['id'] == 'CYS')
                           or (cc['type'] == 'D-peptide linking' and cc['id'] == 'DCY')))
         if has_cys:
@@ -52849,23 +52851,23 @@ class NmrDpUtility:
                 row[4] = item[_label_asym_id]
                 row[5] = item[_auth_asym_id]
                 if len(self.__label_asym_id_with_exptl_data) > 0:
-                    if any(label_asym_id for label_asym_id in item[_label_asym_id].split(',')
+                    if any(True for label_asym_id in item[_label_asym_id].split(',')
                            if label_asym_id in self.__label_asym_id_with_exptl_data):
                         row[6] = 'yes'
                 # Physical_state
                 # Conformational_isomer
                 if len(self.__auth_asym_ids_with_chem_exch) > 0:
-                    if any(auth_asym_id for auth_asym_id in item[_auth_asym_id].split(',')
+                    if any(True for auth_asym_id in item[_auth_asym_id].split(',')
                            if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys()):
                         row[8] = row[9] = 'yes'
                 if entity_total[entity_id] > 0 and entity_type == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
                     equiv_entity_assemblies = [_item for _item in entity_assembly if _item['entity_id'] == entity_id]
-                    _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item[_label_asym_id].split(',')
+                    _item = next((_item for _item in equiv_entity_assemblies if any(True for label_asym_id in _item[_label_asym_id].split(',')
                                                                                     if label_asym_id in self.__label_asym_id_with_exptl_data)), None)
                     if _item is not None:
                         group_id = sorted(sorted(set(_item[_label_asym_id].split(','))), key=len)[0]
-                        if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item[_label_asym_id].split(',')
-                                                                                       if label_asym_id in self.__label_asym_id_with_exptl_data)):
+                        if any(True for __item in equiv_entity_assemblies if not any(True for label_asym_id in __item[_label_asym_id].split(',')
+                                                                                     if label_asym_id in self.__label_asym_id_with_exptl_data)):
                             if _item == item or row[6] is None or row[6] == 'no':
                                 row[10] = group_id
                 row[11], row[12] = item['entity_role'], item['entity_details']
@@ -52994,7 +52996,7 @@ class NmrDpUtility:
                 seq_keys.add(seq_key)
 
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-                   and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
+                   and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
@@ -53083,7 +53085,7 @@ class NmrDpUtility:
                 index += 1
 
                 if row[seq_link_col] == 'end' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-                   and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
+                   and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
@@ -53245,7 +53247,7 @@ class NmrDpUtility:
                 seq_keys.add(seq_key)
 
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-                   and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
+                   and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _offset = seq_id - auth_seq_id
@@ -53355,7 +53357,7 @@ class NmrDpUtility:
                 index += 1
 
                 if row[seq_link_col] == 'end' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-                   and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
+                   and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
@@ -53619,7 +53621,7 @@ class NmrDpUtility:
                                 for b in self.__ccU.lastBonds:
                                     if atom_id in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]):
                                         _atom_id = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id else b[self.__ccU.ccbAtomId2]
-                                        if any(a for a in self.__ccU.lastAtomList
+                                        if any(True for a in self.__ccU.lastAtomList
                                                if _atom_id == a[self.__ccU.ccaAtomId] and a[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
                                             leaving_atom_id = _atom_id
                                             break
@@ -53668,7 +53670,7 @@ class NmrDpUtility:
                                     for b in self.__ccU.lastBonds:
                                         if atom_id in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]):
                                             _atom_id = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id else b[self.__ccU.ccbAtomId2]
-                                            if any(a for a in self.__ccU.lastAtomList
+                                            if any(True for a in self.__ccU.lastAtomList
                                                    if _atom_id == a[self.__ccU.ccaAtomId] and a[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
                                                 leaving_atom_id = _atom_id
                                                 break
@@ -54040,8 +54042,8 @@ class NmrDpUtility:
                 poly_type = item['entity_poly_type']
                 if poly_type.startswith('polypeptide'):
                     common_type = 'protein'
-                elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
-                        and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
+                elif any(True for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
+                        and any(True for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
                     common_type = 'DNA/RNA hybrid'
                 elif poly_type == 'polydeoxyribonucleotide':
                     common_type = 'DNA'
@@ -54083,8 +54085,8 @@ class NmrDpUtility:
                             except ValueError:
                                 continue
 
-                elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
-                        and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
+                elif any(True for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
+                        and any(True for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
                     _poly_type = 'polydeoxyribonucleotide/polyribonucleotide hybrid'
                 else:
                     _poly_type = poly_type
@@ -54121,7 +54123,7 @@ class NmrDpUtility:
                 one_letter_code_can = item['one_letter_code_can']
                 one_letter_code = item['one_letter_code']
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-                   and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] in auth_asym_ids):
+                   and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] in auth_asym_ids):
                     ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] in auth_asym_ids)
                     auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                     min_auth_seq_id = min(auth_seq_ids)
@@ -54377,7 +54379,7 @@ class NmrDpUtility:
                         auth_seq_id = seq_id
 
                     if entity_type == 'polymer' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-                       and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
+                       and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                                and d['auth_seq_id'] < min_auth_seq_id):
                         for d in self.__nmr_ext_poly_seq:
                             auth_asym_id = ps['auth_chain_id']
@@ -54414,7 +54416,7 @@ class NmrDpUtility:
                     index += 1
 
             if entity_type == 'polymer' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-               and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
+               and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                        and d['auth_seq_id'] > max_auth_seq_id):
                 _offset = max_seq_id - max_auth_seq_id
                 for d in self.__nmr_ext_poly_seq:
@@ -54476,7 +54478,7 @@ class NmrDpUtility:
                                 continue
 
                         if entity_type == 'polymer' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-                           and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
+                           and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                                    and d['auth_seq_id'] < min_auth_seq_id):
                             for d in self.__nmr_ext_poly_seq:
                                 auth_asym_id = ps['auth_chain_id']
@@ -54505,7 +54507,7 @@ class NmrDpUtility:
                             eps_loop.add_data(row)
 
                     if entity_type == 'polymer' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
-                       and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
+                       and any(True for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                                and d['auth_seq_id'] > max_auth_seq_id):
                         _offset = max_seq_id - max_auth_seq_id
                         for d in self.__nmr_ext_poly_seq:
@@ -54589,7 +54591,7 @@ class NmrDpUtility:
 
         for idx, sf in enumerate(self.__star_data[0].get_saveframes_by_category(sf_category), start=1):
 
-            if any(loop for loop in sf.loops if loop.category == lp_category):
+            if any(True for loop in sf.loops if loop.category == lp_category):
                 continue
 
             text_data = get_first_sf_tag(sf, 'Text_data')
@@ -55990,8 +55992,8 @@ class NmrDpUtility:
                     poly_type = item['entity_poly_type']
                     if poly_type.startswith('polypeptide'):
                         unknown_residue = 'UNK'
-                    elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
-                            and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
+                    elif any(True for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
+                            and any(True for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
                         unknown_residue = 'DN'
                     elif poly_type == 'polydeoxyribonucleotide':
                         unknown_residue = 'DN'
@@ -56006,7 +56008,7 @@ class NmrDpUtility:
                     max_auth_seq_id = max(auth_seq_ids)
                     for auth_seq_id in range(min_auth_seq_id, max_auth_seq_id + 1):
                         if auth_seq_id not in ps['auth_seq_id']\
-                           and not any(d for d in self.__nmr_ext_poly_seq
+                           and not any(True for d in self.__nmr_ext_poly_seq
                                        if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
                             self.__nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
                                                             'auth_seq_id': auth_seq_id,
@@ -57239,7 +57241,7 @@ class NmrDpUtility:
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
@@ -57635,7 +57637,7 @@ class NmrDpUtility:
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
@@ -60309,7 +60311,7 @@ class NmrDpUtility:
 
             for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
                 if content_subtype == 'spectral_peak':
@@ -60450,7 +60452,7 @@ class NmrDpUtility:
 
             for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
                 if content_subtype == 'spectral_peak':
@@ -60700,7 +60702,7 @@ class NmrDpUtility:
                     for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
-                        if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
@@ -61614,7 +61616,7 @@ class NmrDpUtility:
 
                     dat = loop.get_tag(['Revision_ID', 'Update_record'])
 
-                    if any(row for row in dat if row[1] == 'Initial release'):
+                    if any(True for row in dat if row[1] == 'Initial release'):
                         last_revision_id = int(dat[-1][0])
 
                         row = [None] * len(loop.tags)
@@ -61648,7 +61650,7 @@ class NmrDpUtility:
 
                         dat = loop.get_tag(['Revision_ID', 'Update_record'])
 
-                        if any(row for row in dat if row[1] == 'Initial release'):
+                        if any(True for row in dat if row[1] == 'Initial release'):
                             last_revision_id = int(dat[-1][0])
 
                             row = [None] * len(loop.tags)
@@ -62558,7 +62560,7 @@ class NmrDpUtility:
                                 bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
                                 if len(bonded_atom_id_1) == 0:
                                     continue
-                                if any(_row for _row in lp
+                                if any(True for _row in lp
                                        if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
                                            and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
                                            and _row[atom_id_1_col] == bonded_atom_id_1[0])
@@ -62571,7 +62573,7 @@ class NmrDpUtility:
                                 bonded_atom_id_2 = self.__ccU.getBondedAtoms(comp_id_2, atom_id_2)
                                 if len(bonded_atom_id_2) == 0:
                                     continue
-                                if any(_row for _row in lp
+                                if any(True for _row in lp
                                        if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
                                            and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
                                            and _row[atom_id_1_col] == bonded_atom_id_2[0])
@@ -62632,7 +62634,7 @@ class NmrDpUtility:
                                 bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
                                 if len(bonded_atom_id_1) == 0:
                                     continue
-                                if any(_row for _row in lp
+                                if any(True for _row in lp
                                        if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
                                            and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
                                            and _row[atom_id_1_col] == bonded_atom_id_1[0])
@@ -62645,7 +62647,7 @@ class NmrDpUtility:
                                 bonded_atom_id_2 = self.__ccU.getBondedAtoms(comp_id_2, atom_id_2)
                                 if len(bonded_atom_id_2) == 0:
                                     continue
-                                if any(_row for _row in lp
+                                if any(True for _row in lp
                                        if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
                                            and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
                                            and _row[atom_id_1_col] == bonded_atom_id_2[0])
@@ -65084,7 +65086,7 @@ class NmrDpUtility:
                                               'hydrogen bond')
 
             if len(dist_rows) == 0\
-               or any(row for row in dist_rows
+               or any(True for row in dist_rows
                       if row[constraint_subtype_col] not in subtypes_not_derived_from_noes
                       and row[constraint_subsubtype_col] == 'simple'):
                 return True
@@ -65094,7 +65096,7 @@ class NmrDpUtility:
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            if not any(row for row in dist_rows
+            if not any(True for row in dist_rows
                        if row[constraint_subtype_col] not in subtypes_not_derived_from_noes):
 
                 subtypes = ','.join([row[constraint_subtype_col] for row in dist_rows])

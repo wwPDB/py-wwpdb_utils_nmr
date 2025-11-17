@@ -24,6 +24,8 @@ try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
                                                        translateToStdAtomNameOfDmpc,
                                                        translateToStdResName,
                                                        translateToLigandName,
@@ -48,6 +50,8 @@ except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
                                            translateToStdAtomNameOfDmpc,
                                            translateToStdResName,
                                            translateToLigandName,
@@ -961,6 +965,15 @@ class BaseTopologyParserListener():
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
+
+            self.isSegment.cache_clear()
+            self.isSegmentWithAsymHint.cache_clear()
+            self.isLigand.cache_clear()
+            self.isMetalIon.cache_clear()
+            self.isMetalElem.cache_clear()
+
+            translateToStdAtomNameNoRef.cache_clear()
+            translateToStdAtomNameWithRef.cache_clear()
 
     @functools.lru_cache(maxsize=128)
     def isSegment(self, prev_comp_id: Optional[str], prev_atom_name: str, comp_id: str, atom_name: str) -> bool:

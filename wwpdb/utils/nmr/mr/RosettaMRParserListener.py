@@ -41,6 +41,8 @@ try:
                                                        isLikePheOrTyr,
                                                        getRdcCode,
                                                        translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
                                                        isCyclicPolymer,
                                                        isStructConn,
                                                        getRestraintName,
@@ -130,6 +132,8 @@ except ImportError:
                                            isLikePheOrTyr,
                                            getRdcCode,
                                            translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
                                            isCyclicPolymer,
                                            isStructConn,
                                            getRestraintName,
@@ -1059,6 +1063,11 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
+
+            self.__getCoordAtomSiteOf.cache_clear()
+
+            translateToStdAtomNameNoRef.cache_clear()
+            translateToStdAtomNameWithRef.cache_clear()
 
     # Enter a parse tree produced by RosettaMRParser#comment.
     def enterComment(self, ctx: RosettaMRParser.CommentContext):

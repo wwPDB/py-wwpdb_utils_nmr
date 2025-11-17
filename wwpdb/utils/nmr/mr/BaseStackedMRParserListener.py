@@ -32,6 +32,8 @@ try:
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
                                                        backTranslateFromStdResName,
                                                        isCyclicPolymer,
                                                        getStructConnPtnr,
@@ -129,6 +131,8 @@ except ImportError:
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
                                            backTranslateFromStdResName,
                                            isCyclicPolymer,
                                            getStructConnPtnr,
@@ -2601,6 +2605,13 @@ class BaseStackedMRParserListener():
 
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
+
+            self.getRealCompId.cache_clear()
+            self.getRealChainId.cache_clear()
+            self.getCoordAtomSiteOf.cache_clear()
+
+            translateToStdAtomNameNoRef.cache_clear()
+            translateToStdAtomNameWithRef.cache_clear()
 
     def validateDistanceRange(self, weight: float, target_value: Optional[float],
                               lower_limit: Optional[float], upper_limit: Optional[float],
@@ -5919,7 +5930,9 @@ class BaseStackedMRParserListener():
                     return False
                 if stats['polymer'] >= stats['non-poly']\
                    and 'non_poly_remap' not in self.reasons\
-                   and (not self.hasNonPoly or not any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.polySeq) for np in self.__nonPoly):
+                   and (not self.hasNonPoly
+                        or not any(any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.polySeq)
+                                   for np in self.__nonPoly)):
                     return False
 
         chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.polySeq if isPolySeq else altPolySeq)])

@@ -24,6 +24,8 @@ try:
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
                                                        backTranslateFromStdResName,
                                                        guessCompIdFromAtomId,
                                                        getRestraintName,
@@ -67,6 +69,8 @@ except ImportError:
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
                                            backTranslateFromStdResName,
                                            guessCompIdFromAtomId,
                                            getRestraintName,
@@ -247,7 +251,7 @@ class BaseCSParserListener():
             self.compIdSet = set()
 
             def is_data(array: list) -> bool:
-                return not any(d in emptyValue for d in array)
+                return not any(True for d in array if d in emptyValue)
 
             for ps in self.polySeq:
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
@@ -605,6 +609,12 @@ class BaseCSParserListener():
 
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
+
+            self.translateToStdResNameWrapper.cache_clear()
+            self.__getCoordAtomSiteOf.cache_clear()
+
+            translateToStdAtomNameNoRef.cache_clear()
+            translateToStdAtomNameWithRef.cache_clear()
 
     def validateCsValue(self, index: int, pos: float, pos_unc: Optional[float],
                         occupancy: Optional[float] = None,

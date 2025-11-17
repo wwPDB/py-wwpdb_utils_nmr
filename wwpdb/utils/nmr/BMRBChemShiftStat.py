@@ -365,10 +365,10 @@ class BMRBChemShiftStat:
             return False
 
         if primary:
-            if any(item for item in self.others if item['comp_id'] == comp_id and item['primary']):
+            if any(True for item in self.others if item['comp_id'] == comp_id and item['primary']):
                 return True
         else:
-            if any(item for item in self.others if item['comp_id'] == comp_id and 'secondary' in item and item['secondary']):
+            if any(True for item in self.others if item['comp_id'] == comp_id and 'secondary' in item and item['secondary']):
                 return True
 
         return False
@@ -1148,7 +1148,7 @@ class BMRBChemShiftStat:
                                and a[self.__ccU.ccaNTerminalAtomFlag] == 'N'
                                and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
 
-                            if not any(item for item in atm_list if item['comp_id'] == comp_id and item['atom_id'] == a[self.__ccU.ccaAtomId]):
+                            if not any(True for item in atm_list if item['comp_id'] == comp_id and item['atom_id'] == a[self.__ccU.ccaAtomId]):
                                 _row = {}
                                 _row['comp_id'] = comp_id
                                 _row['atom_id'] = a[self.__ccU.ccaAtomId]
@@ -1635,7 +1635,7 @@ class BMRBChemShiftStat:
                                and a[self.__ccU.ccaNTerminalAtomFlag] == 'N'
                                and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
 
-                            if not any(item for item in atm_list if item['comp_id'] == comp_id and item['atom_id'] == a[self.__ccU.ccaAtomId]):
+                            if not any(True for item in atm_list if item['comp_id'] == comp_id and item['atom_id'] == a[self.__ccU.ccaAtomId]):
                                 _row = {}
                                 _row['comp_id'] = comp_id
                                 _row['atom_id'] = a[self.__ccU.ccaAtomId]
@@ -1730,7 +1730,7 @@ class BMRBChemShiftStat:
                 cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
 
         if cc_rel_status == 'REL':
-            if any(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+            if any(True for a in self.__ccU.lastAtomList
                    if a[self.__ccU.ccaAtomId] == atom_id
                    and (a[self.__ccU.ccaLeavingAtomFlag] != 'Y'
                         or (peptide_like
@@ -1829,7 +1829,7 @@ class BMRBChemShiftStat:
 
                         for a in h_list:
                             atom_id = a['atom_id']
-                            if any(b for b in self.__ccU.lastBonds
+                            if any(True for b in self.__ccU.lastBonds
                                    if b[self.__ccU.ccbAtomId1] == k and b[self.__ccU.ccbAtomId2] == atom_id):
                                 a['desc'] = 'methyl'
 
@@ -1867,7 +1867,7 @@ class BMRBChemShiftStat:
                 for aro in aro_list:
                     for a in h_list:
                         atom_id = a['atom_id']
-                        if any(b for b in self.__ccU.lastBonds
+                        if any(True for b in self.__ccU.lastBonds
                                if b[self.__ccU.ccbAtomId1] == aro and b[self.__ccU.ccbAtomId2] == atom_id):
                             a['desc'] = 'aroma'
 
@@ -1888,7 +1888,7 @@ class BMRBChemShiftStat:
                     if v == 2:
                         for a in h_list:
                             atom_id = a['atom_id']
-                            if any(b for b in self.__ccU.lastBonds
+                            if any(True for b in self.__ccU.lastBonds
                                    if b[self.__ccU.ccbAtomId1] == k and b[self.__ccU.ccbAtomId2] == atom_id):
                                 a['desc'] = 'geminal'
 
@@ -1941,9 +1941,9 @@ class BMRBChemShiftStat:
                                     for hvy_2 in hvy_set_2:
                                         if in_ring:
                                             break
-                                        if any(b for b in self.__ccU.lastBonds
+                                        if any(True for b in self.__ccU.lastBonds
                                                if b[self.__ccU.ccbAromaticFlag] == 'Y' and b[self.__ccU.ccbAtomId1] == hvy_1 and b[self.__ccU.ccbAtomId2] == hvy_2) or\
-                                           any(b for b in self.__ccU.lastBonds
+                                           any(True for b in self.__ccU.lastBonds
                                                if b[self.__ccU.ccbAromaticFlag] == 'Y' and b[self.__ccU.ccbAtomId1] == hvy_2 and b[self.__ccU.ccbAtomId2] == hvy_1):
                                             in_ring = True
                                 if in_ring:
@@ -2018,9 +2018,9 @@ class BMRBChemShiftStat:
                                         for hvy_2 in hvy_set_2:
                                             if in_ring:
                                                 break
-                                            if any(b for b in self.__ccU.lastBonds
+                                            if any(True for b in self.__ccU.lastBonds
                                                    if b[self.__ccU.ccbAromaticFlag] == 'Y' and b[self.__ccU.ccbAtomId1] == hvy_1 and b[self.__ccU.ccbAtomId2] == hvy_2) or\
-                                               any(b for b in self.__ccU.lastBonds
+                                               any(True for b in self.__ccU.lastBonds
                                                    if b[self.__ccU.ccbAromaticFlag] == 'Y' and b[self.__ccU.ccbAtomId1] == hvy_2 and b[self.__ccU.ccbAtomId2] == hvy_1):
                                                 in_ring = True
                                     if in_ring:
@@ -2076,7 +2076,7 @@ class BMRBChemShiftStat:
                         atom_id = a['atom_id']
                         if atom_id in (h + '1', h + '2'):
                             atom_id = 'N' + a['atom_id'][1:]
-                            if not any(n for n in n_list if n['atom_id'] == atom_id):
+                            if not any(True for n in n_list if n['atom_id'] == atom_id):
                                 a['desc'] = 'aroma' if h in cn_common and a['avg'] > 5.0 else 'geminal'
 
                 h_common = set(h_2) & set(h_3) - set(h_1)
@@ -2087,7 +2087,7 @@ class BMRBChemShiftStat:
                         atom_id = a['atom_id']
                         if atom_id in (h + '2', h + '3'):
                             atom_id = 'N' + a['atom_id'][1:]
-                            if not any(n for n in n_list if n['atom_id'] == atom_id):
+                            if not any(True for n in n_list if n['atom_id'] == atom_id):
                                 a['desc'] = 'aroma' if h in cn_common and a['avg'] > 5.0 else 'geminal'
 
                 h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'isolated']
@@ -2095,7 +2095,7 @@ class BMRBChemShiftStat:
                 for h in h_list:
                     if h['avg'] > 5.0:
                         atom_id = 'C' + h['atom_id'][1:]
-                        if any(c for c in c_list if c['atom_id'] == atom_id and c['avg'] > 95.0 and c['avg'] < 170.0):
+                        if any(True for c in c_list if c['atom_id'] == atom_id and c['avg'] > 95.0 and c['avg'] < 170.0):
                             h['desc'] = 'aroma'
 
                 h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'isolated']
@@ -2113,7 +2113,7 @@ class BMRBChemShiftStat:
                         atom_id = a['atom_id']
                         if atom_id in (h + "'", h + "''"):
                             atom_id = 'N' + a['atom_id'][1:]
-                            if not any(n for n in n_list if n['atom_id'] == atom_id):
+                            if not any(True for n in n_list if n['atom_id'] == atom_id):
                                 a['desc'] = 'geminal'
 
                 h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'aroma']

@@ -79,7 +79,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.compIdSet = set()
 
             def is_data(array: list) -> bool:
-                return not any(d in emptyValue for d in array)
+                return not any(True for d in array if d in emptyValue)
 
             for ps in self.polySeq:
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))

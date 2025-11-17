@@ -1812,7 +1812,7 @@ class NmrDpReport:
                 for _c in _value_list:
 
                     if value_list is None or\
-                       not any(c for c in value_list
+                       not any(True for c in value_list
                                if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
                         tlist.append(_c)
 
@@ -1860,7 +1860,7 @@ class NmrDpReport:
 
                 for _c in _value_list:
 
-                    if value_list is None or not any(c for c in value_list
+                    if value_list is None or not any(True for c in value_list
                                                      if 'sf_framecode' in c and 'sf_framecode' in _c
                                                      and c['sf_framecode'] == _c['sf_framecode']
                                                      and c['description'] == _c['description']):
@@ -2241,7 +2241,7 @@ class NmrDpReportError:
                     value['row_locations'] = locs
                     value['description'] = g[1]
 
-            if not any(v for v in self.__contents[item] if v == value):
+            if not any(True for v in self.__contents[item] if v == value):
 
                 if item in self.group_items and 'file_name' in value and 'row_location' not in value and 'row_locations' not in value:
 
@@ -2306,7 +2306,7 @@ class NmrDpReportError:
             if item in ('total', 'internal_error') or self.__contents[item] is None:
                 continue
 
-            if any(c for c in self.__contents[item]
+            if any(True for c in self.__contents[item]
                    if (c['file_name'] == file_name or file_name in emptyValue) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
 
@@ -2444,7 +2444,7 @@ class NmrDpReportError:
         if self.__contents is None:
             return False
 
-        return any(item for item in self.__contents if item == 'anomalous_data')
+        return any(True for item in self.__contents if item == 'anomalous_data')
 
     def sortFormatIssueError(self):
         """ Sort 'format_issue' error
@@ -2585,7 +2585,7 @@ class NmrDpReportWarning:
                     value['row_locations'] = locs
                     value['description'] = g[1]
 
-            if not any(v for v in self.__contents[item] if v == value):
+            if not any(True for v in self.__contents[item] if v == value):
 
                 if item in self.group_items and 'file_name' in value and 'row_location' not in value and 'row_locations' not in value:
 
@@ -2650,7 +2650,7 @@ class NmrDpReportWarning:
             if item in ('total', 'enum_mismatch_ignorable') or self.__contents[item] is None:
                 continue
 
-            if any(c for c in self.__contents[item]
+            if any(True for c in self.__contents[item]
                    if (c['file_name'] == file_name or file_name in emptyValue) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
 

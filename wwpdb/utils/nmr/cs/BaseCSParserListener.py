@@ -16,6 +16,7 @@ import sys
 import re
 import copy
 import collections
+import functools
 
 from typing import IO, List, Tuple, Union, Optional
 
@@ -2361,6 +2362,7 @@ class BaseCSParserListener():
                 pass
         return ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, None
 
+    @functools.lru_cache(maxsize=256)
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
         _compId = compId
         refCompId = None
@@ -3770,6 +3772,11 @@ class BaseCSParserListener():
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        return self.__getCoordAtomSiteOf(chainId, seqId, compId, cifCheck, asis, self.__preferAuthSeq)
+
+    @functools.lru_cache(maxsize=2048)
+    def __getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True,
+                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
 
         def get_dummy_coord_atom_site(comp_id):
             if self.ccU.updateChemCompDict(comp_id):
@@ -3779,7 +3786,7 @@ class BaseCSParserListener():
 
         seqKey = (chainId, seqId)
         if cifCheck:
-            preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
+            preferAuthSeq = __preferAuthSeq if asis else not __preferAuthSeq
             if preferAuthSeq:
                 ps = next((ps for ps in self.polySeq if 'auth_chain_id' in ps and ps['auth_chain_id'] == chainId), None)
                 if ps is None:

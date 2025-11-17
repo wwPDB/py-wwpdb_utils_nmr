@@ -28,6 +28,7 @@ import collections
 import itertools
 import numpy
 import pynmrstar
+import functools
 
 from operator import itemgetter
 from typing import Any, IO, List, Set, Tuple, Optional
@@ -2519,65 +2520,34 @@ def stripQuot(string: str) -> str:
 def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                            refAtomIdList: Optional[List[str]] = None,
                            ccU=None, unambig: bool = False) -> str:
+    atomId = atomId.upper()
+    return __translateToStdAtomNameNoRef(atomId, refCompId, ccU, unambig)\
+        if refAtomIdList is None or len(refAtomIdList) == 0 else\
+        __translateToStdAtomNameWithRef(atomId, refCompId, ','.join(refAtomIdList), ccU, unambig)
+
+
+@functools.lru_cache(maxsize=2048)
+def __translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
+                                  ccU=None, unambig: bool = False) -> str:
     """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
-    atomId = atomId.upper()
     lenAtomId = len(atomId)
     lenRefCompId = 0 if refCompId is None else len(refCompId)
-
-    if refAtomIdList is not None:
-        if atomId in refAtomIdList:
-            return atomId
 
     if None not in (refCompId, ccU):
         refCompId = translateToStdResName(refCompId, ccU=ccU)
         if ccU.updateChemCompDict(refCompId):
-            if refAtomIdList is not None:
-                if atomId in refAtomIdList:
-                    return atomId
             _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
             if "'" not in atomId and atomId in _refAtomIdList:
                 return atomId
             # DNA/RNA OH 5/3 prime terminus
             if atomId.startswith("H1'"):
-                if refAtomIdList is not None:
-                    if atomId == "H1''" and "H1'A" in refAtomIdList:  # 4DG
-                        return "H1'A"
-                    if atomId == "H1''" and "H1'" in refAtomIdList:
-                        return "H1'"
                 if atomId == "H1''" and "H1'A" in _refAtomIdList:  # 4DG
                     return "H1'A"
                 if atomId == "H1''" and "H1'" in _refAtomIdList:
                     return "H1'"
             elif atomId.startswith("H2'"):
-                if refAtomIdList is not None:
-                    if atomId == "H2'" and "H2'1" in refAtomIdList:  # DCZ, THM
-                        return "H2'1"
-                    if atomId == "H2''" and "H2'2" in refAtomIdList:  # DCZ, THM
-                        return "H2'2"
-                    if atomId == "H2''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9317)
-                        return "HO2'"
-                    if atomId == "H2''" and "H2'" in refAtomIdList:
-                        return "H2'"
-                    if atomId == "H2''''" and "H2''" in refAtomIdList:
-                        return "H2''"
-                    if atomId == "H2''''" and "H2'2" in refAtomIdList:  # DCZ, THM
-                        return "H2'2"
-                    if atomId == "H2''''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9317)
-                        return "HO2'"
-                    if atomId == "H2''1" and "H2'1" in refAtomIdList:  # 4EN
-                        return "H2'1"
-                    if atomId == "H2''2" and "H2'2" in refAtomIdList:  # 4EN
-                        return "H2'2"
-                    if atomId == "H2''1" and "H2'" in refAtomIdList:
-                        return "H2'"
-                    if atomId == "H2''2" and "H2''" in refAtomIdList:
-                        return "H2''"
-                    if atomId == "H2''" and "H22'" in refAtomIdList:  # 8YN
-                        return "H22'"
-                    if atomId == "H2'" and "H21'" in refAtomIdList:  # 8YN
-                        return "H21'"
                 if atomId == "H2'" and "H2'1" in _refAtomIdList:  # DCZ, THM
                     return "H2'1"
                 if atomId == "H2''" and "H2'2" in _refAtomIdList:  # DCZ, THM
@@ -2605,45 +2575,16 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 if atomId == "H2'" and "H21'" in _refAtomIdList:  # 8YN
                     return "H21'"
             elif atomId.startswith("H3'"):
-                if refAtomIdList is not None:
-                    if atomId == "H3''" and "H3'A" in refAtomIdList:
-                        return "H3'A"
-                    if atomId == "H3''" and "H3'" in refAtomIdList:
-                        return "H3'"
                 if atomId == "H3''" and "H3'A" in _refAtomIdList:
                     return "H3'A"
                 if atomId == "H3''" and "H3'" in _refAtomIdList:
                     return "H3'"
             elif atomId.startswith("H4'"):
-                if refAtomIdList is not None:
-                    if atomId == "H4''" and "H4'A" in refAtomIdList:  # 4DG
-                        return "H4'A"
-                    if atomId == "H4''" and "H4'" in refAtomIdList:
-                        return "H4'"
                 if atomId == "H4''" and "H4'A" in _refAtomIdList:  # 4DG
                     return "H4'A"
                 if atomId == "H4''" and "H4'" in _refAtomIdList:
                     return "H4'"
             elif atomId.startswith("H5'"):
-                if refAtomIdList is not None:
-                    if atomId == "H5'" and "H5'1" in refAtomIdList:  # DCZ, THM
-                        return "H5'1"
-                    if atomId == "H5''" and "H5'2" in refAtomIdList:  # DCZ, THM
-                        return "H5'2"
-                    if atomId == "H5''''" and "H5''" in refAtomIdList:
-                        return "H5''"
-                    if atomId == "H5''''" and "H5'2" in refAtomIdList:  # DCZ, THM
-                        return "H5'2"
-                    if atomId == "H5''" and "H5'A" in refAtomIdList:  # 4DG, 23G
-                        return "H5'A"
-                    if atomId == "H5''1" and "H5'1" in refAtomIdList:  # 4EN
-                        return "H5'1"
-                    if atomId == "H5''2" and "H5'2" in refAtomIdList:  # 4EN
-                        return "H5'2"
-                    if atomId == "H5''1" and "H5'" in refAtomIdList:
-                        return "H5'"
-                    if atomId == "H5''2" and "H5''" in refAtomIdList:
-                        return "H5''"
                 if atomId == "H5'" and "H5'1" in _refAtomIdList:  # DCZ, THM
                     return "H5'1"
                 if atomId == "H5''" and "H5'2" in _refAtomIdList:  # DCZ, THM
@@ -2662,20 +2603,6 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     return "H5'"
                 if atomId == "H5''2" and "H5''" in _refAtomIdList:
                     return "H5''"
-            elif atomId == 'H2"':  # 6dm7
-                if refAtomIdList is not None:
-                    if "H2''" in refAtomIdList:
-                        return "H2''"
-                    if "H2'2" in refAtomIdList:
-                        return "H2'2"
-            elif atomId == 'H5"':
-                if refAtomIdList is not None:
-                    if "H5''" in refAtomIdList:
-                        return "H5''"
-                    if "H5'2" in refAtomIdList:
-                        return "H5'2"
-                    if "H5'A" in refAtomIdList:
-                        return "H5'A"
 
             if atomId.startswith('NH'):
                 if atomId[1:] in _refAtomIdList:
@@ -2684,49 +2611,22 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId in _refAtomIdList:
                 return atomId
 
-            peptide, nucleotide, carbohydrate = ccU.getTypeOfCompId(refCompId)
+            nucleotide = ccU.getTypeOfCompId(refCompId)[1]
 
             if nucleotide and lenAtomId > 2:
                 if atomId.endswith('A'):  # 7w0x
-                    if refAtomIdList is not None:
-                        if atomId[:-1] + '1' in refAtomIdList:
-                            return atomId[:-1] + '1'
-                        if atomId[-2] == "'" and atomId[:-1] in refAtomIdList:
-                            return atomId[:-1]
                     if atomId[:-1] + '1' in _refAtomIdList:
                         return atomId[:-1] + '1'
                     if atomId[-2] == "'" and atomId[:-1] in _refAtomIdList:
                         return atomId[:-1]
 
                 if atomId.endswith('B'):  # 7w0x
-                    if refAtomIdList is not None:
-                        if atomId[:-1] + '2' in refAtomIdList:
-                            return atomId[:-1] + '2'
-                        if atomId[-2] == "'" and atomId[:-1] + "'" in refAtomIdList:
-                            return atomId[:-1] + "'"
                     if atomId[:-1] + '2' in _refAtomIdList:
                         return atomId[:-1] + '2'
                     if atomId[-2] == "'" and atomId[:-1] + "'" in _refAtomIdList:
                         return atomId[:-1] + "'"
 
-            if peptide and atomId in aminoProtonCode and refAtomIdList is not None:
-                if atomId[-1] in ('%', '*', '#') and not unambig:
-                    for _atomId in aminoProtonCode:
-                        if _atomId in refAtomIdList:
-                            return _atomId + '%'
-                else:
-                    for _atomId in aminoProtonCode:
-                        if _atomId in refAtomIdList:
-                            return _atomId
-
-            if carbohydrate and lenAtomId > 2 and atomId[0] in ('1', '2', '3') and atomId[1] == 'H' and refAtomIdList is not None:
-                if atomId[1:] + atomId[0] in refAtomIdList:
-                    return atomId[1:] + atomId[0]  # 2yhh: MAN:(1|2)H6 -> H6(1|2)
-
             if atomId.startswith('M') or atomId.startswith('HM') or atomId.startswith('QM'):  # methyl group
-                if refAtomIdList is not None:
-                    if 'H' + atomId[1:] + '1' in refAtomIdList:
-                        return 'H' + atomId[1:]
                 if 'H' + atomId[1:] + '1' in _refAtomIdList:
                     return 'H' + atomId[1:]
                 candidates = ccU.getRepMethylProtons(refCompId)
@@ -2744,18 +2644,6 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 return 'C7'
             elif refCompId in ('DT', 'T') and atomId == 'CH3':
                 return 'H7'
-            elif refCompId == 'THM' and refAtomIdList is not None and 'HM51' in refAtomIdList:
-                if atomId.startswith('Q7'):
-                    return 'HM5'
-                if atomId.startswith('H7'):
-                    if atomId in ('H71', 'H72', 'H73'):
-                        return 'HM5' + atomId[-1]
-                    if atomId in ('H7', 'H7%', 'H7*', 'H7#'):
-                        return 'HM5'
-                if atomId == 'CH3':
-                    return 'HM5'
-                if atomId in ('C7', 'CM'):  # 7png, 7pdu
-                    return 'C5M'
             elif refCompId in ('DA', 'A') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
                     and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 2lgm exclude H5 for segment identifier via DT:H5
                 return 'H6' + atomId[-1]
@@ -2766,52 +2654,28 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 return 'H4' + atomId[-1]
             elif refCompId == 'U' and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
                 return 'H3'
-            elif refAtomIdList is not None and ((atomId[0] + 'N' + atomId[1:] in refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList)):  # 5CM
-                return atomId[0] + 'N' + atomId[1:]
             elif (atomId[0] + 'N' + atomId[1:] in _refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in _refAtomIdList):  # 5CM
                 return atomId[0] + 'N' + atomId[1:]
-            elif refAtomIdList is not None and atomId[0].endswith('2') and (atomId[0:-1] + 'A') in refAtomIdList:
-                return atomId[0:-1] + 'A'
             elif atomId[0].endswith('2') and (atomId[0:-1] + 'A') in _refAtomIdList:
                 return atomId[0:-1] + 'A'
-            elif refAtomIdList is not None and atomId[0].endswith('3') and (atomId[0:-1] + 'B') in refAtomIdList:
-                return atomId[0:-1] + 'B'
             elif atomId[0].endswith('3') and (atomId[0:-1] + 'B') in _refAtomIdList:
                 return atomId[0:-1] + 'B'
             elif atomId.startswith('1H'):
-                if refAtomIdList is not None:
-                    if atomId[1:] + '1' in refAtomIdList:
-                        return atomId[1:] + '1'
-                    if atomId[1:].endswith("'") and atomId[1:-1] + "1'" in refAtomIdList:
-                        return atomId[1:-1] + "1'"
                 if atomId[1:] + '1' in _refAtomIdList:
                     return atomId[1:] + '1'
                 if atomId[1:].endswith("'") and atomId[1:-1] + "1'" in _refAtomIdList:
                     return atomId[1:-1] + "1'"
             elif atomId.startswith('2H'):
-                if refAtomIdList is not None:
-                    if atomId[1:] + '2' in refAtomIdList:
-                        return atomId[1:] + '2'
-                    if atomId[1:].endswith("'") and atomId[1:-1] + "2'" in refAtomIdList:
-                        return atomId[1:-1] + "2'"
                 if atomId[1:] + '2' in _refAtomIdList:
                     return atomId[1:] + '2'
                 if atomId[1:].endswith("'") and atomId[1:-1] + "2'" in _refAtomIdList:
                     return atomId[1:-1] + "2'"
             elif atomId.startswith('3H'):
-                if refAtomIdList is not None:
-                    if atomId[1:] + '3' in refAtomIdList:
-                        return atomId[1:] + '3'
-                    if atomId[1:].endswith("'") and atomId[1:-1] + "3'" in refAtomIdList:
-                        return atomId[1:-1] + "3'"
                 if atomId[1:] + '3' in _refAtomIdList:
                     return atomId[1:] + '3'
                 if atomId[1:].endswith("'") and atomId[1:-1] + "3'" in _refAtomIdList:
                     return atomId[1:-1] + "3'"
             elif atomId == "HX'":  # derived from 2mko AMBER RDC restraints
-                if refAtomIdList is not None:
-                    if "H4'" in refAtomIdList:
-                        return "H4'"
                 if "H4'" in _refAtomIdList:
                     return "H4'"
             if atomId[0] == 'R' and lenAtomId > 1:  # 2lkk
@@ -2820,11 +2684,6 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     return _atomId
                 if _atomId + '2' in _refAtomIdList and not unambig:
                     return _atomId + '%'
-
-            if atomId[0] in ('N', 'O', 'P', 'S', 'F') and refAtomIdList is not None:
-                candidates = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
-                if len(candidates) == 1:
-                    return candidates[0]
 
             if lenRefCompId == 3 and refCompId in monDict3 and lenAtomId > 1:
                 candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
@@ -2836,9 +2695,6 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 # ambiguous atom generated by 'makeDIST_RST'
                 if atomId[0] == 'Q':
                     if atomId.startswith('QP'):
-                        if refAtomIdList is not None:
-                            if 'H' + atomId[2:] + '2' in refAtomIdList:
-                                return 'H' + atomId[2:] + '%'
                         if 'H' + atomId[2:] + '2' in _refAtomIdList:
                             return 'H' + atomId[2:] + '%'
                         if refCompId in monDict3:  # 2n9e
@@ -2846,16 +2702,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     elif atomId in ('QCD', 'QCE') and isLikePheOrTyr(refCompId, ccU):  # 2js7 - peak list
                         return atomId[1:] + '%'
                     else:
-                        if refAtomIdList is not None:
-                            if 'H' + atomId[1:] + '2' in refAtomIdList:
-                                return 'H' + atomId[1:] + '%'
                         if 'H' + atomId[1:] + '2' in _refAtomIdList:
                             return 'H' + atomId[1:] + '%'
 
                 elif atomId[-1] in ('-', '+'):
-                    if refAtomIdList is not None:
-                        if atomId[:-1] + '2' in refAtomIdList:
-                            return atomId[:-1] + '%'
                     if atomId[:-1] + '2' in _refAtomIdList:
                         return atomId[:-1] + '%'
                     if atomId[:-1] in _refAtomIdList:
@@ -2863,22 +2713,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
 
                 elif atomId[0] == 'M':
                     if atomId[-1] in ('X', 'Y'):
-                        if refAtomIdList is not None:
-                            if 'H' + atomId[1:-1] + '1' in refAtomIdList or 'H' + atomId[1:-1] + '11' in refAtomIdList:
-                                return 'H' + atomId[1:-1] + '%'
                         if 'H' + atomId[1:-1] + '1' in _refAtomIdList or 'H' + atomId[1:-1] + '11' in _refAtomIdList:
                             return 'H' + atomId[1:-1] + '%'
-                    elif refAtomIdList is not None and ('H' + atomId[1:] + '1' in refAtomIdList or 'H' + atomId[1:] + '11' in refAtomIdList):
-                        return 'H' + atomId[1:] + '%'
                     elif 'H' + atomId[1:] + '1' in _refAtomIdList or 'H' + atomId[1:] + '11' in _refAtomIdList:
                         return 'H' + atomId[1:] + '%'
-
-                elif atomId in ('HT', 'HT%', 'HT*', 'HT#'):  # 6e83
-                    if refAtomIdList is not None and 'H1' in refAtomIdList:
-                        return 'H%'
-
-                elif refAtomIdList is not None and atomId + '2' in refAtomIdList:
-                    return atomId + '%'
 
                 elif atomId + '2' in _refAtomIdList:
                     return atomId + '%'
@@ -2886,9 +2724,6 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             else:
 
                 if atomId[-1] in ('-', '+'):
-                    if refAtomIdList is not None:
-                        if atomId[:-1] + ('2' if atomId[-1] == '-' else '3') in refAtomIdList:
-                            return atomId[:-1] + ('2' if atomId[-1] == '-' else '3')
                     if atomId[:-1] + ('2' if atomId[-1] == '-' else '3') in _refAtomIdList:
                         return atomId[:-1] + ('2' if atomId[-1] == '-' else '3')
                     if atomId[:-1] in _refAtomIdList:
@@ -3238,7 +3073,730 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
     elif atomId.endswith('"'):
         atomId = atomId[:lenAtomId - 1] + "''"
 
-    if refAtomIdList is not None and atomId not in refAtomIdList:
+    if atomId.endswith('+1') or atomId.endswith('+2') or atomId.endswith('+3'):
+        if atomId[:-2] in SYMBOLS_ELEMENT:
+            return atomId[:-2]
+
+    if lenAtomId > 2 and atomId[0] not in ('H', 'Q', 'M', 'C', 'N') and atomId[:2] in SYMBOLS_ELEMENT:  # 2ma7
+        if lenAtomId == 3 and atomId[-1] in ('+', '-', '1', '2', '3'):
+            return atomId[:2]
+
+        if lenAtomId == 4 and (atomId.endswith('1+') or atomId.endswith('2+') or atomId.endswith('3+')):
+            return atomId[:2]
+
+    if atomId.endswith('++') and not unambig:
+        return atomId[:-2] + '*'
+
+    if atomId.endswith('+') and not unambig:
+        return atomId[:-1] + '%'
+
+    return atomId
+
+
+@functools.lru_cache(maxsize=2048)
+def __translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
+                                    refAtomIdList_concat: str = None,
+                                    ccU=None, unambig: bool = False) -> str:
+    """ Translate software specific atom nomenclature for standard residues to the CCD one.
+    """
+
+    refAtomIdList = refAtomIdList_concat.split(',')
+
+    lenAtomId = len(atomId)
+    lenRefCompId = 0 if refCompId is None else len(refCompId)
+
+    if atomId in refAtomIdList:
+        return atomId
+
+    if None not in (refCompId, ccU):
+        refCompId = translateToStdResName(refCompId, ccU=ccU)
+        if ccU.updateChemCompDict(refCompId):
+            if atomId in refAtomIdList:
+                return atomId
+            _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+            if "'" not in atomId and atomId in _refAtomIdList:
+                return atomId
+            # DNA/RNA OH 5/3 prime terminus
+            if atomId.startswith("H1'"):
+                if atomId == "H1''" and "H1'A" in refAtomIdList:  # 4DG
+                    return "H1'A"
+                if atomId == "H1''" and "H1'" in refAtomIdList:
+                    return "H1'"
+                if atomId == "H1''" and "H1'A" in _refAtomIdList:  # 4DG
+                    return "H1'A"
+                if atomId == "H1''" and "H1'" in _refAtomIdList:
+                    return "H1'"
+            elif atomId.startswith("H2'"):
+                if atomId == "H2'" and "H2'1" in refAtomIdList:  # DCZ, THM
+                    return "H2'1"
+                if atomId == "H2''" and "H2'2" in refAtomIdList:  # DCZ, THM
+                    return "H2'2"
+                if atomId == "H2''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9317)
+                    return "HO2'"
+                if atomId == "H2''" and "H2'" in refAtomIdList:
+                    return "H2'"
+                if atomId == "H2''''" and "H2''" in refAtomIdList:
+                    return "H2''"
+                if atomId == "H2''''" and "H2'2" in refAtomIdList:  # DCZ, THM
+                    return "H2'2"
+                if atomId == "H2''''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9317)
+                    return "HO2'"
+                if atomId == "H2''1" and "H2'1" in refAtomIdList:  # 4EN
+                    return "H2'1"
+                if atomId == "H2''2" and "H2'2" in refAtomIdList:  # 4EN
+                    return "H2'2"
+                if atomId == "H2''1" and "H2'" in refAtomIdList:
+                    return "H2'"
+                if atomId == "H2''2" and "H2''" in refAtomIdList:
+                    return "H2''"
+                if atomId == "H2''" and "H22'" in refAtomIdList:  # 8YN
+                    return "H22'"
+                if atomId == "H2'" and "H21'" in refAtomIdList:  # 8YN
+                    return "H21'"
+                if atomId == "H2'" and "H2'1" in _refAtomIdList:  # DCZ, THM
+                    return "H2'1"
+                if atomId == "H2''" and "H2'2" in _refAtomIdList:  # DCZ, THM
+                    return "H2'2"
+                if atomId == "H2''" and "HO2'" in _refAtomIdList:  # 5MC (DAOTHER-9317)
+                    return "HO2'"
+                if atomId == "H2''" and "H2'" in _refAtomIdList:
+                    return "H2'"
+                if atomId == "H2''''" and "H2''" in _refAtomIdList:
+                    return "H2''"
+                if atomId == "H2''''" and "H2'2" in _refAtomIdList:  # DCZ, THM
+                    return "H2'2"
+                if atomId == "H2''" and "H2'2" in _refAtomIdList:  # DCZ, THM
+                    return "H2'2"
+                if atomId == "H2''1" and "H2'1" in _refAtomIdList:  # 4EN
+                    return "H2'1"
+                if atomId == "H2''2" and "H2'2" in _refAtomIdList:  # 4EN
+                    return "H2'2"
+                if atomId == "H2''1" and "H2'" in _refAtomIdList:
+                    return "H2'"
+                if atomId == "H2''2" and "H2''" in _refAtomIdList:
+                    return "H2''"
+                if atomId == "H2''" and "H22'" in _refAtomIdList:  # 8YN
+                    return "H22'"
+                if atomId == "H2'" and "H21'" in _refAtomIdList:  # 8YN
+                    return "H21'"
+            elif atomId.startswith("H3'"):
+                if atomId == "H3''" and "H3'A" in refAtomIdList:
+                    return "H3'A"
+                if atomId == "H3''" and "H3'" in refAtomIdList:
+                    return "H3'"
+                if atomId == "H3''" and "H3'A" in _refAtomIdList:
+                    return "H3'A"
+                if atomId == "H3''" and "H3'" in _refAtomIdList:
+                    return "H3'"
+            elif atomId.startswith("H4'"):
+                if atomId == "H4''" and "H4'A" in refAtomIdList:  # 4DG
+                    return "H4'A"
+                if atomId == "H4''" and "H4'" in refAtomIdList:
+                    return "H4'"
+                if atomId == "H4''" and "H4'A" in _refAtomIdList:  # 4DG
+                    return "H4'A"
+                if atomId == "H4''" and "H4'" in _refAtomIdList:
+                    return "H4'"
+            elif atomId.startswith("H5'"):
+                if atomId == "H5'" and "H5'1" in refAtomIdList:  # DCZ, THM
+                    return "H5'1"
+                if atomId == "H5''" and "H5'2" in refAtomIdList:  # DCZ, THM
+                    return "H5'2"
+                if atomId == "H5''''" and "H5''" in refAtomIdList:
+                    return "H5''"
+                if atomId == "H5''''" and "H5'2" in refAtomIdList:  # DCZ, THM
+                    return "H5'2"
+                if atomId == "H5''" and "H5'A" in refAtomIdList:  # 4DG, 23G
+                    return "H5'A"
+                if atomId == "H5''1" and "H5'1" in refAtomIdList:  # 4EN
+                    return "H5'1"
+                if atomId == "H5''2" and "H5'2" in refAtomIdList:  # 4EN
+                    return "H5'2"
+                if atomId == "H5''1" and "H5'" in refAtomIdList:
+                    return "H5'"
+                if atomId == "H5''2" and "H5''" in refAtomIdList:
+                    return "H5''"
+                if atomId == "H5'" and "H5'1" in _refAtomIdList:  # DCZ, THM
+                    return "H5'1"
+                if atomId == "H5''" and "H5'2" in _refAtomIdList:  # DCZ, THM
+                    return "H5'2"
+                if atomId == "H5''''" and "H5''" in _refAtomIdList:
+                    return "H5''"
+                if atomId == "H5''''" and "H5'2" in _refAtomIdList:  # DCZ, THM
+                    return "H5'2"
+                if atomId == "H5''" and "H5'A" in _refAtomIdList:  # 4DG, 23G
+                    return "H5'A"
+                if atomId == "H5''1" and "H5'1" in _refAtomIdList:  # 4EN
+                    return "H5'1"
+                if atomId == "H5''2" and "H5'2" in _refAtomIdList:  # 4EN
+                    return "H5'2"
+                if atomId == "H5''1" and "H5'" in _refAtomIdList:
+                    return "H5'"
+                if atomId == "H5''2" and "H5''" in _refAtomIdList:
+                    return "H5''"
+            elif atomId == 'H2"':  # 6dm7
+                if "H2''" in refAtomIdList:
+                    return "H2''"
+                if "H2'2" in refAtomIdList:
+                    return "H2'2"
+            elif atomId == 'H5"':
+                if "H5''" in refAtomIdList:
+                    return "H5''"
+                if "H5'2" in refAtomIdList:
+                    return "H5'2"
+                if "H5'A" in refAtomIdList:
+                    return "H5'A"
+
+            if atomId.startswith('NH'):
+                if atomId[1:] in _refAtomIdList:
+                    return atomId[1:]
+
+            if atomId in _refAtomIdList:
+                return atomId
+
+            peptide, nucleotide, carbohydrate = ccU.getTypeOfCompId(refCompId)
+
+            if nucleotide and lenAtomId > 2:
+                if atomId.endswith('A'):  # 7w0x
+                    if atomId[:-1] + '1' in refAtomIdList:
+                        return atomId[:-1] + '1'
+                    if atomId[-2] == "'" and atomId[:-1] in refAtomIdList:
+                        return atomId[:-1]
+                    if atomId[:-1] + '1' in _refAtomIdList:
+                        return atomId[:-1] + '1'
+                    if atomId[-2] == "'" and atomId[:-1] in _refAtomIdList:
+                        return atomId[:-1]
+
+                if atomId.endswith('B'):  # 7w0x
+                    if atomId[:-1] + '2' in refAtomIdList:
+                        return atomId[:-1] + '2'
+                    if atomId[-2] == "'" and atomId[:-1] + "'" in refAtomIdList:
+                        return atomId[:-1] + "'"
+                    if atomId[:-1] + '2' in _refAtomIdList:
+                        return atomId[:-1] + '2'
+                    if atomId[-2] == "'" and atomId[:-1] + "'" in _refAtomIdList:
+                        return atomId[:-1] + "'"
+
+            if peptide and atomId in aminoProtonCode:
+                if atomId[-1] in ('%', '*', '#') and not unambig:
+                    for _atomId in aminoProtonCode:
+                        if _atomId in refAtomIdList:
+                            return _atomId + '%'
+                else:
+                    for _atomId in aminoProtonCode:
+                        if _atomId in refAtomIdList:
+                            return _atomId
+
+            if carbohydrate and lenAtomId > 2 and atomId[0] in ('1', '2', '3') and atomId[1] == 'H':
+                if atomId[1:] + atomId[0] in refAtomIdList:
+                    return atomId[1:] + atomId[0]  # 2yhh: MAN:(1|2)H6 -> H6(1|2)
+
+            if atomId.startswith('M') or atomId.startswith('HM') or atomId.startswith('QM'):  # methyl group
+                if 'H' + atomId[1:] + '1' in refAtomIdList:
+                    return 'H' + atomId[1:]
+                if 'H' + atomId[1:] + '1' in _refAtomIdList:
+                    return 'H' + atomId[1:]
+                candidates = ccU.getRepMethylProtons(refCompId)
+                if len(candidates) == 1:
+                    atomId = candidates[0]
+                    return atomId[:-1] if atomId.endswith('1') else atomId
+            elif refCompId in ('DT', 'T') and atomId.startswith('Q5'):
+                return 'H7'
+            elif refCompId in ('DT', 'T') and atomId.startswith('H5') and "'" not in atomId:  # 2lsz
+                if atomId in ('H51', 'H52', 'H53'):
+                    return 'H7' + atomId[-1]
+                if atomId in ('H5', 'H5%', 'H5*', 'H5#'):
+                    return 'H7'
+            elif refCompId in ('DT', 'T') and (atomId.startswith('C5') or atomId == 'CM'):  # 7dju, 7pdu
+                return 'C7'
+            elif refCompId in ('DT', 'T') and atomId == 'CH3':
+                return 'H7'
+            elif refCompId == 'THM' and 'HM51' in refAtomIdList:
+                if atomId.startswith('Q7'):
+                    return 'HM5'
+                if atomId.startswith('H7'):
+                    if atomId in ('H71', 'H72', 'H73'):
+                        return 'HM5' + atomId[-1]
+                    if atomId in ('H7', 'H7%', 'H7*', 'H7#'):
+                        return 'HM5'
+                if atomId == 'CH3':
+                    return 'HM5'
+                if atomId in ('C7', 'CM'):  # 7png, 7pdu
+                    return 'C5M'
+            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
+                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 2lgm exclude H5 for segment identifier via DT:H5
+                return 'H6' + atomId[-1]
+            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
+                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 fir segment identifier via DT:H5
+                return 'H2' + atomId[-1]
+            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+                return 'H4' + atomId[-1]
+            elif refCompId == 'U' and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
+                return 'H3'
+            elif (atomId[0] + 'N' + atomId[1:] in refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList):  # 5CM
+                return atomId[0] + 'N' + atomId[1:]
+            elif (atomId[0] + 'N' + atomId[1:] in _refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in _refAtomIdList):  # 5CM
+                return atomId[0] + 'N' + atomId[1:]
+            elif atomId[0].endswith('2') and (atomId[0:-1] + 'A') in refAtomIdList:
+                return atomId[0:-1] + 'A'
+            elif atomId[0].endswith('2') and (atomId[0:-1] + 'A') in _refAtomIdList:
+                return atomId[0:-1] + 'A'
+            elif atomId[0].endswith('3') and (atomId[0:-1] + 'B') in refAtomIdList:
+                return atomId[0:-1] + 'B'
+            elif atomId[0].endswith('3') and (atomId[0:-1] + 'B') in _refAtomIdList:
+                return atomId[0:-1] + 'B'
+            elif atomId.startswith('1H'):
+                if atomId[1:] + '1' in refAtomIdList:
+                    return atomId[1:] + '1'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "1'" in refAtomIdList:
+                    return atomId[1:-1] + "1'"
+                if atomId[1:] + '1' in _refAtomIdList:
+                    return atomId[1:] + '1'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "1'" in _refAtomIdList:
+                    return atomId[1:-1] + "1'"
+            elif atomId.startswith('2H'):
+                if atomId[1:] + '2' in refAtomIdList:
+                    return atomId[1:] + '2'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "2'" in refAtomIdList:
+                    return atomId[1:-1] + "2'"
+                if atomId[1:] + '2' in _refAtomIdList:
+                    return atomId[1:] + '2'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "2'" in _refAtomIdList:
+                    return atomId[1:-1] + "2'"
+            elif atomId.startswith('3H'):
+                if atomId[1:] + '3' in refAtomIdList:
+                    return atomId[1:] + '3'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "3'" in refAtomIdList:
+                    return atomId[1:-1] + "3'"
+                if atomId[1:] + '3' in _refAtomIdList:
+                    return atomId[1:] + '3'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "3'" in _refAtomIdList:
+                    return atomId[1:-1] + "3'"
+            elif atomId == "HX'":  # derived from 2mko AMBER RDC restraints
+                if "H4'" in refAtomIdList:
+                    return "H4'"
+                if "H4'" in _refAtomIdList:
+                    return "H4'"
+            if atomId[0] == 'R' and lenAtomId > 1:  # 2lkk
+                _atomId = 'H' + atomId[1:]
+                if _atomId in _refAtomIdList:
+                    return _atomId
+                if _atomId + '2' in _refAtomIdList and not unambig:
+                    return _atomId + '%'
+
+            if atomId[0] in ('N', 'O', 'P', 'S', 'F'):
+                candidates = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
+                if len(candidates) == 1:
+                    return candidates[0]
+
+            if lenRefCompId == 3 and refCompId in monDict3 and lenAtomId > 1:
+                candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
+                if len(candidates) == 1 and len(candidates[0]) == lenAtomId + 1 and candidates[0][-1].isdigit():
+                    return candidates[0]
+
+            if not unambig:
+
+                # ambiguous atom generated by 'makeDIST_RST'
+                if atomId[0] == 'Q':
+                    if atomId.startswith('QP'):
+                        if 'H' + atomId[2:] + '2' in refAtomIdList:
+                            return 'H' + atomId[2:] + '%'
+                        if 'H' + atomId[2:] + '2' in _refAtomIdList:
+                            return 'H' + atomId[2:] + '%'
+                        if refCompId in monDict3:  # 2n9e
+                            return 'H' + atomId[2:] + '%'
+                    elif atomId in ('QCD', 'QCE') and isLikePheOrTyr(refCompId, ccU):  # 2js7 - peak list
+                        return atomId[1:] + '%'
+                    else:
+                        if 'H' + atomId[1:] + '2' in refAtomIdList:
+                            return 'H' + atomId[1:] + '%'
+                        if 'H' + atomId[1:] + '2' in _refAtomIdList:
+                            return 'H' + atomId[1:] + '%'
+
+                elif atomId[-1] in ('-', '+'):
+                    if atomId[:-1] + '2' in refAtomIdList:
+                        return atomId[:-1] + '%'
+                    if atomId[:-1] + '2' in _refAtomIdList:
+                        return atomId[:-1] + '%'
+                    if atomId[:-1] in _refAtomIdList:
+                        return atomId[:-1]
+
+                elif atomId[0] == 'M':
+                    if atomId[-1] in ('X', 'Y'):
+                        if 'H' + atomId[1:-1] + '1' in refAtomIdList or 'H' + atomId[1:-1] + '11' in refAtomIdList:
+                            return 'H' + atomId[1:-1] + '%'
+                        if 'H' + atomId[1:-1] + '1' in _refAtomIdList or 'H' + atomId[1:-1] + '11' in _refAtomIdList:
+                            return 'H' + atomId[1:-1] + '%'
+                    elif 'H' + atomId[1:] + '1' in refAtomIdList or 'H' + atomId[1:] + '11' in refAtomIdList:
+                        return 'H' + atomId[1:] + '%'
+                    elif 'H' + atomId[1:] + '1' in _refAtomIdList or 'H' + atomId[1:] + '11' in _refAtomIdList:
+                        return 'H' + atomId[1:] + '%'
+
+                elif atomId in ('HT', 'HT%', 'HT*', 'HT#'):  # 6e83
+                    if 'H1' in refAtomIdList:
+                        return 'H%'
+
+                elif atomId + '2' in refAtomIdList:
+                    return atomId + '%'
+
+                elif atomId + '2' in _refAtomIdList:
+                    return atomId + '%'
+
+            else:
+
+                if atomId[-1] in ('-', '+'):
+                    if atomId[:-1] + ('2' if atomId[-1] == '-' else '3') in refAtomIdList:
+                        return atomId[:-1] + ('2' if atomId[-1] == '-' else '3')
+                    if atomId[:-1] + ('2' if atomId[-1] == '-' else '3') in _refAtomIdList:
+                        return atomId[:-1] + ('2' if atomId[-1] == '-' else '3')
+                    if atomId[:-1] in _refAtomIdList:
+                        return atomId[:-1]
+
+    if refCompId is not None:
+
+        # GROMACS atom nomenclature
+        if refCompId == 'ILE':
+            if atomId in ('HD1', 'HD2', 'HD3'):
+                return 'HD1' + atomId[-1]
+            if atomId == 'CD':
+                return 'CD1'
+
+        elif refCompId in ('SER', 'THR', 'TYR'):
+            if refCompId == 'TYR' and atomId == 'HO':
+                return 'HH'
+            if atomId.startswith('HO') and lenAtomId > 2:  # 2n6j
+                return 'H' + atomId[2:]
+
+        elif refCompId == 'ASN' and (atomId.startswith('HND')
+                                     or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+            if atomId == 'HND1':
+                return 'HD21'
+            if atomId == 'HND2':
+                return 'HD22'
+            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
+                return 'HD2'
+
+        elif refCompId == 'GLN' and (atomId.startswith('HNE')
+                                     or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+            if atomId == 'HNE1':
+                return 'HE21'
+            if atomId == 'HNE2':
+                return 'HE22'
+            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#')) and not unambig:
+                return 'HE2'  # 5xdi
+
+        elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
+            return 'HE'
+
+        elif refCompId == 'ASP' and atomId.startswith('HD'):  # 6fe6
+            return 'HD2'
+
+        elif refCompId == 'GLU' and atomId.startswith('HE'):
+            return 'HE2'
+
+        elif refCompId in ('HIS', 'OUH'):
+            if atomId == 'HNE':  # 2k4w
+                return 'HE2'
+            if atomId == 'HND':  # 5n14 OUH:HND
+                return 'HD1'
+            if atomId == 'HE':
+                return 'HE1'
+            if atomId == 'HD':
+                return 'HD2'
+
+        elif refCompId == 'NH2':
+            if atomId in ('HN*', 'HN%', 'H*', 'H%', 'QH', 'QN', 'Q1') and not unambig:
+                return 'HN%'
+            if atomId[-1] not in ('%', '*', '#'):
+                if atomId in ('H', 'HN'):
+                    return 'HN1'
+                if atomId.startswith('H'):
+                    return 'HN2'
+
+        elif refCompId == 'ACE':
+            if atomId in ('HA', 'HA%', 'HA*', 'HA#', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
+                return 'H%'
+            if atomId == 'CA':
+                return 'CH3'
+
+        elif refCompId == 'A2G' and atomId == 'HNA':
+            return 'HN2'  # 2mk7
+
+        elif refCompId == 'CGU':  # 2mzm
+            if atomId.startswith('O1'):
+                return 'OE' + atomId[1:]
+            if atomId.startswith('O2'):
+                return 'OE' + atomId[1:]
+
+        elif refCompId in ('HEB', 'HEC', 'MH0'):
+            is_mh0 = refCompId == 'MH0'  # 2n3y
+            if atomId[0] in pseProBeginCode:
+                if atomId == 'QM1':
+                    return 'QMB' if is_mh0 else 'HMB'
+                if atomId == 'QT2':
+                    return 'QBB' if is_mh0 else 'HBB'
+                if atomId.startswith('HT2') and is_mh0:
+                    return 'QAB'
+                if atomId.startswith('HT2') and refCompId == 'HEC':
+                    return 'HAB'
+                if atomId in ('HT2', 'HA2', 'HA21', 'HA22') and refCompId == 'HEB':
+                    return 'HAB'
+                if atomId == 'HA23' and refCompId == 'HEB':
+                    return 'HAB2'
+                if atomId == 'QM3':
+                    return 'QMC' if is_mh0 else 'HMC'
+                if atomId == 'QT4':
+                    return 'HBC'
+                if atomId.startswith('HT4'):
+                    return 'QAC' if is_mh0 else 'HAC'
+                if atomId == 'QM5':
+                    return 'QMD' if is_mh0 else 'HMD'
+                if atomId == 'HA62':
+                    return 'HAD1'
+                if atomId == 'HA63':
+                    return 'HAD2'
+                if atomId == 'HB62':
+                    return 'HBD1'
+                if atomId == 'HB63':
+                    return 'HBD2'
+                if atomId == 'HA71' and is_mh0:
+                    return 'H8'
+                if atomId == 'HA72' and is_mh0:
+                    return 'H9'
+                if atomId == 'HA72':
+                    return 'HAA1'
+                if atomId == 'HA73':
+                    return 'HAA2'
+                if atomId == 'HB73' and is_mh0:
+                    return 'H10'
+                if atomId == 'HB74' and is_mh0:
+                    return 'H11'
+                if atomId == 'HB2' and is_mh0:
+                    return 'H16'
+                if atomId == 'HB3' and is_mh0:
+                    return 'H17'
+                if atomId == 'HD1' and is_mh0:
+                    return 'H32'
+                if atomId == 'HD2' and is_mh0:
+                    return 'H33'
+                if atomId == 'HE1' and is_mh0:
+                    return 'H34'
+                if atomId == 'HE2' and is_mh0:
+                    return 'H35'
+                if atomId == 'HB72':
+                    return 'HBA1'
+                if atomId == 'HB73':
+                    return 'HBA2'
+                if atomId == 'HA6':
+                    return 'HAD'
+                if atomId == 'HB6':
+                    return 'HBD'
+                if atomId == 'HA7':
+                    return 'HAA'
+                if atomId == 'HB7':
+                    return 'HBA'
+                if atomId == 'QM8':
+                    return 'QMA' if is_mh0 else 'HMA'
+                if atomId == 'HAM':
+                    return 'HHA'
+                if atomId == 'HBM':
+                    return 'HHB'
+                if atomId in ('HGM', 'HCM'):
+                    return 'HHC'
+                if atomId == 'HDM':
+                    return 'HHD'
+
+        if refCompId in ('OUD', 'OUE', 'OUH', 'OUI', 'OUK', 'OUR'):  # 5n14
+            if atomId == 'QPA':
+                return 'HM'
+            if atomId == 'QPG' and refCompId == 'OUI':
+                return 'HG1'
+
+        if lenRefCompId == 3 and refCompId in monDict3:
+            if atomId in ('O1', 'OT1'):
+                return 'O'
+            if atomId == 'O2' or atomId.startswith('OT'):
+                return 'OXT'
+            if atomId.startswith('HT') and lenAtomId > 2:
+                return 'H' + atomId[2:]
+            if atomId == 'NH':  # 2jwu
+                return 'N'
+            if atomId.startswith('HQ'):  # 1e8e
+                return atomId[1:]
+            if refCompId in ('PHE', 'TYR'):  # 4ar0
+                if atomId == 'HD3':
+                    return 'HD1'
+                if atomId == 'HE3':
+                    return 'HE1'
+
+        # BIOSYM atom nomenclature
+        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (lenAtomId > 2 and atomId[-2] in ('R', 'S'))):
+            if refCompId in ('CYS', 'ASP', 'HIS', 'SER'):
+                if atomId == 'HBR':
+                    return 'HB3'
+                if atomId == 'HBS':
+                    return 'HB2'
+            elif refCompId in ('GLU', 'PHE', 'TRP', 'TYR'):
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+            elif refCompId == 'GLY':
+                if atomId == 'HAR':
+                    return 'HA2'
+                if atomId == 'HAS':
+                    return 'HA3'
+            elif refCompId == 'ILE':
+                if atomId == 'HG1R':
+                    return 'HG12'
+                if atomId == 'HG1S':
+                    return 'HG13'
+            elif refCompId == 'LYS':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG2'
+                if atomId == 'HGS':
+                    return 'HG3'
+                if atomId == 'HDR':
+                    return 'HD3'
+                if atomId == 'HDS':
+                    return 'HD2'
+                if atomId == 'HER':
+                    return 'HE3'
+                if atomId == 'HES':
+                    return 'HE2'
+            elif refCompId == 'LEU':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId.startswith('HDR'):
+                    return 'HD1'
+                if atomId.startswith('HDS'):
+                    return 'HD2'
+                if atomId == 'CDR':
+                    return 'CD1'
+                if atomId == 'CDS':
+                    return 'CD2'
+            elif refCompId == 'MET':
+                if atomId == 'HBR':
+                    return 'HB3'
+                if atomId == 'HBS':
+                    return 'HB2'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+            elif refCompId == 'ASN':
+                if atomId == 'HBR':
+                    return 'HB3'
+                if atomId == 'HBS':
+                    return 'HB2'
+                if atomId == 'HD2Z':
+                    return 'HD22'
+                if atomId == 'HD2E':
+                    return 'HD21'
+            elif refCompId == 'PRO':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+                if atomId == 'HDR':
+                    return 'HD3'
+                if atomId == 'HDS':
+                    return 'HD2'
+            elif refCompId == 'GLN':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+                if atomId == 'HE2Z':
+                    return 'HE22'
+                if atomId == 'HE2E':
+                    return 'HE21'
+            elif refCompId == 'ARG':
+                if atomId == 'HBR':
+                    return 'HB2'
+                if atomId == 'HBS':
+                    return 'HB3'
+                if atomId == 'HGR':
+                    return 'HG3'
+                if atomId == 'HGS':
+                    return 'HG2'
+                if atomId == 'HDR':
+                    return 'HD3'
+                if atomId == 'HDS':
+                    return 'HD2'
+                if atomId == 'NHZ':
+                    return 'NH1'
+                if atomId == 'NHE':
+                    return 'NH2'
+                if atomId == 'HH1Z':
+                    return 'HH11'
+                if atomId == 'HH1E':
+                    return 'HH12'
+                if atomId == 'HH2Z':
+                    return 'HH21'
+                if atomId == 'HH2E':
+                    return 'HH22'
+            elif refCompId == 'VAL':
+                if atomId.startswith('HGR'):
+                    return 'HG1'
+                if atomId.startswith('HGS'):
+                    return 'HG2'
+                if atomId == 'CGR':
+                    return 'CG1'
+                if atomId == 'CGS':
+                    return 'CG2'
+
+    if atomId.endswith("O'1"):
+        atomId = atomId[:lenAtomId - 3] + "O1'"
+    elif atomId.endswith("O'2"):
+        atomId = atomId[:lenAtomId - 3] + "O2'"
+    elif atomId.endswith("O'3"):
+        atomId = atomId[:lenAtomId - 3] + "O3'"
+    elif atomId.endswith("O'4"):
+        atomId = atomId[:lenAtomId - 3] + "O4'"
+    elif atomId.endswith("O'5"):
+        atomId = atomId[:lenAtomId - 3] + "O5'"
+    elif atomId.endswith("O'6"):
+        atomId = atomId[:lenAtomId - 3] + "O6'"
+    elif atomId.endswith("'1") and not atomId.endswith("''1"):
+        atomId = atomId.rstrip('1')
+    elif atomId.endswith("'2") and not atomId.endswith("''2"):
+        atomId = atomId.rstrip('2') + "'"
+    elif atomId == 'O1P':
+        atomId = 'OP1'
+    elif atomId == 'O2P':
+        atomId = 'OP2'
+    elif atomId == 'O3P':
+        atomId = 'OP3'
+    elif atomId == 'H3T':
+        atomId = "HO3'"
+    elif atomId == 'H5T':
+        atomId = 'HOP2'
+    elif atomId.endswith("''"):
+        if atomId[0] in ('C', 'O') and atomId[1].isdigit():
+            atomId = atomId[:lenAtomId - 1]
+    elif atomId.endswith('"'):
+        atomId = atomId[:lenAtomId - 1] + "''"
+
+    if atomId not in refAtomIdList:
         if not atomId.endswith("'") and (atomId + "'") in refAtomIdList:
             return atomId + "'"
         if atomId.endswith("''''"):
@@ -3907,6 +4465,7 @@ def translateToStdAtomNameOfDmpc(atomId: str, dmpcNameSystemId: int = -1) -> str
     return atomId
 
 
+@functools.lru_cache(maxsize=128)
 def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None) -> str:
     """ Translate software specific residue name to standard residue name of CCD.
     """
@@ -4072,6 +4631,7 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
     return compId
 
 
+@functools.lru_cache(maxsize=128)
 def backTranslateFromStdResName(compId: str) -> Set[str]:
     """ Back translate standard residue name to software specific name.
     """
@@ -4115,6 +4675,7 @@ def backTranslateFromStdResName(compId: str) -> Set[str]:
     return set()
 
 
+@functools.lru_cache(maxsize=128)
 def translateToLigandName(compId: str, refCompId: str, ccU) -> str:
     """ Translate software specific ligand name if possible.
     """
@@ -7148,6 +7709,7 @@ def fixBackboneAtomsOfDihedralRestraint(angleName: str, atoms: List[dict], curre
     return angleName, atoms[1], atoms[2], msg
 
 
+@functools.lru_cache(maxsize=128)
 def isLikePheOrTyr(compId: str, ccU) -> bool:
     """ Return whether a given comp_id is amino acid with flippable symmetrical ring like phenylalanine or tryrosine.
     """
@@ -7168,6 +7730,7 @@ def isLikePheOrTyr(compId: str, ccU) -> bool:
     return False
 
 
+@functools.lru_cache(maxsize=128)
 def isLikeHis(compId: str, ccU) -> bool:
     """ Return whether a given comp_id is like histigine.
     """
@@ -7242,6 +7805,7 @@ def getRdcCode(atoms: List[dict]) -> Optional[str]:
     return 'RDC_other'
 
 
+@functools.lru_cache(maxsize=128)
 def startsWithPdbRecord(line: str, ignoreRemark: bool = False) -> bool:
     """ Return whether a given line string starts with legacy PDB records.
     """

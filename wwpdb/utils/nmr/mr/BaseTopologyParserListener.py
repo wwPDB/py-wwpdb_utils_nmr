@@ -15,6 +15,7 @@ __version__ = "1.1.1"
 import sys
 import collections
 import copy
+import functools
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 from typing import IO, List, Optional
@@ -961,6 +962,7 @@ class BaseTopologyParserListener():
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
+    @functools.lru_cache(maxsize=128)
     def isSegment(self, prev_comp_id: Optional[str], prev_atom_name: str, comp_id: str, atom_name: str) -> bool:
         if prev_comp_id is None:
             return False
@@ -975,6 +977,7 @@ class BaseTopologyParserListener():
             and (is_prev_3_prime_comp
                  or self.csStat.peptideLike(translateToStdResName(prev_comp_id, ccU=self.ccU)))
 
+    @functools.lru_cache(maxsize=128)
     def isSegmentWithAsymHint(self, prev_asym_id: Optional[str], prev_comp_id: Optional[str], prev_atom_name: str,
                               asym_id: str, comp_id: str, atom_name: str) -> bool:
         if prev_asym_id is None or prev_comp_id is None:
@@ -992,6 +995,7 @@ class BaseTopologyParserListener():
             and (is_prev_3_prime_comp
                  or self.csStat.peptideLike(translateToStdResName(prev_comp_id, ccU=self.ccU)))
 
+    @functools.lru_cache(maxsize=128)
     def isLigand(self, prev_comp_id: Optional[str], comp_id: str) -> bool:  # pylint: disable=no-self-use
         if prev_comp_id is None or not self.hasNonPolyModel:
             return False
@@ -1012,6 +1016,7 @@ class BaseTopologyParserListener():
                     return True
         return False
 
+    @functools.lru_cache(maxsize=128)
     def isMetalIon(self, comp_id: Optional[str], atom_name: str) -> bool:  # pylint: disable=no-self-use
         if comp_id is None:
             return False
@@ -1023,6 +1028,7 @@ class BaseTopologyParserListener():
             or (comp_id[-1] in ('+', '-') and comp_id[:-1].title() in NAMES_ELEMENT)\
             or (len(comp_id) > 2 and comp_id[-2] in ('+', '-') and comp_id[:-2].title() in NAMES_ELEMENT)
 
+    @functools.lru_cache(maxsize=128)
     def isMetalElem(self, prev_atom_name: str, prev_seq_id: int, seq_id: int) -> bool:  # pylint: disable=no-self-use
         if len(prev_atom_name) == 0:
             return False

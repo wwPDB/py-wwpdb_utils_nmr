@@ -20,6 +20,7 @@ __version__ = "1.0.4"
 import sys
 import os
 import re
+import functools
 
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
@@ -35,6 +36,7 @@ except ImportError:
 ccd_id_pattern = re.compile(r'(\w{1,3}|\w{5})')
 
 
+@functools.lru_cache(maxsize=128)
 def is_reserved_lig_code(comp_id: str) -> bool:
     """ Return a given comp_id is reserved for new ligands. (DAOTHER-7204, 7388)
     """

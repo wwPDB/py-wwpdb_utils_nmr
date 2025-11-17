@@ -19,6 +19,7 @@ import collections
 import numpy
 import itertools
 import pynmrstar
+import functools
 
 from typing import IO, List, Tuple, Union, Optional
 
@@ -8470,6 +8471,7 @@ class BasePKParserListener():
                 pass
         return ps['auth_chain_id'], seqId, None
 
+    @functools.lru_cache(maxsize=256)
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
         _compId = compId
         refCompId = None
@@ -10724,9 +10726,14 @@ class BasePKParserListener():
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        return self.__getCoordAtomSiteOf(chainId, seqId, compId, cifCheck, asis, self.__preferAuthSeq)
+
+    @functools.lru_cache(maxsize=2048)
+    def __getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True,
+                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if cifCheck:
-            preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
+            preferAuthSeq = __preferAuthSeq if asis else not __preferAuthSeq
             if preferAuthSeq:
                 if compId is not None:
                     _seqKey = (chainId, seqId, compId)

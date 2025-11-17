@@ -18,6 +18,8 @@ import itertools
 import numpy
 import copy
 import collections
+import functools
+import random
 
 from typing import IO, List, Tuple, Optional
 
@@ -4232,10 +4234,34 @@ class BaseStackedMRParserListener():
         if isinstance(_selection2[0], str) and _selection2[0] == '*':
             return _selection1
 
-        hasAuthAtomId1 = any(_atom for _atom in _selection1 if 'auth_atom_id' in _atom)
-        hasAuthAtomId2 = any(_atom for _atom in _selection2 if 'auth_atom_id' in _atom)
-        hasSegmentId1 = any(_atom for _atom in _selection1 if 'segment_id' in _atom)
-        hasSegmentId2 = any(_atom for _atom in _selection2 if 'segment_id' in _atom)
+        max_sample = 40
+        len_selection1 = len(_selection1)
+        len_selection2 = len(_selection2)
+
+        if len_selection1 <= max_sample:
+            slice1 = _selection1
+        elif len_selection1 <= max_sample * 2:
+            slice1 = _selection1[0:len_selection1:2]
+        else:
+            slice1 = [_selection1[0], _selection1[-1]]
+            for _ in range(max_sample - 2):
+                idx = random.randint(2, len_selection1 - 1)
+                slice1.append(_selection1[idx])
+
+        if len_selection2 <= max_sample:
+            slice2 = _selection2
+        elif len_selection2 <= max_sample * 2:
+            slice2 = _selection2[0:len_selection2:2]
+        else:
+            slice2 = [_selection2[0], _selection2[-1]]
+            for _ in range(max_sample - 2):
+                idx = random.randint(2, len_selection2 - 1)
+                slice2.append(_selection2[idx])
+
+        hasAuthAtomId1 = any(_atom for _atom in slice1 if 'auth_atom_id' in _atom)
+        hasAuthAtomId2 = any(_atom for _atom in slice2 if 'auth_atom_id' in _atom)
+        hasSegmentId1 = any(_atom for _atom in slice1 if 'segment_id' in _atom)
+        hasSegmentId2 = any(_atom for _atom in slice2 if 'segment_id' in _atom)
 
         _atomSelection = []
 
@@ -7042,6 +7068,7 @@ class BaseStackedMRParserListener():
 
         return foundCompId
 
+    @functools.lru_cache(maxsize=128)
     def getRealCompId(self, compId: str) -> str:
         if self.ccU.updateChemCompDict(compId, False):
             if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.ccU.lastChemCompDict:
@@ -7226,6 +7253,7 @@ class BaseStackedMRParserListener():
                         return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
         return seqId, None, False
 
+    @functools.lru_cache(maxsize=128)
     def getRealChainId(self, chainId: str, hint: str = None) -> str:
         if self.reasons is not None and 'segment_id_mismatch' in self.reasons and chainId in self.reasons['segment_id_mismatch']:
             _chainId = self.reasons['segment_id_mismatch'][chainId]
@@ -7302,6 +7330,7 @@ class BaseStackedMRParserListener():
             if _score == __score and _chainId != __chainId and altChainId in self.reasonsForReParsing['segment_id_mismatch']:  # 2la5
                 del self.reasonsForReParsing['segment_id_mismatch'][altChainId]  # 2lzs
 
+    @functools.lru_cache(maxsize=2048)
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
@@ -7847,7 +7876,7 @@ class BaseStackedMRParserListener():
                 if v == _factor['chain_id']:
                     continue
 
-            if k == 'alt_comp_id' and v == _factor['comp_id']:
+            if k == 'alt_comp_id' and 'comp_id' in _factor and v == _factor['comp_id']:
                 continue
 
             if k == 'alt_atom_id' and v == _factor['atom_id']:

@@ -18,6 +18,7 @@ import copy
 import itertools
 import numpy
 import collections
+import functools
 
 from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
@@ -2957,10 +2958,15 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        return self.__getCoordAtomSiteOf(chainId, seqId, cifCheck, asis, self.__preferAuthSeq)
+
+    @functools.lru_cache(maxsize=2048)
+    def __getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True,
+                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         coordAtomSite = None
         if cifCheck:
-            preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
+            preferAuthSeq = __preferAuthSeq if asis else not __preferAuthSeq
             if preferAuthSeq:
                 if seqKey in self.__coordAtomSite:
                     coordAtomSite = self.__coordAtomSite[seqKey]

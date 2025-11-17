@@ -35,6 +35,7 @@ import copy
 import pickle
 import collections
 import shutil
+import functools
 
 from operator import itemgetter
 from typing import IO, List, Set, Tuple, Optional
@@ -448,6 +449,7 @@ class BMRBChemShiftStat:
 
         return []
 
+    @functools.lru_cache(maxsize=256)
     def getMaxAmbigCodeWoSetId(self, comp_id: str, atom_id: str, default: int = 0) -> int:
         """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
             @return: one of (1, 2, 3), 0 for not found (by default)
@@ -477,6 +479,7 @@ class BMRBChemShiftStat:
         except StopIteration:
             return default
 
+    @functools.lru_cache(maxsize=128)
     def getGeminalAtom(self, comp_id: str, atom_id: str) -> Optional[str]:
         """ Return geminal or aromatic opposite atom of a given atom.
         """
@@ -532,6 +535,7 @@ class BMRBChemShiftStat:
         except StopIteration:
             return None
 
+    @functools.lru_cache(maxsize=128)
     def getAllAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False) -> List[str]:
         """ Return all atoms of a given comp_id.
         """
@@ -555,6 +559,7 @@ class BMRBChemShiftStat:
         return [item['atom_id'] for item in cs_stat
                 if (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
+    @functools.lru_cache(maxsize=128)
     def getBackBoneAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
                          polynucleotide_like: bool = False, carbohydrates_like: bool = False) -> List[str]:
         """ Return backbone atoms of a given comp_id.
@@ -612,6 +617,7 @@ class BMRBChemShiftStat:
 
         return []
 
+    @functools.lru_cache(maxsize=128)
     def getAromaticAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False) -> List[str]:
         """ Return aromatic atoms of a given comp_id.
         """
@@ -715,6 +721,7 @@ class BMRBChemShiftStat:
 
         return deepcopy(result)
 
+    @functools.lru_cache(maxsize=128)
     def getSideChainAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
                           polynucleotide_like: bool = False, carbohydrates_like: bool = False) -> List[str]:
         """ Return sidechain atoms of a given comp_id.
@@ -751,6 +758,7 @@ class BMRBChemShiftStat:
         return [item['atom_id'] for item in cs_stat
                 if item['atom_id'] not in bb_atoms and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
+    @functools.lru_cache(maxsize=128)
     def getCentroidAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
                          polynucleotide_like: bool = False, carbohydrates_like: bool = False) -> List[str]:
         """ Return ROSETTA 'CEN'troid atoms of a given comp_id.
@@ -783,6 +791,7 @@ class BMRBChemShiftStat:
                 and item['atom_id'][0] not in protonBeginCode
                 and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
+    @functools.lru_cache(maxsize=128)
     def getPseudoAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False) -> List[str]:
         """ Return all pseudo atoms of a give comp_id.
         """

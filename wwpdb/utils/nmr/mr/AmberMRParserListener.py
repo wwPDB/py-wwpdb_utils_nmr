@@ -18,6 +18,7 @@ import collections
 import re
 import itertools
 import numpy
+import functools
 
 from antlr4 import ParseTreeListener
 from operator import itemgetter
@@ -7719,6 +7720,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return None
 
+    @functools.lru_cache(maxsize=256)
     def guessChainIdFromCompId(self, seqId: int, compId: str) -> List[str]:
         chainIds = [ps['auth_chain_id'] for ps in self.__polySeq if compId in ps['comp_id']]
         if len(chainIds) > 1:
@@ -7760,11 +7762,17 @@ class AmberMRParserListener(ParseTreeListener):
                     chainIds.append(np['auth_chain_id'])
         return chainIds
 
-    def getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True
+                           ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        return self.__getCoordAtomSiteOf(chainId, seqId, cifCheck, asis, self.__preferAuthSeq)
+
+    @functools.lru_cache(maxsize=2048)
+    def __getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True,
+                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         coordAtomSite = None
         if cifCheck:
-            preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
+            preferAuthSeq = __preferAuthSeq if asis else not __preferAuthSeq
             enforceAuthSeq = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons\
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
             if preferAuthSeq or enforceAuthSeq:
@@ -11077,6 +11085,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     ambig['atom_id_list'] = [dict(s) for s in set(frozenset(atom.items()) for atom in ambig['atom_id_list'])]
 
+    @functools.lru_cache(maxsize=256)
     def translateToStdResNameWrapper(self, seqId: int, compId: str) -> str:
         _compId = compId
         refCompId = None

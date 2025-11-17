@@ -129,6 +129,7 @@ import itertools
 import copy
 import pynmrstar
 import collections
+import functools
 
 from packaging import version
 from operator import itemgetter
@@ -6666,6 +6667,7 @@ class NEFTranslator:
 
         return ent
 
+    @functools.lru_cache(maxsize=256)
     def validate_comp_atom(self, comp_id: str, atom_id: str) -> bool:
         """ Validate atom_id of comp_id.
             @change: support non-standard residue by Masashi Yokochi
@@ -8657,6 +8659,7 @@ class NEFTranslator:
                 key = (comp_id, str(star_atom_list), str(details), False)
                 self.__cachedDictForNefAtom[key] = (_atom_list, details, atom_id_map)
 
+    @functools.lru_cache(maxsize=256)
     def get_group(self, comp_id: str, atom_id: str) -> Tuple[Optional[str], Optional[List[str]]]:
         """ Return heavy atom name and list of proton names bonded to the heavy atom.
             @author: Masashi Yokochi
@@ -8688,6 +8691,7 @@ class NEFTranslator:
         except StopIteration:
             return None, None
 
+    @functools.lru_cache(maxsize=128)
     def get_geminal_group(self, comp_id: str, atom_id: str) -> Tuple[Optional[str], Optional[List[str]]]:
         """ Return geminal heavy atom and list of proton names bonded to the geminal heavy atom.
             @author: Masashi Yokochi

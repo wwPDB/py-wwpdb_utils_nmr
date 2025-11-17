@@ -992,9 +992,9 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.retrieveLocalSeqScheme()
 
-        if not any(ps for ps in self.polySeq if ps['auth_chain_id'] == chainId1):
+        if not any(True for ps in self.polySeq if ps['auth_chain_id'] == chainId1):
             chainId1 = None
-        if not any(ps for ps in self.polySeq if ps['auth_chain_id'] == chainId2):
+        if not any(True for ps in self.polySeq if ps['auth_chain_id'] == chainId2):
             chainId2 = None
 
         chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])

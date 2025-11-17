@@ -82,7 +82,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 @return: True for spin 1/2 nuclei, False otherwise
             """
 
-            return any(nucl for nucl in CHEM_SHIFT_HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
+            return any(True for nucl in CHEM_SHIFT_HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
 
         atom_like_names = self.csStat.getAtomLikeNameSet(1)
         cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))

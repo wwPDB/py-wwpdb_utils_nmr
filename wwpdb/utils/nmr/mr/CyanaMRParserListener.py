@@ -1787,7 +1787,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(cifAtomIds) > 0:
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
-                                                          if any(b for b in self.ccU.lastBonds
+                                                          if any(True for b in self.ccU.lastBonds
                                                                  if ((b[self.ccU.ccbAtomId1] == prevCifAtomId and b[self.ccU.ccbAtomId2] == _cifAtomId)
                                                                      or (b[self.ccU.ccbAtomId1] == _cifAtomId and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
                                         if cifAtomId is None:
@@ -4466,7 +4466,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             minLenCompId = 2 if self.polyPeptide else (1 if self.polyDeoxyribonucleotide else 0)
             if minLenCompId == 0:
-                if any(_compId for _compId in jVal if _compId.startswith('R')):
+                if any(True for _compId in jVal if _compId.startswith('R')):
                     minLenCompId = 1
 
             if len(self.col_order_of_dist_w_chain) == 0:
@@ -4481,7 +4481,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 chainId = jVal[3 - (j + k)]
                                 if atomId in ('M', 'Q'):
                                     continue
-                                if self.hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                if self.hasPolySeq and len(atomId) < len(chainId) and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4529,7 +4529,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 chainId = jVal[3 - (j + k)]
                                 if atomId in ('M', 'Q'):
                                     continue
-                                if self.hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                if self.hasPolySeq and len(atomId) < len(chainId) and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4576,7 +4576,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 chainId = jVal[12 - (j + k)]
                                 if atomId in ('M', 'Q'):
                                     continue
-                                if self.hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                if self.hasPolySeq and len(atomId) < len(chainId) and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4624,7 +4624,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 chainId = jVal[12 - (j + k)]
                                 if atomId in ('M', 'Q'):
                                     continue
-                                if self.hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                if self.hasPolySeq and len(atomId) < len(chainId) and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -5641,7 +5641,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(cifAtomIds) > 0:
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
-                                                          if any(b for b in self.ccU.lastBonds
+                                                          if any(True for b in self.ccU.lastBonds
                                                                  if ((b[self.ccU.ccbAtomId1] == prevCifAtomId and b[self.ccU.ccbAtomId2] == _cifAtomId)
                                                                      or (b[self.ccU.ccbAtomId1] == _cifAtomId and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
                                         if cifAtomId is None:

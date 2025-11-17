@@ -505,7 +505,7 @@ class BaseTopologyParserListener():
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
 
             for cmap in compIdMapping:
-                if any(ca for ca in self.__chainAssign if ca['test_chain_id'] == cmap['chain_id']):
+                if any(True for ca in self.__chainAssign if ca['test_chain_id'] == cmap['chain_id']):
                     for k, atomNum in self.atomNumberDict.items():
                         if atomNum['chain_id'] == cmap['chain_id'] and atomNum['seq_id'] == cmap['seq_id']:
                             atomNum['comp_id'] = cmap['comp_id']
@@ -845,7 +845,7 @@ class BaseTopologyParserListener():
                 if self.hasNonPolyModel:
 
                     # metal ion
-                    if any(ps for ps in self.polySeqPrmTop
+                    if any(True for ps in self.polySeqPrmTop
                            if len(ps['seq_id']) == 1 and (ps['comp_id'][0].title() in NAMES_ELEMENT
                                                           or (len(ps['comp_id'][0]) > 2 and ps['comp_id'][0][:2].title() in NAMES_ELEMENT)
                                                           or (ps['comp_id'][0][-1] in ('+', '-') and ps['comp_id'][0][:-1].title() in NAMES_ELEMENT)
@@ -855,7 +855,7 @@ class BaseTopologyParserListener():
 
                     # other non-polymer
                     nonPolyIndices = [idx for idx, ps in enumerate(self.polySeqPrmTop)
-                                      if not any(ca for ca in self.__chainAssign
+                                      if not any(True for ca in self.__chainAssign
                                                  if ca['test_chain_id'] == ps['chain_id'])
                                       and len(set(ps['comp_id'])) > 0 and ps['comp_id'][0] == '.']
 
@@ -888,7 +888,7 @@ class BaseTopologyParserListener():
                                 mappedSeqVal.append(seqVal)
                                 mappedAtomNum.append(k)
 
-            if any(f for f in message if '[Concatenated sequence]' in f):  # DAOTHER-9511: resolve concatenated sequence
+            if any(True for f in message if '[Concatenated sequence]' in f):  # DAOTHER-9511: resolve concatenated sequence
                 test_chain_id_map = {}
                 for ca in self.__chainAssign:
                     ref_chain_id = ca['ref_chain_id']
@@ -1003,7 +1003,7 @@ class BaseTopologyParserListener():
         comp_id = comp_id.upper()
         for np in self.nonPolyModel:
             if prev_comp_id in np['comp_id']:
-                if not any(np for np in self.nonPolyModel if comp_id in np['comp_id']):
+                if not any(True for np in self.nonPolyModel if comp_id in np['comp_id']):
                     return True
         if not prev_comp_id.endswith('3') or prev_comp_id == comp_id:
             return False

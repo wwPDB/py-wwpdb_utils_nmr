@@ -1051,7 +1051,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(cifAtomIds) > 0:
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
-                                                          if any(b for b in self.ccU.lastBonds
+                                                          if any(True for b in self.ccU.lastBonds
                                                                  if ((b[self.ccU.ccbAtomId1] == prevCifAtomId and b[self.ccU.ccbAtomId2] == _cifAtomId)
                                                                      or (b[self.ccU.ccbAtomId1] == _cifAtomId and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
                                         if cifAtomId is None:

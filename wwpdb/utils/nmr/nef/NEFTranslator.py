@@ -539,7 +539,7 @@ def is_empty_loop(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrst
     if isinstance(star_data, pynmrstar.Entry):
         loops = star_data.get_loops_by_category(lp_category)
 
-        return any(len(loop) == 0 for loop in loops)
+        return any(True for loop in loops if len(loop) == 0)
 
     if isinstance(star_data, pynmrstar.Saveframe):
         loop = star_data.get_loop(lp_category)
@@ -2383,11 +2383,11 @@ class NEFTranslator:
                                 common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
                                 if len(common_seq_id) == 0:
                                     continue
-                                if any(s for s in common_seq_id
+                                if any(True for s in common_seq_id
                                        if s in seq_dict[_c] and s in seq_dict[c]
                                        and cmp_dict[_c][seq_dict[_c].index(s)] != cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
-                                if not any(s for s in common_seq_id
+                                if not any(True for s in common_seq_id
                                            if s in seq_dict[_c] and s in seq_dict[c]
                                            and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
@@ -2721,7 +2721,7 @@ class NEFTranslator:
                                                                 _offset[_entity_assembly_id] = _offset_
                                                     except StopIteration:
                                                         rev_seq[rev_seq_key] = (ps['auth_chain_id'], ref_seq_id)
-                                        if any(_offset_ for _offset_ in _offset.values() if _offset_ != 0):
+                                        if any(True for _offset_ in _offset.values() if _offset_ != 0):
                                             sync_seq = True
                                         for r in _loop.data:
                                             k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
@@ -3798,11 +3798,11 @@ class NEFTranslator:
                                 common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
                                 if len(common_seq_id) == 0:
                                     continue
-                                if any(s for s in common_seq_id
+                                if any(True for s in common_seq_id
                                        if s in seq_dict[_c] and s in seq_dict[c]
                                        and cmp_dict[_c][seq_dict[_c].index(s)] != cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
-                                if not any(s for s in common_seq_id
+                                if not any(True for s in common_seq_id
                                            if s in seq_dict[_c] and s in seq_dict[c]
                                            and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
                                     continue
@@ -7975,7 +7975,7 @@ class NEFTranslator:
                             if not nef_atom.startswith('H2') and not nef_atom.startswith('H5'):  # 2l5d
                                 if "'" not in nef_atom:
                                     if nef_atom[:2] not in ('H1', 'H3', 'H4')\
-                                       or not any(a for a in atoms if "'" not in a and a.startswith(nef_atom[:2])):  # 2lzv
+                                       or not any(True for a in atoms if "'" not in a and a.startswith(nef_atom[:2])):  # 2lzv
                                         atoms = [a for a in atoms if "'" not in a]
                                 else:
                                     atoms = [a for a in atoms if "'" in a]
@@ -11090,7 +11090,7 @@ class NEFTranslator:
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1])
 
-                has_covalent_links = any(loop for loop in saveframe if loop.category == '_nef_covalent_links')
+                has_covalent_links = any(True for loop in saveframe if loop.category == '_nef_covalent_links')
                 aux_rows = []
 
                 for loop in saveframe:
@@ -11341,7 +11341,7 @@ class NEFTranslator:
 
                 saveframe = [nef_data]
 
-            has_covalent_links = any(loop for loop in saveframe if loop.category == '_nef_covalent_links')
+            has_covalent_links = any(True for loop in saveframe if loop.category == '_nef_covalent_links')
             aux_rows = []
 
             for loop in saveframe:

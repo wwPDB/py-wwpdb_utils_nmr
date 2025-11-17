@@ -2109,7 +2109,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     if len(compIds) > 0:
                         self.factor['comp_id'] = [next(k for k, v in monDict3.items() if v == compId)
                                                   for compId in compIds
-                                                  if any(k for k, v in monDict3.items if v == compId)]
+                                                  if any(True for _v in monDict3.values() if _v == compId)]
                     else:
                         del self.factor['comp_id']
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -3345,7 +3345,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     if 'atom_selection' in self.factor:
                         self.factor['atom_selection'] = [atom for atom in _refAtomSelection
                                                          if isinstance(atom, dict)
-                                                         and not any(_atom for _atom in self.factor['atom_selection']
+                                                         and not any(True for _atom in self.factor['atom_selection']
                                                                      if _atom['chain_id'] == atom['chain_id']
                                                                      and _atom['seq_id'] == atom['seq_id']
                                                                      and _atom['atom_id'] == atom['atom_id'])]

@@ -3525,7 +3525,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     seqId, compId, _ = self.getRealSeqId(ps, seqId, isPolySeq)
                                     # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                                     if self.ccU.updateChemCompDict(compId):
-                                        if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
+                                        if any(True for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
                                             _atomIdSelect.add(atomId)
 
                 if ctx.Simple_name(simpleNameIndex):
@@ -3539,7 +3539,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     seqId, compId, _ = self.getRealSeqId(ps, seqId, isPolySeq)
                                     # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                                     if self.ccU.updateChemCompDict(compId):
-                                        if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
+                                        if any(True for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId):
                                             _atomIdSelect.add(atomId)
 
                 elif ctx.Simple_names(simpleNamesIndex):
@@ -3856,7 +3856,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         isPolySeq = ps in self.polySeq
                                         if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                             seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
-                                            if any(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId):
+                                            if any(True for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId):
                                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
                             # sequential
@@ -4365,7 +4365,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if 'atom_selection' in self.factor:
                         self.factor['atom_selection'] = [atom for atom in _refAtomSelection
                                                          if isinstance(atom, dict)
-                                                         and not any(_atom for _atom in self.factor['atom_selection']
+                                                         and not any(True for _atom in self.factor['atom_selection']
                                                                      if _atom['chain_id'] == atom['chain_id']
                                                                      and _atom['seq_id'] == atom['seq_id']
                                                                      and _atom['atom_id'] == atom['atom_id'])]

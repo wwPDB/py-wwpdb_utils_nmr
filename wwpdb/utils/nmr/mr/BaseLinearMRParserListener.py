@@ -541,7 +541,7 @@ class BaseLinearMRParserListener():
             self.__nonPolySeq = None
 
         if self.hasPolySeq:
-            self.gapInAuthSeq = self.hasPolySeq and any(ps for ps in self.polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+            self.gapInAuthSeq = self.hasPolySeq and any(True for ps in self.polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
             for entity in self.__entityAssembly:
                 if 'entity_poly_type' in entity:
@@ -565,7 +565,7 @@ class BaseLinearMRParserListener():
             uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
             if len(uniq_atom_ids) > 0:
                 for k, v in self.__coordAtomSite.items():
-                    if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
+                    if any(True for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
                         for atom_id in v['atom_id']:
                             if atom_id in uniq_atom_ids:
                                 self.__uniqAtomIdToSeqKey[atom_id] = k
@@ -738,7 +738,7 @@ class BaseLinearMRParserListener():
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.reasons is None and any(f for f in self.f
+                    if self.reasons is None and any(True for f in self.f
                                                     if '[Atom not found]' in f or '[Sequence mismatch]' in f or 'Invalid atom nomenclature' in f):
 
                         seqIdRemap = []
@@ -811,8 +811,8 @@ class BaseLinearMRParserListener():
                                         if seq_id is not None and seq_id not in seq_id_mapping:
                                             seq_id_mapping[seq_id] = seq_id - offset
 
-                            if any(k for k, v in seq_id_mapping.items() if k != v)\
-                               and not any(k for k, v in seq_id_mapping.items()
+                            if any(True for k, v in seq_id_mapping.items() if k != v)\
+                               and not any(True for k, v in seq_id_mapping.items()
                                            if v in poly_seq_model['seq_id']
                                            and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                 seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
@@ -821,7 +821,7 @@ class BaseLinearMRParserListener():
                             if 'seq_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
-                        if any(ps for ps in self.polySeq if 'identical_chain_id' in ps):
+                        if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
 
                             if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
@@ -869,7 +869,7 @@ class BaseLinearMRParserListener():
                         mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                         if len(self.__polySeqRstFailed) > 0:
                             sortPolySeqRst(self.__polySeqRstFailed)
-                            if not any(f for f in self.f if '[Sequence mismatch]' in f):  # 2n6y
+                            if not any(True for f in self.f if '[Sequence mismatch]' in f):  # 2n6y
                                 syncCompIdOfPolySeqRst(self.__polySeqRstFailed, self.__compIdMap)  # 2mx9
 
                             seqAlignFailed, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRstFailed)
@@ -905,7 +905,7 @@ class BaseLinearMRParserListener():
                             if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 
-                                uniq_ps = not any('identical_chain_id' in ps for ps in self.polySeq)
+                                uniq_ps = not any(True for ps in self.polySeq if 'identical_chain_id' in ps)
 
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
@@ -957,8 +957,8 @@ class BaseLinearMRParserListener():
                                             elif ref_code != '.' and test_code == '.':
                                                 seq_id_mapping[test_seq_id] = test_seq_id + offset
 
-                                    if any(k for k, v in seq_id_mapping.items() if k != v)\
-                                       and not any(k for k, v in seq_id_mapping.items()
+                                    if any(True for k, v in seq_id_mapping.items() if k != v)\
+                                       and not any(True for k, v in seq_id_mapping.items()
                                                    if v in poly_seq_model['seq_id']
                                                    and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                         seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
@@ -999,7 +999,7 @@ class BaseLinearMRParserListener():
                                                     auth_seq_id = sa['ref_seq_id'][idx]
                                                     seq_id_mapping[seq_id] = auth_seq_id
                                                     comp_id_mapping[seq_id] = comp_id
-                                            if any(k for k, v in seq_id_mapping.items() if k != v)\
+                                            if any(True for k, v in seq_id_mapping.items() if k != v)\
                                                or ('label_seq_scheme' not in self.reasonsForReParsing
                                                    and all(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values())):
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
@@ -1013,7 +1013,7 @@ class BaseLinearMRParserListener():
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
-                if self.reasons is None and any(f for f in self.f if '[Atom not found]' in f):
+                if self.reasons is None and any(True for f in self.f if '[Atom not found]' in f):
                     if len(self.unambigAtomNameMapping) > 0:
                         if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['unambig_atom_id_remap'] = self.unambigAtomNameMapping
@@ -2281,10 +2281,10 @@ class BaseLinearMRParserListener():
                     and compId not in np['comp_id'])
 
         if refChainId is not None or refChainId != _refChainId:
-            if any(ps for ps in self.polySeq if ps['auth_chain_id'] == _refChainId):
+            if any(True for ps in self.polySeq if ps['auth_chain_id'] == _refChainId):
                 fixedChainId = _refChainId
             elif self.hasNonPolySeq:
-                if any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _refChainId):
+                if any(True for np in self.__nonPolySeq if np['auth_chain_id'] == _refChainId):
                     fixedChainId = _refChainId
 
         for ps in self.polySeq:
@@ -2756,7 +2756,7 @@ class BaseLinearMRParserListener():
                                           f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                     updatePolySeqRst(self.__polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
 
-        elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
+        elif any(True for ca in chainAssign if ca[0] == refChainId) and any(True for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
             for _ca in _chainAssign:
                 if _ca[0] != refChainId:
@@ -3429,10 +3429,10 @@ class BaseLinearMRParserListener():
                     and compId not in np['comp_id'])
 
         if refChainId is not None or refChainId != _refChainId:
-            if any(ps for ps in self.polySeq if ps['auth_chain_id'] == _refChainId):
+            if any(True for ps in self.polySeq if ps['auth_chain_id'] == _refChainId):
                 fixedChainId = _refChainId
             elif self.hasNonPolySeq:
-                if any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _refChainId):
+                if any(True for np in self.__nonPolySeq if np['auth_chain_id'] == _refChainId):
                     fixedChainId = _refChainId
 
         for ps in self.polySeq:
@@ -3886,7 +3886,7 @@ class BaseLinearMRParserListener():
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.__polySeqRstFailed, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
 
-        elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
+        elif any(True for ca in chainAssign if ca[0] == refChainId) and any(True for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
             for _ca in _chainAssign:
                 if _ca[0] != refChainId:
@@ -4061,7 +4061,7 @@ class BaseLinearMRParserListener():
                             _atomId_ = 'H'
                         __atomId__ = self.nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                         if coordAtomSite is not None:
-                            if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                            if any(True for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
                                 _atomId = __atomId__
                             elif __atomId__[0][0] in protonBeginCode:
                                 __bondedTo = self.ccU.getBondedAtoms(cifCompId, __atomId__[0])
@@ -4072,7 +4072,7 @@ class BaseLinearMRParserListener():
                 # _atomId = self.nefT.get_valid_star_atom(cifCompId, atomId_)[0]
 
                 if coordAtomSite is not None\
-                   and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
+                   and not any(True for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
                     if atomId_ in coordAtomSite['atom_id']:
                         _atomId = [atomId_]
                     elif seqId == 1 and atomId_ == 'H1' and self.csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
@@ -4159,7 +4159,7 @@ class BaseLinearMRParserListener():
                 lenAtomId = 1
 
             if lenAtomId == 0:
-                if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):
+                if compId != cifCompId and any(True for item in chainAssign if item[2] == compId):
                     continue
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
@@ -4336,7 +4336,7 @@ class BaseLinearMRParserListener():
                             _atomId_ = 'H'
                         __atomId__ = self.nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                         if coordAtomSite is not None:
-                            if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                            if any(True for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
                                 _atomId = __atomId__
                             elif __atomId__[0][0] in protonBeginCode:
                                 __bondedTo = self.ccU.getBondedAtoms(cifCompId, __atomId__[0])
@@ -4347,7 +4347,7 @@ class BaseLinearMRParserListener():
                 # _atomId = self.nefT.get_valid_star_atom(cifCompId, atomId_)[0]
 
                 if coordAtomSite is not None\
-                   and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
+                   and not any(True for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
                     if atomId_ in coordAtomSite['atom_id']:
                         _atomId = [atomId_]
                     elif seqId == 1 and atomId_ == 'H1' and self.csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
@@ -4430,7 +4430,7 @@ class BaseLinearMRParserListener():
                 lenAtomId = 1
 
             if lenAtomId == 0:
-                if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):
+                if compId != cifCompId and any(True for item in chainAssign if item[2] == compId):
                     continue
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtomsWithIndex(chainAssign, seqId, compId, atomId, allowAmbig, index, group, offset=1)
@@ -4502,7 +4502,7 @@ class BaseLinearMRParserListener():
                         _atomId_ = 'H'
                     __atomId = self.nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
+                        if any(True for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                             _atomId = __atomId
                         elif __atomId[0][0] in protonBeginCode:
                             __bondedTo = self.ccU.getBondedAtoms(cifCompId, __atomId[0])
@@ -4513,7 +4513,7 @@ class BaseLinearMRParserListener():
             # _atomId = self.nefT.get_valid_star_atom(cifCompId, atomId)[0]
 
             if coordAtomSite is not None\
-               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
+               and not any(True for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
                and atomId in coordAtomSite['atom_id']:
                 _atomId = [atomId]
 
@@ -4802,7 +4802,7 @@ class BaseLinearMRParserListener():
                                 if seqKey in self.__coordUnobsAtom\
                                    and (atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
                                         or (atomId[0] in protonBeginCode
-                                            and any(bondedTo for bondedTo in self.ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                            and any(True for bondedTo in self.ccU.getBondedAtoms(compId, atomId, exclProton=True)
                                                     if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                     self.f.append(f"[Coordinate issue] {self.getCurrentRestraint()}"
                                                   f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
@@ -5067,7 +5067,7 @@ class BaseLinearMRParserListener():
                             if seqKey in self.__coordUnobsAtom\
                                and (atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
                                     or (atomId[0] in protonBeginCode
-                                        and any(bondedTo for bondedTo in self.ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                        and any(True for bondedTo in self.ccU.getBondedAtoms(compId, atomId, exclProton=True)
                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                 self.f.append(f"[Coordinate issue] {self.getCurrentRestraint(n=index, g=group)}"
                                               f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")

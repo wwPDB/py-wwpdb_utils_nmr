@@ -401,7 +401,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                    or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                    or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
-                        if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                        if not any(True for _transfer in cur_spectral_dim_transfer
                                    if _transfer['type'] == 'onebond'
                                    and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                         or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -421,7 +421,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                         continue
                                     if _dict3['atom_type'] != _dict1['atom_type']:
                                         continue
-                                    if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                    if not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and (_dim_id3 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -444,7 +444,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
-                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                            if not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -465,7 +465,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
-                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                            if not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -495,7 +495,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                    or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                    or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                     if _dict1['acquisition'] == 'no' and _dict2['acquisition'] == 'no':
-                        if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                        if not any(True for _transfer in cur_spectral_dim_transfer
                                    if _transfer['type'] == 'onebond'
                                    and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                         or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -555,7 +555,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                         if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
                             continue
                         if _isotope2 == 13\
-                           and not any(_transfer for _transfer in cur_spectral_dim_transfer
+                           and not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -640,7 +640,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                         if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
                             continue
                         if _isotope2 == 13\
-                           and not any(_transfer for _transfer in cur_spectral_dim_transfer
+                           and not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -769,7 +769,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
             for _dim_id2, _dict2 in cur_spectral_dim.items():
                 if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
                     continue
-                if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                if not any(True for _transfer in cur_spectral_dim_transfer
                            if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
@@ -789,7 +789,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                 if 'long_range' not in cur_spectral_dim[1]:
                     if _dict2['_spectral_region'] != _region1:
                         continue
-                if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                if not any(True for _transfer in cur_spectral_dim_transfer
                            if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
@@ -810,7 +810,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                     if 'long_range' not in cur_spectral_dim[1]:
                         if _dict2['_spectral_region'] != _region1:
                             continue
-                    if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                    if not any(True for _transfer in cur_spectral_dim_transfer
                                if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
@@ -1160,7 +1160,7 @@ class BasePKParserListener():
             uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
             if len(uniq_atom_ids) > 0:
                 for k, v in self.__coordAtomSite.items():
-                    if any(np for np in self.nonPoly if np['comp_id'][0] == v['comp_id']):
+                    if any(True for np in self.nonPoly if np['comp_id'][0] == v['comp_id']):
                         for atom_id in v['atom_id']:
                             if atom_id in uniq_atom_ids:
                                 self.__uniqAtomIdToSeqKey[atom_id] = k
@@ -1353,7 +1353,7 @@ class BasePKParserListener():
 
                     trimSequenceAlignment(self.seqAlign, self.chainAssign)
 
-                    if self.reasons is None and any(f for f in self.f
+                    if self.reasons is None and any(True for f in self.f
                                                     if '[Atom not found]' in f or '[Sequence mismatch]' in f or '[Invalid atom nomenclature]' in f):
 
                         seqIdRemap = []
@@ -1426,8 +1426,8 @@ class BasePKParserListener():
                                         if seq_id is not None and seq_id not in seq_id_mapping:
                                             seq_id_mapping[seq_id] = seq_id - offset
 
-                            if any(k for k, v in seq_id_mapping.items() if k != v)\
-                               and not any(k for k, v in seq_id_mapping.items()
+                            if any(True for k, v in seq_id_mapping.items() if k != v)\
+                               and not any(True for k, v in seq_id_mapping.items()
                                            if v in poly_seq_model['seq_id']
                                            and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                 offsets = [v - k for k, v in seq_id_mapping.items()]
@@ -1443,7 +1443,7 @@ class BasePKParserListener():
                             if 'seq_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
-                        if any(ps for ps in self.polySeq if 'identical_chain_id' in ps):
+                        if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.pA, self.polySeq, self.polySeqRst, self.chainAssign)
 
                             if polySeqRst is not None and (not self.hasNonPoly or len(self.polySeq) // len(self.nonPoly) in (1, 2)):
@@ -1488,7 +1488,7 @@ class BasePKParserListener():
 
                         if len(self.polySeqRstFailed) > 0:
                             sortPolySeqRst(self.polySeqRstFailed)
-                            if not any(f for f in self.f if '[Sequence mismatch]' in f):  # 2n6y
+                            if not any(True for f in self.f if '[Sequence mismatch]' in f):  # 2n6y
                                 syncCompIdOfPolySeqRst(self.polySeqRstFailed, self.compIdMap)  # 2mx9
 
                             seqAlignFailed, _ = alignPolymerSequence(self.pA, self.polySeq, self.polySeqRstFailed)
@@ -1498,7 +1498,7 @@ class BasePKParserListener():
                             if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 
-                                uniq_ps = not any('identical_chain_id' in ps for ps in self.polySeq)
+                                uniq_ps = not any(True for ps in self.polySeq if 'identical_chain_id' in ps)
 
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
@@ -1550,8 +1550,8 @@ class BasePKParserListener():
                                             elif ref_code != '.' and test_code == '.':
                                                 seq_id_mapping[test_seq_id] = test_seq_id + offset
 
-                                    if any(k for k, v in seq_id_mapping.items() if k != v)\
-                                       and not any(k for k, v in seq_id_mapping.items()
+                                    if any(True for k, v in seq_id_mapping.items() if k != v)\
+                                       and not any(True for k, v in seq_id_mapping.items()
                                                    if v in poly_seq_model['seq_id']
                                                    and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                         offsets = [v - k for k, v in seq_id_mapping.items()]
@@ -1598,7 +1598,7 @@ class BasePKParserListener():
                                                     auth_seq_id = sa['ref_seq_id'][idx]
                                                     seq_id_mapping[seq_id] = auth_seq_id
                                                     comp_id_mapping[seq_id] = comp_id
-                                            if any(k for k, v in seq_id_mapping.items() if k != v)\
+                                            if any(True for k, v in seq_id_mapping.items() if k != v)\
                                                or ('label_seq_scheme' not in self.reasonsForReParsing
                                                    and all(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values())):
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
@@ -2004,7 +2004,7 @@ class BasePKParserListener():
                         if d == 2:
                             _dim_id1, _dim_id2 = DIM_TRANSFER_PAT_2D[onebond_idx]
                             _dim_id1, _dim_id2 = _dim_id1 + 1, _dim_id2 + 1
-                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                            if not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2016,7 +2016,7 @@ class BasePKParserListener():
                         elif d == 3:
                             _dim_id1, _dim_id2 = DIM_TRANSFER_PAT_3D[onebond_idx]
                             _dim_id1, _dim_id2 = _dim_id1 + 1, _dim_id2 + 1
-                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                            if not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2028,7 +2028,7 @@ class BasePKParserListener():
                         elif d == 4:
                             (_dim_id1, _dim_id2), (_dim_id3, _dim_id4) = DIM_TRANSFER_PAT_4D[onebond_idx]
                             _dim_id1, _dim_id2, _dim_id3, _dim_id4 = _dim_id1 + 1, _dim_id2 + 1, _dim_id3 + 1, _dim_id4 + 1
-                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                            if not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2036,7 +2036,7 @@ class BasePKParserListener():
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'onebond',
                                             'indirect': 'no'}
-                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                            if not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
                                        and (_dim_id3 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id4 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2060,7 +2060,7 @@ class BasePKParserListener():
                                    or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                                    or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
-                                        if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                        if not any(True for _transfer in cur_spectral_dim_transfer
                                                    if _transfer['type'] == 'onebond'
                                                    and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                         or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2080,7 +2080,7 @@ class BasePKParserListener():
                                                         continue
                                                     if _dict3['atom_type'] != _dict1['atom_type']:
                                                         continue
-                                                    if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                                    if not any(True for _transfer in cur_spectral_dim_transfer
                                                        if _transfer['type'] == 'onebond'
                                                        and (_dim_id3 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2103,7 +2103,7 @@ class BasePKParserListener():
                                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
-                                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                            if not any(True for _transfer in cur_spectral_dim_transfer
                                                        if _transfer['type'] == 'onebond'
                                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2124,7 +2124,7 @@ class BasePKParserListener():
                                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
-                                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                            if not any(True for _transfer in cur_spectral_dim_transfer
                                                        if _transfer['type'] == 'onebond'
                                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2154,7 +2154,7 @@ class BasePKParserListener():
                                    or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                                    or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                                     if _dict1['acquisition'] == 'no' and _dict2['acquisition'] == 'no':
-                                        if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                        if not any(True for _transfer in cur_spectral_dim_transfer
                                                    if _transfer['type'] == 'onebond'
                                                    and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                         or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
@@ -2214,7 +2214,7 @@ class BasePKParserListener():
                                         if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
                                             continue
                                         if _isotope2 == 13\
-                                           and not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                           and not any(True for _transfer in cur_spectral_dim_transfer
                                                        if _transfer['type'] == 'onebond'
                                                        and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -2299,7 +2299,7 @@ class BasePKParserListener():
                                         if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
                                             continue
                                         if _isotope2 == 13\
-                                           and not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                           and not any(True for _transfer in cur_spectral_dim_transfer
                                                        if _transfer['type'] == 'onebond'
                                                        and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -2428,7 +2428,7 @@ class BasePKParserListener():
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
                                     continue
-                                if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                if not any(True for _transfer in cur_spectral_dim_transfer
                                            if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
@@ -2448,7 +2448,7 @@ class BasePKParserListener():
                                 if 'long_range' not in cur_spectral_dim[1]:
                                     if _dict2['_spectral_region'] != _region1:
                                         continue
-                                if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                if not any(True for _transfer in cur_spectral_dim_transfer
                                            if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
@@ -2471,7 +2471,7 @@ class BasePKParserListener():
                                         if _region2 != _region1:
                                             if {_region1, _region2} != {'C', 'C-aliphatic'}:  # darr
                                                 continue
-                                    if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                    if not any(True for _transfer in cur_spectral_dim_transfer
                                                if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
@@ -2772,7 +2772,7 @@ class BasePKParserListener():
             _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
             _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
 
-            if any(b for b in self.ccU.lastBonds
+            if any(True for b in self.ccU.lastBonds
                    if ((b[self.ccU.ccbAtomId1] in _atom_ids and b[self.ccU.ccbAtomId2] in _atom_ids2)
                        or (b[self.ccU.ccbAtomId1] in _atom_ids2 and b[self.ccU.ccbAtomId2] in _atom_ids))):
                 return True
@@ -3271,7 +3271,7 @@ class BasePKParserListener():
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
 
-                        if any(b for b in self.ccU.lastBonds
+                        if any(True for b in self.ccU.lastBonds
                                if ((b[self.ccU.ccbAtomId1] in _atom_ids and b[self.ccU.ccbAtomId2] in _atom_ids2)
                                    or (b[self.ccU.ccbAtomId1] in _atom_ids2 and b[self.ccU.ccbAtomId2] in _atom_ids))):
                             continue
@@ -3823,7 +3823,7 @@ class BasePKParserListener():
                        and self.ccU.updateChemCompDict(comp_id):
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
-                        if any(b for b in self.ccU.lastBonds
+                        if any(True for b in self.ccU.lastBonds
                            if ((b[self.ccU.ccbAtomId1] in _atom_ids and b[self.ccU.ccbAtomId2] in _atom_ids2)
                                or (b[self.ccU.ccbAtomId1] in _atom_ids2 and b[self.ccU.ccbAtomId2] in _atom_ids))):
                             continue
@@ -7703,7 +7703,7 @@ class BasePKParserListener():
                         term = _str[idx]
                         if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
                            and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]\
-                           and any(_idx for _idx in range(idx + 1, lenStr) if __atomNameLike[_idx] or _atomNameLike[_idx] or atomNameLike[_idx]):
+                           and any(True for _idx in range(idx + 1, lenStr) if __atomNameLike[_idx] or _atomNameLike[_idx] or atomNameLike[_idx]):
                             ___atomNameLike[idx] = False
                         else:
                             resNameLike[idx] = False
@@ -7722,7 +7722,7 @@ class BasePKParserListener():
                         term = _str[idx]
                         if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
                            and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]\
-                           and any(_idx for _idx in range(idx + 1, lenStr) if _atomNameLike[_idx] or atomNameLike[_idx]):
+                           and any(True for _idx in range(idx + 1, lenStr) if _atomNameLike[_idx] or atomNameLike[_idx]):
                             __atomNameLike[idx] = False
                         else:
                             resNameLike[idx] = False
@@ -7741,7 +7741,7 @@ class BasePKParserListener():
                         term = _str[idx]
                         if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
                            and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]\
-                           and any(_idx for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                           and any(True for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
                             _atomNameLike[idx] = False
                         else:
                             resNameLike[idx] = False
@@ -7760,7 +7760,7 @@ class BasePKParserListener():
                         term = _str[idx]
                         if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
                            and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]\
-                           and any(_idx for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                           and any(True for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
                             atomNameLike[idx] = False
                         else:
                             if forceOneLetterCodeSet and resIdLike[idx] and len(atomNameLike) > idx + 1 and atomNameLike[idx + 1]:
@@ -7800,7 +7800,7 @@ class BasePKParserListener():
                         else:
                             if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
                                and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]\
-                               and any(_idx for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                               and any(True for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
                                 atomNameLike[idx] = False
                             else:
                                 resNameLike[idx] = False
@@ -7848,7 +7848,8 @@ class BasePKParserListener():
             print(f'num_of_dim: {numOfDim}, resid_count: {resIdCount}, resid_later:{resIdLater}')
 
         def is_valid_chain_assign(chain_assign, res_name):
-            return len(chain_assign) > 0 and ((res_name in extMonDict3 and any(a for a in chain_assign if a[2] == res_name)) or res_name not in extMonDict3)
+            return len(chain_assign) > 0 and ((res_name in extMonDict3 and any(True for a in chain_assign if a[2] == res_name))
+                                              or res_name not in extMonDict3)
 
         ret = []
 
@@ -7963,12 +7964,12 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
-                    if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -8070,12 +8071,12 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
-                    if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -8177,12 +8178,12 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
-                    if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -8286,12 +8287,12 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
-                    if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -8393,12 +8394,12 @@ class BasePKParserListener():
                         _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                         if details is not None:
                             atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                        if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        if any(True for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                             if self.__ignore_diagonal:
                                 continue
                         ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                     else:
-                        if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                             if self.__ignore_diagonal:
                                 continue
                         ass = {'dim': dimId, 'atom_id': atomName}
@@ -8709,10 +8710,10 @@ class BasePKParserListener():
                     and compId not in np['comp_id'])
 
         if refChainId is not None or refChainId != _refChainId:
-            if any(ps for ps in self.polySeq if ps['auth_chain_id'] == _refChainId):
+            if any(True for ps in self.polySeq if ps['auth_chain_id'] == _refChainId):
                 fixedChainId = _refChainId
             elif self.hasNonPolySeq:
-                if any(np for np in self.nonPolySeq if np['auth_chain_id'] == _refChainId):
+                if any(True for np in self.nonPolySeq if np['auth_chain_id'] == _refChainId):
                     fixedChainId = _refChainId
 
         for ps in self.polySeq:
@@ -9153,7 +9154,7 @@ class BasePKParserListener():
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.polySeqRstFailed, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
 
-        elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
+        elif any(True for ca in chainAssign if ca[0] == refChainId) and any(True for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
             for _ca in _chainAssign:
                 if _ca[0] != refChainId:
@@ -9378,10 +9379,10 @@ class BasePKParserListener():
                     and compId not in np['comp_id'])
 
         if refChainId is not None or refChainId != _refChainId:
-            if any(ps for ps in self.polySeq if ps['auth_chain_id'] == _refChainId):
+            if any(True for ps in self.polySeq if ps['auth_chain_id'] == _refChainId):
                 fixedChainId = _refChainId
             elif self.hasNonPolySeq:
-                if any(np for np in self.nonPolySeq if np['auth_chain_id'] == _refChainId):
+                if any(True for np in self.nonPolySeq if np['auth_chain_id'] == _refChainId):
                     fixedChainId = _refChainId
 
         for ps in self.polySeq:
@@ -9824,7 +9825,7 @@ class BasePKParserListener():
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                     updatePolySeqRst(self.polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
 
-        elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
+        elif any(True for ca in chainAssign if ca[0] == refChainId) and any(True for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
             for _ca in _chainAssign:
                 if _ca[0] != refChainId:
@@ -10341,7 +10342,7 @@ class BasePKParserListener():
                         _atomId_ = 'H'
                     __atomId__ = self.nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                        if any(True for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
                             _atomId = __atomId__
                         elif __atomId__[0][0] in protonBeginCode:
                             __bondedTo = self.ccU.getBondedAtoms(cifCompId, __atomId__[0])
@@ -10352,7 +10353,7 @@ class BasePKParserListener():
             # _atomId = self.nefT.get_valid_star_atom(cifCompId, atomId)[0]
 
             if coordAtomSite is not None\
-               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
+               and not any(True for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
                 if atomId in coordAtomSite['atom_id']:
                     _atomId = [atomId]
                 elif seqId == 1 and atomId == 'H1' and self.csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
@@ -10416,7 +10417,7 @@ class BasePKParserListener():
                 lenAtomId = 1
 
             if lenAtomId == 0:
-                if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):
+                if compId != cifCompId and any(True for item in chainAssign if item[2] == compId):
                     continue
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, index, allowAmbig, offset=1)
@@ -10712,7 +10713,7 @@ class BasePKParserListener():
                             if seqKey in self.__coordUnobsAtom\
                                and (atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
                                     or (atomId[0] in protonBeginCode
-                                        and any(bondedTo for bondedTo in self.ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                        and any(True for bondedTo in self.ccU.getBondedAtoms(compId, atomId, exclProton=True)
                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                 if self.no_extra_comment:
                                     self.f.append(f"[Coordinate issue] {self.getCurrentSpectralPeak(n=index)}"

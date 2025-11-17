@@ -282,7 +282,7 @@ class GromacsMRParserListener(ParseTreeListener):
         self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
         self.__hasNonPolySeq = self.__hasNonPoly or self.__hasBranched
 
-        self.__gapInAuthSeq = self.__hasPolySeq and any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+        self.__gapInAuthSeq = self.__hasPolySeq and any(True for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
         if atomNumberDict is not None:
             self.__atomNumberDict = atomNumberDict
@@ -540,7 +540,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
-                    if any(_dat is None for _dat in row[1:len_keys]):
+                    if any(True for _dat in row[1:len_keys] if _dat is None):
                         sf['index_id'] -= 1
                         continue
                     sf['loop'].add_data(row)
@@ -1089,7 +1089,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
-                    if any(_dat is None for _dat in row[1:len_keys]):
+                    if any(True for _dat in row[1:len_keys] if _dat is None):
                         sf['index_id'] -= 1
                         continue
                     sf['loop'].add_data(row)
@@ -1376,7 +1376,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
-                    if any(_dat is None for _dat in row[1:len_keys]):
+                    if any(True for _dat in row[1:len_keys] if _dat is None):
                         sf['index_id'] -= 1
                         continue
                     sf['loop'].add_data(row)

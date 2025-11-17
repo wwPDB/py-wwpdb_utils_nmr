@@ -1163,9 +1163,9 @@ class CifReader:
                 ent['seq_id'] = seqDict[c]
                 ent['comp_id'] = compDict[c]
                 if c in insCodeDict:
-                    if any(ic for ic in insCodeDict[c] if ic not in emptyValue):
+                    if any(True for ic in insCodeDict[c] if ic not in emptyValue):
                         ent['ins_code'] = insCodeDict[c]
-                    if any(s for s in labelSeqDict[c] if s not in emptyValue):
+                    if any(True for s in labelSeqDict[c] if s not in emptyValue):
                         if c in labelSeqDict and all(isinstance(s, int) for s in labelSeqDict[c]):
                             ent['auth_seq_id'] = authSeqDict[c] if authScheme else seqDict[c]
                             ent['label_seq_id'] = labelSeqDict[c]

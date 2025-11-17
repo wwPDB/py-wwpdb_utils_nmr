@@ -5273,7 +5273,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     ent['seq_id'] = seqDict[c]
                     ent['comp_id'] = compDict[c]
                     if c in insCodeDict:
-                        if any(i for i in insCodeDict[c] if i not in emptyValue):
+                        if any(True for i in insCodeDict[c] if i not in emptyValue):
                             ent['ins_code'] = insCodeDict[c]
 
                     ent['auth_seq_id'] = []
@@ -5806,7 +5806,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                           if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId)
                             coordUnobsRes[seqKey] = {'comp_id': compId}
 
-                    if any(seqKey for seqKey in coordUnobsRes.keys() if seqKey not in authToLabelSeq):
+                    if any(True for seqKey in coordUnobsRes.keys() if seqKey not in authToLabelSeq):
 
                         tags = cR.getAttributeList('pdbx_unobs_or_zero_occ_residues')
 
@@ -6023,7 +6023,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     if len(misPolyLink) > 0:  # DAOTHER-9644: support for truncated loop in the model
 
                         for item in mappings:
-                            if any(mis for mis in misPolyLink if mis['auth_chain_id'] == item['auth_asym_id']):
+                            if any(True for mis in misPolyLink if mis['auth_chain_id'] == item['auth_asym_id']):
                                 ps = next((ps for ps in polySeq if ps['auth_chain_id'] == item['auth_asym_id']), None)
 
                                 if ps is None:
@@ -6673,7 +6673,7 @@ def extendCoordChainsForExactNoes(modelChainIdExt: dict,
         for ps in polySeq:
             if ps['auth_chain_id'] in modelChainIdExt:
                 for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
-                    if not any(ps for ps in polySeq if ps['auth_chain_id'] == dstChainId):
+                    if not any(True for ps in polySeq if ps['auth_chain_id'] == dstChainId):
                         _ps = copy.copy(ps)
                         _ps['chain_id'] = _ps['auth_chain_id'] = dstChainId
                         _polySeq.append(_ps)
@@ -6686,7 +6686,7 @@ def extendCoordChainsForExactNoes(modelChainIdExt: dict,
         for ps in altPolySeq:
             if ps['auth_chain_id'] in modelChainIdExt:
                 for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
-                    if not any(ps for ps in altPolySeq if ps['auth_chain_id'] == dstChainId):
+                    if not any(True for ps in altPolySeq if ps['auth_chain_id'] == dstChainId):
                         _ps = copy.copy(ps)
                         _ps['chain_id'] = _ps['auth_chain_id'] = dstChainId
                         _altPolySeq.append(_ps)
@@ -6848,7 +6848,7 @@ def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any(seqId is None for seqId in seqIds):
+    if any(True for seqId in seqIds if seqId is None):
         return False
 
     chainIds = [a['chain_id'] for a in atoms]
@@ -6983,7 +6983,7 @@ def getAltProtonIdInBondConstraint(atoms: List[dict], csStat) -> Tuple[Optional[
     if len(atoms) < 2:
         return None, None
 
-    if any(a is None for a in atoms):
+    if any(True for a in atoms if a is None):
         return None, None
 
     for a in atoms:
@@ -7054,7 +7054,7 @@ def isAsymmetricRangeRestraint(atoms: List[dict], chainIdSet: List[str], symmetr
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any(seqId is None for seqId in seqIds):
+    if any(True for seqId in seqIds if seqId is None):
         return False
 
     commonSeqId = collections.Counter(seqIds).most_common()
@@ -7176,7 +7176,7 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
     if len(atoms) < 2:
         return False
 
-    if any(a is None for a in atoms):
+    if any(True for a in atoms if a is None):
         return False
 
     for a in atoms:
@@ -7196,7 +7196,7 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any(seqId is None for seqId in seqIds):
+    if any(True for seqId in seqIds if seqId is None):
         return False
 
     commonSeqId = collections.Counter(seqIds).most_common()
@@ -7253,7 +7253,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if len(atoms) != 4 or any(seqId is None for seqId in seqIds) or any('atom_id' not in a for a in atoms):
+    if len(atoms) != 4 or any(True for seqId in seqIds if seqId is None) or any('atom_id' not in a for a in atoms):
         return None
 
     chainIds = [a['chain_id'] for a in atoms]
@@ -7758,7 +7758,7 @@ def getRdcCode(atoms: List[dict]) -> Optional[str]:
     if len(atoms) != 2:
         return None
 
-    if any(a is None for a in atoms):
+    if any(True for a in atoms if a is None):
         return None
 
     atom1 = atoms[0]
@@ -11416,7 +11416,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
                         _atomId_ = 'H'
                     __atomId = nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
+                        if any(True for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                             _atomId = __atomId
                         elif __atomId[0][0] in protonBeginCode:
                             __bondedTo = ccU.getBondedAtoms(cifCompId, __atomId[0])
@@ -11426,7 +11426,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
                     _atomId = []
 
         if coordAtomSite is not None\
-           and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
+           and not any(True for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
            and atomId in coordAtomSite['atom_id']:
             _atomId = [atomId]
 
@@ -11653,7 +11653,7 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                     if chainId in LARGE_ASYM_ID:
                         if seqKey in caC['coord_unobs_atom']\
                                 and (atomId in caC['coord_unobs_atom'][seqKey]['atom_ids']
-                                     or (atomId[0] in protonBeginCode and any(bondedTo for bondedTo in ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                     or (atomId[0] in protonBeginCode and any(True for bondedTo in ccU.getBondedAtoms(compId, atomId, exclProton=True)
                                                                               if bondedTo in caC['coord_unobs_atom'][seqKey]['atom_ids']))):
                             return 'Ignorable missing atom'
                         return f"[Atom not found] "\

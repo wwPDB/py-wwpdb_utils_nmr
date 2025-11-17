@@ -450,7 +450,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__hasNonPolySeq = False
             self.__nonPolySeq = None
 
-        self.__gapInAuthSeq = self.__hasPolySeq and any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+        self.__gapInAuthSeq = self.__hasPolySeq and any(True for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
         self.__uniqAtomIdToSeqKey = {}
         if self.__hasNonPoly:
@@ -461,7 +461,7 @@ class RosettaMRParserListener(ParseTreeListener):
             uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
             if len(uniq_atom_ids) > 0:
                 for k, v in self.__coordAtomSite.items():
-                    if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
+                    if any(True for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
                         for atom_id in v['atom_id']:
                             if atom_id in uniq_atom_ids:
                                 self.__uniqAtomIdToSeqKey[atom_id] = k
@@ -616,10 +616,10 @@ class RosettaMRParserListener(ParseTreeListener):
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.__reasons is None\
-                       and any(f for f in self.__f if '[Anomalous data]' in f):
+                       and any(True for f in self.__f if '[Anomalous data]' in f):
                         set_label_seq_scheme()
 
-                    if self.__reasons is None and any(f for f in self.__f
+                    if self.__reasons is None and any(True for f in self.__f
                                                       if '[Atom not found]' in f or 'Invalid atom nomenclature' in f):
 
                         seqIdRemap = []
@@ -673,8 +673,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                         if seq_id is not None and seq_id not in seq_id_mapping:
                                             seq_id_mapping[seq_id] = seq_id - offset
 
-                            if any(k for k, v in seq_id_mapping.items() if k != v)\
-                               and not any(k for k, v in seq_id_mapping.items()
+                            if any(True for k, v in seq_id_mapping.items() if k != v)\
+                               and not any(True for k, v in seq_id_mapping.items()
                                            if v in poly_seq_model['seq_id']
                                            and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                 seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
@@ -685,7 +685,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             if 'seq_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
-                        if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
+                        if any(True for ps in self.__polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
 
                             if polySeqRst is not None and (not self.__hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
@@ -793,7 +793,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                             offset = v - k
                                             break
 
-                                        if any(k for k, v in seq_id_mapping.items() if k != v):
+                                        if any(True for k, v in seq_id_mapping.items() if k != v):
                                             if not any(v - k != offset for k, v in seq_id_mapping.items()):
                                                 if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
                                                     self.reasonsForReParsing['global_auth_sequence_offset'] = {}
@@ -850,7 +850,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
                                 seqIdRemapFailed = []
 
-                                uniq_ps = not any('identical_chain_id' in ps for ps in self.__polySeq)
+                                uniq_ps = not any(True for ps in self.__polySeq if 'identical_chain_id' in ps)
 
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
@@ -896,8 +896,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                             elif ref_code != '.' and test_code == '.':
                                                 seq_id_mapping[test_seq_id] = test_seq_id + offset
 
-                                    if any(k for k, v in seq_id_mapping.items() if k != v)\
-                                       and not any(k for k, v in seq_id_mapping.items()
+                                    if any(True for k, v in seq_id_mapping.items() if k != v)\
+                                       and not any(True for k, v in seq_id_mapping.items()
                                                    if v in poly_seq_model['seq_id']
                                                    and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                         seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
@@ -938,7 +938,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                     auth_seq_id = sa['ref_seq_id'][idx]
                                                     seq_id_mapping[seq_id] = auth_seq_id
                                                     comp_id_mapping[seq_id] = comp_id
-                                            if any(k for k, v in seq_id_mapping.items() if k != v)\
+                                            if any(True for k, v in seq_id_mapping.items() if k != v)\
                                                or ('label_seq_scheme' not in self.reasonsForReParsing
                                                    and all(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values())):
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
@@ -1050,7 +1050,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 elif all('[Anomalous data]' in f for f in self.__f):
                     pass
 
-                elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
+                elif not any(True for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
                         and 'non_poly_remap' not in self.reasonsForReParsing\
                         and 'branch_remap' not in self.reasonsForReParsing:
 
@@ -2204,7 +2204,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             _atomId_ = 'H'
                         __atomId__ = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                         if coordAtomSite is not None:
-                            if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                            if any(True for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
                                 _atomId = __atomId__
                             elif __atomId__[0][0] in protonBeginCode:
                                 __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
@@ -2215,7 +2215,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId_)[0]
 
                 if coordAtomSite is not None\
-                   and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
+                   and not any(True for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
                     if atomId_ in coordAtomSite['atom_id']:
                         _atomId = [atomId_]
                     elif seqId == 1 and atomId_ == 'H1' and self.__csStat.peptideLike(cifCompId) and 'H' in coordAtomSite['atom_id']:
@@ -2301,7 +2301,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         _atomId_ = 'H'
                     __atomId__ = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                        if any(True for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
                             _atomId = __atomId__
                         elif __atomId__[0][0] in protonBeginCode:
                             __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
@@ -2312,7 +2312,7 @@ class RosettaMRParserListener(ParseTreeListener):
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
 
             if coordAtomSite is not None\
-               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
+               and not any(True for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
                 if atomId in coordAtomSite['atom_id']:
                     _atomId = [atomId]
                 elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(cifCompId) and 'H' in coordAtomSite['atom_id']:
@@ -2661,7 +2661,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             if seqKey in self.__coordUnobsAtom\
                                and (atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
                                     or (atomId[0] in protonBeginCode
-                                        and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                        and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, atomId, exclProton=True)
                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")

@@ -1454,7 +1454,7 @@ class OneDepAnnTasks:
                                     for def_sf_tag in def_sf_tags:
                                         if def_sf_tag == 'Sf_framecode':
                                             continue
-                                        if any(tag for tag in sf.tags if tag[0] == def_sf_tag):
+                                        if any(True for tag in sf.tags if tag[0] == def_sf_tag):
                                             continue
                                         if not def_sf_tag.endswith('_label'):
                                             sf.add_tag(def_sf_tag, '.')

@@ -791,7 +791,7 @@ class BaseStackedMRParserListener():
                 self.atomIdSetPerChain[k[0]] |= set(v['atom_id'])
 
         if self.hasPolySeq:
-            self.gapInAuthSeq = any(ps for ps in self.polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+            self.gapInAuthSeq = any(True for ps in self.polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
             self.__complexSeqScheme = False
             if self.__multiPolymer and not all('identical_chain_id' in ps for ps in self.polySeq):
@@ -851,14 +851,14 @@ class BaseStackedMRParserListener():
             uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
             if len(uniq_atom_ids) > 0:
                 for k, v in self.__coordAtomSite.items():
-                    if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
+                    if any(True for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
                         for atom_id in v['atom_id']:
                             if atom_id in uniq_atom_ids:
                                 self.__uniqAtomIdToSeqKey[atom_id] = k
 
         self.__largeModel = self.hasPolySeq and self.__lenPolySeq > LEN_LARGE_ASYM_ID
         if self.__largeModel:
-            self.__representativeAsymId = next(c for c in LARGE_ASYM_ID if any(ps for ps in self.polySeq if ps['auth_chain_id'] == c))
+            self.__representativeAsymId = next(c for c in LARGE_ASYM_ID if any(True for ps in self.polySeq if ps['auth_chain_id'] == c))
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
             self.polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
@@ -1549,14 +1549,14 @@ class BaseStackedMRParserListener():
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.reasons is None\
-                       and any(f for f in self.f if '[Anomalous data]' in f)\
+                       and any(True for f in self.f if '[Anomalous data]' in f)\
                        and 'segment_id_mismatch' not in self.reasonsForReParsing\
                        and (self.distRestraints > 0 or self.monoPolymer or all('identical_chain_id' in ps for ps in self.polySeq)):
                         set_label_seq_scheme()
 
                     if self.reasons is None\
-                       and (any(f for f in self.f if '[Atom not found]' in f or '[Anomalous data]' in f or '[Sequence mismatch]' in f)
-                            or any(f for f in self.f if '[Insufficient atom selection]' in f)):
+                       and (any(True for f in self.f if '[Atom not found]' in f or '[Anomalous data]' in f or '[Sequence mismatch]' in f)
+                            or any(True for f in self.f if '[Insufficient atom selection]' in f)):
 
                         seqIdRemap = []
 
@@ -1609,8 +1609,8 @@ class BaseStackedMRParserListener():
                                         if seq_id is not None and seq_id not in seq_id_mapping:
                                             seq_id_mapping[seq_id] = seq_id - offset
 
-                            if any(k for k, v in seq_id_mapping.items() if k != v)\
-                               and not any(k for k, v in seq_id_mapping.items()
+                            if any(True for k, v in seq_id_mapping.items() if k != v)\
+                               and not any(True for k, v in seq_id_mapping.items()
                                            if v in poly_seq_model['seq_id']
                                            and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                 seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
@@ -1621,7 +1621,7 @@ class BaseStackedMRParserListener():
                             if 'seq_id_remap' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
-                        if any(ps for ps in self.polySeq if 'identical_chain_id' in ps):
+                        if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
 
                             if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
@@ -1783,7 +1783,7 @@ class BaseStackedMRParserListener():
                                             if offset != ref_offset:
                                                 continue
 
-                                        if any(k for k, v in seq_id_mapping.items() if k != v):
+                                        if any(True for k, v in seq_id_mapping.items() if k != v):
                                             if not any(v - k != offset for k, v in seq_id_mapping.items()):
                                                 if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
                                                     self.reasonsForReParsing['global_auth_sequence_offset'] = {}
@@ -1916,7 +1916,7 @@ class BaseStackedMRParserListener():
                     # due to arbitrary shift of sequence number that does not match with any coordinate sequence schemes (2lzs)
                     mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                     if self.reasons is None and len(self.__polySeqRst) == 0 and len(self.__polySeqRstFailed) > 0\
-                       and any(f for f in self.f if '[Insufficient atom selection]' in f):
+                       and any(True for f in self.f if '[Insufficient atom selection]' in f):
                         sortPolySeqRst(self.__polySeqRstFailed)
 
                         seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, self.__polySeqRstFailed)
@@ -2027,8 +2027,8 @@ class BaseStackedMRParserListener():
                                             if seq_id is not None and seq_id not in seq_id_mapping:
                                                 seq_id_mapping[seq_id] = seq_id - offset
 
-                                if any(k for k, v in seq_id_mapping.items() if k != v)\
-                                   and not any(k for k, v in seq_id_mapping.items()
+                                if any(True for k, v in seq_id_mapping.items() if k != v)\
+                                   and not any(True for k, v in seq_id_mapping.items()
                                                if v in poly_seq_model['seq_id']
                                                and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                     seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
@@ -2037,7 +2037,7 @@ class BaseStackedMRParserListener():
                                 if 'seq_id_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
-                            if any(ps for ps in self.polySeq if 'identical_chain_id' in ps):
+                            if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
                                 polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRstFailed, chainAssignFailed)
 
                                 if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
@@ -2078,7 +2078,7 @@ class BaseStackedMRParserListener():
 
             if 'alt_global_sequence_offset' in self.reasonsForReParsing:
                 if len(insuff_dist_atom_sel_warnings) < 20\
-                   or not any(f for f in self.f if '[Insufficient atom selection]' in f)\
+                   or not any(True for f in self.f if '[Insufficient atom selection]' in f)\
                    or len(self.reasonsForReParsing) > 1:
                     del self.reasonsForReParsing['alt_global_sequence_offset']
                 else:
@@ -2107,11 +2107,11 @@ class BaseStackedMRParserListener():
                         if k[0] == 'dist' and not v\
                            and k[1] > 1\
                            and len(insuff_dist_atom_sel_warnings) == 1\
-                           and any(f'Check the {k[1]}th row of distance restraints' for f in insuff_dist_atom_sel_warnings):
+                           and any(f'Check the {k[1]}th row of distance restraints' in f for f in insuff_dist_atom_sel_warnings):
                             set_label_seq_scheme()  # 2lif
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                if self.reasons is None and not any(f for f in self.f if '[Sequence mismatch]' in f):
+                if self.reasons is None and not any(True for f in self.f if '[Sequence mismatch]' in f):
                     del self.reasonsForReParsing['seq_id_remap']
 
             if 'np_seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
@@ -2316,7 +2316,7 @@ class BaseStackedMRParserListener():
                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
 
             insuff_dist_atom_sel_in_1st_row_warnings = [f for f in insuff_dist_atom_sel_warnings if 'Check the 1th row of distance restraints' in f]
-            invalid_dist_atom_sel_in_1st_row = any(f for f in self.f if 'Check the 1th row of distance restraints' in f
+            invalid_dist_atom_sel_in_1st_row = any(True for f in self.f if 'Check the 1th row of distance restraints' in f
                                                    and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
 
             if 'local_seq_scheme' in self.reasonsForReParsing\
@@ -2390,15 +2390,15 @@ class BaseStackedMRParserListener():
                 elif all('[Anomalous data]' in f for f in self.f):
                     pass
 
-                elif not any(f for f in self.f if '[Atom not found]' in f or '[Anomalous data]' in f)\
+                elif not any(True for f in self.f if '[Atom not found]' in f or '[Anomalous data]' in f)\
                         and 'non_poly_remap' not in self.reasonsForReParsing\
                         and 'branch_remap' not in self.reasonsForReParsing:
 
                     # ad hoc sequence scheme switching of distance restraints should be inherited
                     if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
                        and (len(self.reasonsForReParsing) == 0 or (len(self.reasonsForReParsing) == 1 and 'label_seq_scheme' in self.reasonsForReParsing))\
-                       and (any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
-                            or (len(insuff_dist_atom_sel_warnings) == 1 and any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
+                       and (any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
+                            or (len(insuff_dist_atom_sel_warnings) == 1 and any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['label_seq_scheme'] = {}
                         self.reasonsForReParsing['label_seq_scheme']['dist'] = True
@@ -2418,7 +2418,7 @@ class BaseStackedMRParserListener():
                                and 'assert_uniq_segment_id' not in self.reasonsForReParsing:  # 2m0k
                                 self.reasonsForReParsing = {}
 
-                    if any(f for f in self.f if '[Sequence mismatch]' in f):
+                    if any(True for f in self.f if '[Sequence mismatch]' in f):
                         __f = copy.copy(self.f)
                         for f in __f:
                             if '[Sequence mismatch]' in f:
@@ -2426,8 +2426,8 @@ class BaseStackedMRParserListener():
 
                 elif not assert_auth_seq_scheme:  # 2n0s
                     if 'label_seq_offset' in self.reasonsForReParsing and len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
-                       and (any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
-                            or (len(insuff_dist_atom_sel_warnings) >= 1 and any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
+                       and (any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
+                            or (len(insuff_dist_atom_sel_warnings) >= 1 and any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
                         if len(pro_hn_atom_not_found_warnings) + len(gly_hb_atom_not_found_warnings) > 0:
                             for chain_id in self.reasonsForReParsing['label_seq_offset']:
                                 pro_seq_ids, gly_seq_ids = set(), set()
@@ -4220,7 +4220,7 @@ class BaseStackedMRParserListener():
             elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
                 chain_id = _atom['chain_id']
                 seq_id = _atom['seq_id']
-                if any(_atom2 for _atom2 in atomSelection if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                if any(True for _atom2 in atomSelection if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
                     _atomSelection.append(_atom_)
 
         _factor['atom_selection'] = _atomSelection
@@ -4258,10 +4258,10 @@ class BaseStackedMRParserListener():
                 idx = random.randint(2, len_selection2 - 1)
                 slice2.append(_selection2[idx])
 
-        hasAuthAtomId1 = any(_atom for _atom in slice1 if 'auth_atom_id' in _atom)
-        hasAuthAtomId2 = any(_atom for _atom in slice2 if 'auth_atom_id' in _atom)
-        hasSegmentId1 = any(_atom for _atom in slice1 if 'segment_id' in _atom)
-        hasSegmentId2 = any(_atom for _atom in slice2 if 'segment_id' in _atom)
+        hasAuthAtomId1 = any(True for _atom in slice1 if 'auth_atom_id' in _atom)
+        hasAuthAtomId2 = any(True for _atom in slice2 if 'auth_atom_id' in _atom)
+        hasSegmentId1 = any(True for _atom in slice1 if 'segment_id' in _atom)
+        hasSegmentId2 = any(True for _atom in slice2 if 'segment_id' in _atom)
 
         _atomSelection = []
 
@@ -4284,7 +4284,7 @@ class BaseStackedMRParserListener():
                 elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
                     chain_id = _atom['chain_id']
                     seq_id = _atom['seq_id']
-                    if any(_atom2 for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                    if any(True for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
                         _atomSelection.append(_atom)
 
         elif hasAuthAtomId1 and not hasAuthAtomId2:
@@ -4300,7 +4300,7 @@ class BaseStackedMRParserListener():
                 elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
                     chain_id = _atom['chain_id']
                     seq_id = _atom['seq_id']
-                    if any(_atom2 for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                    if any(True for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
                         _atomSelection.append(_selection1[idx])
 
         elif not hasAuthAtomId1 and hasAuthAtomId2:
@@ -4316,7 +4316,7 @@ class BaseStackedMRParserListener():
                 elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
                     chain_id = _atom['chain_id']
                     seq_id = _atom['seq_id']
-                    if any(_atom1 for _atom1 in _selection1 if _atom1['chain_id'] == chain_id and _atom1['seq_id'] == seq_id):
+                    if any(True for _atom1 in _selection1 if _atom1['chain_id'] == chain_id and _atom1['seq_id'] == seq_id):
                         _atomSelection.append(_selection2[idx])
 
         else:
@@ -4336,7 +4336,7 @@ class BaseStackedMRParserListener():
                 elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
                     chain_id = _atom['chain_id']
                     seq_id = _atom['seq_id']
-                    if any(_atom2 for _atom2 in __selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
+                    if any(True for _atom2 in __selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
                         _atomSelection.append(_selection1[idx])
 
         return _atomSelection
@@ -4421,7 +4421,7 @@ class BaseStackedMRParserListener():
            or ('atom_selection' in _factor and (_factor['atom_selection'] is None or len(_factor['atom_selection']) == 0)):
             return {'atom_selection': []}
 
-        if not any(key for key in _factor if not (key == 'atom_selection' or key.startswith('auth'))):
+        if not any(True for key in _factor if not (key == 'atom_selection' or key.startswith('auth'))):
             return _factor
 
         if 'alt_chain_id' in _factor:
@@ -4513,14 +4513,14 @@ class BaseStackedMRParserListener():
                     chain_not_specified = False
         elif len(_factor['chain_id']) == 1:
             _chainId = _factor['chain_id'][0]
-            if chain_not_specified and any(ps for ps in self.polySeq if ps['auth_chain_id'] == _chainId):
+            if chain_not_specified and any(True for ps in self.polySeq if ps['auth_chain_id'] == _chainId):
                 _factor['auth_chain_id'] = _factor['chain_id']
                 chain_not_specified = False
             if self.hasNonPolySeq and np_chain_not_specified:
-                if any(np for np in self.nonPolySeq if np['auth_chain_id'] == _chainId):
+                if any(True for np in self.nonPolySeq if np['auth_chain_id'] == _chainId):
                     _factor['auth_chain_id'] = _factor['chain_id']
                     np_chain_not_specified = False
-                elif not chain_not_specified and any(np for np in self.nonPolySeq if np['chain_id'] == _chainId):
+                elif not chain_not_specified and any(True for np in self.nonPolySeq if np['chain_id'] == _chainId):
                     _factor['auth_chain_id'] = _factor['chain_id']
                     np_chain_not_specified = False
 
@@ -5919,7 +5919,7 @@ class BaseStackedMRParserListener():
                     return False
                 if stats['polymer'] >= stats['non-poly']\
                    and 'non_poly_remap' not in self.reasons\
-                   and (not self.hasNonPoly or not any(any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.polySeq) for np in self.__nonPoly)):
+                   and (not self.hasNonPoly or not any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.polySeq) for np in self.__nonPoly):
                     return False
 
         chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.polySeq if isPolySeq else altPolySeq)])
@@ -6381,7 +6381,7 @@ class BaseStackedMRParserListener():
                                         atomIds = self.nefT.get_valid_star_atom(compId, _atomId)[0]
 
                         if coordAtomSite is not None\
-                           and not any(_atomId for _atomId in atomIds if _atomId in atomSiteAtomId):
+                           and not any(True for _atomId in atomIds if _atomId in atomSiteAtomId):
                             if atomId in atomSiteAtomId:
                                 atomIds = [atomId]
                             elif 'alt_atom_id' in _factor:
@@ -6887,7 +6887,7 @@ class BaseStackedMRParserListener():
                                                             if seqKey in self.__coordUnobsAtom\
                                                                and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
                                                                     or (_atomId[0] in protonBeginCode
-                                                                        and any(bondedTo for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                        and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                                 warn_title = 'Coordinate issue'
                                                             if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
@@ -7052,7 +7052,7 @@ class BaseStackedMRParserListener():
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
                                                             or (_atomId[0] in protonBeginCode
-                                                                and any(bondedTo for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         warn_title = 'Coordinate issue'
                                                     if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):

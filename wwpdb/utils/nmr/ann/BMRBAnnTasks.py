@@ -2615,7 +2615,7 @@ class BMRBAnnTasks:
         if sf_category in self.__sfCategoryList:
             for sf in master_entry.get_saveframes_by_category(sf_category):
 
-                if any(t for t in sf.tags if t[0] == 'Chem_shift_reference_ID'):
+                if any(True for t in sf.tags if t[0] == 'Chem_shift_reference_ID'):
                     chem_shift_ref_id = get_first_sf_tag(sf, 'Chem_shift_reference_ID')
 
                     if chem_shift_ref_id in emptyValue:

@@ -250,6 +250,7 @@ import hashlib
 import pynmrstar
 import chardet
 import numpy
+import functools
 
 from packaging import version
 from munkres import Munkres
@@ -27212,6 +27213,7 @@ class NmrDpUtility:
                     np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], poly_seq, conservative=False)
                     np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], poly_seq, np_seq_align)
 
+        @functools.lru_cache()
         def get_auth_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = None
 
@@ -27252,6 +27254,7 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id
 
+        @functools.lru_cache()
         def get_label_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = label_seq_id = None
 
@@ -29946,6 +29949,9 @@ class NmrDpUtility:
 
         if not self.__native_combined:
             self.__testDataConsistencyInLoop__(file_list_id, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, list_id)
+
+        get_auth_seq_scheme.cache_clear()
+        get_label_seq_scheme.cache_clear()
 
         return True
 
@@ -34767,16 +34773,13 @@ class NmrDpUtility:
 
         cs_loops = self.__lp_data['chem_shift']
 
-        def get_cs_value(atom):
-            if cs_loops is None or len(cs_loops) == 0 or len(atom) == 0:
+        @functools.lru_cache()
+        def get_cs_value(chain_id, seq_id, comp_id, atom_id):
+            if cs_loops is None or len(cs_loops) == 0:
                 return None
 
-            chain_id = atom['ref_chain_id']
             if isinstance(chain_id, int):
                 chain_id = str(chain_id)
-            seq_id = atom['ref_seq_id']
-            comp_id = atom['ref_comp_id']
-            atom_id = atom['ref_atom_id']
 
             _atom_ids = self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
@@ -34835,8 +34838,10 @@ class NmrDpUtility:
                              'ref_seq_id': int(row[ref_seq_id_1_col]),
                              'ref_comp_id': row[ref_comp_id_1_col],
                              'ref_atom_id': row[ref_atom_id_1_col]}
+                    cs_val1 = get_cs_value(atom1['ref_chain_id'], atom1['ref_seq_id'], atom1['ref_comp_id'], atom1['ref_atom_id'])
                 except (ValueError, TypeError):
                     atom1 = {}
+                    cs_val1 = None
 
                 try:
                     atom2 = {'chain_id': row[chain_id_2_col],
@@ -34847,11 +34852,10 @@ class NmrDpUtility:
                              'ref_seq_id': int(row[ref_seq_id_2_col]),
                              'ref_comp_id': row[ref_comp_id_2_col],
                              'ref_atom_id': row[ref_atom_id_2_col]}
+                    cs_val2 = get_cs_value(atom2['ref_chain_id'], atom2['ref_seq_id'], atom2['ref_comp_id'], atom2['ref_atom_id'])
                 except (ValueError, TypeError):
                     atom2 = {}
-
-                cs_val1 = get_cs_value(atom1)
-                cs_val2 = get_cs_value(atom2)
+                    cs_val2 = None
 
                 if member_id not in emptyValue:
                     has_member_id = True
@@ -34860,9 +34864,6 @@ class NmrDpUtility:
                     pass
 
                 elif rest_id != _rest_id and len(atom1) > 0 and len(atom2) > 0:
-
-                    diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
-                    diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
 
                     if member_id in emptyValue or member_logic_code == 'OR':
 
@@ -34873,6 +34874,9 @@ class NmrDpUtility:
                                      and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])
                                     or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat)
                                         and atom2['ref_chain_id'] != _atom1['ref_chain_id'] and atom1['comp_id'] == _atom1['comp_id']))):
+
+                            diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
+                            diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
 
                             if (not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and diff_cs_val1)\
                                or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat) and diff_cs_val2):
@@ -34896,8 +34900,8 @@ class NmrDpUtility:
 
                 elif member_logic_code != 'AND':
 
-                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and not diff_cs_val1\
-                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat) and not diff_cs_val2:
+                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
+                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
 
                         if member_logic_code in emptyValue:
                             modified = True
@@ -34930,6 +34934,8 @@ class NmrDpUtility:
                 except IndexError:
                     pass
             lp.add_data(_row)
+
+        get_cs_value.cache_clear()
 
         if not modified and not has_member_id:
             return True
@@ -35799,7 +35805,7 @@ class NmrDpUtility:
 
                             poly_seq = listener.getPolymerSequence()
 
-                            if not has_res_sch and any(len(pdb_ps['seq_id']) == 0 for pdb_ps in poly_seq):
+                            if not has_res_sch and any(True for pdb_ps in poly_seq if len(pdb_ps['seq_id']) == 0):
                                 continue
 
                             if poly_seq is not None:
@@ -41009,6 +41015,7 @@ class NmrDpUtility:
                     np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], poly_seq, conservative=False)
                     np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], poly_seq, np_seq_align)
 
+        @functools.lru_cache()
         def get_auth_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = None
 
@@ -41953,6 +41960,8 @@ class NmrDpUtility:
 
         self.__c2S.set_entry_id(sf, self.__entry_id)
         self.__c2S.set_local_sf_id(sf, list_id)
+
+        get_auth_seq_scheme.cache_clear()
 
         return True
 
@@ -49896,7 +49905,7 @@ class NmrDpUtility:
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if conflict > 0 and any(len(c) > 3 for c in ps2['comp_id']) and 'alt_comp_id' in ps2:
+                    if conflict > 0 and any(True for c in ps2['comp_id'] if len(c) > 3) and 'alt_comp_id' in ps2:
                         self.__pA.addTestSequence(ps2['alt_comp_id'], chain_id)
                         self.__pA.doAlign()
 
@@ -50429,7 +50438,7 @@ class NmrDpUtility:
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if conflict > 0 and any(len(c) > 3 for c in ps1['comp_id']) and 'alt_comp_id' in ps1:
+                    if conflict > 0 and any(True for c in ps1['comp_id'] if len(c) > 3) and 'alt_comp_id' in ps1:
                         self.__pA.setReferenceSequence(ps1['alt_comp_id'], 'REF' + chain_id)
                         self.__pA.doAlign()
 
@@ -63135,7 +63144,7 @@ class NmrDpUtility:
                         cyana_subtype[row[0]] = []
                     cyana_subtype[row[0]].append(row[2] if isinstance(row[2], str) else str(row[2]))
 
-            if any(len(v) > 1 for v in cyana_subtype.values()):
+            if any(True for v in cyana_subtype.values() if len(v) > 1):
                 for v in cyana_subtype.values():
                     if len(v) < 2:
                         continue
@@ -64975,7 +64984,7 @@ class NmrDpUtility:
                             cyana_subtype[row[0]] = []
                         cyana_subtype[row[0]].append(row[1] if isinstance(row[1], str) else str(row[1]))
 
-                if any(len(v) > 1 for v in cyana_subtype.values()):
+                if any(True for v in cyana_subtype.values() if len(v) > 1):
                     for v in cyana_subtype.values():
                         if len(v) < 2:
                             continue

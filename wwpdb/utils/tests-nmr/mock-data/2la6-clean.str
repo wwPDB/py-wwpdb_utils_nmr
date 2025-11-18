@@ -8535,8 +8535,8 @@ save_distance_constraint_list
       _Gen_dist_constraint.Entry_ID
 
      1      1   1   11   SER   HB2    1   1   12   ASP   H      1      .   .   .    5.38   .   .   1.8   5.92   .   1.0   .   A   11   SER   HB2    HBX    A   12   ASP   H      H      1   NEED_ACC_NO    
-     2      1   1   12   ASP   HB2    1   1   13   ASN   H      2      .   .   OR   4.93   .   .   1.8   5.42   .   1.0   .   A   12   ASP   HB2    HBX    A   13   ASN   H      H      1   NEED_ACC_NO    
-     3      1   1   12   ASP   HB3    1   1   13   ASN   H      3      .   .   OR   4.93   .   .   1.8   5.42   .   1.0   .   A   12   ASP   HB3    HBY    A   13   ASN   H      H      1   NEED_ACC_NO    
+     2      1   1   12   ASP   HB2    1   1   13   ASN   H      2      .   .   .    4.93   .   .   1.8   5.42   .   1.0   .   A   12   ASP   HB2    HBX    A   13   ASN   H      H      1   NEED_ACC_NO    
+     3      1   1   12   ASP   HB3    1   1   13   ASN   H      3      .   .   .    4.93   .   .   1.8   5.42   .   1.0   .   A   12   ASP   HB3    HBY    A   13   ASN   H      H      1   NEED_ACC_NO    
      4      1   1   13   ASN   H      1   1   14   ASN   H      4      .   .   .    5.26   .   .   1.8   5.79   .   1.0   .   A   13   ASN   H      H      A   14   ASN   H      H      1   NEED_ACC_NO    
      5      1   1   13   ASN   HA     1   1   14   ASN   H      5      .   .   .    3.14   .   .   1.8   3.45   .   1.0   .   A   13   ASN   HA     HA     A   14   ASN   H      H      1   NEED_ACC_NO    
      6      1   1   14   ASN   H      1   1   14   ASN   HB3    6      .   .   .    3.98   .   .   1.8   4.38   .   1.0   .   A   14   ASN   H      H      A   14   ASN   HB3    HBY    1   NEED_ACC_NO    
@@ -8572,8 +8572,8 @@ save_distance_constraint_list
      24     1   1   19   GLN   HA     1   1   20   GLY   H      36     .   .   .    3.03   .   .   1.8   3.33   .   1.0   .   A   19   GLN   HA     HA     A   20   GLY   H      H      1   NEED_ACC_NO    
      25     1   1   19   GLN   HB3    1   1   20   GLY   H      37     .   .   .    3.53   .   .   1.8   3.88   .   1.0   .   A   19   GLN   HB3    HBY    A   20   GLY   H      H      1   NEED_ACC_NO    
      26     1   1   19   GLN   HB2    1   1   20   GLY   H      38     .   .   .    4.36   .   .   1.8   4.8    .   1.0   .   A   19   GLN   HB2    HBX    A   20   GLY   H      H      1   NEED_ACC_NO    
-     27     1   1   19   GLN   HG2    1   1   20   GLY   H      39     .   .   OR   5.07   .   .   1.8   5.58   .   1.0   .   A   19   GLN   HG2    HGX    A   20   GLY   H      H      1   NEED_ACC_NO    
-     28     1   1   19   GLN   HG3    1   1   20   GLY   H      40     .   .   OR   5.07   .   .   1.8   5.58   .   1.0   .   A   19   GLN   HG3    HGY    A   20   GLY   H      H      1   NEED_ACC_NO    
+     27     1   1   19   GLN   HG2    1   1   20   GLY   H      39     .   .   .    5.07   .   .   1.8   5.58   .   1.0   .   A   19   GLN   HG2    HGX    A   20   GLY   H      H      1   NEED_ACC_NO    
+     28     1   1   19   GLN   HG3    1   1   20   GLY   H      40     .   .   .    5.07   .   .   1.8   5.58   .   1.0   .   A   19   GLN   HG3    HGY    A   20   GLY   H      H      1   NEED_ACC_NO    
      29     1   1   21   LEU   H      1   1   64   GLY   HA2    41     .   .   .    4.15   .   .   1.8   4.57   .   1.0   .   A   21   LEU   H      H      A   64   GLY   HA2    HAX    1   NEED_ACC_NO    
      30     1   1   21   LEU   H      1   1   22   GLY   H      42     .   .   .    3.39   .   .   1.8   3.73   .   1.0   .   A   21   LEU   H      H      A   22   GLY   H      H      1   NEED_ACC_NO    
      31     1   1   21   LEU   HB2    1   1   22   GLY   H      43     .   .   .    3.58   .   .   1.8   3.94   .   1.0   .   A   21   LEU   HB2    HBX    A   22   GLY   H      H      1   NEED_ACC_NO    
@@ -8588,11 +8588,11 @@ save_distance_constraint_list
      38     1   1   23   GLU   HB2    1   1   24   ASN   H      52     .   .   .    4.7    .   .   1.8   5.17   .   1.0   .   A   23   GLU   HB2    HBX    A   24   ASN   H      H      1   NEED_ACC_NO    
      39     1   1   24   ASN   H      1   1   25   VAL   HB     53     .   .   .    5.09   .   .   1.8   5.6    .   1.0   .   A   24   ASN   H      H      A   25   VAL   HB     HB     1   NEED_ACC_NO    
      40     1   1   23   GLU   HB3    1   1   24   ASN   H      54     .   .   .    4.7    .   .   1.8   5.17   .   1.0   .   A   23   GLU   HB3    HBY    A   24   ASN   H      H      1   NEED_ACC_NO    
-     41     1   1   23   GLU   HG2    1   1   24   ASN   H      55     .   .   OR   4.99   .   .   1.8   5.49   .   1.0   .   A   23   GLU   HG2    HGX    A   24   ASN   H      H      1   NEED_ACC_NO    
-     42     1   1   23   GLU   HG3    1   1   24   ASN   H      56     .   .   OR   4.99   .   .   1.8   5.49   .   1.0   .   A   23   GLU   HG3    HGY    A   24   ASN   H      H      1   NEED_ACC_NO    
+     41     1   1   23   GLU   HG2    1   1   24   ASN   H      55     .   .   .    4.99   .   .   1.8   5.49   .   1.0   .   A   23   GLU   HG2    HGX    A   24   ASN   H      H      1   NEED_ACC_NO    
+     42     1   1   23   GLU   HG3    1   1   24   ASN   H      56     .   .   .    4.99   .   .   1.8   5.49   .   1.0   .   A   23   GLU   HG3    HGY    A   24   ASN   H      H      1   NEED_ACC_NO    
      43     1   1   24   ASN   HA     1   1   25   VAL   H      57     .   .   .    3.21   .   .   1.8   3.53   .   1.0   .   A   24   ASN   HA     HA     A   25   VAL   H      H      1   NEED_ACC_NO    
-     44     1   1   24   ASN   HB2    1   1   25   VAL   H      58     .   .   OR   4.57   .   .   1.8   5.03   .   1.0   .   A   24   ASN   HB2    HBX    A   25   VAL   H      H      1   NEED_ACC_NO    
-     45     1   1   24   ASN   HB3    1   1   25   VAL   H      59     .   .   OR   4.57   .   .   1.8   5.03   .   1.0   .   A   24   ASN   HB3    HBY    A   25   VAL   H      H      1   NEED_ACC_NO    
+     44     1   1   24   ASN   HB2    1   1   25   VAL   H      58     .   .   .    4.57   .   .   1.8   5.03   .   1.0   .   A   24   ASN   HB2    HBX    A   25   VAL   H      H      1   NEED_ACC_NO    
+     45     1   1   24   ASN   HB3    1   1   25   VAL   H      59     .   .   .    4.57   .   .   1.8   5.03   .   1.0   .   A   24   ASN   HB3    HBY    A   25   VAL   H      H      1   NEED_ACC_NO    
      46     1   1   25   VAL   HA     1   1   26   THR   H      60     .   .   .    2.62   .   .   1.8   2.88   .   1.0   .   A   25   VAL   HA     HA     A   26   THR   H      H      1   NEED_ACC_NO    
      47     1   1   25   VAL   HG21   1   1   26   THR   H      61     .   .   OR   2.86   .   .   1.8   3.15   .   1.0   .   A   25   VAL   HG21   HGY%   A   26   THR   H      H      1   NEED_ACC_NO    
      47     1   1   25   VAL   HG22   1   1   26   THR   H      62     .   .   OR   2.86   .   .   1.8   3.15   .   1.0   .   A   25   VAL   HG22   HGY%   A   26   THR   H      H      1   NEED_ACC_NO    
@@ -8673,10 +8673,10 @@ save_distance_constraint_list
      103    1   1   42   THR   HG21   1   1   43   ASN   H      137    .   .   OR   3.24   .   .   1.8   3.56   .   1.0   .   A   42   THR   HG21   HG2%   A   43   ASN   H      H      1   NEED_ACC_NO    
      103    1   1   42   THR   HG22   1   1   43   ASN   H      138    .   .   OR   3.24   .   .   1.8   3.56   .   1.0   .   A   42   THR   HG22   HG2%   A   43   ASN   H      H      1   NEED_ACC_NO    
      103    1   1   42   THR   HG23   1   1   43   ASN   H      139    .   .   OR   3.24   .   .   1.8   3.56   .   1.0   .   A   42   THR   HG23   HG2%   A   43   ASN   H      H      1   NEED_ACC_NO    
-     104    1   1   44   LYS   HG2    1   1   45   LYS   H      140    .   .   OR   5.45   .   .   1.8   6      .   1.0   .   A   44   LYS   HG2    HGX    A   45   LYS   H      H      1   NEED_ACC_NO    
-     105    1   1   44   LYS   HG3    1   1   45   LYS   H      141    .   .   OR   5.45   .   .   1.8   6      .   1.0   .   A   44   LYS   HG3    HGY    A   45   LYS   H      H      1   NEED_ACC_NO    
-     106    1   1   45   LYS   HG2    1   1   46   THR   H      142    .   .   OR   5.2    .   .   1.8   5.72   .   1.0   .   A   45   LYS   HG2    HGX    A   46   THR   H      H      1   NEED_ACC_NO    
-     107    1   1   45   LYS   HG3    1   1   46   THR   H      143    .   .   OR   5.2    .   .   1.8   5.72   .   1.0   .   A   45   LYS   HG3    HGY    A   46   THR   H      H      1   NEED_ACC_NO    
+     104    1   1   44   LYS   HG2    1   1   45   LYS   H      140    .   .   .    5.45   .   .   1.8   6      .   1.0   .   A   44   LYS   HG2    HGX    A   45   LYS   H      H      1   NEED_ACC_NO    
+     105    1   1   44   LYS   HG3    1   1   45   LYS   H      141    .   .   .    5.45   .   .   1.8   6      .   1.0   .   A   44   LYS   HG3    HGY    A   45   LYS   H      H      1   NEED_ACC_NO    
+     106    1   1   45   LYS   HG2    1   1   46   THR   H      142    .   .   .    5.2    .   .   1.8   5.72   .   1.0   .   A   45   LYS   HG2    HGX    A   46   THR   H      H      1   NEED_ACC_NO    
+     107    1   1   45   LYS   HG3    1   1   46   THR   H      143    .   .   .    5.2    .   .   1.8   5.72   .   1.0   .   A   45   LYS   HG3    HGY    A   46   THR   H      H      1   NEED_ACC_NO    
      108    1   1   46   THR   H      1   1   47   GLY   H      144    .   .   .    2.96   .   .   1.8   3.26   .   1.0   .   A   46   THR   H      H      A   47   GLY   H      H      1   NEED_ACC_NO    
      109    1   1   46   THR   HB     1   1   47   GLY   H      145    .   .   .    4.45   .   .   1.8   4.89   .   1.0   .   A   46   THR   HB     HB     A   47   GLY   H      H      1   NEED_ACC_NO    
      110    1   1   46   THR   HG21   1   1   47   GLY   H      146    .   .   OR   4.38   .   .   1.8   4.82   .   1.0   .   A   46   THR   HG21   HG2%   A   47   GLY   H      H      1   NEED_ACC_NO    
@@ -8707,10 +8707,10 @@ save_distance_constraint_list
      129    1   1   55   THR   HG21   1   1   56   ASP   H      171    .   .   OR   3.33   .   .   1.8   3.66   .   1.0   .   A   55   THR   HG21   HG2%   A   56   ASP   H      H      1   NEED_ACC_NO    
      129    1   1   55   THR   HG22   1   1   56   ASP   H      172    .   .   OR   3.33   .   .   1.8   3.66   .   1.0   .   A   55   THR   HG22   HG2%   A   56   ASP   H      H      1   NEED_ACC_NO    
      129    1   1   55   THR   HG23   1   1   56   ASP   H      173    .   .   OR   3.33   .   .   1.8   3.66   .   1.0   .   A   55   THR   HG23   HG2%   A   56   ASP   H      H      1   NEED_ACC_NO    
-     130    1   1   57   ARG   HG2    1   1   58   GLU   H      174    .   .   OR   4.55   .   .   1.8   5.01   .   1.0   .   A   57   ARG   HG2    HGX    A   58   GLU   H      H      1   NEED_ACC_NO    
-     131    1   1   57   ARG   HG3    1   1   58   GLU   H      175    .   .   OR   4.55   .   .   1.8   5.01   .   1.0   .   A   57   ARG   HG3    HGY    A   58   GLU   H      H      1   NEED_ACC_NO    
-     132    1   1   58   GLU   HG2    1   1   59   THR   H      176    .   .   OR   4.65   .   .   1.8   5.12   .   1.0   .   A   58   GLU   HG2    HGX    A   59   THR   H      H      1   NEED_ACC_NO    
-     133    1   1   58   GLU   HG3    1   1   59   THR   H      177    .   .   OR   4.65   .   .   1.8   5.12   .   1.0   .   A   58   GLU   HG3    HGY    A   59   THR   H      H      1   NEED_ACC_NO    
+     130    1   1   57   ARG   HG2    1   1   58   GLU   H      174    .   .   .    4.55   .   .   1.8   5.01   .   1.0   .   A   57   ARG   HG2    HGX    A   58   GLU   H      H      1   NEED_ACC_NO    
+     131    1   1   57   ARG   HG3    1   1   58   GLU   H      175    .   .   .    4.55   .   .   1.8   5.01   .   1.0   .   A   57   ARG   HG3    HGY    A   58   GLU   H      H      1   NEED_ACC_NO    
+     132    1   1   58   GLU   HG2    1   1   59   THR   H      176    .   .   .    4.65   .   .   1.8   5.12   .   1.0   .   A   58   GLU   HG2    HGX    A   59   THR   H      H      1   NEED_ACC_NO    
+     133    1   1   58   GLU   HG3    1   1   59   THR   H      177    .   .   .    4.65   .   .   1.8   5.12   .   1.0   .   A   58   GLU   HG3    HGY    A   59   THR   H      H      1   NEED_ACC_NO    
      134    1   1   59   THR   H      1   1   60   GLY   H      178    .   .   .    3.21   .   .   1.8   3.53   .   1.0   .   A   59   THR   H      H      A   60   GLY   H      H      1   NEED_ACC_NO    
      135    1   1   59   THR   HB     1   1   60   GLY   H      179    .   .   .    4.32   .   .   1.8   4.75   .   1.0   .   A   59   THR   HB     HB     A   60   GLY   H      H      1   NEED_ACC_NO    
      136    1   1   59   THR   HG21   1   1   60   GLY   H      180    .   .   OR   4.16   .   .   1.8   4.58   .   1.0   .   A   59   THR   HG21   HG2%   A   60   GLY   H      H      1   NEED_ACC_NO    
@@ -8756,8 +8756,8 @@ save_distance_constraint_list
      163    1   1   68   VAL   HG13   1   1   69   SER   H      220    .   .   OR   3.39   .   .   1.8   3.73   .   1.0   .   A   68   VAL   HG13   HGX%   A   69   SER   H      H      1   NEED_ACC_NO    
      164    1   1   69   SER   H      1   1   70   PHE   H      221    .   .   .    4.72   .   .   1.8   5.19   .   1.0   .   A   69   SER   H      H      A   70   PHE   H      H      1   NEED_ACC_NO    
      165    1   1   69   SER   HA     1   1   70   PHE   H      222    .   .   .    2.91   .   .   1.8   3.2    .   1.0   .   A   69   SER   HA     HA     A   70   PHE   H      H      1   NEED_ACC_NO    
-     166    1   1   69   SER   HB2    1   1   70   PHE   H      223    .   .   OR   4.44   .   .   1.8   4.88   .   1.0   .   A   69   SER   HB2    HBX    A   70   PHE   H      H      1   NEED_ACC_NO    
-     167    1   1   69   SER   HB3    1   1   70   PHE   H      224    .   .   OR   4.44   .   .   1.8   4.88   .   1.0   .   A   69   SER   HB3    HBY    A   70   PHE   H      H      1   NEED_ACC_NO    
+     166    1   1   69   SER   HB2    1   1   70   PHE   H      223    .   .   .    4.44   .   .   1.8   4.88   .   1.0   .   A   69   SER   HB2    HBX    A   70   PHE   H      H      1   NEED_ACC_NO    
+     167    1   1   69   SER   HB3    1   1   70   PHE   H      224    .   .   .    4.44   .   .   1.8   4.88   .   1.0   .   A   69   SER   HB3    HBY    A   70   PHE   H      H      1   NEED_ACC_NO    
      168    1   1   70   PHE   H      1   1   71   ASP   H      225    .   .   .    4.74   .   .   1.8   5.21   .   1.0   .   A   70   PHE   H      H      A   71   ASP   H      H      1   NEED_ACC_NO    
      169    1   1   70   PHE   HA     1   1   71   ASP   H      226    .   .   .    2.95   .   .   1.8   3.25   .   1.0   .   A   70   PHE   HA     HA     A   71   ASP   H      H      1   NEED_ACC_NO    
      170    1   1   70   PHE   HB3    1   1   71   ASP   H      227    .   .   .    3.6    .   .   1.8   3.96   .   1.0   .   A   70   PHE   HB3    HBY    A   71   ASP   H      H      1   NEED_ACC_NO    
@@ -8766,14 +8766,14 @@ save_distance_constraint_list
      172    1   1   70   PHE   HD2    1   1   71   ASP   H      230    .   .   OR   4.07   .   .   1.8   4.48   .   1.0   .   A   70   PHE   HD2    HD%    A   71   ASP   H      H      1   NEED_ACC_NO    
      173    1   1   71   ASP   HB3    1   1   72   ASP   H      231    .   .   .    3.55   .   .   1.8   3.9    .   1.0   .   A   71   ASP   HB3    HBY    A   72   ASP   H      H      1   NEED_ACC_NO    
      174    1   1   71   ASP   HB2    1   1   72   ASP   H      232    .   .   .    3.96   .   .   1.8   4.36   .   1.0   .   A   71   ASP   HB2    HBX    A   72   ASP   H      H      1   NEED_ACC_NO    
-     175    1   1   74   PRO   HB2    1   1   75   SER   H      233    .   .   OR   4.4    .   .   1.8   4.84   .   1.0   .   A   74   PRO   HB2    HBX    A   75   SER   H      H      1   NEED_ACC_NO    
-     176    1   1   74   PRO   HB3    1   1   75   SER   H      234    .   .   OR   4.4    .   .   1.8   4.84   .   1.0   .   A   74   PRO   HB3    HBY    A   75   SER   H      H      1   NEED_ACC_NO    
+     175    1   1   74   PRO   HB2    1   1   75   SER   H      233    .   .   .    4.4    .   .   1.8   4.84   .   1.0   .   A   74   PRO   HB2    HBX    A   75   SER   H      H      1   NEED_ACC_NO    
+     176    1   1   74   PRO   HB3    1   1   75   SER   H      234    .   .   .    4.4    .   .   1.8   4.84   .   1.0   .   A   74   PRO   HB3    HBY    A   75   SER   H      H      1   NEED_ACC_NO    
      177    1   1   74   PRO   HG2    1   1   75   SER   H      235    .   .   .    4.16   .   .   1.8   4.58   .   1.0   .   A   74   PRO   HG2    HGX    A   75   SER   H      H      1   NEED_ACC_NO    
      178    1   1   74   PRO   HG3    1   1   75   SER   H      236    .   .   .    4.22   .   .   1.8   4.64   .   1.0   .   A   74   PRO   HG3    HGY    A   75   SER   H      H      1   NEED_ACC_NO    
      179    1   1   74   PRO   HD3    1   1   75   SER   H      237    .   .   .    4.21   .   .   1.8   4.63   .   1.0   .   A   74   PRO   HD3    HDY    A   75   SER   H      H      1   NEED_ACC_NO    
      180    1   1   74   PRO   HD2    1   1   75   SER   H      238    .   .   .    3.56   .   .   1.8   3.92   .   1.0   .   A   74   PRO   HD2    HDX    A   75   SER   H      H      1   NEED_ACC_NO    
-     181    1   1   75   SER   HB2    1   1   76   ALA   H      239    .   .   OR   4.37   .   .   1.8   4.81   .   1.0   .   A   75   SER   HB2    HBX    A   76   ALA   H      H      1   NEED_ACC_NO    
-     182    1   1   75   SER   HB3    1   1   76   ALA   H      240    .   .   OR   4.37   .   .   1.8   4.81   .   1.0   .   A   75   SER   HB3    HBY    A   76   ALA   H      H      1   NEED_ACC_NO    
+     181    1   1   75   SER   HB2    1   1   76   ALA   H      239    .   .   .    4.37   .   .   1.8   4.81   .   1.0   .   A   75   SER   HB2    HBX    A   76   ALA   H      H      1   NEED_ACC_NO    
+     182    1   1   75   SER   HB3    1   1   76   ALA   H      240    .   .   .    4.37   .   .   1.8   4.81   .   1.0   .   A   75   SER   HB3    HBY    A   76   ALA   H      H      1   NEED_ACC_NO    
      183    1   1   76   ALA   H      1   1   77   LYS   H      241    .   .   .    3.15   .   .   1.8   3.47   .   1.0   .   A   76   ALA   H      H      A   77   LYS   H      H      1   NEED_ACC_NO    
      184    1   1   76   ALA   HB1    1   1   77   LYS   H      242    .   .   OR   2.97   .   .   1.8   3.27   .   1.0   .   A   76   ALA   HB1    HB%    A   77   LYS   H      H      1   NEED_ACC_NO    
      184    1   1   76   ALA   HB2    1   1   77   LYS   H      243    .   .   OR   2.97   .   .   1.8   3.27   .   1.0   .   A   76   ALA   HB2    HB%    A   77   LYS   H      H      1   NEED_ACC_NO    
@@ -8827,8 +8827,8 @@ save_distance_constraint_list
      221    1   1   93   ILE   HG13   1   1   95   VAL   H      291    .   .   .    4.53   .   .   1.8   4.98   .   1.0   .   A   93   ILE   HG13   HG1Y   A   95   VAL   H      H      1   NEED_ACC_NO    
      222    1   1   94   LYS   HD2    1   1   95   VAL   H      292    .   .   OR   5.81   .   .   1.8   6.39   .   1.0   .   A   94   LYS   HD2    HD2    A   95   VAL   H      H      1   NEED_ACC_NO    
      223    1   1   94   LYS   HD3    1   1   95   VAL   H      293    .   .   OR   5.81   .   .   1.8   6.39   .   1.0   .   A   94   LYS   HD3    HD3    A   95   VAL   H      H      1   NEED_ACC_NO    
-     224    1   1   94   LYS   HE2    1   1   95   VAL   H      294    .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   94   LYS   HE2    HEX    A   95   VAL   H      H      1   NEED_ACC_NO    
-     225    1   1   94   LYS   HE3    1   1   95   VAL   H      295    .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   94   LYS   HE3    HEY    A   95   VAL   H      H      1   NEED_ACC_NO    
+     224    1   1   94   LYS   HE2    1   1   95   VAL   H      294    .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   94   LYS   HE2    HEX    A   95   VAL   H      H      1   NEED_ACC_NO    
+     225    1   1   94   LYS   HE3    1   1   95   VAL   H      295    .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   94   LYS   HE3    HEY    A   95   VAL   H      H      1   NEED_ACC_NO    
      226    1   1   95   VAL   HA     1   1   96   SER   H      296    .   .   .    2.71   .   .   1.8   2.98   .   1.0   .   A   95   VAL   HA     HA     A   96   SER   H      H      1   NEED_ACC_NO    
      227    1   1   95   VAL   HB     1   1   96   SER   H      297    .   .   .    4.59   .   .   1.8   5.05   .   1.0   .   A   95   VAL   HB     HB     A   96   SER   H      H      1   NEED_ACC_NO    
      228    1   1   95   VAL   HG21   1   1   96   SER   H      298    .   .   OR   4.23   .   .   1.8   4.65   .   1.0   .   A   95   VAL   HG21   HGY%   A   96   SER   H      H      1   NEED_ACC_NO    
@@ -8855,8 +8855,8 @@ save_distance_constraint_list
      244    1   1   19   GLN   HB2    1   1   19   GLN   HE21   319    .   .   .    4.63   .   .   1.8   5.09   .   1.0   .   A   19   GLN   HB2    HBX    A   19   GLN   HE21   HE2X   1   NEED_ACC_NO    
      245    1   1   19   GLN   HB3    1   1   19   GLN   HE22   320    .   .   .    4.64   .   .   1.8   5.1    .   1.0   .   A   19   GLN   HB3    HBY    A   19   GLN   HE22   HE2Y   1   NEED_ACC_NO    
      246    1   1   19   GLN   HB2    1   1   19   GLN   HE22   321    .   .   .    4.63   .   .   1.8   5.09   .   1.0   .   A   19   GLN   HB2    HBX    A   19   GLN   HE22   HE2Y   1   NEED_ACC_NO    
-     247    1   1   36   GLN   HE21   1   1   36   GLN   HG2    322    .   .   OR   3.98   .   .   1.8   4.38   .   1.0   .   A   36   GLN   HE21   HE2X   A   36   GLN   HG2    HGX    1   NEED_ACC_NO    
-     248    1   1   36   GLN   HE22   1   1   36   GLN   HG2    323    .   .   OR   3.98   .   .   1.8   4.38   .   1.0   .   A   36   GLN   HE22   HE2Y   A   36   GLN   HG2    HGX    1   NEED_ACC_NO    
+     247    1   1   36   GLN   HE21   1   1   36   GLN   HG2    322    .   .   .    3.98   .   .   1.8   4.38   .   1.0   .   A   36   GLN   HE21   HE2X   A   36   GLN   HG2    HGX    1   NEED_ACC_NO    
+     248    1   1   36   GLN   HE22   1   1   36   GLN   HG2    323    .   .   .    3.98   .   .   1.8   4.38   .   1.0   .   A   36   GLN   HE22   HE2Y   A   36   GLN   HG2    HGX    1   NEED_ACC_NO    
      249    1   1   48   GLN   H      1   1   48   GLN   HE21   324    .   .   .    4.57   .   .   1.8   5.03   .   1.0   .   A   48   GLN   H      H      A   48   GLN   HE21   HE2X   1   NEED_ACC_NO    
      250    1   1   48   GLN   HA     1   1   48   GLN   HE21   325    .   .   .    4.85   .   .   1.8   5.33   .   1.0   .   A   48   GLN   HA     HA     A   48   GLN   HE21   HE2X   1   NEED_ACC_NO    
      251    1   1   48   GLN   HB3    1   1   48   GLN   HE21   326    .   .   .    5.15   .   .   1.8   5.67   .   1.0   .   A   48   GLN   HB3    HBY    A   48   GLN   HE21   HE2X   1   NEED_ACC_NO    
@@ -8896,10 +8896,10 @@ save_distance_constraint_list
      272    1   1   22   GLY   H      1   1   22   GLY   HA2    360    .   .   .    2.86   .   .   1.8   3.15   .   1.0   .   A   22   GLY   H      H      A   22   GLY   HA2    HAX    1   NEED_ACC_NO    
      273    1   1   22   GLY   HA3    1   1   23   GLU   H      361    .   .   .    2.79   .   .   1.8   3.07   .   1.0   .   A   22   GLY   HA3    HAY    A   23   GLU   H      H      1   NEED_ACC_NO    
      274    1   1   23   GLU   H      1   1   23   GLU   HB3    362    .   .   .    3.67   .   .   1.8   4.04   .   1.0   .   A   23   GLU   H      H      A   23   GLU   HB3    HBY    1   NEED_ACC_NO    
-     275    1   1   23   GLU   H      1   1   23   GLU   HG2    363    .   .   OR   3.5    .   .   1.8   3.85   .   1.0   .   A   23   GLU   H      H      A   23   GLU   HG2    HGX    1   NEED_ACC_NO    
-     276    1   1   23   GLU   H      1   1   23   GLU   HG3    364    .   .   OR   3.5    .   .   1.8   3.85   .   1.0   .   A   23   GLU   H      H      A   23   GLU   HG3    HGY    1   NEED_ACC_NO    
-     277    1   1   24   ASN   H      1   1   24   ASN   HB2    365    .   .   OR   3.8    .   .   1.8   4.18   .   1.0   .   A   24   ASN   H      H      A   24   ASN   HB2    HBX    1   NEED_ACC_NO    
-     278    1   1   24   ASN   H      1   1   24   ASN   HB3    366    .   .   OR   3.8    .   .   1.8   4.18   .   1.0   .   A   24   ASN   H      H      A   24   ASN   HB3    HBY    1   NEED_ACC_NO    
+     275    1   1   23   GLU   H      1   1   23   GLU   HG2    363    .   .   .    3.5    .   .   1.8   3.85   .   1.0   .   A   23   GLU   H      H      A   23   GLU   HG2    HGX    1   NEED_ACC_NO    
+     276    1   1   23   GLU   H      1   1   23   GLU   HG3    364    .   .   .    3.5    .   .   1.8   3.85   .   1.0   .   A   23   GLU   H      H      A   23   GLU   HG3    HGY    1   NEED_ACC_NO    
+     277    1   1   24   ASN   H      1   1   24   ASN   HB2    365    .   .   .    3.8    .   .   1.8   4.18   .   1.0   .   A   24   ASN   H      H      A   24   ASN   HB2    HBX    1   NEED_ACC_NO    
+     278    1   1   24   ASN   H      1   1   24   ASN   HB3    366    .   .   .    3.8    .   .   1.8   4.18   .   1.0   .   A   24   ASN   H      H      A   24   ASN   HB3    HBY    1   NEED_ACC_NO    
      279    1   1   25   VAL   H      1   1   25   VAL   HB     367    .   .   .    2.89   .   .   1.8   3.18   .   1.0   .   A   25   VAL   H      H      A   25   VAL   HB     HB     1   NEED_ACC_NO    
      280    1   1   25   VAL   H      1   1   25   VAL   HG11   368    .   .   OR   2.65   .   .   1.8   2.92   .   1.0   .   A   25   VAL   H      H      A   25   VAL   HG11   HGX%   1   NEED_ACC_NO    
      280    1   1   25   VAL   H      1   1   25   VAL   HG12   369    .   .   OR   2.65   .   .   1.8   2.92   .   1.0   .   A   25   VAL   H      H      A   25   VAL   HG12   HGX%   1   NEED_ACC_NO    
@@ -8961,8 +8961,8 @@ save_distance_constraint_list
      325    1   1   42   THR   H      1   1   42   THR   HB     425    .   .   .    3.14   .   .   1.8   3.45   .   1.0   .   A   42   THR   H      H      A   42   THR   HB     HB     1   NEED_ACC_NO    
      326    1   1   43   ASN   H      1   1   43   ASN   HB3    426    .   .   .    3.22   .   .   1.8   3.54   .   1.0   .   A   43   ASN   H      H      A   43   ASN   HB3    HBY    1   NEED_ACC_NO    
      327    1   1   43   ASN   H      1   1   43   ASN   HB2    427    .   .   .    3.43   .   .   1.8   3.77   .   1.0   .   A   43   ASN   H      H      A   43   ASN   HB2    HBX    1   NEED_ACC_NO    
-     328    1   1   45   LYS   H      1   1   45   LYS   HG2    428    .   .   OR   4.69   .   .   1.8   5.16   .   1.0   .   A   45   LYS   H      H      A   45   LYS   HG2    HGX    1   NEED_ACC_NO    
-     329    1   1   45   LYS   H      1   1   45   LYS   HG3    429    .   .   OR   4.69   .   .   1.8   5.16   .   1.0   .   A   45   LYS   H      H      A   45   LYS   HG3    HGY    1   NEED_ACC_NO    
+     328    1   1   45   LYS   H      1   1   45   LYS   HG2    428    .   .   .    4.69   .   .   1.8   5.16   .   1.0   .   A   45   LYS   H      H      A   45   LYS   HG2    HGX    1   NEED_ACC_NO    
+     329    1   1   45   LYS   H      1   1   45   LYS   HG3    429    .   .   .    4.69   .   .   1.8   5.16   .   1.0   .   A   45   LYS   H      H      A   45   LYS   HG3    HGY    1   NEED_ACC_NO    
      330    1   1   45   LYS   H      1   1   45   LYS   HD2    430    .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   45   LYS   H      H      A   45   LYS   HD2    HDX    1   NEED_ACC_NO    
      331    1   1   46   THR   H      1   1   46   THR   HB     431    .   .   .    3.92   .   .   1.8   4.31   .   1.0   .   A   46   THR   H      H      A   46   THR   HB     HB     1   NEED_ACC_NO    
      332    1   1   46   THR   H      1   1   46   THR   HG21   432    .   .   OR   3.26   .   .   1.8   3.59   .   1.0   .   A   46   THR   H      H      A   46   THR   HG21   HG2%   1   NEED_ACC_NO    
@@ -8992,10 +8992,10 @@ save_distance_constraint_list
      349    1   1   54   TYR   H      1   1   54   TYR   HE2    456    .   .   OR   5      .   .   1.8   5.5    .   1.0   .   A   54   TYR   H      H      A   54   TYR   HE2    HE%    1   NEED_ACC_NO    
      350    1   1   54   TYR   H      1   1   54   TYR   HD1    457    .   .   OR   3.89   .   .   1.8   4.28   .   1.0   .   A   54   TYR   H      H      A   54   TYR   HD1    HD%    1   NEED_ACC_NO    
      350    1   1   54   TYR   H      1   1   54   TYR   HD2    458    .   .   OR   3.89   .   .   1.8   4.28   .   1.0   .   A   54   TYR   H      H      A   54   TYR   HD2    HD%    1   NEED_ACC_NO    
-     351    1   1   56   ASP   H      1   1   56   ASP   HB2    459    .   .   OR   3.54   .   .   1.8   3.89   .   1.0   .   A   56   ASP   H      H      A   56   ASP   HB2    HBX    1   NEED_ACC_NO    
-     352    1   1   56   ASP   H      1   1   56   ASP   HB3    460    .   .   OR   3.54   .   .   1.8   3.89   .   1.0   .   A   56   ASP   H      H      A   56   ASP   HB3    HBY    1   NEED_ACC_NO    
-     353    1   1   58   GLU   H      1   1   58   GLU   HG2    461    .   .   OR   3.57   .   .   1.8   3.93   .   1.0   .   A   58   GLU   H      H      A   58   GLU   HG2    HGX    1   NEED_ACC_NO    
-     354    1   1   58   GLU   H      1   1   58   GLU   HG3    462    .   .   OR   3.57   .   .   1.8   3.93   .   1.0   .   A   58   GLU   H      H      A   58   GLU   HG3    HGY    1   NEED_ACC_NO    
+     351    1   1   56   ASP   H      1   1   56   ASP   HB2    459    .   .   .    3.54   .   .   1.8   3.89   .   1.0   .   A   56   ASP   H      H      A   56   ASP   HB2    HBX    1   NEED_ACC_NO    
+     352    1   1   56   ASP   H      1   1   56   ASP   HB3    460    .   .   .    3.54   .   .   1.8   3.89   .   1.0   .   A   56   ASP   H      H      A   56   ASP   HB3    HBY    1   NEED_ACC_NO    
+     353    1   1   58   GLU   H      1   1   58   GLU   HG2    461    .   .   .    3.57   .   .   1.8   3.93   .   1.0   .   A   58   GLU   H      H      A   58   GLU   HG2    HGX    1   NEED_ACC_NO    
+     354    1   1   58   GLU   H      1   1   58   GLU   HG3    462    .   .   .    3.57   .   .   1.8   3.93   .   1.0   .   A   58   GLU   H      H      A   58   GLU   HG3    HGY    1   NEED_ACC_NO    
      355    1   1   59   THR   H      1   1   59   THR   HB     463    .   .   .    3.96   .   .   1.8   4.36   .   1.0   .   A   59   THR   H      H      A   59   THR   HB     HB     1   NEED_ACC_NO    
      356    1   1   59   THR   H      1   1   59   THR   HG21   464    .   .   OR   3.02   .   .   1.8   3.32   .   1.0   .   A   59   THR   H      H      A   59   THR   HG21   HG2%   1   NEED_ACC_NO    
      356    1   1   59   THR   H      1   1   59   THR   HG22   465    .   .   OR   3.02   .   .   1.8   3.32   .   1.0   .   A   59   THR   H      H      A   59   THR   HG22   HG2%   1   NEED_ACC_NO    
@@ -9009,14 +9009,14 @@ save_distance_constraint_list
      363    1   1   62   LEU   H      1   1   62   LEU   HD11   473    .   .   OR   3.75   .   .   1.8   4.13   .   1.0   .   A   62   LEU   H      H      A   62   LEU   HD11   HDX%   1   NEED_ACC_NO    
      363    1   1   62   LEU   H      1   1   62   LEU   HD12   474    .   .   OR   3.75   .   .   1.8   4.13   .   1.0   .   A   62   LEU   H      H      A   62   LEU   HD12   HDX%   1   NEED_ACC_NO    
      363    1   1   62   LEU   H      1   1   62   LEU   HD13   475    .   .   OR   3.75   .   .   1.8   4.13   .   1.0   .   A   62   LEU   H      H      A   62   LEU   HD13   HDX%   1   NEED_ACC_NO    
-     364    1   1   63   LYS   H      1   1   63   LYS   HB2    476    .   .   OR   3.85   .   .   1.8   4.23   .   1.0   .   A   63   LYS   H      H      A   63   LYS   HB2    HBX    1   NEED_ACC_NO    
-     365    1   1   63   LYS   H      1   1   63   LYS   HB3    477    .   .   OR   3.85   .   .   1.8   4.23   .   1.0   .   A   63   LYS   H      H      A   63   LYS   HB3    HBY    1   NEED_ACC_NO    
+     364    1   1   63   LYS   H      1   1   63   LYS   HB2    476    .   .   .    3.85   .   .   1.8   4.23   .   1.0   .   A   63   LYS   H      H      A   63   LYS   HB2    HBX    1   NEED_ACC_NO    
+     365    1   1   63   LYS   H      1   1   63   LYS   HB3    477    .   .   .    3.85   .   .   1.8   4.23   .   1.0   .   A   63   LYS   H      H      A   63   LYS   HB3    HBY    1   NEED_ACC_NO    
      366    1   1   63   LYS   H      1   1   63   LYS   HG3    478    .   .   .    3.2    .   .   1.8   3.52   .   1.0   .   A   63   LYS   H      H      A   63   LYS   HG3    HG3    1   NEED_ACC_NO    
      367    1   1   63   LYS   H      1   1   63   LYS   HD3    479    .   .   .    4.34   .   .   1.8   4.77   .   1.0   .   A   63   LYS   H      H      A   63   LYS   HD3    HDY    1   NEED_ACC_NO    
      368    1   1   63   LYS   H      1   1   63   LYS   HD2    480    .   .   .    4.63   .   .   1.8   5.09   .   1.0   .   A   63   LYS   H      H      A   63   LYS   HD2    HDX    1   NEED_ACC_NO    
      369    1   1   65   GLU   H      1   1   65   GLU   HB3    481    .   .   .    4.08   .   .   1.8   4.49   .   1.0   .   A   65   GLU   H      H      A   65   GLU   HB3    HBY    1   NEED_ACC_NO    
-     370    1   1   65   GLU   H      1   1   65   GLU   HG2    482    .   .   OR   4.71   .   .   1.8   5.18   .   1.0   .   A   65   GLU   H      H      A   65   GLU   HG2    HGX    1   NEED_ACC_NO    
-     371    1   1   65   GLU   H      1   1   65   GLU   HG3    483    .   .   OR   4.71   .   .   1.8   5.18   .   1.0   .   A   65   GLU   H      H      A   65   GLU   HG3    HGY    1   NEED_ACC_NO    
+     370    1   1   65   GLU   H      1   1   65   GLU   HG2    482    .   .   .    4.71   .   .   1.8   5.18   .   1.0   .   A   65   GLU   H      H      A   65   GLU   HG2    HGX    1   NEED_ACC_NO    
+     371    1   1   65   GLU   H      1   1   65   GLU   HG3    483    .   .   .    4.71   .   .   1.8   5.18   .   1.0   .   A   65   GLU   H      H      A   65   GLU   HG3    HGY    1   NEED_ACC_NO    
      372    1   1   66   ALA   H      1   1   66   ALA   HB1    484    .   .   OR   3.47   .   .   1.8   3.82   .   1.0   .   A   66   ALA   H      H      A   66   ALA   HB1    HB%    1   NEED_ACC_NO    
      372    1   1   66   ALA   H      1   1   66   ALA   HB2    485    .   .   OR   3.47   .   .   1.8   3.82   .   1.0   .   A   66   ALA   H      H      A   66   ALA   HB2    HB%    1   NEED_ACC_NO    
      372    1   1   66   ALA   H      1   1   66   ALA   HB3    486    .   .   OR   3.47   .   .   1.8   3.82   .   1.0   .   A   66   ALA   H      H      A   66   ALA   HB3    HB%    1   NEED_ACC_NO    
@@ -9027,8 +9027,8 @@ save_distance_constraint_list
      375    1   1   68   VAL   H      1   1   68   VAL   HG11   491    .   .   OR   4.09   .   .   1.8   4.5    .   1.0   .   A   68   VAL   H      H      A   68   VAL   HG11   HGX%   1   NEED_ACC_NO    
      375    1   1   68   VAL   H      1   1   68   VAL   HG12   492    .   .   OR   4.09   .   .   1.8   4.5    .   1.0   .   A   68   VAL   H      H      A   68   VAL   HG12   HGX%   1   NEED_ACC_NO    
      375    1   1   68   VAL   H      1   1   68   VAL   HG13   493    .   .   OR   4.09   .   .   1.8   4.5    .   1.0   .   A   68   VAL   H      H      A   68   VAL   HG13   HGX%   1   NEED_ACC_NO    
-     376    1   1   69   SER   H      1   1   69   SER   HB2    494    .   .   OR   3.7    .   .   1.8   4.07   .   1.0   .   A   69   SER   H      H      A   69   SER   HB2    HBX    1   NEED_ACC_NO    
-     377    1   1   69   SER   H      1   1   69   SER   HB3    495    .   .   OR   3.7    .   .   1.8   4.07   .   1.0   .   A   69   SER   H      H      A   69   SER   HB3    HBY    1   NEED_ACC_NO    
+     376    1   1   69   SER   H      1   1   69   SER   HB2    494    .   .   .    3.7    .   .   1.8   4.07   .   1.0   .   A   69   SER   H      H      A   69   SER   HB2    HBX    1   NEED_ACC_NO    
+     377    1   1   69   SER   H      1   1   69   SER   HB3    495    .   .   .    3.7    .   .   1.8   4.07   .   1.0   .   A   69   SER   H      H      A   69   SER   HB3    HBY    1   NEED_ACC_NO    
      378    1   1   70   PHE   H      1   1   70   PHE   HB3    496    .   .   .    3.7    .   .   1.8   4.07   .   1.0   .   A   70   PHE   H      H      A   70   PHE   HB3    HBY    1   NEED_ACC_NO    
      379    1   1   70   PHE   H      1   1   70   PHE   HB2    497    .   .   .    3.38   .   .   1.8   3.72   .   1.0   .   A   70   PHE   H      H      A   70   PHE   HB2    HBX    1   NEED_ACC_NO    
      380    1   1   70   PHE   H      1   1   70   PHE   HD1    498    .   .   OR   3.48   .   .   1.8   3.83   .   1.0   .   A   70   PHE   H      H      A   70   PHE   HD1    HD%    1   NEED_ACC_NO    
@@ -9036,8 +9036,8 @@ save_distance_constraint_list
      381    1   1   71   ASP   H      1   1   71   ASP   HB3    500    .   .   .    3.27   .   .   1.8   3.6    .   1.0   .   A   71   ASP   H      H      A   71   ASP   HB3    HBY    1   NEED_ACC_NO    
      382    1   1   71   ASP   H      1   1   71   ASP   HB2    501    .   .   .    2.97   .   .   1.8   3.27   .   1.0   .   A   71   ASP   H      H      A   71   ASP   HB2    HBX    1   NEED_ACC_NO    
      383    1   1   72   ASP   H      1   1   72   ASP   HB2    502    .   .   .    3.34   .   .   1.8   3.67   .   1.0   .   A   72   ASP   H      H      A   72   ASP   HB2    HBX    1   NEED_ACC_NO    
-     384    1   1   75   SER   H      1   1   75   SER   HB2    503    .   .   OR   3.79   .   .   1.8   4.17   .   1.0   .   A   75   SER   H      H      A   75   SER   HB2    HBX    1   NEED_ACC_NO    
-     385    1   1   75   SER   H      1   1   75   SER   HB3    504    .   .   OR   3.79   .   .   1.8   4.17   .   1.0   .   A   75   SER   H      H      A   75   SER   HB3    HBY    1   NEED_ACC_NO    
+     384    1   1   75   SER   H      1   1   75   SER   HB2    503    .   .   .    3.79   .   .   1.8   4.17   .   1.0   .   A   75   SER   H      H      A   75   SER   HB2    HBX    1   NEED_ACC_NO    
+     385    1   1   75   SER   H      1   1   75   SER   HB3    504    .   .   .    3.79   .   .   1.8   4.17   .   1.0   .   A   75   SER   H      H      A   75   SER   HB3    HBY    1   NEED_ACC_NO    
      386    1   1   76   ALA   H      1   1   76   ALA   HB1    505    .   .   OR   2.79   .   .   1.8   3.07   .   1.0   .   A   76   ALA   H      H      A   76   ALA   HB1    HB%    1   NEED_ACC_NO    
      386    1   1   76   ALA   H      1   1   76   ALA   HB2    506    .   .   OR   2.79   .   .   1.8   3.07   .   1.0   .   A   76   ALA   H      H      A   76   ALA   HB2    HB%    1   NEED_ACC_NO    
      386    1   1   76   ALA   H      1   1   76   ALA   HB3    507    .   .   OR   2.79   .   .   1.8   3.07   .   1.0   .   A   76   ALA   H      H      A   76   ALA   HB3    HB%    1   NEED_ACC_NO    
@@ -9075,12 +9075,12 @@ save_distance_constraint_list
      411    1   1   86   LYS   HD2    1   1   87   GLU   H      539    .   .   .    4.14   .   .   1.8   4.55   .   1.0   .   A   86   LYS   HD2    HDX    A   87   GLU   H      H      1   NEED_ACC_NO    
      412    1   1   87   GLU   H      1   1   87   GLU   HG2    540    .   .   .    4.49   .   .   1.8   4.94   .   1.0   .   A   87   GLU   H      H      A   87   GLU   HG2    HGX    1   NEED_ACC_NO    
      413    1   1   87   GLU   H      1   1   87   GLU   HG3    541    .   .   .    3.49   .   .   1.8   3.84   .   1.0   .   A   87   GLU   H      H      A   87   GLU   HG3    HGY    1   NEED_ACC_NO    
-     414    1   1   88   PHE   H      1   1   88   PHE   HB2    542    .   .   OR   3.43   .   .   1.8   3.77   .   1.0   .   A   88   PHE   H      H      A   88   PHE   HB2    HBX    1   NEED_ACC_NO    
-     415    1   1   88   PHE   H      1   1   88   PHE   HB3    543    .   .   OR   3.43   .   .   1.8   3.77   .   1.0   .   A   88   PHE   H      H      A   88   PHE   HB3    HBY    1   NEED_ACC_NO    
+     414    1   1   88   PHE   H      1   1   88   PHE   HB2    542    .   .   .    3.43   .   .   1.8   3.77   .   1.0   .   A   88   PHE   H      H      A   88   PHE   HB2    HBX    1   NEED_ACC_NO    
+     415    1   1   88   PHE   H      1   1   88   PHE   HB3    543    .   .   .    3.43   .   .   1.8   3.77   .   1.0   .   A   88   PHE   H      H      A   88   PHE   HB3    HBY    1   NEED_ACC_NO    
      416    1   1   88   PHE   H      1   1   88   PHE   HD1    544    .   .   OR   4.62   .   .   1.8   5.08   .   1.0   .   A   88   PHE   H      H      A   88   PHE   HD1    HD%    1   NEED_ACC_NO    
      416    1   1   88   PHE   H      1   1   88   PHE   HD2    545    .   .   OR   4.62   .   .   1.8   5.08   .   1.0   .   A   88   PHE   H      H      A   88   PHE   HD2    HD%    1   NEED_ACC_NO    
-     417    1   1   91   ASN   H      1   1   91   ASN   HD21   546    .   .   OR   4.76   .   .   1.8   5.24   .   1.0   .   A   91   ASN   H      H      A   91   ASN   HD21   HD2X   1   NEED_ACC_NO    
-     418    1   1   91   ASN   H      1   1   91   ASN   HD22   547    .   .   OR   4.76   .   .   1.8   5.24   .   1.0   .   A   91   ASN   H      H      A   91   ASN   HD22   HD2Y   1   NEED_ACC_NO    
+     417    1   1   91   ASN   H      1   1   91   ASN   HD21   546    .   .   .    4.76   .   .   1.8   5.24   .   1.0   .   A   91   ASN   H      H      A   91   ASN   HD21   HD2X   1   NEED_ACC_NO    
+     418    1   1   91   ASN   H      1   1   91   ASN   HD22   547    .   .   .    4.76   .   .   1.8   5.24   .   1.0   .   A   91   ASN   H      H      A   91   ASN   HD22   HD2Y   1   NEED_ACC_NO    
      419    1   1   93   ILE   H      1   1   93   ILE   HB     548    .   .   .    4.1    .   .   1.8   4.51   .   1.0   .   A   93   ILE   H      H      A   93   ILE   HB     HB     1   NEED_ACC_NO    
      420    1   1   93   ILE   H      1   1   93   ILE   HG12   549    .   .   .    3.38   .   .   1.8   3.72   .   1.0   .   A   93   ILE   H      H      A   93   ILE   HG12   HG1X   1   NEED_ACC_NO    
      421    1   1   93   ILE   H      1   1   93   ILE   HG13   550    .   .   .    3.59   .   .   1.8   3.95   .   1.0   .   A   93   ILE   H      H      A   93   ILE   HG13   HG1Y   1   NEED_ACC_NO    
@@ -9090,8 +9090,8 @@ save_distance_constraint_list
      423    1   1   93   ILE   HB     1   1   94   LYS   H      554    .   .   .    2.93   .   .   1.8   3.22   .   1.0   .   A   93   ILE   HB     HB     A   94   LYS   H      H      1   NEED_ACC_NO    
      424    1   1   94   LYS   H      1   1   94   LYS   HB3    555    .   .   .    3.71   .   .   1.8   4.08   .   1.0   .   A   94   LYS   H      H      A   94   LYS   HB3    HBY    1   NEED_ACC_NO    
      425    1   1   93   ILE   HG13   1   1   94   LYS   H      556    .   .   .    4.41   .   .   1.8   4.85   .   1.0   .   A   93   ILE   HG13   HG1Y   A   94   LYS   H      H      1   NEED_ACC_NO    
-     426    1   1   94   LYS   H      1   1   94   LYS   HG2    557    .   .   OR   4.95   .   .   1.8   5.44   .   1.0   .   A   94   LYS   H      H      A   94   LYS   HG2    HGX    1   NEED_ACC_NO    
-     427    1   1   94   LYS   H      1   1   94   LYS   HG3    558    .   .   OR   4.95   .   .   1.8   5.44   .   1.0   .   A   94   LYS   H      H      A   94   LYS   HG3    HGY    1   NEED_ACC_NO    
+     426    1   1   94   LYS   H      1   1   94   LYS   HG2    557    .   .   .    4.95   .   .   1.8   5.44   .   1.0   .   A   94   LYS   H      H      A   94   LYS   HG2    HGX    1   NEED_ACC_NO    
+     427    1   1   94   LYS   H      1   1   94   LYS   HG3    558    .   .   .    4.95   .   .   1.8   5.44   .   1.0   .   A   94   LYS   H      H      A   94   LYS   HG3    HGY    1   NEED_ACC_NO    
      428    1   1   95   VAL   H      1   1   95   VAL   HB     559    .   .   .    3.62   .   .   1.8   3.98   .   1.0   .   A   95   VAL   H      H      A   95   VAL   HB     HB     1   NEED_ACC_NO    
      429    1   1   95   VAL   H      1   1   95   VAL   HG21   560    .   .   OR   3.55   .   .   1.8   3.9    .   1.0   .   A   95   VAL   H      H      A   95   VAL   HG21   HGY%   1   NEED_ACC_NO    
      429    1   1   95   VAL   H      1   1   95   VAL   HG22   561    .   .   OR   3.55   .   .   1.8   3.9    .   1.0   .   A   95   VAL   H      H      A   95   VAL   HG22   HGY%   1   NEED_ACC_NO    
@@ -9397,8 +9397,8 @@ save_distance_constraint_list
      616    1   1   35   LYS   H      1   1   40   ILE   HD12   861    .   .   OR   3.5    .   .   1.8   3.85   .   1.0   .   A   35   LYS   H      H      A   40   ILE   HD12   HD1%   1   NEED_ACC_NO    
      616    1   1   35   LYS   H      1   1   40   ILE   HD13   862    .   .   OR   3.5    .   .   1.8   3.85   .   1.0   .   A   35   LYS   H      H      A   40   ILE   HD13   HD1%   1   NEED_ACC_NO    
      617    1   1   36   GLN   H      1   1   83   PHE   HZ     863    .   .   .    4.24   .   .   1.8   4.66   .   1.0   .   A   36   GLN   H      H      A   83   PHE   HZ     HZ     1   NEED_ACC_NO    
-     618    1   1   33   TYR   HA     1   1   36   GLN   HE21   864    .   .   OR   4.63   .   .   1.8   5.09   .   1.0   .   A   33   TYR   HA     HA     A   36   GLN   HE21   HE2X   1   NEED_ACC_NO    
-     619    1   1   33   TYR   HA     1   1   36   GLN   HE22   865    .   .   OR   4.63   .   .   1.8   5.09   .   1.0   .   A   33   TYR   HA     HA     A   36   GLN   HE22   HE2Y   1   NEED_ACC_NO    
+     618    1   1   33   TYR   HA     1   1   36   GLN   HE21   864    .   .   .    4.63   .   .   1.8   5.09   .   1.0   .   A   33   TYR   HA     HA     A   36   GLN   HE21   HE2X   1   NEED_ACC_NO    
+     619    1   1   33   TYR   HA     1   1   36   GLN   HE22   865    .   .   .    4.63   .   .   1.8   5.09   .   1.0   .   A   33   TYR   HA     HA     A   36   GLN   HE22   HE2Y   1   NEED_ACC_NO    
      620    1   1   37   ILE   H      1   1   79   ALA   HB1    866    .   .   OR   4.86   .   .   1.8   5.35   .   1.0   .   A   37   ILE   H      H      A   79   ALA   HB1    HB%    1   NEED_ACC_NO    
      620    1   1   37   ILE   H      1   1   79   ALA   HB2    867    .   .   OR   4.86   .   .   1.8   5.35   .   1.0   .   A   37   ILE   H      H      A   79   ALA   HB2    HB%    1   NEED_ACC_NO    
      620    1   1   37   ILE   H      1   1   79   ALA   HB3    868    .   .   OR   4.86   .   .   1.8   5.35   .   1.0   .   A   37   ILE   H      H      A   79   ALA   HB3    HB%    1   NEED_ACC_NO    
@@ -9502,16 +9502,16 @@ save_distance_constraint_list
      686    1   1   58   GLU   H      1   1   59   THR   HG21   966    .   .   OR   4.31   .   .   1.8   4.74   .   1.0   .   A   58   GLU   H      H      A   59   THR   HG21   HG2%   1   NEED_ACC_NO    
      686    1   1   58   GLU   H      1   1   59   THR   HG22   967    .   .   OR   4.31   .   .   1.8   4.74   .   1.0   .   A   58   GLU   H      H      A   59   THR   HG22   HG2%   1   NEED_ACC_NO    
      686    1   1   58   GLU   H      1   1   59   THR   HG23   968    .   .   OR   4.31   .   .   1.8   4.74   .   1.0   .   A   58   GLU   H      H      A   59   THR   HG23   HG2%   1   NEED_ACC_NO    
-     687    1   1   56   ASP   HB3    1   1   59   THR   H      969    .   .   OR   4.6    .   .   1.8   5.06   .   1.0   .   A   56   ASP   HB3    HBY    A   59   THR   H      H      1   NEED_ACC_NO    
-     688    1   1   56   ASP   HB2    1   1   59   THR   H      970    .   .   OR   4.6    .   .   1.8   5.06   .   1.0   .   A   56   ASP   HB2    HBX    A   59   THR   H      H      1   NEED_ACC_NO    
+     687    1   1   56   ASP   HB3    1   1   59   THR   H      969    .   .   .    4.6    .   .   1.8   5.06   .   1.0   .   A   56   ASP   HB3    HBY    A   59   THR   H      H      1   NEED_ACC_NO    
+     688    1   1   56   ASP   HB2    1   1   59   THR   H      970    .   .   .    4.6    .   .   1.8   5.06   .   1.0   .   A   56   ASP   HB2    HBX    A   59   THR   H      H      1   NEED_ACC_NO    
      689    1   1   59   THR   H      1   1   60   GLY   HA3    971    .   .   .    4.87   .   .   1.8   5.36   .   1.0   .   A   59   THR   H      H      A   60   GLY   HA3    HAY    1   NEED_ACC_NO    
      690    1   1   58   GLU   H      1   1   60   GLY   H      972    .   .   .    4.17   .   .   1.8   4.59   .   1.0   .   A   58   GLU   H      H      A   60   GLY   H      H      1   NEED_ACC_NO    
      691    1   1   56   ASP   H      1   1   60   GLY   H      973    .   .   .    4.85   .   .   1.8   5.33   .   1.0   .   A   56   ASP   H      H      A   60   GLY   H      H      1   NEED_ACC_NO    
      692    1   1   57   ARG   HA     1   1   60   GLY   H      974    .   .   .    4.29   .   .   1.8   4.72   .   1.0   .   A   57   ARG   HA     HA     A   60   GLY   H      H      1   NEED_ACC_NO    
-     693    1   1   56   ASP   HB2    1   1   60   GLY   H      975    .   .   OR   4.58   .   .   1.8   5.04   .   1.0   .   A   56   ASP   HB2    HBX    A   60   GLY   H      H      1   NEED_ACC_NO    
-     694    1   1   56   ASP   HB3    1   1   60   GLY   H      976    .   .   OR   4.58   .   .   1.8   5.04   .   1.0   .   A   56   ASP   HB3    HBY    A   60   GLY   H      H      1   NEED_ACC_NO    
-     695    1   1   58   GLU   HB2    1   1   60   GLY   H      977    .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   58   GLU   HB2    HBX    A   60   GLY   H      H      1   NEED_ACC_NO    
-     696    1   1   58   GLU   HB3    1   1   60   GLY   H      978    .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   58   GLU   HB3    HBY    A   60   GLY   H      H      1   NEED_ACC_NO    
+     693    1   1   56   ASP   HB2    1   1   60   GLY   H      975    .   .   .    4.58   .   .   1.8   5.04   .   1.0   .   A   56   ASP   HB2    HBX    A   60   GLY   H      H      1   NEED_ACC_NO    
+     694    1   1   56   ASP   HB3    1   1   60   GLY   H      976    .   .   .    4.58   .   .   1.8   5.04   .   1.0   .   A   56   ASP   HB3    HBY    A   60   GLY   H      H      1   NEED_ACC_NO    
+     695    1   1   58   GLU   HB2    1   1   60   GLY   H      977    .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   58   GLU   HB2    HBX    A   60   GLY   H      H      1   NEED_ACC_NO    
+     696    1   1   58   GLU   HB3    1   1   60   GLY   H      978    .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   58   GLU   HB3    HBY    A   60   GLY   H      H      1   NEED_ACC_NO    
      697    1   1   60   GLY   H      1   1   61   LYS   HB2    979    .   .   .    4.73   .   .   1.8   5.2    .   1.0   .   A   60   GLY   H      H      A   61   LYS   HB2    HBX    1   NEED_ACC_NO    
      698    1   1   60   GLY   H      1   1   61   LYS   HG3    980    .   .   .    5.41   .   .   1.8   5.95   .   1.0   .   A   60   GLY   H      H      A   61   LYS   HG3    HG3    1   NEED_ACC_NO    
      699    1   1   55   THR   HG21   1   1   60   GLY   H      981    .   .   OR   4.59   .   .   1.8   5.05   .   1.0   .   A   55   THR   HG21   HG2%   A   60   GLY   H      H      1   NEED_ACC_NO    
@@ -9519,8 +9519,8 @@ save_distance_constraint_list
      699    1   1   55   THR   HG23   1   1   60   GLY   H      983    .   .   OR   4.59   .   .   1.8   5.05   .   1.0   .   A   55   THR   HG23   HG2%   A   60   GLY   H      H      1   NEED_ACC_NO    
      700    1   1   56   ASP   H      1   1   61   LYS   H      984    .   .   .    4.14   .   .   1.8   4.55   .   1.0   .   A   56   ASP   H      H      A   61   LYS   H      H      1   NEED_ACC_NO    
      701    1   1   59   THR   H      1   1   61   LYS   H      985    .   .   .    4.47   .   .   1.8   4.92   .   1.0   .   A   59   THR   H      H      A   61   LYS   H      H      1   NEED_ACC_NO    
-     702    1   1   56   ASP   HB2    1   1   61   LYS   H      986    .   .   OR   4.01   .   .   1.8   4.41   .   1.0   .   A   56   ASP   HB2    HBX    A   61   LYS   H      H      1   NEED_ACC_NO    
-     703    1   1   56   ASP   HB3    1   1   61   LYS   H      987    .   .   OR   4.01   .   .   1.8   4.41   .   1.0   .   A   56   ASP   HB3    HBY    A   61   LYS   H      H      1   NEED_ACC_NO    
+     702    1   1   56   ASP   HB2    1   1   61   LYS   H      986    .   .   .    4.01   .   .   1.8   4.41   .   1.0   .   A   56   ASP   HB2    HBX    A   61   LYS   H      H      1   NEED_ACC_NO    
+     703    1   1   56   ASP   HB3    1   1   61   LYS   H      987    .   .   .    4.01   .   .   1.8   4.41   .   1.0   .   A   56   ASP   HB3    HBY    A   61   LYS   H      H      1   NEED_ACC_NO    
      704    1   1   59   THR   HG21   1   1   61   LYS   H      988    .   .   OR   4.33   .   .   1.8   4.76   .   1.0   .   A   59   THR   HG21   HG2%   A   61   LYS   H      H      1   NEED_ACC_NO    
      704    1   1   59   THR   HG22   1   1   61   LYS   H      989    .   .   OR   4.33   .   .   1.8   4.76   .   1.0   .   A   59   THR   HG22   HG2%   A   61   LYS   H      H      1   NEED_ACC_NO    
      704    1   1   59   THR   HG23   1   1   61   LYS   H      990    .   .   OR   4.33   .   .   1.8   4.76   .   1.0   .   A   59   THR   HG23   HG2%   A   61   LYS   H      H      1   NEED_ACC_NO    
@@ -9956,8 +9956,8 @@ save_distance_constraint_list
      940    1   1   21   LEU   HB3    1   1   21   LEU   HD11   1420   .   .   OR   3.25   .   .   1.8   3.58   .   1.0   .   A   21   LEU   HB3    HBY    A   21   LEU   HD11   HDX%   1   NEED_ACC_NO    
      940    1   1   21   LEU   HB3    1   1   21   LEU   HD12   1421   .   .   OR   3.25   .   .   1.8   3.58   .   1.0   .   A   21   LEU   HB3    HBY    A   21   LEU   HD12   HDX%   1   NEED_ACC_NO    
      940    1   1   21   LEU   HB3    1   1   21   LEU   HD13   1422   .   .   OR   3.25   .   .   1.8   3.58   .   1.0   .   A   21   LEU   HB3    HBY    A   21   LEU   HD13   HDX%   1   NEED_ACC_NO    
-     941    1   1   23   GLU   HA     1   1   23   GLU   HG2    1423   .   .   OR   3.83   .   .   1.8   4.21   .   1.0   .   A   23   GLU   HA     HA     A   23   GLU   HG2    HGX    1   NEED_ACC_NO    
-     942    1   1   23   GLU   HA     1   1   23   GLU   HG3    1424   .   .   OR   3.83   .   .   1.8   4.21   .   1.0   .   A   23   GLU   HA     HA     A   23   GLU   HG3    HGY    1   NEED_ACC_NO    
+     941    1   1   23   GLU   HA     1   1   23   GLU   HG2    1423   .   .   .    3.83   .   .   1.8   4.21   .   1.0   .   A   23   GLU   HA     HA     A   23   GLU   HG2    HGX    1   NEED_ACC_NO    
+     942    1   1   23   GLU   HA     1   1   23   GLU   HG3    1424   .   .   .    3.83   .   .   1.8   4.21   .   1.0   .   A   23   GLU   HA     HA     A   23   GLU   HG3    HGY    1   NEED_ACC_NO    
      943    1   1   23   GLU   H      1   1   23   GLU   HB2    1425   .   .   .    3.67   .   .   1.8   4.04   .   1.0   .   A   23   GLU   H      H      A   23   GLU   HB2    HBX    1   NEED_ACC_NO    
      944    1   1   24   ASN   HA     1   1   24   ASN   HD22   1426   .   .   .    4.52   .   .   1.8   4.97   .   1.0   .   A   24   ASN   HA     HA     A   24   ASN   HD22   HD2Y   1   NEED_ACC_NO    
      945    1   1   25   VAL   HA     1   1   25   VAL   HB     1427   .   .   .    3.01   .   .   1.8   3.31   .   1.0   .   A   25   VAL   HA     HA     A   25   VAL   HB     HB     1   NEED_ACC_NO    
@@ -10142,15 +10142,15 @@ save_distance_constraint_list
      1032   1   1   42   THR   HA     1   1   42   THR   HG21   1606   .   .   OR   2.96   .   .   1.8   3.26   .   1.0   .   A   42   THR   HA     HA     A   42   THR   HG21   HG2%   1   NEED_ACC_NO    
      1032   1   1   42   THR   HA     1   1   42   THR   HG22   1607   .   .   OR   2.96   .   .   1.8   3.26   .   1.0   .   A   42   THR   HA     HA     A   42   THR   HG22   HG2%   1   NEED_ACC_NO    
      1032   1   1   42   THR   HA     1   1   42   THR   HG23   1608   .   .   OR   2.96   .   .   1.8   3.26   .   1.0   .   A   42   THR   HA     HA     A   42   THR   HG23   HG2%   1   NEED_ACC_NO    
-     1033   1   1   44   LYS   HA     1   1   44   LYS   HE2    1609   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HE2    HE2    1   NEED_ACC_NO    
-     1034   1   1   44   LYS   HA     1   1   44   LYS   HE3    1610   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HE3    HE3    1   NEED_ACC_NO    
-     1035   1   1   44   LYS   HA     1   1   44   LYS   HG2    1611   .   .   OR   3.96   .   .   1.8   4.36   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HG2    HGX    1   NEED_ACC_NO    
-     1036   1   1   44   LYS   HA     1   1   44   LYS   HG3    1612   .   .   OR   3.96   .   .   1.8   4.36   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HG3    HGY    1   NEED_ACC_NO    
-     1037   1   1   44   LYS   HA     1   1   44   LYS   HD2    1613   .   .   OR   5.46   .   .   1.8   6.01   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HD2    HD2    1   NEED_ACC_NO    
-     1038   1   1   44   LYS   HA     1   1   44   LYS   HD3    1614   .   .   OR   5.46   .   .   1.8   6.01   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HD3    HD3    1   NEED_ACC_NO    
+     1033   1   1   44   LYS   HA     1   1   44   LYS   HE2    1609   .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HE2    HE2    1   NEED_ACC_NO    
+     1034   1   1   44   LYS   HA     1   1   44   LYS   HE3    1610   .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HE3    HE3    1   NEED_ACC_NO    
+     1035   1   1   44   LYS   HA     1   1   44   LYS   HG2    1611   .   .   .    3.96   .   .   1.8   4.36   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HG2    HGX    1   NEED_ACC_NO    
+     1036   1   1   44   LYS   HA     1   1   44   LYS   HG3    1612   .   .   .    3.96   .   .   1.8   4.36   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HG3    HGY    1   NEED_ACC_NO    
+     1037   1   1   44   LYS   HA     1   1   44   LYS   HD2    1613   .   .   .    5.46   .   .   1.8   6.01   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HD2    HD2    1   NEED_ACC_NO    
+     1038   1   1   44   LYS   HA     1   1   44   LYS   HD3    1614   .   .   .    5.46   .   .   1.8   6.01   .   1.0   .   A   44   LYS   HA     HA     A   44   LYS   HD3    HD3    1   NEED_ACC_NO    
      1039   1   1   45   LYS   HA     1   1   45   LYS   HG2    1615   .   .   .    4      .   .   1.8   4.4    .   1.0   .   A   45   LYS   HA     HA     A   45   LYS   HG2    HGX    1   NEED_ACC_NO    
-     1040   1   1   45   LYS   HA     1   1   45   LYS   HD2    1616   .   .   OR   5.68   .   .   1.8   6.25   .   1.0   .   A   45   LYS   HA     HA     A   45   LYS   HD2    HDX    1   NEED_ACC_NO    
-     1041   1   1   45   LYS   HA     1   1   45   LYS   HD3    1617   .   .   OR   5.68   .   .   1.8   6.25   .   1.0   .   A   45   LYS   HA     HA     A   45   LYS   HD3    HDY    1   NEED_ACC_NO    
+     1040   1   1   45   LYS   HA     1   1   45   LYS   HD2    1616   .   .   .    5.68   .   .   1.8   6.25   .   1.0   .   A   45   LYS   HA     HA     A   45   LYS   HD2    HDX    1   NEED_ACC_NO    
+     1041   1   1   45   LYS   HA     1   1   45   LYS   HD3    1617   .   .   .    5.68   .   .   1.8   6.25   .   1.0   .   A   45   LYS   HA     HA     A   45   LYS   HD3    HDY    1   NEED_ACC_NO    
      1042   1   1   45   LYS   HA     1   1   45   LYS   HG3    1618   .   .   .    4      .   .   1.8   4.4    .   1.0   .   A   45   LYS   HA     HA     A   45   LYS   HG3    HGY    1   NEED_ACC_NO    
      1043   1   1   77   LYS   HB3    1   1   77   LYS   HD2    1619   .   .   .    3.46   .   .   1.8   3.81   .   1.0   .   A   77   LYS   HB3    HBY    A   77   LYS   HD2    HDX    1   NEED_ACC_NO    
      1044   1   1   46   THR   HA     1   1   46   THR   HB     1620   .   .   .    3.02   .   .   1.8   3.32   .   1.0   .   A   46   THR   HA     HA     A   46   THR   HB     HB     1   NEED_ACC_NO    
@@ -10248,20 +10248,20 @@ save_distance_constraint_list
      1080   1   1   55   THR   HA     1   1   55   THR   HG21   1712   .   .   OR   3.02   .   .   1.8   3.32   .   1.0   .   A   55   THR   HA     HA     A   55   THR   HG21   HG2%   1   NEED_ACC_NO    
      1080   1   1   55   THR   HA     1   1   55   THR   HG22   1713   .   .   OR   3.02   .   .   1.8   3.32   .   1.0   .   A   55   THR   HA     HA     A   55   THR   HG22   HG2%   1   NEED_ACC_NO    
      1080   1   1   55   THR   HA     1   1   55   THR   HG23   1714   .   .   OR   3.02   .   .   1.8   3.32   .   1.0   .   A   55   THR   HA     HA     A   55   THR   HG23   HG2%   1   NEED_ACC_NO    
-     1081   1   1   57   ARG   HA     1   1   57   ARG   HD2    1715   .   .   OR   5.67   .   .   1.8   6.24   .   1.0   .   A   57   ARG   HA     HA     A   57   ARG   HD2    HDX    1   NEED_ACC_NO    
-     1082   1   1   57   ARG   HA     1   1   57   ARG   HD3    1716   .   .   OR   5.67   .   .   1.8   6.24   .   1.0   .   A   57   ARG   HA     HA     A   57   ARG   HD3    HDY    1   NEED_ACC_NO    
-     1083   1   1   58   GLU   H      1   1   58   GLU   HB2    1717   .   .   OR   3.79   .   .   1.8   4.17   .   1.0   .   A   58   GLU   H      H      A   58   GLU   HB2    HBX    1   NEED_ACC_NO    
-     1084   1   1   58   GLU   H      1   1   58   GLU   HB3    1718   .   .   OR   3.79   .   .   1.8   4.17   .   1.0   .   A   58   GLU   H      H      A   58   GLU   HB3    HBY    1   NEED_ACC_NO    
-     1085   1   1   58   GLU   HA     1   1   58   GLU   HG2    1719   .   .   OR   3.91   .   .   1.8   4.3    .   1.0   .   A   58   GLU   HA     HA     A   58   GLU   HG2    HGX    1   NEED_ACC_NO    
-     1086   1   1   58   GLU   HA     1   1   58   GLU   HG3    1720   .   .   OR   3.91   .   .   1.8   4.3    .   1.0   .   A   58   GLU   HA     HA     A   58   GLU   HG3    HGY    1   NEED_ACC_NO    
+     1081   1   1   57   ARG   HA     1   1   57   ARG   HD2    1715   .   .   .    5.67   .   .   1.8   6.24   .   1.0   .   A   57   ARG   HA     HA     A   57   ARG   HD2    HDX    1   NEED_ACC_NO    
+     1082   1   1   57   ARG   HA     1   1   57   ARG   HD3    1716   .   .   .    5.67   .   .   1.8   6.24   .   1.0   .   A   57   ARG   HA     HA     A   57   ARG   HD3    HDY    1   NEED_ACC_NO    
+     1083   1   1   58   GLU   H      1   1   58   GLU   HB2    1717   .   .   .    3.79   .   .   1.8   4.17   .   1.0   .   A   58   GLU   H      H      A   58   GLU   HB2    HBX    1   NEED_ACC_NO    
+     1084   1   1   58   GLU   H      1   1   58   GLU   HB3    1718   .   .   .    3.79   .   .   1.8   4.17   .   1.0   .   A   58   GLU   H      H      A   58   GLU   HB3    HBY    1   NEED_ACC_NO    
+     1085   1   1   58   GLU   HA     1   1   58   GLU   HG2    1719   .   .   .    3.91   .   .   1.8   4.3    .   1.0   .   A   58   GLU   HA     HA     A   58   GLU   HG2    HGX    1   NEED_ACC_NO    
+     1086   1   1   58   GLU   HA     1   1   58   GLU   HG3    1720   .   .   .    3.91   .   .   1.8   4.3    .   1.0   .   A   58   GLU   HA     HA     A   58   GLU   HG3    HGY    1   NEED_ACC_NO    
      1087   1   1   59   THR   HA     1   1   59   THR   HB     1721   .   .   .    2.95   .   .   1.8   3.25   .   1.0   .   A   59   THR   HA     HA     A   59   THR   HB     HB     1   NEED_ACC_NO    
      1088   1   1   59   THR   HA     1   1   59   THR   HG21   1722   .   .   OR   3.16   .   .   1.8   3.48   .   1.0   .   A   59   THR   HA     HA     A   59   THR   HG21   HG2%   1   NEED_ACC_NO    
      1088   1   1   59   THR   HA     1   1   59   THR   HG22   1723   .   .   OR   3.16   .   .   1.8   3.48   .   1.0   .   A   59   THR   HA     HA     A   59   THR   HG22   HG2%   1   NEED_ACC_NO    
      1088   1   1   59   THR   HA     1   1   59   THR   HG23   1724   .   .   OR   3.16   .   .   1.8   3.48   .   1.0   .   A   59   THR   HA     HA     A   59   THR   HG23   HG2%   1   NEED_ACC_NO    
      1089   1   1   62   LEU   HA     1   1   62   LEU   HG     1725   .   .   .    3.47   .   .   1.8   3.82   .   1.0   .   A   62   LEU   HA     HA     A   62   LEU   HG     HG     1   NEED_ACC_NO    
      1090   1   1   61   LYS   HB3    1   1   61   LYS   HE2    1726   .   .   .    4.92   .   .   1.8   5.41   .   1.0   .   A   61   LYS   HB3    HBY    A   61   LYS   HE2    HEX    1   NEED_ACC_NO    
-     1091   1   1   61   LYS   HB2    1   1   61   LYS   HE2    1727   .   .   OR   5.33   .   .   1.8   5.86   .   1.0   .   A   61   LYS   HB2    HBX    A   61   LYS   HE2    HEX    1   NEED_ACC_NO    
-     1092   1   1   61   LYS   HB2    1   1   61   LYS   HE3    1728   .   .   OR   5.33   .   .   1.8   5.86   .   1.0   .   A   61   LYS   HB2    HBX    A   61   LYS   HE3    HEY    1   NEED_ACC_NO    
+     1091   1   1   61   LYS   HB2    1   1   61   LYS   HE2    1727   .   .   .    5.33   .   .   1.8   5.86   .   1.0   .   A   61   LYS   HB2    HBX    A   61   LYS   HE2    HEX    1   NEED_ACC_NO    
+     1092   1   1   61   LYS   HB2    1   1   61   LYS   HE3    1728   .   .   .    5.33   .   .   1.8   5.86   .   1.0   .   A   61   LYS   HB2    HBX    A   61   LYS   HE3    HEY    1   NEED_ACC_NO    
      1093   1   1   61   LYS   HA     1   1   61   LYS   HG2    1729   .   .   .    2.96   .   .   1.8   3.26   .   1.0   .   A   61   LYS   HA     HA     A   61   LYS   HG2    HG2    1   NEED_ACC_NO    
      1094   1   1   61   LYS   HB2    1   1   61   LYS   HG3    1730   .   .   .    2.85   .   .   1.8   3.13   .   1.0   .   A   61   LYS   HB2    HBX    A   61   LYS   HG3    HG3    1   NEED_ACC_NO    
      1095   1   1   41   LYS   HE2    1   1   41   LYS   HG2    1731   .   .   .    3.73   .   .   1.8   4.1    .   1.0   .   A   41   LYS   HE2    HEX    A   41   LYS   HG2    HGX    1   NEED_ACC_NO    
@@ -10294,15 +10294,15 @@ save_distance_constraint_list
      1108   1   1   63   LYS   HA     1   1   63   LYS   HD2    1758   .   .   .    4.95   .   .   1.8   5.44   .   1.0   .   A   63   LYS   HA     HA     A   63   LYS   HD2    HDX    1   NEED_ACC_NO    
      1109   1   1   63   LYS   HB2    1   1   63   LYS   HD3    1759   .   .   .    3.67   .   .   1.8   4.04   .   1.0   .   A   63   LYS   HB2    HBX    A   63   LYS   HD3    HDY    1   NEED_ACC_NO    
      1110   1   1   63   LYS   HB2    1   1   63   LYS   HD2    1760   .   .   .    3.94   .   .   1.8   4.33   .   1.0   .   A   63   LYS   HB2    HBX    A   63   LYS   HD2    HDX    1   NEED_ACC_NO    
-     1111   1   1   63   LYS   HB2    1   1   63   LYS   HE2    1761   .   .   OR   5.17   .   .   1.8   5.69   .   1.0   .   A   63   LYS   HB2    HBX    A   63   LYS   HE2    HE2    1   NEED_ACC_NO    
-     1112   1   1   63   LYS   HB2    1   1   63   LYS   HE3    1762   .   .   OR   5.17   .   .   1.8   5.69   .   1.0   .   A   63   LYS   HB2    HBX    A   63   LYS   HE3    HE3    1   NEED_ACC_NO    
+     1111   1   1   63   LYS   HB2    1   1   63   LYS   HE2    1761   .   .   .    5.17   .   .   1.8   5.69   .   1.0   .   A   63   LYS   HB2    HBX    A   63   LYS   HE2    HE2    1   NEED_ACC_NO    
+     1112   1   1   63   LYS   HB2    1   1   63   LYS   HE3    1762   .   .   .    5.17   .   .   1.8   5.69   .   1.0   .   A   63   LYS   HB2    HBX    A   63   LYS   HE3    HE3    1   NEED_ACC_NO    
      1113   1   1   63   LYS   HB3    1   1   63   LYS   HD3    1763   .   .   .    3.67   .   .   1.8   4.04   .   1.0   .   A   63   LYS   HB3    HBY    A   63   LYS   HD3    HDY    1   NEED_ACC_NO    
      1114   1   1   63   LYS   HB3    1   1   63   LYS   HD2    1764   .   .   .    3.94   .   .   1.8   4.33   .   1.0   .   A   63   LYS   HB3    HBY    A   63   LYS   HD2    HDX    1   NEED_ACC_NO    
-     1115   1   1   63   LYS   HB3    1   1   63   LYS   HE2    1765   .   .   OR   5.17   .   .   1.8   5.69   .   1.0   .   A   63   LYS   HB3    HBY    A   63   LYS   HE2    HE2    1   NEED_ACC_NO    
-     1116   1   1   63   LYS   HB3    1   1   63   LYS   HE3    1766   .   .   OR   5.17   .   .   1.8   5.69   .   1.0   .   A   63   LYS   HB3    HBY    A   63   LYS   HE3    HE3    1   NEED_ACC_NO    
+     1115   1   1   63   LYS   HB3    1   1   63   LYS   HE2    1765   .   .   .    5.17   .   .   1.8   5.69   .   1.0   .   A   63   LYS   HB3    HBY    A   63   LYS   HE2    HE2    1   NEED_ACC_NO    
+     1116   1   1   63   LYS   HB3    1   1   63   LYS   HE3    1766   .   .   .    5.17   .   .   1.8   5.69   .   1.0   .   A   63   LYS   HB3    HBY    A   63   LYS   HE3    HE3    1   NEED_ACC_NO    
      1117   1   1   63   LYS   HD3    1   1   63   LYS   HG3    1767   .   .   .    2.8    .   .   1.8   3.08   .   1.0   .   A   63   LYS   HD3    HDY    A   63   LYS   HG3    HG3    1   NEED_ACC_NO    
-     1118   1   1   65   GLU   HA     1   1   65   GLU   HG2    1768   .   .   OR   3.7    .   .   1.8   4.07   .   1.0   .   A   65   GLU   HA     HA     A   65   GLU   HG2    HGX    1   NEED_ACC_NO    
-     1119   1   1   65   GLU   HA     1   1   65   GLU   HG3    1769   .   .   OR   3.7    .   .   1.8   4.07   .   1.0   .   A   65   GLU   HA     HA     A   65   GLU   HG3    HGY    1   NEED_ACC_NO    
+     1118   1   1   65   GLU   HA     1   1   65   GLU   HG2    1768   .   .   .    3.7    .   .   1.8   4.07   .   1.0   .   A   65   GLU   HA     HA     A   65   GLU   HG2    HGX    1   NEED_ACC_NO    
+     1119   1   1   65   GLU   HA     1   1   65   GLU   HG3    1769   .   .   .    3.7    .   .   1.8   4.07   .   1.0   .   A   65   GLU   HA     HA     A   65   GLU   HG3    HGY    1   NEED_ACC_NO    
      1120   1   1   67   THR   H      1   1   67   THR   HB     1770   .   .   .    3.9    .   .   1.8   4.29   .   1.0   .   A   67   THR   H      H      A   67   THR   HB     HB     1   NEED_ACC_NO    
      1121   1   1   67   THR   H      1   1   67   THR   HG21   1771   .   .   OR   3.58   .   .   1.8   3.94   .   1.0   .   A   67   THR   H      H      A   67   THR   HG21   HG2%   1   NEED_ACC_NO    
      1121   1   1   67   THR   H      1   1   67   THR   HG22   1772   .   .   OR   3.58   .   .   1.8   3.94   .   1.0   .   A   67   THR   H      H      A   67   THR   HG22   HG2%   1   NEED_ACC_NO    
@@ -10425,29 +10425,29 @@ save_distance_constraint_list
      1181   1   1   93   ILE   HD13   1   1   93   ILE   HG22   1889   .   .   OR   2.66   .   .   1.8   2.93   .   1.0   .   A   93   ILE   HD13   HD1%   A   93   ILE   HG22   HG2%   1   NEED_ACC_NO    
      1181   1   1   93   ILE   HD13   1   1   93   ILE   HG23   1890   .   .   OR   2.66   .   .   1.8   2.93   .   1.0   .   A   93   ILE   HD13   HD1%   A   93   ILE   HG23   HG2%   1   NEED_ACC_NO    
      1182   1   1   93   ILE   HA     1   1   93   ILE   HG13   1891   .   .   .    4.02   .   .   1.8   4.42   .   1.0   .   A   93   ILE   HA     HA     A   93   ILE   HG13   HG1Y   1   NEED_ACC_NO    
-     1183   1   1   94   LYS   HA     1   1   94   LYS   HG2    1892   .   .   OR   3.87   .   .   1.8   4.26   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HG2    HGX    1   NEED_ACC_NO    
-     1184   1   1   94   LYS   HA     1   1   94   LYS   HG3    1893   .   .   OR   3.87   .   .   1.8   4.26   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HG3    HGY    1   NEED_ACC_NO    
-     1185   1   1   94   LYS   HA     1   1   94   LYS   HE2    1894   .   .   OR   5.56   .   .   1.8   6.12   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HE2    HEX    1   NEED_ACC_NO    
-     1186   1   1   94   LYS   HA     1   1   94   LYS   HE3    1895   .   .   OR   5.56   .   .   1.8   6.12   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HE3    HEY    1   NEED_ACC_NO    
+     1183   1   1   94   LYS   HA     1   1   94   LYS   HG2    1892   .   .   .    3.87   .   .   1.8   4.26   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HG2    HGX    1   NEED_ACC_NO    
+     1184   1   1   94   LYS   HA     1   1   94   LYS   HG3    1893   .   .   .    3.87   .   .   1.8   4.26   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HG3    HGY    1   NEED_ACC_NO    
+     1185   1   1   94   LYS   HA     1   1   94   LYS   HE2    1894   .   .   .    5.56   .   .   1.8   6.12   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HE2    HEX    1   NEED_ACC_NO    
+     1186   1   1   94   LYS   HA     1   1   94   LYS   HE3    1895   .   .   .    5.56   .   .   1.8   6.12   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HE3    HEY    1   NEED_ACC_NO    
      1187   1   1   94   LYS   H      1   1   94   LYS   HB2    1896   .   .   .    3.71   .   .   1.8   4.08   .   1.0   .   A   94   LYS   H      H      A   94   LYS   HB2    HBX    1   NEED_ACC_NO    
-     1188   1   1   94   LYS   HB3    1   1   94   LYS   HE2    1897   .   .   OR   5.97   .   .   1.8   6.57   .   1.0   .   A   94   LYS   HB3    HBY    A   94   LYS   HE2    HEX    1   NEED_ACC_NO    
-     1189   1   1   94   LYS   HB3    1   1   94   LYS   HE3    1898   .   .   OR   5.97   .   .   1.8   6.57   .   1.0   .   A   94   LYS   HB3    HBY    A   94   LYS   HE3    HEY    1   NEED_ACC_NO    
+     1188   1   1   94   LYS   HB3    1   1   94   LYS   HE2    1897   .   .   .    5.97   .   .   1.8   6.57   .   1.0   .   A   94   LYS   HB3    HBY    A   94   LYS   HE2    HEX    1   NEED_ACC_NO    
+     1189   1   1   94   LYS   HB3    1   1   94   LYS   HE3    1898   .   .   .    5.97   .   .   1.8   6.57   .   1.0   .   A   94   LYS   HB3    HBY    A   94   LYS   HE3    HEY    1   NEED_ACC_NO    
      1190   1   1   93   ILE   HG13   1   1   94   LYS   HA     1899   .   .   .    4.4    .   .   1.8   4.84   .   1.0   .   A   93   ILE   HG13   HG1Y   A   94   LYS   HA     HA     1   NEED_ACC_NO    
      1191   1   1   94   LYS   H      1   1   94   LYS   HD2    1900   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   94   LYS   H      H      A   94   LYS   HD2    HD2    1   NEED_ACC_NO    
      1192   1   1   94   LYS   H      1   1   94   LYS   HD3    1901   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   94   LYS   H      H      A   94   LYS   HD3    HD3    1   NEED_ACC_NO    
      1193   1   1   94   LYS   HA     1   1   94   LYS   HD2    1902   .   .   OR   4.72   .   .   1.8   5.19   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HD2    HD2    1   NEED_ACC_NO    
      1194   1   1   94   LYS   HA     1   1   94   LYS   HD3    1903   .   .   OR   4.72   .   .   1.8   5.19   .   1.0   .   A   94   LYS   HA     HA     A   94   LYS   HD3    HD3    1   NEED_ACC_NO    
      1195   1   1   61   LYS   HB3    1   1   61   LYS   HE3    1904   .   .   .    4.92   .   .   1.8   5.41   .   1.0   .   A   61   LYS   HB3    HBY    A   61   LYS   HE3    HEY    1   NEED_ACC_NO    
-     1196   1   1   94   LYS   HB2    1   1   94   LYS   HE2    1905   .   .   OR   5.97   .   .   1.8   6.57   .   1.0   .   A   94   LYS   HB2    HBX    A   94   LYS   HE2    HEX    1   NEED_ACC_NO    
-     1197   1   1   94   LYS   HB2    1   1   94   LYS   HE3    1906   .   .   OR   5.97   .   .   1.8   6.57   .   1.0   .   A   94   LYS   HB2    HBX    A   94   LYS   HE3    HEY    1   NEED_ACC_NO    
+     1196   1   1   94   LYS   HB2    1   1   94   LYS   HE2    1905   .   .   .    5.97   .   .   1.8   6.57   .   1.0   .   A   94   LYS   HB2    HBX    A   94   LYS   HE2    HEX    1   NEED_ACC_NO    
+     1197   1   1   94   LYS   HB2    1   1   94   LYS   HE3    1906   .   .   .    5.97   .   .   1.8   6.57   .   1.0   .   A   94   LYS   HB2    HBX    A   94   LYS   HE3    HEY    1   NEED_ACC_NO    
      1198   1   1   95   VAL   HA     1   1   95   VAL   HG21   1907   .   .   OR   3.2    .   .   1.8   3.52   .   1.0   .   A   95   VAL   HA     HA     A   95   VAL   HG21   HGY%   1   NEED_ACC_NO    
      1198   1   1   95   VAL   HA     1   1   95   VAL   HG22   1908   .   .   OR   3.2    .   .   1.8   3.52   .   1.0   .   A   95   VAL   HA     HA     A   95   VAL   HG22   HGY%   1   NEED_ACC_NO    
      1198   1   1   95   VAL   HA     1   1   95   VAL   HG23   1909   .   .   OR   3.2    .   .   1.8   3.52   .   1.0   .   A   95   VAL   HA     HA     A   95   VAL   HG23   HGY%   1   NEED_ACC_NO    
      1199   1   1   95   VAL   HA     1   1   95   VAL   HG11   1910   .   .   OR   3.29   .   .   1.8   3.62   .   1.0   .   A   95   VAL   HA     HA     A   95   VAL   HG11   HGX%   1   NEED_ACC_NO    
      1199   1   1   95   VAL   HA     1   1   95   VAL   HG12   1911   .   .   OR   3.29   .   .   1.8   3.62   .   1.0   .   A   95   VAL   HA     HA     A   95   VAL   HG12   HGX%   1   NEED_ACC_NO    
      1199   1   1   95   VAL   HA     1   1   95   VAL   HG13   1912   .   .   OR   3.29   .   .   1.8   3.62   .   1.0   .   A   95   VAL   HA     HA     A   95   VAL   HG13   HGX%   1   NEED_ACC_NO    
-     1200   1   1   96   SER   H      1   1   96   SER   HB2    1913   .   .   OR   4.2    .   .   1.8   4.62   .   1.0   .   A   96   SER   H      H      A   96   SER   HB2    HBX    1   NEED_ACC_NO    
-     1201   1   1   96   SER   H      1   1   96   SER   HB3    1914   .   .   OR   4.2    .   .   1.8   4.62   .   1.0   .   A   96   SER   H      H      A   96   SER   HB3    HBY    1   NEED_ACC_NO    
+     1200   1   1   96   SER   H      1   1   96   SER   HB2    1913   .   .   .    4.2    .   .   1.8   4.62   .   1.0   .   A   96   SER   H      H      A   96   SER   HB2    HBX    1   NEED_ACC_NO    
+     1201   1   1   96   SER   H      1   1   96   SER   HB3    1914   .   .   .    4.2    .   .   1.8   4.62   .   1.0   .   A   96   SER   H      H      A   96   SER   HB3    HBY    1   NEED_ACC_NO    
      1202   1   1   99   THR   H      1   1   99   THR   HB     1915   .   .   .    4.16   .   .   1.8   4.58   .   1.0   .   A   99   THR   H      H      A   99   THR   HB     HB     1   NEED_ACC_NO    
      1203   1   1   99   THR   HA     1   1   99   THR   HB     1916   .   .   .    2.92   .   .   1.8   3.21   .   1.0   .   A   99   THR   HA     HA     A   99   THR   HB     HB     1   NEED_ACC_NO    
      1204   1   1   99   THR   HA     1   1   99   THR   HG21   1917   .   .   OR   3.26   .   .   1.8   3.59   .   1.0   .   A   99   THR   HA     HA     A   99   THR   HG21   HG2%   1   NEED_ACC_NO    
@@ -10517,8 +10517,8 @@ save_distance_constraint_list
      1242   1   1   53   LEU   HD12   1   1   54   TYR   H      1981   .   .   OR   5.32   .   .   1.8   5.85   .   1.0   .   A   53   LEU   HD12   HDX%   A   54   TYR   H      H      1   NEED_ACC_NO    
      1242   1   1   53   LEU   HD13   1   1   54   TYR   H      1982   .   .   OR   5.32   .   .   1.8   5.85   .   1.0   .   A   53   LEU   HD13   HDX%   A   54   TYR   H      H      1   NEED_ACC_NO    
      1243   1   1   55   THR   HB     1   1   56   ASP   H      1983   .   .   .    3.5    .   .   1.8   3.85   .   1.0   .   A   55   THR   HB     HB     A   56   ASP   H      H      1   NEED_ACC_NO    
-     1244   1   1   58   GLU   HB2    1   1   59   THR   H      1984   .   .   OR   4.17   .   .   1.8   4.59   .   1.0   .   A   58   GLU   HB2    HBX    A   59   THR   H      H      1   NEED_ACC_NO    
-     1245   1   1   58   GLU   HB3    1   1   59   THR   H      1985   .   .   OR   4.17   .   .   1.8   4.59   .   1.0   .   A   58   GLU   HB3    HBY    A   59   THR   H      H      1   NEED_ACC_NO    
+     1244   1   1   58   GLU   HB2    1   1   59   THR   H      1984   .   .   .    4.17   .   .   1.8   4.59   .   1.0   .   A   58   GLU   HB2    HBX    A   59   THR   H      H      1   NEED_ACC_NO    
+     1245   1   1   58   GLU   HB3    1   1   59   THR   H      1985   .   .   .    4.17   .   .   1.8   4.59   .   1.0   .   A   58   GLU   HB3    HBY    A   59   THR   H      H      1   NEED_ACC_NO    
      1246   1   1   61   LYS   HB2    1   1   62   LEU   H      1986   .   .   .    4.39   .   .   1.8   4.83   .   1.0   .   A   61   LYS   HB2    HBX    A   62   LEU   H      H      1   NEED_ACC_NO    
      1247   1   1   62   LEU   HB2    1   1   63   LYS   H      1987   .   .   .    4.49   .   .   1.8   4.94   .   1.0   .   A   62   LEU   HB2    HBX    A   63   LYS   H      H      1   NEED_ACC_NO    
      1248   1   1   62   LEU   HB3    1   1   63   LYS   H      1988   .   .   .    4.18   .   .   1.8   4.6    .   1.0   .   A   62   LEU   HB3    HBY    A   63   LYS   H      H      1   NEED_ACC_NO    
@@ -10543,8 +10543,8 @@ save_distance_constraint_list
      1260   1   1   93   ILE   HG21   1   1   94   LYS   H      2007   .   .   OR   3.81   .   .   1.8   4.19   .   1.0   .   A   93   ILE   HG21   HG2%   A   94   LYS   H      H      1   NEED_ACC_NO    
      1260   1   1   93   ILE   HG22   1   1   94   LYS   H      2008   .   .   OR   3.81   .   .   1.8   4.19   .   1.0   .   A   93   ILE   HG22   HG2%   A   94   LYS   H      H      1   NEED_ACC_NO    
      1260   1   1   93   ILE   HG23   1   1   94   LYS   H      2009   .   .   OR   3.81   .   .   1.8   4.19   .   1.0   .   A   93   ILE   HG23   HG2%   A   94   LYS   H      H      1   NEED_ACC_NO    
-     1261   1   1   94   LYS   HB2    1   1   95   VAL   H      2010   .   .   OR   4.66   .   .   1.8   5.13   .   1.0   .   A   94   LYS   HB2    HBX    A   95   VAL   H      H      1   NEED_ACC_NO    
-     1262   1   1   94   LYS   HB3    1   1   95   VAL   H      2011   .   .   OR   4.66   .   .   1.8   5.13   .   1.0   .   A   94   LYS   HB3    HBY    A   95   VAL   H      H      1   NEED_ACC_NO    
+     1261   1   1   94   LYS   HB2    1   1   95   VAL   H      2010   .   .   .    4.66   .   .   1.8   5.13   .   1.0   .   A   94   LYS   HB2    HBX    A   95   VAL   H      H      1   NEED_ACC_NO    
+     1262   1   1   94   LYS   HB3    1   1   95   VAL   H      2011   .   .   .    4.66   .   .   1.8   5.13   .   1.0   .   A   94   LYS   HB3    HBY    A   95   VAL   H      H      1   NEED_ACC_NO    
      1263   1   1   96   SER   HB3    1   1   97   PHE   H      2012   .   .   .    3.75   .   .   1.8   4.13   .   1.0   .   A   96   SER   HB3    HBY    A   97   PHE   H      H      1   NEED_ACC_NO    
      1264   1   1   97   PHE   HB2    1   1   98   ALA   H      2013   .   .   .    4.34   .   .   1.8   4.77   .   1.0   .   A   97   PHE   HB2    HBX    A   98   ALA   H      H      1   NEED_ACC_NO    
      1265   1   1   98   ALA   HB1    1   1   99   THR   H      2014   .   .   OR   3.49   .   .   1.8   3.84   .   1.0   .   A   98   ALA   HB1    HB%    A   99   THR   H      H      1   NEED_ACC_NO    
@@ -11556,8 +11556,8 @@ save_distance_constraint_list
      1591   1   1   35   LYS   HB2    1   1   39   ILE   HA     3020   .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   35   LYS   HB2    HBX    A   39   ILE   HA     HA     1   NEED_ACC_NO    
      1592   1   1   32   ASP   HA     1   1   35   LYS   HG2    3021   .   .   .    3.69   .   .   1.8   4.06   .   1.0   .   A   32   ASP   HA     HA     A   35   LYS   HG2    HGX    1   NEED_ACC_NO    
      1593   1   1   32   ASP   HA     1   1   35   LYS   HG3    3022   .   .   .    4.65   .   .   1.8   5.12   .   1.0   .   A   32   ASP   HA     HA     A   35   LYS   HG3    HGY    1   NEED_ACC_NO    
-     1594   1   1   32   ASP   HA     1   1   35   LYS   HD2    3023   .   .   OR   3.86   .   .   1.8   4.25   .   1.0   .   A   32   ASP   HA     HA     A   35   LYS   HD2    HDX    1   NEED_ACC_NO    
-     1595   1   1   32   ASP   HA     1   1   35   LYS   HD3    3024   .   .   OR   3.86   .   .   1.8   4.25   .   1.0   .   A   32   ASP   HA     HA     A   35   LYS   HD3    HDY    1   NEED_ACC_NO    
+     1594   1   1   32   ASP   HA     1   1   35   LYS   HD2    3023   .   .   .    3.86   .   .   1.8   4.25   .   1.0   .   A   32   ASP   HA     HA     A   35   LYS   HD2    HDX    1   NEED_ACC_NO    
+     1595   1   1   32   ASP   HA     1   1   35   LYS   HD3    3024   .   .   .    3.86   .   .   1.8   4.25   .   1.0   .   A   32   ASP   HA     HA     A   35   LYS   HD3    HDY    1   NEED_ACC_NO    
      1596   1   1   35   LYS   HG2    1   1   36   GLN   HA     3025   .   .   .    4.76   .   .   1.8   5.24   .   1.0   .   A   35   LYS   HG2    HGX    A   36   GLN   HA     HA     1   NEED_ACC_NO    
      1597   1   1   35   LYS   HG3    1   1   36   GLN   HA     3026   .   .   .    4.41   .   .   1.8   4.85   .   1.0   .   A   35   LYS   HG3    HGY    A   36   GLN   HA     HA     1   NEED_ACC_NO    
      1598   1   1   23   GLU   HA     1   1   62   LEU   HD21   3027   .   .   OR   4.5    .   .   1.8   4.95   .   1.0   .   A   23   GLU   HA     HA     A   62   LEU   HD21   HDY%   1   NEED_ACC_NO    
@@ -11893,8 +11893,8 @@ save_distance_constraint_list
      1729   1   1   41   LYS   HB3    1   1   70   PHE   HA     3357   .   .   .    5.7    .   .   1.8   6.27   .   1.0   .   A   41   LYS   HB3    HBY    A   70   PHE   HA     HA     1   NEED_ACC_NO    
      1730   1   1   14   ASN   HD22   1   1   41   LYS   HD2    3358   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   14   ASN   HD22   HD2Y   A   41   LYS   HD2    HD2    1   NEED_ACC_NO    
      1731   1   1   14   ASN   HD22   1   1   41   LYS   HD3    3359   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   14   ASN   HD22   HD2Y   A   41   LYS   HD3    HD3    1   NEED_ACC_NO    
-     1732   1   1   41   LYS   HE3    1   1   71   ASP   HA     3360   .   .   OR   5.19   .   .   1.8   5.71   .   1.0   .   A   41   LYS   HE3    HEY    A   71   ASP   HA     HA     1   NEED_ACC_NO    
-     1733   1   1   41   LYS   HE2    1   1   71   ASP   HA     3361   .   .   OR   5.19   .   .   1.8   5.71   .   1.0   .   A   41   LYS   HE2    HEX    A   71   ASP   HA     HA     1   NEED_ACC_NO    
+     1732   1   1   41   LYS   HE3    1   1   71   ASP   HA     3360   .   .   .    5.19   .   .   1.8   5.71   .   1.0   .   A   41   LYS   HE3    HEY    A   71   ASP   HA     HA     1   NEED_ACC_NO    
+     1733   1   1   41   LYS   HE2    1   1   71   ASP   HA     3361   .   .   .    5.19   .   .   1.8   5.71   .   1.0   .   A   41   LYS   HE2    HEX    A   71   ASP   HA     HA     1   NEED_ACC_NO    
      1734   1   1   41   LYS   HB3    1   1   42   THR   HB     3362   .   .   .    5.37   .   .   1.8   5.91   .   1.0   .   A   41   LYS   HB3    HBY    A   42   THR   HB     HB     1   NEED_ACC_NO    
      1735   1   1   41   LYS   HB3    1   1   42   THR   HA     3363   .   .   .    4.84   .   .   1.8   5.32   .   1.0   .   A   41   LYS   HB3    HBY    A   42   THR   HA     HA     1   NEED_ACC_NO    
      1736   1   1   42   THR   HG21   1   1   49   PRO   HB3    3364   .   .   OR   4.86   .   .   1.8   5.35   .   1.0   .   A   42   THR   HG21   HG2%   A   49   PRO   HB3    HBY    1   NEED_ACC_NO    
@@ -12396,8 +12396,8 @@ save_distance_constraint_list
      1916   1   1   55   THR   HG22   1   1   57   ARG   HA     3860   .   .   OR   5.25   .   .   1.8   5.78   .   1.0   .   A   55   THR   HG22   HG2%   A   57   ARG   HA     HA     1   NEED_ACC_NO    
      1916   1   1   55   THR   HG23   1   1   57   ARG   HA     3861   .   .   OR   5.25   .   .   1.8   5.78   .   1.0   .   A   55   THR   HG23   HG2%   A   57   ARG   HA     HA     1   NEED_ACC_NO    
      1917   1   1   57   ARG   HA     1   1   58   GLU   HA     3862   .   .   .    4.81   .   .   1.8   5.29   .   1.0   .   A   57   ARG   HA     HA     A   58   GLU   HA     HA     1   NEED_ACC_NO    
-     1918   1   1   57   ARG   HG2    1   1   58   GLU   HA     3863   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   57   ARG   HG2    HGX    A   58   GLU   HA     HA     1   NEED_ACC_NO    
-     1919   1   1   57   ARG   HG3    1   1   58   GLU   HA     3864   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   57   ARG   HG3    HGY    A   58   GLU   HA     HA     1   NEED_ACC_NO    
+     1918   1   1   57   ARG   HG2    1   1   58   GLU   HA     3863   .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   57   ARG   HG2    HGX    A   58   GLU   HA     HA     1   NEED_ACC_NO    
+     1919   1   1   57   ARG   HG3    1   1   58   GLU   HA     3864   .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   57   ARG   HG3    HGY    A   58   GLU   HA     HA     1   NEED_ACC_NO    
      1920   1   1   58   GLU   HG2    1   1   59   THR   HG21   3865   .   .   OR   5.23   .   .   1.8   5.75   .   1.0   .   A   58   GLU   HG2    HGX    A   59   THR   HG21   HG2%   1   NEED_ACC_NO    
      1920   1   1   58   GLU   HG2    1   1   59   THR   HG22   3866   .   .   OR   5.23   .   .   1.8   5.75   .   1.0   .   A   58   GLU   HG2    HGX    A   59   THR   HG22   HG2%   1   NEED_ACC_NO    
      1920   1   1   58   GLU   HG2    1   1   59   THR   HG23   3867   .   .   OR   5.23   .   .   1.8   5.75   .   1.0   .   A   58   GLU   HG2    HGX    A   59   THR   HG23   HG2%   1   NEED_ACC_NO    
@@ -12938,8 +12938,8 @@ save_distance_constraint_list
      2104   1   1   72   ASP   HB2    1   1   74   PRO   HD2    4402   .   .   .    3.77   .   .   1.8   4.15   .   1.0   .   A   72   ASP   HB2    HBX    A   74   PRO   HD2    HDX    1   NEED_ACC_NO    
      2105   1   1   72   ASP   HB2    1   1   75   SER   HB3    4403   .   .   .    4.87   .   .   1.8   5.36   .   1.0   .   A   72   ASP   HB2    HBX    A   75   SER   HB3    HBY    1   NEED_ACC_NO    
      2106   1   1   72   ASP   HB2    1   1   73   PRO   HD2    4404   .   .   .    4.93   .   .   1.8   5.42   .   1.0   .   A   72   ASP   HB2    HBX    A   73   PRO   HD2    HDX    1   NEED_ACC_NO    
-     2107   1   1   72   ASP   HB3    1   1   73   PRO   HD2    4405   .   .   OR   4.34   .   .   1.8   4.77   .   1.0   .   A   72   ASP   HB3    HBY    A   73   PRO   HD2    HDX    1   NEED_ACC_NO    
-     2108   1   1   72   ASP   HB3    1   1   73   PRO   HD3    4406   .   .   OR   4.34   .   .   1.8   4.77   .   1.0   .   A   72   ASP   HB3    HBY    A   73   PRO   HD3    HDY    1   NEED_ACC_NO    
+     2107   1   1   72   ASP   HB3    1   1   73   PRO   HD2    4405   .   .   .    4.34   .   .   1.8   4.77   .   1.0   .   A   72   ASP   HB3    HBY    A   73   PRO   HD2    HDX    1   NEED_ACC_NO    
+     2108   1   1   72   ASP   HB3    1   1   73   PRO   HD3    4406   .   .   .    4.34   .   .   1.8   4.77   .   1.0   .   A   72   ASP   HB3    HBY    A   73   PRO   HD3    HDY    1   NEED_ACC_NO    
      2109   1   1   72   ASP   HB3    1   1   74   PRO   HD2    4407   .   .   .    3.84   .   .   1.8   4.22   .   1.0   .   A   72   ASP   HB3    HBY    A   74   PRO   HD2    HDX    1   NEED_ACC_NO    
      2110   1   1   72   ASP   HB3    1   1   74   PRO   HG2    4408   .   .   .    5.08   .   .   1.8   5.59   .   1.0   .   A   72   ASP   HB3    HBY    A   74   PRO   HG2    HGX    1   NEED_ACC_NO    
      2111   1   1   72   ASP   HB2    1   1   74   PRO   HG2    4409   .   .   .    5.1    .   .   1.8   5.61   .   1.0   .   A   72   ASP   HB2    HBX    A   74   PRO   HG2    HGX    1   NEED_ACC_NO    
@@ -12958,8 +12958,8 @@ save_distance_constraint_list
      2122   1   1   74   PRO   HA     1   1   77   LYS   HG3    4422   .   .   .    5.32   .   .   1.8   5.85   .   1.0   .   A   74   PRO   HA     HA     A   77   LYS   HG3    HG3    1   NEED_ACC_NO    
      2123   1   1   72   ASP   HB2    1   1   74   PRO   HD3    4423   .   .   .    4.46   .   .   1.8   4.91   .   1.0   .   A   72   ASP   HB2    HBX    A   74   PRO   HD3    HDY    1   NEED_ACC_NO    
      2124   1   1   72   ASP   HB3    1   1   74   PRO   HD3    4424   .   .   .    4.44   .   .   1.8   4.88   .   1.0   .   A   72   ASP   HB3    HBY    A   74   PRO   HD3    HDY    1   NEED_ACC_NO    
-     2125   1   1   73   PRO   HD3    1   1   74   PRO   HD2    4425   .   .   OR   4.33   .   .   1.8   4.76   .   1.0   .   A   73   PRO   HD3    HDY    A   74   PRO   HD2    HDX    1   NEED_ACC_NO    
-     2126   1   1   73   PRO   HD2    1   1   74   PRO   HD2    4426   .   .   OR   4.33   .   .   1.8   4.76   .   1.0   .   A   73   PRO   HD2    HDX    A   74   PRO   HD2    HDX    1   NEED_ACC_NO    
+     2125   1   1   73   PRO   HD3    1   1   74   PRO   HD2    4425   .   .   .    4.33   .   .   1.8   4.76   .   1.0   .   A   73   PRO   HD3    HDY    A   74   PRO   HD2    HDX    1   NEED_ACC_NO    
+     2126   1   1   73   PRO   HD2    1   1   74   PRO   HD2    4426   .   .   .    4.33   .   .   1.8   4.76   .   1.0   .   A   73   PRO   HD2    HDX    A   74   PRO   HD2    HDX    1   NEED_ACC_NO    
      2127   1   1   72   ASP   HA     1   1   74   PRO   HD2    4427   .   .   .    4.6    .   .   1.8   5.06   .   1.0   .   A   72   ASP   HA     HA     A   74   PRO   HD2    HDX    1   NEED_ACC_NO    
      2128   1   1   72   ASP   HA     1   1   74   PRO   HD3    4428   .   .   .    4.58   .   .   1.8   5.04   .   1.0   .   A   72   ASP   HA     HA     A   74   PRO   HD3    HDY    1   NEED_ACC_NO    
      2129   1   1   70   PHE   HD1    1   1   75   SER   HB2    4429   .   .   OR   4.79   .   .   1.8   5.27   .   1.0   .   A   70   PHE   HD1    HD%    A   75   SER   HB2    HBX    1   NEED_ACC_NO    
@@ -13982,8 +13982,8 @@ save_distance_constraint_list
      2489   1   1   37   ILE   HD12   1   1   83   PHE   HZ     5446   .   .   OR   4.12   .   .   1.8   4.53   .   1.0   .   A   37   ILE   HD12   HD1%   A   83   PHE   HZ     HZ     1   NEED_ACC_NO    
      2489   1   1   37   ILE   HD13   1   1   83   PHE   HZ     5447   .   .   OR   4.12   .   .   1.8   4.53   .   1.0   .   A   37   ILE   HD13   HD1%   A   83   PHE   HZ     HZ     1   NEED_ACC_NO    
      2490   1   1   37   ILE   HB     1   1   83   PHE   HZ     5448   .   .   .    4.25   .   .   1.8   4.68   .   1.0   .   A   37   ILE   HB     HB     A   83   PHE   HZ     HZ     1   NEED_ACC_NO    
-     2491   1   1   61   LYS   HA     1   1   61   LYS   HE2    5449   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   61   LYS   HA     HA     A   61   LYS   HE2    HEX    1   NEED_ACC_NO    
-     2492   1   1   61   LYS   HA     1   1   61   LYS   HE3    5450   .   .   OR   6.2    .   .   1.8   6.82   .   1.0   .   A   61   LYS   HA     HA     A   61   LYS   HE3    HEY    1   NEED_ACC_NO    
+     2491   1   1   61   LYS   HA     1   1   61   LYS   HE2    5449   .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   61   LYS   HA     HA     A   61   LYS   HE2    HEX    1   NEED_ACC_NO    
+     2492   1   1   61   LYS   HA     1   1   61   LYS   HE3    5450   .   .   .    6.2    .   .   1.8   6.82   .   1.0   .   A   61   LYS   HA     HA     A   61   LYS   HE3    HEY    1   NEED_ACC_NO    
      2493   1   1   54   TYR   HB2    1   1   63   LYS   HD3    5451   .   .   .    4.62   .   .   1.8   5.08   .   1.0   .   A   54   TYR   HB2    HBX    A   63   LYS   HD3    HDY    1   NEED_ACC_NO    
      2494   1   1   77   LYS   HA     1   1   97   PHE   HE1    5452   .   .   OR   4      .   .   1.8   4.4    .   1.0   .   A   77   LYS   HA     HA     A   97   PHE   HE1    HE%    1   NEED_ACC_NO    
      2494   1   1   77   LYS   HA     1   1   97   PHE   HE2    5453   .   .   OR   4      .   .   1.8   4.4    .   1.0   .   A   77   LYS   HA     HA     A   97   PHE   HE2    HE%    1   NEED_ACC_NO    

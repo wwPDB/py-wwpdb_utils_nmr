@@ -250,6 +250,7 @@ import hashlib
 import pynmrstar
 import chardet
 import numpy
+import functools
 
 from packaging import version
 from munkres import Munkres
@@ -27212,6 +27213,7 @@ class NmrDpUtility:
                     np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], poly_seq, conservative=False)
                     np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], poly_seq, np_seq_align)
 
+        @functools.lru_cache()
         def get_auth_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = None
 
@@ -27252,6 +27254,7 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id
 
+        @functools.lru_cache()
         def get_label_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = label_seq_id = None
 
@@ -29946,6 +29949,9 @@ class NmrDpUtility:
 
         if not self.__native_combined:
             self.__testDataConsistencyInLoop__(file_list_id, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, list_id)
+
+        get_auth_seq_scheme.cache_clear()
+        get_label_seq_scheme.cache_clear()
 
         return True
 
@@ -34767,16 +34773,13 @@ class NmrDpUtility:
 
         cs_loops = self.__lp_data['chem_shift']
 
-        def get_cs_value(atom):
-            if cs_loops is None or len(cs_loops) == 0 or len(atom) == 0:
+        @functools.lru_cache()
+        def get_cs_value(chain_id, seq_id, comp_id, atom_id):
+            if cs_loops is None or len(cs_loops) == 0:
                 return None
 
-            chain_id = atom['ref_chain_id']
             if isinstance(chain_id, int):
                 chain_id = str(chain_id)
-            seq_id = atom['ref_seq_id']
-            comp_id = atom['ref_comp_id']
-            atom_id = atom['ref_atom_id']
 
             _atom_ids = self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
@@ -34835,8 +34838,10 @@ class NmrDpUtility:
                              'ref_seq_id': int(row[ref_seq_id_1_col]),
                              'ref_comp_id': row[ref_comp_id_1_col],
                              'ref_atom_id': row[ref_atom_id_1_col]}
+                    cs_val1 = get_cs_value(atom1['ref_chain_id'], atom1['ref_seq_id'], atom1['ref_comp_id'], atom1['ref_atom_id'])
                 except (ValueError, TypeError):
                     atom1 = {}
+                    cs_val1 = None
 
                 try:
                     atom2 = {'chain_id': row[chain_id_2_col],
@@ -34847,11 +34852,10 @@ class NmrDpUtility:
                              'ref_seq_id': int(row[ref_seq_id_2_col]),
                              'ref_comp_id': row[ref_comp_id_2_col],
                              'ref_atom_id': row[ref_atom_id_2_col]}
+                    cs_val2 = get_cs_value(atom2['ref_chain_id'], atom2['ref_seq_id'], atom2['ref_comp_id'], atom2['ref_atom_id'])
                 except (ValueError, TypeError):
                     atom2 = {}
-
-                cs_val1 = get_cs_value(atom1)
-                cs_val2 = get_cs_value(atom2)
+                    cs_val2 = None
 
                 if member_id not in emptyValue:
                     has_member_id = True
@@ -34930,6 +34934,8 @@ class NmrDpUtility:
                 except IndexError:
                     pass
             lp.add_data(_row)
+
+        get_cs_value.cache_clear()
 
         if not modified and not has_member_id:
             return True
@@ -41009,6 +41015,7 @@ class NmrDpUtility:
                     np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], poly_seq, conservative=False)
                     np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], poly_seq, np_seq_align)
 
+        @functools.lru_cache()
         def get_auth_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = None
 
@@ -41953,6 +41960,8 @@ class NmrDpUtility:
 
         self.__c2S.set_entry_id(sf, self.__entry_id)
         self.__c2S.set_local_sf_id(sf, list_id)
+
+        get_auth_seq_scheme.cache_clear()
 
         return True
 

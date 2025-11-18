@@ -9,8 +9,7 @@
 # 20-Dec-2023  M. Yokochi - add support for case 'Member_logic_code' value equals 'AND'
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 28-Feb-2024  M. Yokochi - collect atom_ids dictionary for both auth_atom_id and pdbx_auth_atom_name tags
-#                           to prevent MISSING ATOM IN MODEL KeyError in restraintsanalysis.py  (DAOTHER-9200)
-# 18-Nov-2025  M. Yokochi - consider circular shift of dihedral angles if necessary (DAOTHER-10390)
+#                           to prevent MISSING ATOM IN MODEL KeyError in restraintsanalysis.py (DAOTHER-9200)
 ##
 """ Wrapper class for NMR restraint analysis.
     @author: Masashi Yokochi
@@ -43,7 +42,6 @@ try:
                                               to_np_array)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
-                                                       THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_ERROR,
@@ -62,7 +60,6 @@ except ImportError:
                                   to_np_array)
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
-                                           THRESHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_ERROR,
@@ -389,22 +386,6 @@ def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], targ
         return abs(g - (l + r)) < t
 
     try:
-
-        _array = np.array([lower_bound, target_value, upper_bound], dtype=float)
-
-        shift = None
-        if np.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
-            shift = -(np.nanmax(_array) // 360) * 360
-        elif np.nanmax(_array) <= -THRESHOLD_FOR_CIRCULAR_SHIFT:
-            shift = -(np.nanmin(_array) // 360) * 360
-
-        if shift is not None and abs(shift) > THRESHOLD_FOR_CIRCULAR_SHIFT:
-            if lower_bound is not None:
-                lower_bound += shift
-            if upper_bound is not None:
-                upper_bound += shift
-            if target_value is not None:
-                target_value += shift
 
         ld = angle_diff(lower_bound, target_value)
         rd = angle_diff(upper_bound, target_value)

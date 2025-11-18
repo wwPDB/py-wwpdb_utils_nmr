@@ -34861,9 +34861,6 @@ class NmrDpUtility:
 
                 elif rest_id != _rest_id and len(atom1) > 0 and len(atom2) > 0:
 
-                    diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
-                    diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
-
                     if member_id in emptyValue or member_logic_code == 'OR':
 
                         if (values == _values and not isAmbigAtomSelection([atom1, _atom1], self.__csStat)
@@ -34873,6 +34870,9 @@ class NmrDpUtility:
                                      and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])
                                     or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat)
                                         and atom2['ref_chain_id'] != _atom1['ref_chain_id'] and atom1['comp_id'] == _atom1['comp_id']))):
+
+                            diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
+                            diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
 
                             if (not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and diff_cs_val1)\
                                or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat) and diff_cs_val2):
@@ -34896,8 +34896,8 @@ class NmrDpUtility:
 
                 elif member_logic_code != 'AND':
 
-                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and not diff_cs_val1\
-                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat) and not diff_cs_val2:
+                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
+                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
 
                         if member_logic_code in emptyValue:
                             modified = True
@@ -35799,7 +35799,7 @@ class NmrDpUtility:
 
                             poly_seq = listener.getPolymerSequence()
 
-                            if not has_res_sch and any(len(pdb_ps['seq_id']) == 0 for pdb_ps in poly_seq):
+                            if not has_res_sch and any(True for pdb_ps in poly_seq if len(pdb_ps['seq_id']) == 0):
                                 continue
 
                             if poly_seq is not None:
@@ -49896,7 +49896,7 @@ class NmrDpUtility:
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if conflict > 0 and any(len(c) > 3 for c in ps2['comp_id']) and 'alt_comp_id' in ps2:
+                    if conflict > 0 and any(True for c in ps2['comp_id'] if len(c) > 3) and 'alt_comp_id' in ps2:
                         self.__pA.addTestSequence(ps2['alt_comp_id'], chain_id)
                         self.__pA.doAlign()
 
@@ -50429,7 +50429,7 @@ class NmrDpUtility:
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if conflict > 0 and any(len(c) > 3 for c in ps1['comp_id']) and 'alt_comp_id' in ps1:
+                    if conflict > 0 and any(True for c in ps1['comp_id'] if len(c) > 3) and 'alt_comp_id' in ps1:
                         self.__pA.setReferenceSequence(ps1['alt_comp_id'], 'REF' + chain_id)
                         self.__pA.doAlign()
 
@@ -63135,7 +63135,7 @@ class NmrDpUtility:
                         cyana_subtype[row[0]] = []
                     cyana_subtype[row[0]].append(row[2] if isinstance(row[2], str) else str(row[2]))
 
-            if any(len(v) > 1 for v in cyana_subtype.values()):
+            if any(True for v in cyana_subtype.values() if len(v) > 1):
                 for v in cyana_subtype.values():
                     if len(v) < 2:
                         continue
@@ -64975,7 +64975,7 @@ class NmrDpUtility:
                             cyana_subtype[row[0]] = []
                         cyana_subtype[row[0]].append(row[1] if isinstance(row[1], str) else str(row[1]))
 
-                if any(len(v) > 1 for v in cyana_subtype.values()):
+                if any(True for v in cyana_subtype.values() if len(v) > 1):
                     for v in cyana_subtype.values():
                         if len(v) < 2:
                             continue

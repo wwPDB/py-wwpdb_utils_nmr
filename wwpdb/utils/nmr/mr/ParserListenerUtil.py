@@ -7233,7 +7233,7 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
         return True
 
     for atomId in atomIds[1:]:
-        if atomId not in _protonsInGroup:
+        if atomId[0] in protonBeginCode and atomId not in _protonsInGroup:
             return True
 
     return False

@@ -33775,7 +33775,6 @@ class NmrDpUtility:
                                                               loop.tags, loop.data[idx],
                                                               auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
                                                               [atom1, atom2], self.__annotation_mode)
-
                                         lp.add_data(_row)
 
                                 elif atom_sels[0] is not None:
@@ -34181,7 +34180,6 @@ class NmrDpUtility:
                                                           loop.tags, loop.data[idx],
                                                           auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
                                                           [atom1, atom2], self.__annotation_mode)
-
                                     lp.add_data(_row)
 
                             elif atom_sels[0] is not None:
@@ -34242,8 +34240,16 @@ class NmrDpUtility:
 
                 sf_item['loop'] = lp
 
-                # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
-                if sf_item['file_type'] not in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
+                use_member_logic_code = sf_item['file_type'] in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha')
+                if use_member_logic_code:
+                    lp = sf_item['loop']
+                    if 'Member_logic_code' not in lp.tags:
+                        use_member_logic_code = False
+                    else:
+                        dat = lp.get_tag(['Member_logic_code'])
+                        use_member_logic_code = any(True for row in dat if row not in emptyValue)
+
+                if not use_member_logic_code:
                     if not self.__updateGenDistConstIdInMrStr(sf_item):
                         err = 'Atoms in distance restraints can not be properly identified. Please re-upload the NMR-STAR file.'
                         self.report.error.appendDescription('missing_mandatory_content',
@@ -34815,6 +34821,7 @@ class NmrDpUtility:
             _row = row
 
             sf_item['id'] += 1
+            duplicated = False
 
             try:
 
@@ -34860,48 +34867,57 @@ class NmrDpUtility:
                 if member_id not in emptyValue:
                     has_member_id = True
 
+                _atoms1 = [atom1, _atom1]
+                _atoms2 = [atom2, _atom2]
+
                 if _rest_id is None:
                     pass
 
                 elif rest_id != _rest_id and len(atom1) > 0 and len(atom2) > 0:
 
-                    if member_id in emptyValue or member_logic_code == 'OR':
+                    if (member_id in emptyValue or member_logic_code == 'OR'):
 
-                        if (values == _values and not isAmbigAtomSelection([atom1, _atom1], self.__csStat)
-                            and not isAmbigAtomSelection([atom2, _atom2], self.__csStat))\
-                           or (values == _values and atom1['ref_chain_id'] != atom2['ref_chain_id']
-                               and ((not isAmbigAtomSelection([atom1, _atom1], self.__csStat)
-                                     and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])
-                                    or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat)
-                                        and atom2['ref_chain_id'] != _atom1['ref_chain_id'] and atom1['comp_id'] == _atom1['comp_id']))):
+                        if atom1['atom_id'][0] in protonBeginCode and atom2['atom_id'][0] in protonBeginCode:
 
-                            diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
-                            diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
+                            if (values == _values and not isAmbigAtomSelection(_atoms1, self.__csStat)
+                                and not isAmbigAtomSelection(_atoms2, self.__csStat))\
+                               or (values == _values and atom1['ref_chain_id'] != atom2['ref_chain_id']
+                                   and ((not isAmbigAtomSelection(_atoms1, self.__csStat)
+                                         and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])
+                                        or (not isAmbigAtomSelection(_atoms2, self.__csStat)
+                                            and atom2['ref_chain_id'] != _atom1['ref_chain_id'] and atom1['comp_id'] == _atom1['comp_id']))):
 
-                            if (not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and diff_cs_val1)\
-                               or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat) and diff_cs_val2):
-                                pass
+                                diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
+                                diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
 
-                            else:
-
-                                try:
-
-                                    _row[member_logic_code_col] = 'OR'
-
-                                    if _member_logic_code in emptyValue:
-                                        lp.data[-1][member_logic_code_col] = 'OR'
-
-                                except IndexError:
+                                if (not isAmbigAtomSelection(_atoms1, self.__csStat) and diff_cs_val1)\
+                                   or (not isAmbigAtomSelection(_atoms2, self.__csStat) and diff_cs_val2):
                                     pass
 
-                                sf_item['id'] -= 1
+                                else:
 
-                                modified = True
+                                    try:
+
+                                        _row[member_logic_code_col] = 'OR'
+
+                                        if _member_logic_code in emptyValue:
+                                            lp.data[-1][member_logic_code_col] = 'OR'
+
+                                    except IndexError:
+                                        pass
+
+                                    sf_item['id'] -= 1
+
+                                    modified = True
+
+                        elif values == _values and isIdenticalRestraint(_atoms1, self.__nefT) and isIdenticalRestraint(_atoms2, self.__nefT):
+                            sf_item['id'] -= 1
+                            duplicated = True
 
                 elif member_logic_code != 'AND':
 
-                    if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
-                       and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
+                    if not isAmbigAtomSelection(_atoms1, self.__csStat)\
+                       and not isAmbigAtomSelection(_atoms2, self.__csStat):
 
                         if member_logic_code in emptyValue:
                             modified = True
@@ -34933,6 +34949,10 @@ class NmrDpUtility:
                     _row[member_id_col] = None
                 except IndexError:
                     pass
+
+            if duplicated:
+                continue
+
             lp.add_data(_row)
 
         get_cs_value.cache_clear()
@@ -61858,9 +61878,17 @@ class NmrDpUtility:
                     sf = sf_item['saveframe']
                     sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
-                    # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
-                    if not sf_framecode.startswith('XPLOR') and not sf_framecode.startswith('CNS')\
-                       and not sf_framecode.startswith('CHARMM'):
+                    use_member_logic_code = sf_framecode.startswith('XPLOR') or sf_framecode.startswith('CNS')\
+                        or sf_framecode.startswith('CHARMM')
+                    if use_member_logic_code:
+                        lp = sf_item['loop']
+                        if 'Member_logic_code' not in lp.tags:
+                            use_member_logic_code = False
+                        else:
+                            dat = lp.get_tag(['Member_logic_code'])
+                            use_member_logic_code = any(True for row in dat if row not in emptyValue)
+
+                    if not use_member_logic_code:
                         self.__updateGenDistConstIdInMrStr(sf_item)
 
                     potential_type = get_first_sf_tag(sf, 'Potential_type')

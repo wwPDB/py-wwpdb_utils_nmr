@@ -115,6 +115,7 @@ workflow operation|role|primary output file(s) and its file path API
 `nmr-cs-mr-merge`|Combine assigned chemical shifts and NMR restraints. Optionally, validate spectral peak lists and insert them as raw text data using `_Spectral_peak_list.Text_data` tag, otherwise convert them using regular NMR-STAR loops and tags|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 `nmr-str2cif-annotate`|OneDep system only, Update NMR-STAR file based on annotated model file|CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 `nmr-if-merge-deposit`|Merge available NMR metadata (aka. NMRIF) to NMR-STAR file|CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
+`nmr-str-replace-cs`|Replace the assigned chemical shifts in the combined NMR-STAR file with those in new chemical shift files|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 
 ## Typical workflow operations
 

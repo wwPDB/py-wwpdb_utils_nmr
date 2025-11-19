@@ -333,7 +333,10 @@ class CifToNmrStar:
                             has_anonymous_saveframe = True
                             break
 
-                if has_datablock or not has_anonymous_saveframe:
+                if not has_datablock and not has_anonymous_saveframe:
+                    pass
+
+                elif has_datablock or not has_anonymous_saveframe:
                     return False
 
                 with open(cifPath, 'r', encoding='utf-8') as ifh, \

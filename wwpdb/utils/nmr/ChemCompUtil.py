@@ -10,6 +10,7 @@
 # 13-Dec-2023  M. Yokochi - add getAtomsBasedOnGreekLetterSystem(), peptideLike() and getTypeOfCompId() (DAOTHER-8945)
 # 19-Apr-2024  M. Yokochi - add getRepMethyleneOrAminoProtons() and getNonRepMethyleneOrAminoProtons() (DAOTHER-9317)
 # 24-Jun-2025  M. Yokochi - add hasIntervenedAtom() (DAOTHER-7829, 2ky8, D_1300056761)
+# 19-Nov-2025  M. Yokochi - add getBondSignature() (DATAQUALITY-2178, NMR data remediation)
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
@@ -520,6 +521,19 @@ class ChemCompUtil:
             parents = list(set(_parents))
 
         return []
+
+    def getBondSignature(self, compId: str, atomId: str) -> Tuple[List[str], List[str]]:
+        """ Return abstract covalent bond pattern of a given comp_id and atom_id.
+        """
+
+        bondedTo = self.getBondedAtoms(compId, atomId)
+
+        first, second = [a[0] for a in bondedTo], []
+
+        for a in bondedTo:
+            second.extend([b[0] for b in self.getBondedAtoms(compId, a, exclProton=True)])
+
+        return sorted(first), sorted(second)
 
     def hasBond(self, compId: str, atomId1: str, atomId2: str) -> bool:
         """ Return whether given two atoms are connected by a covalent bond.

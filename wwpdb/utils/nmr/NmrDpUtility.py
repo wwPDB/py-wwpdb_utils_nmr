@@ -28256,8 +28256,6 @@ class NmrDpUtility:
                                                     if row[atom_id_col] not in atom_ids_in_group_src:
                                                         hetero_group_test = True
                                                         break
-                                                else:
-                                                    break
                                         if src_idx - offset >= 0:
                                             row = src_lp.data[src_idx - offset]
                                             if row[comp_id_col] == comp_id\
@@ -28266,13 +28264,11 @@ class NmrDpUtility:
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id == (_row[3], _row[17]):
+                                                if _seq_id in (_row[3], _row[17]):
                                                     ambig_code_4_test = True
                                                     if row[atom_id_col] not in atom_ids_in_group_src:
                                                         hetero_group_test = True
                                                         break
-                                                else:
-                                                    break
                                     if not ambig_code_4_test:
                                         ambig_code_5_test = False
                                         for offset in range(1, 10):
@@ -28284,7 +28280,7 @@ class NmrDpUtility:
                                                     if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                         break
                                                     _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                    if _seq_id == (_row[3], _row[17]):
+                                                    if _seq_id in (_row[3], _row[17]):
                                                         break
                                                     _row[12] = ambig_code = 5
                                                     ambig_code_5_test = True
@@ -28297,7 +28293,7 @@ class NmrDpUtility:
                                                     if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                         break
                                                     _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                    if _seq_id == (_row[3], _row[17]):
+                                                    if _seq_id in (_row[3], _row[17]):
                                                         break
                                                     _row[12] = ambig_code = 5
                                                     ambig_code_5_test = True
@@ -28341,7 +28337,7 @@ class NmrDpUtility:
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id == (_row[3], _row[17]):
+                                                if _seq_id in (_row[3], _row[17]):
                                                     break
                                                 _row[12] = ambig_code = 5
                                                 ambig_code_5_test = True
@@ -28354,7 +28350,7 @@ class NmrDpUtility:
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id == (_row[3], _row[17]):
+                                                if _seq_id in (_row[3], _row[17]):
                                                     break
                                                 _row[12] = ambig_code = 5
                                                 ambig_code_5_test = True
@@ -28581,8 +28577,6 @@ class NmrDpUtility:
                                                 if row[atom_id_col] not in atom_ids_in_group:
                                                     hetero_group_test = True
                                                     break
-                                            else:
-                                                break
                                     if src_idx - offset >= 0:
                                         row = src_lp.data[src_idx - offset]
                                         if row[comp_id_col] == comp_id\
@@ -28591,13 +28585,11 @@ class NmrDpUtility:
                                             if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id == (_row[3], _row[17]):
+                                            if _seq_id in (_row[3], _row[17]):
                                                 ambig_code_4_test = True
                                                 if row[atom_id_col] not in atom_ids_in_group:
                                                     hetero_group_test = True
                                                     break
-                                            else:
-                                                break
                                 if not ambig_code_4_test:
                                     ambig_code_5_test = False
                                     for offset in range(1, 10):
@@ -28609,7 +28601,7 @@ class NmrDpUtility:
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id == (_row[3], _row[17]):
+                                                if _seq_id in (_row[3], _row[17]):
                                                     break
                                                 _row[12] = ambig_code = 5
                                                 ambig_code_5_test = True
@@ -28622,7 +28614,7 @@ class NmrDpUtility:
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id == (_row[3], _row[17]):
+                                                if _seq_id in (_row[3], _row[17]):
                                                     break
                                                 _row[12] = ambig_code = 5
                                                 ambig_code_5_test = True
@@ -28666,7 +28658,7 @@ class NmrDpUtility:
                                             if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id == (_row[3], _row[17]):
+                                            if _seq_id in (_row[3], _row[17]):
                                                 break
                                             _row[12] = ambig_code = 5
                                             ambig_code_5_test = True
@@ -28679,7 +28671,7 @@ class NmrDpUtility:
                                             if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id == (_row[3], _row[17]):
+                                            if _seq_id in (_row[3], _row[17]):
                                                 break
                                             _row[12] = ambig_code = 5
                                             ambig_code_5_test = True
@@ -30386,8 +30378,6 @@ class NmrDpUtility:
                                                 if row_[atom_id_col] not in _atom_ids_in_group:
                                                     hetero_group_test = True
                                                     break
-                                            else:
-                                                break
                                     if _idx - offset >= 0:
                                         row_ = loop.data[_idx - offset]
                                         if row_[comp_id_col] == comp_id\
@@ -30401,8 +30391,6 @@ class NmrDpUtility:
                                                 if row_[atom_id_col] not in _atom_ids_in_group:
                                                     hetero_group_test = True
                                                     break
-                                            else:
-                                                break
                                 if not ambig_code_4_test:
                                     ambig_code_5_test = False
                                     for offset in range(1, 10):

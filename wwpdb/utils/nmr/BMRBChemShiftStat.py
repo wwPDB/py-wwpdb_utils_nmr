@@ -197,24 +197,27 @@ class BMRBChemShiftStat:
 
         return deepcopy(result)
 
-    def getTypeOfCompId(self, comp_id: str) -> bool:
+    def getTypeOfCompId(self, comp_id: str) -> Tuple[bool, bool, bool]:
         """ Return type of a given comp_id.
             @return: array of bool: peptide, nucleotide, carbohydrate
         """
 
         if comp_id in emptyValue:
-            return [False, False, False]
+            return (False, False, False)
 
         if comp_id in self.__aa_comp_ids:
-            return [True, False, False]
+            return (True, False, False)
 
         if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
-            return [False, True, False]
+            return (False, True, False)
 
         if comp_id in self.__cachedDictForTypeOfCompId:
             return deepcopy(self.__cachedDictForTypeOfCompId[comp_id])
 
         results = self.__ccU.getTypeOfCompId(comp_id)
+
+        if results[2] and len(self.getAromaticAtoms(comp_id)) > 0:
+            results = (False, False, False)
 
         self.__cachedDictForTypeOfCompId[comp_id] = results
 

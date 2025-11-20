@@ -24,6 +24,7 @@ __version__ = "1.0.1"
 import os
 import sys
 import pickle
+import functools
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT, ELEMENT_WEIGHTS  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 from typing import IO, List, Tuple, Optional
@@ -223,6 +224,7 @@ class ChemCompUtil:
 
         return self.lastStatus
 
+    @functools.lru_cache(maxsize=128)
     def getMethylAtoms(self, compId: str) -> List[str]:
         """ Return atoms in methyl group of a given comp_id.
         """
@@ -246,6 +248,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=128)
     def getMethylProtons(self, compId: str) -> List[str]:
         """ Return all protons in methyl group of a given comp_id.
         """
@@ -268,6 +271,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=128)
     def getRepMethylProtons(self, compId: str) -> List[str]:
         """ Return representative protons in methyl group of a given comp_id.
         """
@@ -290,6 +294,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=128)
     def getNonRepMethylProtons(self, compId: str) -> List[str]:
         """ Return non-representative protons in methyl group of a given comp_id.
         """
@@ -312,6 +317,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=128)
     def getRepMethyleneOrAminoProtons(self, compId: str) -> List[str]:
         """ Return representative protons in methylene/amino group of a given comp_id.
         """
@@ -334,6 +340,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=128)
     def getNonRepMethyleneOrAminoProtons(self, compId: str) -> List[str]:
         """ Return non-representative protons in methylene/amino group of a given comp_id.
         """
@@ -356,6 +363,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=128)
     def getRepAminoProtons(self, compId: str) -> List[str]:
         """ Return representative protons in amino group of a given comp_id.
         """
@@ -378,6 +386,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=128)
     def getNonRepAminoProtons(self, compId: str) -> List[str]:
         """ Return non-representative protons in amino group of a given comp_id.
         """
@@ -400,6 +409,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=128)
     def getImideProtons(self, compId: str) -> List[str]:
         """ Return imide protons of a given comp_id.
         """
@@ -434,6 +444,7 @@ class ChemCompUtil:
 
         return atmList
 
+    @functools.lru_cache(maxsize=256)
     def getBondedAtoms(self, compId: str, atomId: str, exclProton: bool = False, onlyProton: bool = False) -> List[str]:
         """ Return bonded atoms to a given atom.
         """
@@ -451,6 +462,7 @@ class ChemCompUtil:
 
         return [a for a in bondedAtoms if (exclProton and a not in allProtons) or (onlyProton and a in allProtons)]
 
+    @functools.lru_cache(maxsize=256)
     def getProtonsInSameGroup(self, compId: str, atomId: str, exclSelf: bool = False) -> List[str]:
         """ Return protons in the same group of a given comp_id and atom_id.
         """
@@ -547,6 +559,7 @@ class ChemCompUtil:
 
         return len(set(self.getBondedAtoms(compId, atomId1)) & set(self.getBondedAtoms(compId, atomId2))) == 1
 
+    @functools.lru_cache(maxsize=128)
     def peptideLike(self, compId: Optional[str] = None) -> bool:
         """ Return whether a given comp_id is peptide-like component.
         """
@@ -578,6 +591,7 @@ class ChemCompUtil:
 
         return peptide_like > nucleotide_like and peptide_like > carbohydrate_like
 
+    @functools.lru_cache(maxsize=128)
     def getTypeOfCompId(self, compId: Optional[str] = None) -> Tuple[bool, bool, bool]:
         """ Return type of a given comp_id.
             @return: array of bool: peptide, nucleotide, carbohydrate
@@ -585,7 +599,7 @@ class ChemCompUtil:
 
         if compId is not None:
             if not self.updateChemCompDict(compId):
-                return False, False, False
+                return (False, False, False)
 
         results = [False] * 3
 
@@ -593,15 +607,15 @@ class ChemCompUtil:
 
         if 'PEPTIDE' in ctype:
             results[0] = True
-            return results
+            return tuple(results)
 
         if 'DNA' in ctype or 'RNA' in ctype:
             results[1] = True
-            return results
+            return tuple(results)
 
         if 'SACCHARIDE' in ctype:
             results[2] = True
-            return results
+            return tuple(results)
 
         peptide_like = len([a for a in self.lastAtomList
                             if a[self.ccaAtomId] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")])
@@ -620,8 +634,9 @@ class ChemCompUtil:
         results[1] = nucleotide_like > peptide_like and nucleotide_like > carbohydrate_like
         results[2] = carbohydrate_like > peptide_like and carbohydrate_like > nucleotide_like
 
-        return results
+        return tuple(results)
 
+    @functools.lru_cache(maxsize=128)
     def getEffectiveFormulaWeight(self, compId: str) -> float:
         """ Return effective formula weight of a given comp_id.
         """

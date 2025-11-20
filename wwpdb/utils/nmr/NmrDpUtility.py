@@ -2299,6 +2299,7 @@ class NmrDpUtility:
                            self.__testIndexConsistency,
                            self.__appendWeightInLoop,
                            self.__appendDihedAngleType,
+                           self.__remediateRdcLoop,
                            self.__testDataConsistencyInLoop,
                            self.__testDataConsistencyInAuxLoop,
                            self.__testNmrCovalentBond,
@@ -9048,24 +9049,80 @@ class NmrDpUtility:
 
                         if _file_type != file_type:
 
-                            err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                  f"but recognized as {self.readable_file_type[_file_type]} file."
-                            # DAOTHER-5673
-                            err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                            if self.__internal_mode and _file_type == 'nef':
 
-                            if len(message['error']) > 0:
-                                for err_message in message['error']:
-                                    if 'No such file or directory' not in err_message:
-                                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+                                _csPath = csPath + '.nef2str'
 
-                            self.report.error.appendDescription('content_mismatch',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                                try:
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {err}\n")
+                                    is_valid, message = self.__nefT.nef_to_nmrstar(csPath, _csPath)
 
-                            is_done = False
+                                    if is_valid:
+                                        csPath = _csPath
+
+                                        # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath)
+
+                                        self.__has_legacy_sf_issue = False
+
+                                        if star_data_type == 'Saveframe':
+                                            self.__has_legacy_sf_issue = True
+                                            self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message, allowEmpty=allow_empty)
+                                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath)
+
+                                        if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+
+                                            if len(self.__star_data_type) > csListId:
+                                                self.__star_data_type[csListId] = star_data_type
+                                                self.__star_data[csListId] = star_data
+                                            else:
+                                                self.__star_data_type.append(star_data_type)
+                                                self.__star_data.append(star_data)
+
+                                            self.__rescueFormerNef(csListId)
+                                            self.__rescueImmatureStr(csListId)
+
+                                        if star_data_type != 'Entry':
+                                            _star_data = self.__convertCsToEntry(star_data, csListId + 1)
+                                            if isinstance(_star_data, pynmrstar.Entry):
+                                                self.__star_data[-1] = _star_data
+                                                self.__star_data_type[-1] = 'Entry'
+                                        else:
+                                            self.__star_data[-1] = self.__convertCsToEntry(star_data)
+
+                                except Exception as e:
+
+                                    err = f"{file_name!r} is not compliant with the {self.readable_file_type[_file_type]} dictionary."
+
+                                    if 'No such file or directory' not in str(e):
+                                        err += ' ' + re.sub('not in list', 'unknown item.', str(e))
+
+                                    self.report.error.appendDescription('format_issue',
+                                                                        {'file_name': file_name, 'description': err})
+                                    self.report.setError()
+
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - "
+                                                     f"{file_name} {err}\n")
+
+                            else:
+
+                                err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                                      f"but recognized as {self.readable_file_type[_file_type]} file."
+                                # DAOTHER-5673
+                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                                if len(message['error']) > 0:
+                                    for err_message in message['error']:
+                                        if 'No such file or directory' not in err_message:
+                                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                                self.report.error.appendDescription('content_mismatch',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {err}\n")
+
+                                is_done = False
 
                         else:
 
@@ -9223,24 +9280,81 @@ class NmrDpUtility:
 
                     if _file_type != file_type:
 
-                        err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                              f"but recognized as {self.readable_file_type[_file_type]} file."
-                        # DAOTHER-5673
-                        err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                        if self.__internal_mode and _file_type == 'nef':
 
-                        if len(message['error']) > 0:
-                            for err_message in message['error']:
-                                if 'No such file or directory' not in err_message:
-                                    err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+                            _csPath = csPath + '.nef2str'
 
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                            try:
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {err}\n")
+                                is_valid, message = self.__nefT.nef_to_nmrstar(csPath, _csPath)
 
-                        is_done = False
+                                if is_valid:
+                                    csPath = _csPath
+
+                                    # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                                    _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath)
+
+                                    self.__has_legacy_sf_issue = False
+
+                                    if star_data_type == 'Saveframe':
+                                        self.__has_legacy_sf_issue = True
+                                        self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message, allowEmpty=allow_empty)
+                                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath)
+
+                                    if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+
+                                        if len(self.__star_data_type) > csListId:
+                                            self.__star_data_type[csListId] = star_data_type
+                                            self.__star_data[csListId] = star_data
+                                        else:
+                                            self.__star_data_type.append(star_data_type)
+                                            self.__star_data.append(star_data)
+
+                                        self.__rescueFormerNef(csListId)
+                                        self.__rescueImmatureStr(csListId)
+
+                                    if star_data_type != 'Entry':
+                                        _star_data = self.__convertCsToEntry(star_data, csListId + 1)
+                                        if isinstance(_star_data, pynmrstar.Entry):
+                                            self.__star_data[-1] = _star_data
+                                            self.__star_data_type[-1] = 'Entry'
+                                    else:
+                                        self.__star_data[-1] = self.__convertCsToEntry(star_data)
+
+                            except Exception as e:
+
+                                err = f"{file_name!r} is not compliant with the {self.readable_file_type[_file_type]} dictionary."
+
+                                if 'No such file or directory' not in str(e):
+                                    err += ' ' + re.sub('not in list', 'unknown item.', str(e))
+
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - "
+                                                 f"{file_name} {err}\n")
+
+                        else:
+
+                            err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                                  f"but recognized as {self.readable_file_type[_file_type]} file."
+                            # DAOTHER-5673
+                            err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+
+                            if len(message['error']) > 0:
+                                for err_message in message['error']:
+                                    if 'No such file or directory' not in err_message:
+                                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                            self.report.error.appendDescription('content_mismatch',
+                                                                {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {err}\n")
+
+                            is_done = False
 
                     else:
 
@@ -13099,7 +13213,7 @@ class NmrDpUtility:
                     hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords "\
                         "to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
-                err = f"{file_name} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
+                err = f"{file_name!r} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
                     + hint + " Did you accidentally select wrong format? Please re-upload the AMBER topology file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -13134,7 +13248,7 @@ class NmrDpUtility:
                     "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} {Cartn_x} {Cartn_y} {Cartn_z} "\
                     "{segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
 
-                err = f"{file_name} is not CHARMM topology (aka. CRD or CHARM CARD file) {subtype_name}."\
+                err = f"{file_name!r} is not CHARMM topology (aka. CRD or CHARM CARD file) {subtype_name}."\
                     + hint + " Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -13168,7 +13282,7 @@ class NmrDpUtility:
                 hint = " Tips for GROMACS topology: Proper contents starting with '[ system ]', '[ molecules ]', "\
                     "and '[ atoms ]' lines must be present in the file."
 
-                err = f"{file_name} is not GROMACS topology {subtype_name}."\
+                err = f"{file_name!r} is not GROMACS topology {subtype_name}."\
                     + hint + " Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -28122,18 +28236,27 @@ class NmrDpUtility:
                                 if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     chain_id_src = row_src[chain_id_col]
-                                    atom_type = row_src[atom_id_col][0]
+                                    atom_id_src = row_src[atom_id_col]
+                                    atom_type = atom_id_src[0]
                                     ambig_code_src = row_src[ambig_code_col]
-                                    ambig_code_4_test = False
+                                    atom_ids_in_group_src = self.__ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
+                                        if atom_type in protonBeginCode else []
+                                    ambig_code_4_test = hetero_group_test = False
                                     for offset in range(1, 10):
                                         if src_idx + offset < len(src_lp):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id in (_row[3], _row[17]):
                                                     ambig_code_4_test = True
+                                                    if row[atom_id_col] not in atom_ids_in_group_src:
+                                                        hetero_group_test = True
+                                                        break
+                                                else:
                                                     break
                                         if src_idx - offset >= 0:
                                             row = src_lp.data[src_idx - offset]
@@ -28141,11 +28264,14 @@ class NmrDpUtility:
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                    _row[12] = ambig_code = 6
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id == (_row[3], _row[17]):
                                                     ambig_code_4_test = True
+                                                    if row[atom_id_col] not in atom_ids_in_group_src:
+                                                        hetero_group_test = True
+                                                        break
+                                                else:
                                                     break
                                     if not ambig_code_4_test:
                                         ambig_code_5_test = False
@@ -28156,7 +28282,7 @@ class NmrDpUtility:
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                        continue
+                                                        break
                                                     _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                     if _seq_id == (_row[3], _row[17]):
                                                         break
@@ -28169,7 +28295,7 @@ class NmrDpUtility:
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                        continue
+                                                        break
                                                     _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                     if _seq_id == (_row[3], _row[17]):
                                                         break
@@ -28196,6 +28322,8 @@ class NmrDpUtility:
                                                             break
                                             if ambig_code == 4:
                                                 _row[12] = ambig_code = 1
+                                    elif not hetero_group_test:
+                                        _row[12] = ambig_code = 1
 
                             elif ambig_code == 5:
                                 if not self.__annotation_mode and _row[24] != 'UNMAPPED':
@@ -28211,7 +28339,7 @@ class NmrDpUtility:
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                    continue
+                                                    break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id == (_row[3], _row[17]):
                                                     break
@@ -28224,7 +28352,7 @@ class NmrDpUtility:
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                    continue
+                                                    break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id == (_row[3], _row[17]):
                                                     break
@@ -28433,18 +28561,27 @@ class NmrDpUtility:
                             if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 chain_id_src = row_src[chain_id_col]
-                                atom_type = row_src[atom_id_col][0]
+                                atom_id_src = row_src[atom_id_col]
+                                atom_type = atom_id_src[0]
                                 ambig_code_src = row_src[ambig_code_col]
-                                ambig_code_4_test = False
+                                atom_ids_in_group = self.__ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
+                                    if atom_type in protonBeginCode else []
+                                ambig_code_4_test = hetero_group_test = False
                                 for offset in range(1, 10):
                                     if src_idx + offset < len(src_lp):
                                         row = src_lp.data[src_idx + offset]
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                            if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id in (_row[3], _row[17]):
                                                 ambig_code_4_test = True
+                                                if row[atom_id_col] not in atom_ids_in_group:
+                                                    hetero_group_test = True
+                                                    break
+                                            else:
                                                 break
                                     if src_idx - offset >= 0:
                                         row = src_lp.data[src_idx - offset]
@@ -28452,11 +28589,14 @@ class NmrDpUtility:
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                _row[12] = ambig_code = 6
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id == (_row[3], _row[17]):
                                                 ambig_code_4_test = True
+                                                if row[atom_id_col] not in atom_ids_in_group:
+                                                    hetero_group_test = True
+                                                    break
+                                            else:
                                                 break
                                 if not ambig_code_4_test:
                                     ambig_code_5_test = False
@@ -28467,7 +28607,7 @@ class NmrDpUtility:
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                    continue
+                                                    break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id == (_row[3], _row[17]):
                                                     break
@@ -28480,7 +28620,7 @@ class NmrDpUtility:
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                    continue
+                                                    break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id == (_row[3], _row[17]):
                                                     break
@@ -28507,6 +28647,8 @@ class NmrDpUtility:
                                                         break
                                         if ambig_code == 4:
                                             _row[12] = ambig_code = 1
+                                elif not hetero_group_test:
+                                    _row[12] = ambig_code = 1
 
                         elif ambig_code == 5:
                             if not self.__annotation_mode and _row[24] != 'UNMAPPED':
@@ -28522,7 +28664,7 @@ class NmrDpUtility:
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                continue
+                                                break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id == (_row[3], _row[17]):
                                                 break
@@ -28535,7 +28677,7 @@ class NmrDpUtility:
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
-                                                continue
+                                                break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id == (_row[3], _row[17]):
                                                 break
@@ -28998,7 +29140,8 @@ class NmrDpUtility:
                                 if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                     __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                    if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                    if self.__csStat.getTypeOfCompId(comp_id)[2]\
+                                       and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                         _seq_key = __seq_key
                                         if _row[21] in emptyValue or _row[22] in emptyValue:
                                             _row[21], _row[22] = orig_seq_id, orig_comp_id
@@ -29080,7 +29223,8 @@ class NmrDpUtility:
                                         if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                             __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                            if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                            if self.__csStat.getTypeOfCompId(comp_id)[2]\
+                                               and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                                 _seq_key = __seq_key
                                                 if _row[21] in emptyValue or _row[22] in emptyValue:
                                                     _row[21], _row[22] = orig_seq_id, orig_comp_id
@@ -29274,7 +29418,8 @@ class NmrDpUtility:
                             if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                 __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                if self.__csStat.getTypeOfCompId(comp_id)[2]\
+                                   and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                     _seq_key = __seq_key
                                     if _row[21] in emptyValue or _row[22] in emptyValue:
                                         _row[21], _row[22] = orig_seq_id, orig_comp_id
@@ -29380,7 +29525,8 @@ class NmrDpUtility:
                                     if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                         __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                        if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                        if self.__csStat.getTypeOfCompId(comp_id)[2]\
+                                           and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                             _seq_key = __seq_key
                                             if _row[21] in emptyValue or _row[22] in emptyValue:
                                                 _row[21], _row[22] = orig_seq_id, orig_comp_id
@@ -29607,7 +29753,8 @@ class NmrDpUtility:
                                             if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                                 __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                                if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                                if self.__csStat.getTypeOfCompId(comp_id)[2]\
+                                                   and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                                     _seq_key = __seq_key
                                                     if _row[21] in emptyValue or _row[22] in emptyValue:
                                                         _row[21], _row[22] = orig_seq_id, orig_comp_id
@@ -30219,10 +30366,13 @@ class NmrDpUtility:
                             if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 _chain_id = row[chain_id_col]
                                 _seq_id = row[seq_id_col]
-                                _atom_type = row[atom_id_col][0]
+                                _atom_id = row[atom_id_col]
+                                _atom_type = _atom_id[0]
                                 _ambig_code = str(ambig_code)
+                                _atom_ids_in_group = self.__ccU.getProtonsInSameGroup(comp_id, _atom_id)\
+                                    if _atom_type in protonBeginCode else []
+                                ambig_code_4_test = hetero_group_test = False
                                 _idx = idx
-                                ambig_code_4_test = False
                                 for offset in range(1, 10):
                                     if _idx + offset < len(loop):
                                         row_ = loop.data[_idx + offset]
@@ -30230,9 +30380,13 @@ class NmrDpUtility:
                                            and row_[atom_id_col][0] == _atom_type\
                                            and row_[ambig_code_col] == _ambig_code:
                                             if row_[chain_id_col] != _chain_id:
-                                                continue
+                                                break
                                             if row_[seq_id_col] == _seq_id:
                                                 ambig_code_4_test = True
+                                                if row_[atom_id_col] not in _atom_ids_in_group:
+                                                    hetero_group_test = True
+                                                    break
+                                            else:
                                                 break
                                     if _idx - offset >= 0:
                                         row_ = loop.data[_idx - offset]
@@ -30240,9 +30394,14 @@ class NmrDpUtility:
                                            and row_[atom_id_col][0] == _atom_type\
                                            and row_[ambig_code_col] == _ambig_code:
                                             if row_[chain_id_col] != _chain_id:
-                                                continue
+                                                break
                                             if row_[seq_id_col] == _seq_id:
                                                 ambig_code_4_test = True
+                                                ambig_code_4_test = True
+                                                if row_[atom_id_col] not in _atom_ids_in_group:
+                                                    hetero_group_test = True
+                                                    break
+                                            else:
                                                 break
                                 if not ambig_code_4_test:
                                     ambig_code_5_test = False
@@ -30253,7 +30412,7 @@ class NmrDpUtility:
                                                and row_[atom_id_col][0] == _atom_type\
                                                and row_[ambig_code_col] == _ambig_code:
                                                 if row_[chain_id_col] != _chain_id:
-                                                    continue
+                                                    break
                                                 if row_[seq_id_col] == _seq_id:
                                                     break
                                                 _row[12] = ambig_code = 5
@@ -30265,7 +30424,7 @@ class NmrDpUtility:
                                                and row_[atom_id_col][0] == _atom_type\
                                                and row_[ambig_code_col] == _ambig_code:
                                                 if row_[chain_id_col] != _chain_id:
-                                                    continue
+                                                    break
                                                 if row_[seq_id_col] == _seq_id:
                                                     break
                                                 _row[12] = ambig_code = 5
@@ -30291,6 +30450,8 @@ class NmrDpUtility:
                                                         break
                                         if ambig_code == 4:
                                             _row[12] = ambig_code = 1
+                                elif not hetero_group_test:
+                                    _row[12] = ambig_code = 1
 
                         elif ambig_code == 5:
                             if not self.__annotation_mode and _row[24] != 'UNMAPPED':
@@ -55275,6 +55436,82 @@ class NmrDpUtility:
 
         return True
 
+    def __remediateRdcLoop(self) -> bool:
+        """ Remediate rdc target value due to the known OneDep bug, if required.
+        """
+
+        try:
+
+            for fileListId in range(self.__file_path_list_len):
+
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
+
+                file_type = input_source_dic['file_type']
+
+                if file_type != 'nmr-star':
+                    continue
+
+                content_subtype = 'rdc_restraint'
+
+                if not has_key_value(input_source_dic['content_subtype'], content_subtype):
+                    continue
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__star_data_type[fileListId] == 'Loop':
+                    if self.__star_data[fileListId].category == lp_category:
+                        self.__remediateRdcLoop__(file_type, self.__star_data[fileListId])
+
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+                    try:
+                        self.__remediateRdcLoop__(file_type, self.__star_data[fileListId].get_loop(lp_category))
+                    except KeyError:
+                        continue
+
+                else:
+                    for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                        try:
+                            self.__remediateRdcLoop__(file_type, sf.get_loop(lp_category))
+                        except KeyError:
+                            continue
+
+            return True
+
+        except ValueError as e:
+
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRdcLoop() ++ Error  - " + str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+{self.__class_name__}.__remediateRdcLoop() ++ Error  - {str(e)}\n")
+
+            return False
+
+    def __remediateRdcLoop__(self, file_type: str, loop: pynmrstar.Loop):
+        """ Remediate rdc target value due to the known OneDep bug, if required.
+        """
+
+        item_names = self.item_names_in_rdc_loop[file_type]
+
+        tags = [item_names['lower_limit'], item_names['target_value'], item_names['upper_limit']]
+
+        if set(tags) & set(loop.tags) == set(tags):
+            val_col = loop.tags.index(item_names['target_value'])
+
+            dat = loop.get_tag(tags)
+
+            for idx, row in enumerate(dat):
+
+                if any(True for col in row if col in emptyValue):
+                    continue
+
+                lower_limit, target_value, upper_limit = float(row[0]), float(row[1]), float(row[2])
+
+                if lower_limit < -target_value < upper_limit or abs((lower_limit + upper_limit) / 2.0 + target_value) < 0.01:
+                    loop.data[idx][val_col] = str(-target_value)
+
     def __remediateRawTextPk(self) -> bool:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).
         """
@@ -65998,7 +66235,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            err = f"{file_name} is not compliant with the {self.readable_file_type[file_type]} dictionary."
+            err = f"{file_name!r} is not compliant with the {self.readable_file_type[file_type]} dictionary."
 
             if 'No such file or directory' not in str(e):
                 err += ' ' + re.sub('not in list', 'unknown item.', str(e))
@@ -66039,7 +66276,7 @@ class NmrDpUtility:
 
             return True
 
-        err = f"{file_name} is not compliant with the {self.readable_file_type[file_type]} dictionary."
+        err = f"{file_name!r} is not compliant with the {self.readable_file_type[file_type]} dictionary."
 
         if len(message['error']) > 0:
             for err_message in message['error']:
@@ -66126,7 +66363,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            err = f"{file_name} is not compliant with the {self.readable_file_type[file_type]} dictionary."
+            err = f"{file_name!r} is not compliant with the {self.readable_file_type[file_type]} dictionary."
 
             if 'No such file or directory' not in str(e):
                 err += ' ' + re.sub('not in list', 'unknown item.', str(e))
@@ -66147,7 +66384,7 @@ class NmrDpUtility:
         if is_valid:
             return True
 
-        err = f"{file_name} is not compliant with the {self.readable_file_type[file_type]} dictionary."
+        err = f"{file_name!r} is not compliant with the {self.readable_file_type[file_type]} dictionary."
 
         if len(message['error']) > 0:
             for err_message in message['error']:

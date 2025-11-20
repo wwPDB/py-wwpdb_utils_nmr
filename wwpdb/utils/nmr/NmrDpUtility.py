@@ -26,7 +26,7 @@
 # 06-Mar-2020  M. Yokochi - fix invalid ambiguity_code while parsing
 # 13-Mar-2020  M. Yokochi - revise error/warning messages
 # 17-Mar-2020  M. Yokochi - add 'undefined' value for potential_type (DAOTHER-5508)
-# 17-Mar-20e0  M. Yokochi - revise warning message about enumeration mismatch for potential_type and restraint_origin (DAOTHER-5508)
+# 17-Mar-2020  M. Yokochi - revise warning message about enumeration mismatch for potential_type and restraint_origin (DAOTHER-5508)
 # 17-Mar-2020  M. Yokochi - check total number of models (DAOTHER-436)
 # 17-Mar-2020  M. Yokochi - check consistency between saveframe name and sf_framecode value
 # 18-Mar-2020  M. Yokochi - rename warning type from skipped_sf/lp_category to skipped_saveframe/loop_category
@@ -28306,7 +28306,6 @@ class NmrDpUtility:
                                         _row[23] = copy.copy(_row[6])
 
                 else:
-
                     _row[5] = comp_id
                     valid = True
                     missing_ch3 = []
@@ -28998,7 +28997,13 @@ class NmrDpUtility:
                             if seq_key in auth_to_orig_seq:
                                 if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                    _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                                    __seq_key = (_seq_key[0], orig_seq_id, comp_id)
+                                    if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                        _seq_key = __seq_key
+                                        if _row[21] in emptyValue or _row[22] in emptyValue:
+                                            _row[21], _row[22] = orig_seq_id, orig_comp_id
+                                    else:
+                                        _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                 if not has_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                     if orig_seq_id in emptyValue:
@@ -29074,7 +29079,13 @@ class NmrDpUtility:
                                     if seq_key in auth_to_orig_seq:
                                         if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                            _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                                            __seq_key = (_seq_key[0], orig_seq_id, comp_id)
+                                            if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                                _seq_key = __seq_key
+                                                if _row[21] in emptyValue or _row[22] in emptyValue:
+                                                    _row[21], _row[22] = orig_seq_id, orig_comp_id
+                                            else:
+                                                _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                         if not has_orig_seq:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                             if orig_seq_id in emptyValue:
@@ -29262,7 +29273,13 @@ class NmrDpUtility:
                         if seq_key in auth_to_orig_seq:
                             if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                                __seq_key = (_seq_key[0], orig_seq_id, comp_id)
+                                if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                    _seq_key = __seq_key
+                                    if _row[21] in emptyValue or _row[22] in emptyValue:
+                                        _row[21], _row[22] = orig_seq_id, orig_comp_id
+                                else:
+                                    _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                             if not has_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                 if orig_seq_id in emptyValue:
@@ -29362,7 +29379,13 @@ class NmrDpUtility:
                                 if seq_key in auth_to_orig_seq:
                                     if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                        _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                                        __seq_key = (_seq_key[0], orig_seq_id, comp_id)
+                                        if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                            _seq_key = __seq_key
+                                            if _row[21] in emptyValue or _row[22] in emptyValue:
+                                                _row[21], _row[22] = orig_seq_id, orig_comp_id
+                                        else:
+                                            _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                     if not has_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                         if orig_seq_id in emptyValue:
@@ -29583,7 +29606,13 @@ class NmrDpUtility:
                                         if seq_key in auth_to_orig_seq:
                                             if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
                                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                                _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                                                __seq_key = (_seq_key[0], orig_seq_id, comp_id)
+                                                if seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
+                                                    _seq_key = __seq_key
+                                                    if _row[21] in emptyValue or _row[22] in emptyValue:
+                                                        _row[21], _row[22] = orig_seq_id, orig_comp_id
+                                                else:
+                                                    _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                             if not has_orig_seq:
                                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                                 if orig_seq_id in emptyValue:

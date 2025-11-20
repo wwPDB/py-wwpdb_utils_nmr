@@ -2499,6 +2499,16 @@ class NEFTranslator:
                                 row[col0], row[col1] = row[col1], row[col0]
 
                 if coord_assembly_checker is not None:
+                    cif_br = coord_assembly_checker['branched']
+                    if cif_br is not None:
+                        ligands = []
+                        for br in cif_br:
+                            ligands.extend(br['comp_id'])
+                            if br['comp_id'] != br['auth_comp_id']:
+                                ligands.extend(br['auth_comp_id'])
+                        for _comp_id in set(ligands):
+                            if ligands.count(_comp_id) == 1:
+                                lig_to_chain_id[_comp_id] = next(br['auth_chain_id'] for br in cif_br if _comp_id in br['comp_id'] or _comp_id in br['auth_comp_id'])
                     cif_np = coord_assembly_checker['non_polymer']
                     if cif_np is not None:
                         ligands = []
@@ -2642,6 +2652,7 @@ class NEFTranslator:
                                     pre_tags.append('Auth_comp_ID')
                                 pre_seq_data = _loop.get_tag(pre_tags)
                                 cif_ps = coord_assembly_checker['polymer_sequence']
+                                cif_br = coord_assembly_checker['branched']
                                 cif_np = coord_assembly_checker['non_polymer']
                                 nmr_ps = []
                                 for c in _alt_chain_id_list:
@@ -2666,6 +2677,13 @@ class NEFTranslator:
                                                 if ref_comp_id in ps['comp_id'] or ref_comp_id in ps['auth_comp_id']:
                                                     ref_comp_id_not_found = False
                                                     break
+                                            if cif_br is not None and ref_comp_id_not_found:
+                                                for br in cif_br:
+                                                    if can_comp_id in br['comp_id']:
+                                                        can_comp_id_found = True
+                                                    if ref_comp_id in br['comp_id'] or ref_comp_id in br['auth_comp_id']:
+                                                        ref_comp_id_not_found = False
+                                                        break
                                             if cif_np is not None and ref_comp_id_not_found:
                                                 for np in cif_np:
                                                     if can_comp_id in np['comp_id']:
@@ -2783,6 +2801,31 @@ class NEFTranslator:
                                                         r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
                                                     if alt_seq_id_col != -1:
                                                         r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
+                                    # 2liq
+                                    if cif_br is not None:
+                                        chain_id_col = _loop.tags.index('Entity_assembly_ID')
+                                        alt_chain_id_col = _loop.tags.index('Auth_asym_ID')
+                                        auth_seq_id_col = _loop.tags.index('Auth_seq_ID')
+                                        comp_id_col = _loop.tags.index('Comp_ID')
+                                        entity_id_col = _loop.tags.index('Entity_ID') if 'Entity_ID' in _loop.tags else -1
+                                        seq_id_col = _loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in _loop.tags else -1
+                                        alt_seq_id_col = _loop.tags.index('Seq_ID') if 'Seq_ID' in _loop.tags else -1
+                                        auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
+                                        for r in _loop.data:
+                                            for br in cif_br:
+                                                if r[alt_chain_id_col] != br['auth_chain_id']:
+                                                    continue
+                                                _k = (r[alt_chain_id_col], int(r[auth_seq_id_col]), r[comp_id_col])
+                                                if _k in auth_to_star_seq:
+                                                    _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
+                                                    r[chain_id_col] = str(_entity_assembly_id)
+                                                    if entity_id_col != -1:
+                                                        r[entity_id_col] = str(_entity_id)
+                                                    if sync_seq:
+                                                        if seq_id_col != -1:
+                                                            r[seq_id_col] = str(_seq_id)
+                                                        if alt_seq_id_col != -1:
+                                                            r[alt_seq_id_col] = str(_seq_id)
                                     # 2ksi
                                     if cif_np is not None:
                                         seq_align, _ = alignPolymerSequence(self.__pA, cif_np, nmr_ps)
@@ -2955,6 +2998,7 @@ class NEFTranslator:
                         if len(row[2]) not in (1, 2, 3, 5):
                             ref_comp_id = None
                             cif_ps = coord_assembly_checker['polymer_sequence']
+                            cif_br = coord_assembly_checker['branched']
                             cif_np = coord_assembly_checker['non_polymer']
                             ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == row[0]), None)
                             if ps is not None:
@@ -2963,6 +3007,14 @@ class NEFTranslator:
                                         ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(int(row[1]))]
                                 except ValueError:
                                     pass
+                            if cif_br is not None:
+                                br = next((br for br in cif_br if br['auth_chain_id'] == row[0]), None)
+                                if br is not None:
+                                    try:
+                                        if int(row[1]) in br['auth_seq_id']:
+                                            ref_comp_id = br['comp_id'][br['auth_seq_id'].index(int(row[1]))]
+                                    except ValueError:
+                                        pass
                             if cif_np is not None:
                                 np = next((np for np in cif_np if np['auth_chain_id'] == row[0]), None)
                                 if np is not None:
@@ -3015,11 +3067,17 @@ class NEFTranslator:
                             if len(auth_comp_id) not in (1, 2, 3, 5):
                                 ref_comp_id = None
                                 cif_ps = coord_assembly_checker['polymer_sequence']
+                                cif_br = coord_assembly_checker['branched']
                                 cif_np = coord_assembly_checker['non_polymer']
                                 ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == auth_asym_id), None)
                                 if ps is not None:
                                     if auth_asym_id in ps['auth_seq_id']:
                                         ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(auth_seq_id)]
+                                if cif_br is not None:
+                                    br = next((br for br in cif_br if br['auth_chain_id'] == auth_asym_id), None)
+                                    if br is not None:
+                                        if auth_seq_id in br['auth_seq_id']:
+                                            ref_comp_id = br['comp_id'][br['auth_seq_id'].index(auth_seq_id)]
                                 if cif_np is not None:
                                     np = next((np for np in cif_np if np['auth_chain_id'] == auth_asym_id), None)
                                     if np is not None:
@@ -3183,7 +3241,6 @@ class NEFTranslator:
                         alt_cif_ps = coord_assembly_checker['alt_polymer_sequence']
                         if sum(len(ps['seq_id']) for ps in cif_ps) < sum(len(ps['seq_id']) for ps in alt_cif_ps):
                             cif_ps = alt_cif_ps
-                        cif_np = coord_assembly_checker['non_polymer']
                         nmr_chain_id = list(chain_id_set)[0]
                         nmr_ps = [{'chain_id': nmr_chain_id, 'seq_id': [], 'comp_id': []}]
                         seq = set()

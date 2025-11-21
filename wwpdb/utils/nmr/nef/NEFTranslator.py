@@ -4538,8 +4538,9 @@ class NEFTranslator:
         is_nef_dihed_lp = 'nef_dihedral_restraint' in lp_category
         is_star_dist_lp = 'Gen_dist_constraint' in lp_category
         is_star_dihed_lp = 'Torsion_angle_constraint' in lp_category
-        is_cs_lp = 'nef_chemical_shift' in lp_category or 'Atom_chem_shift' in lp_category
+        is_cs_lp = lp_category in ('_nef_chemical_shift', '_Atom_chem_shift')
         is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
+        is_bond_lp = lp_category in ('_nef_covalent_links', '_Bond')
 
         def skip_empty_value_error(lp, idx):
             if not is_target_lp:
@@ -4921,6 +4922,9 @@ class NEFTranslator:
 
                                     idx_msg = f"[Check rows of {idx_f.getvalue()}] "
 
+                                if is_bond_lp:
+                                    continue
+
                                 f.append("[Multiple data] "
                                          f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} exist in a loop.")
 
@@ -4996,6 +5000,9 @@ class NEFTranslator:
                                     idx_f.seek(pos)
 
                                     idx_msg = f"[Check rows of {idx_f.getvalue()}] "
+
+                                if is_bond_lp:
+                                    continue
 
                                 f.append("[Multiple data] "
                                          f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} exist in a loop.")
@@ -5109,6 +5116,9 @@ class NEFTranslator:
 
                                         idx_msg = f"[Check rows of {idx_f.getvalue()}] "
 
+                                    if is_bond_lp:
+                                        continue
+
                                     _f.append("[Multiple data] "
                                               f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} exist in a loop.")
 
@@ -5184,6 +5194,9 @@ class NEFTranslator:
                                         idx_f.seek(pos)
 
                                         idx_msg = f"[Check rows of {idx_f.getvalue()}] "
+
+                                    if is_bond_lp:
+                                        continue
 
                                     _f.append("[Multiple data] "
                                               f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} exist in a loop.")
@@ -6389,7 +6402,7 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        is_cs_lp = 'nef_chemical_shift' in lp_category or 'Atom_chem_shift' in lp_category
+        is_cs_lp = lp_category in ('_nef_chemical_shift', '_Atom_chem_shift')
 
         data = []  # data of all loops
 
@@ -11087,12 +11100,7 @@ class NEFTranslator:
         self.authSeqMap = None
         self.selfSeqMap = None
 
-        asm_id = 0
-        cs_list_id = 0
-        dist_list_id = 0
-        dihed_list_id = 0
-        rdc_list_id = 0
-        peak_list_id = 0
+        asm_id = cs_list_id = dist_list_id = dihed_list_id = rdc_list_id = peak_list_id = 0
 
         # DAOTHER-9623
         def get_red_sf_framecode(sf):
@@ -11592,12 +11600,7 @@ class NEFTranslator:
             error.append('Input file not readable.')
             return False, {'info': info, 'error': error}
 
-        asm_id = 0
-        cs_list_id = 0
-        dist_list_id = 0
-        dihed_list_id = 0
-        rdc_list_id = 0
-        peak_list_id = 0
+        asm_id = cs_list_id = dist_list_id = dihed_list_id = rdc_list_id = peak_list_id = 0
 
         if data_type == 'Entry':
             if len(star_data.get_loops_by_category('Chem_comp_assembly')) == 0:  # DAOTHER-6694

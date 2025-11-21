@@ -7302,7 +7302,6 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                 prevSeqId = commonSeqId[1][0]
 
                 if commonSeqId[0][0] == prevSeqId + 1:
-
                     j = 0
                     if seqIds[j] == prevSeqId and _atomIds[j] == 'C':
                         _atomIds.pop(j)
@@ -7313,7 +7312,6 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                 nextSeqId = commonSeqId[1][0]
 
                 if commonSeqId[0][0] == nextSeqId - 1:
-
                     j = 3
                     if seqIds[j] == nextSeqId and _atomIds[j] == 'N':
                         _atomIds.pop(j)
@@ -8267,9 +8265,9 @@ def getRestraintName(mrSubtype: str, title: bool = False) -> str:
         return "Dipolar coupling restraints" if title else "dipolar coupling restraints"
     if mrSubtype.startswith('ang'):
         return "Angle databse restraints" if title else "angle database restraints"
-    if mrSubtype.startswith('pre'):
+    if mrSubtype.startswith('pre') or mrSubtype.startswith('auto_relax'):
         return "Paramagnetic relaxation enhancement restraints" if title else "paramagnetic relaxation enhancement restraints"
-    if mrSubtype.startswith('pcs'):
+    if mrSubtype.startswith('csp') or mrSubtype.startswith('pcs'):
         return "Pseudocontact shift restraints" if title else "pseudocontact shift restraints"
     if mrSubtype.startswith('prdc'):
         return "Paramagnetic RDC restraints" if title else "paramagnetic RDC restraints"

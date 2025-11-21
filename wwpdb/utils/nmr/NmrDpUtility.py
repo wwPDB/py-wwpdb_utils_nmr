@@ -19550,7 +19550,7 @@ class NmrDpUtility:
                             dat = loop.get_tag(['ID', 'Entity_ID'])
 
                             for row in dat:
-                                to_entity_id[row[0]] = row[1]
+                                to_entity_id[row[0]] = row[1] if isinstance(row[1], str) else str(row[1])
 
                     except KeyError:
                         pass
@@ -28067,25 +28067,26 @@ class NmrDpUtility:
                         missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                         valid = self.__sail_flag
                         row_src = src_lp.data[src_idx]
-                        for offset in range(1, 10):
-                            if src_idx + offset < len(src_lp):
-                                row = src_lp.data[src_idx + offset]
-                                if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
-                                   and row[comp_id_col].upper() == comp_id\
-                                   and row[atom_id_col] in missing_ch3:
-                                    valid = True
-                                    missing_ch3.remove(row[atom_id_col])
-                                    if len(missing_ch3) == 0:
-                                        break
-                            if src_idx - offset >= 0:
-                                row = src_lp.data[src_idx - offset]
-                                if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
-                                   and row[comp_id_col].upper() == comp_id\
-                                   and row[atom_id_col] in missing_ch3:
-                                    valid = True
-                                    missing_ch3.remove(row[atom_id_col])
-                                    if len(missing_ch3) == 0:
-                                        break
+                        if 0 <= src_idx < len(src_lp):
+                            for offset in range(1, 10):
+                                if src_idx + offset < len(src_lp):
+                                    row = src_lp.data[src_idx + offset]
+                                    if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                       and row[comp_id_col].upper() == comp_id\
+                                       and row[atom_id_col] in missing_ch3:
+                                        valid = True
+                                        missing_ch3.remove(row[atom_id_col])
+                                        if len(missing_ch3) == 0:
+                                            break
+                                if src_idx - offset >= 0:
+                                    row = src_lp.data[src_idx - offset]
+                                    if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                       and row[comp_id_col].upper() == comp_id\
+                                       and row[atom_id_col] in missing_ch3:
+                                        valid = True
+                                        missing_ch3.remove(row[atom_id_col])
+                                        if len(missing_ch3) == 0:
+                                            break
                     if atom_id in _atom_site_atom_id and valid and len(missing_ch3) == 0\
                        and (not self.__annotation_mode or comp_id not in incomplete_comp_id_annotation):
                         _row[6] = atom_id
@@ -28438,28 +28439,29 @@ class NmrDpUtility:
                     if atom_id in self.__csStat.getMethylProtons(comp_id):
                         missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                         valid = self.__sail_flag
-                        for offset in range(1, 10):
+                        if 0 <= src_idx < len(src_lp):
                             row_src = src_lp.data[src_idx]
-                            if src_idx + offset < len(src_lp):
-                                row = src_lp.data[src_idx + offset]
-                                if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
-                                    or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
-                                   and row[comp_id_col].upper() == comp_id\
-                                   and row[atom_id_col] in missing_ch3:
-                                    valid = True
-                                    missing_ch3.remove(row[atom_id_col])
-                                    if len(missing_ch3) == 0:
-                                        break
-                            if src_idx - offset >= 0:
-                                row = src_lp.data[src_idx - offset]
-                                if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
-                                    or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
-                                   and row[comp_id_col].upper() == comp_id\
-                                   and row[atom_id_col] in missing_ch3:
-                                    valid = True
-                                    missing_ch3.remove(row[atom_id_col])
-                                    if len(missing_ch3) == 0:
-                                        break
+                            for offset in range(1, 10):
+                                if src_idx + offset < len(src_lp):
+                                    row = src_lp.data[src_idx + offset]
+                                    if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                        or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
+                                       and row[comp_id_col].upper() == comp_id\
+                                       and row[atom_id_col] in missing_ch3:
+                                        valid = True
+                                        missing_ch3.remove(row[atom_id_col])
+                                        if len(missing_ch3) == 0:
+                                            break
+                                if src_idx - offset >= 0:
+                                    row = src_lp.data[src_idx - offset]
+                                    if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                        or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
+                                       and row[comp_id_col].upper() == comp_id\
+                                       and row[atom_id_col] in missing_ch3:
+                                        valid = True
+                                        missing_ch3.remove(row[atom_id_col])
+                                        if len(missing_ch3) == 0:
+                                            break
                     if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 4.0):
                         heme = False
                         if _row[9] not in emptyValue:
@@ -65754,6 +65756,9 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': ' '.join(_restraint_name[:-1])}
+
+                            lp = sf.get_loop(lp_category)
+
                             id_col = lp.tags.index('ID')
 
                             count = 0

@@ -806,9 +806,9 @@ class CifReader:
             _catName = 'pdbx_validate_polymer_linkage'
 
             if self.hasCategory(_catName):
-                _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': 'A'},
                              {'name': 'auth_seq_id_1', 'type': 'int'},
-                             {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id'},
+                             {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id', 'default': 'A'},
                              {'name': 'auth_seq_id_2', 'type': 'int'}
                              ]
                 _filterItems = [{'name': 'PDB_model_num', 'type': 'int', 'value': repModelId},
@@ -868,7 +868,7 @@ class CifReader:
                                 if _rowList is None:
                                     _rowList = deepcopy(rowList)
                         continue
-                    if 'default' not in keyItems[j] or keyItems[j]['default'] not in emptyValue:
+                    if 'default' not in keyItems[j]:  # or keyItems[j]['default'] not in emptyValue:
                         raise ValueError(f"{keyNames[j]} must not be empty.")
 
         # DAOTHER-9674
@@ -924,6 +924,8 @@ class CifReader:
                                 c = row[altDict['chain_id']]
                         row[itCol] = row[itDict[keyItems[j]['default-from']]]
                         continue
+                    if 'default' in keyItems[j]:
+                        row[itCol] = keyItems[j]['default']
 
         compDict, seqDict, insCodeDict, authSeqDict, labelSeqDict, authChainDict =\
             {}, {}, {}, {}, {}, {}

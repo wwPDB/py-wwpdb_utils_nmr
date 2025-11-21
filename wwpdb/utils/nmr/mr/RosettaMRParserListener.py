@@ -405,7 +405,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
 
-            self.__lenPolySeq = len(self.__polySeq)
+            self.__lenPolySeq = len(self.__polySeq) if self.__polySeq is not None else 0
             self.__monoPolymer = self.__lenPolySeq == 1
             self.__multiPolymer = self.__lenPolySeq > 1
             if self.__nonPoly is not None:

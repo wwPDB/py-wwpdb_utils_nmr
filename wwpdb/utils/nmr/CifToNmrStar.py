@@ -648,6 +648,9 @@ class CifToNmrStar:
             if sf is not None:
                 strData.add_saveframe(sf)
 
+            if len(strData.frame_list) == 0:  # prevent to generate empty file due to unsupported NEF saveframe/loops (DAOTHER-10399)
+                return False
+
             retrieve_symbolic_labels(strData)
 
             self.normalize(strData)

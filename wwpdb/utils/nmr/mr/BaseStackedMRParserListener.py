@@ -703,7 +703,7 @@ class BaseStackedMRParserListener():
             self.authToInsCode = ret['auth_to_ins_code']
             self.__entityAssembly = ret['entity_assembly']
 
-            self.__lenPolySeq = len(self.polySeq)
+            self.__lenPolySeq = len(self.polySeq) if self.polySeq is not None else 0
             self.monoPolymer = self.__lenPolySeq == 1
             self.__multiPolymer = self.__lenPolySeq > 1
             if self.__nonPoly is not None:

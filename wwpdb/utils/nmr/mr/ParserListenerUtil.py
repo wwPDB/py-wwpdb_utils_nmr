@@ -113,7 +113,7 @@ WELL_KNOWN_ISOTOPE_NUMBERS = tuple(WELL_KNOWN_ISOTOPE_NUMBERS)
 
 
 REPRESENTATIVE_MODEL_ID = 1
-
+REPRESENTATIVE_ASYM_ID = 'A'
 REPRESENTATIVE_ALT_ID = 'A'
 
 MAX_PREF_LABEL_SCHEME_COUNT = 100
@@ -2426,7 +2426,7 @@ CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                     ]
 
-AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                         {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                         {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
@@ -4729,17 +4729,17 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          }
 
         # key items of loop
-        _keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+        _keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
-                     'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                     'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
@@ -4750,19 +4750,19 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
-                     'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                     'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                     {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
                                     {'name': 'auth_comp_id', 'type': 'int', 'alt_name': 'auth_comp_id'},
                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}
                                     ],
-                     'mis_poly_link': [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                     'mis_poly_link': [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                        {'name': 'auth_seq_id_1', 'type': 'int'},
-                                       {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id'},
+                                       {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                        {'name': 'auth_seq_id_2', 'type': 'int'}
                                        ],
-                     'mod_residue': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                     'mod_residue': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
@@ -5470,7 +5470,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
             modelNumName = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in tags else 'ndb_model'
         authAsymId = 'auth_asym_id'
         if cR.hasItem('atom_site', 'pdbx_auth_asym_id'):
-            coord = cR.getDictListWithFilter('atom_site', [{'name': 'auth_asym_id', 'type': 'str'},
+            coord = cR.getDictListWithFilter('atom_site', [{'name': 'auth_asym_id', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                            {'name': 'pdbx_auth_asym_id', 'type': 'str'}])
             auth_asym_id_set, pdbx_auth_asym_id_set = set(), set()
             for c in coord:
@@ -5498,7 +5498,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          ]
 
             if authAsymId != 'auth_asym_id':  # DAOTHER-8817
-                dataItems.append({'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'})
+                dataItems.append({'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID})
             if altAuthCompId is not None:
                 dataItems.append({'name': altAuthCompId, 'type': 'str', 'alt_name': 'alt_comp_id'})
             if altAuthAtomId is not None:
@@ -5509,7 +5509,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                            ]
 
-            if len(polySeq) > LEN_LARGE_ASYM_ID:
+            if polySeq is not None and len(polySeq) > LEN_LARGE_ASYM_ID:
                 filterItems.append({'name': authAsymId, 'type': 'enum', 'enum': LARGE_ASYM_ID,
                                     'fetch_first_match': True})  # to process large assembly avoiding forced timeout
 
@@ -5517,18 +5517,21 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
             # DAOTHER-8572: taking consideration of multiple mapping from auth_asym_id(s) to label_asym_id
             authToLabelChain = {}
-            for ps in polySeq:
-                if ps['auth_chain_id'] not in authToLabelChain:
-                    authToLabelChain[ps['auth_chain_id']] = ps['chain_id']
-                elif isinstance(authToLabelChain[ps['auth_chain_id']], str):
-                    if ps['chain_id'] == authToLabelChain[ps['auth_chain_id']]:
-                        continue
-                    authToLabelChain[ps['auth_chain_id']] = [authToLabelChain[ps['auth_chain_id']], ps['chain_id']]
-                else:
-                    if ps['chain_id'] in authToLabelChain[ps['auth_chain_id']]:
-                        continue
-                    authToLabelChain[ps['auth_chain_id']].append(ps['chain_id'])
-            labelToAuthChain = {ps['chain_id']: ps['auth_chain_id'] for ps in polySeq}
+            if polySeq is not None:
+                for ps in polySeq:
+                    if ps['auth_chain_id'] not in authToLabelChain:
+                        authToLabelChain[ps['auth_chain_id']] = ps['chain_id']
+                    elif isinstance(authToLabelChain[ps['auth_chain_id']], str):
+                        if ps['chain_id'] == authToLabelChain[ps['auth_chain_id']]:
+                            continue
+                        authToLabelChain[ps['auth_chain_id']] = [authToLabelChain[ps['auth_chain_id']], ps['chain_id']]
+                    else:
+                        if ps['chain_id'] in authToLabelChain[ps['auth_chain_id']]:
+                            continue
+                        authToLabelChain[ps['auth_chain_id']].append(ps['chain_id'])
+                labelToAuthChain = {ps['chain_id']: ps['auth_chain_id'] for ps in polySeq}
+            else:
+                labelToAuthChain = {}
 
             if cR.hasCategory('pdbx_entity_branch'):
 
@@ -5757,7 +5760,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 filterItemByRepModelId = [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}]
 
                 unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_atoms',
-                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                   {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                   {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
@@ -5787,7 +5790,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 filterItemByRepModelId = [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}]
 
                 unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                   {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
                                                   ],
@@ -5810,7 +5813,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         if 'label_asym_id' in tags and 'label_seq_id' in tags:
 
                             unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                             [{'name': 'auth_asym_id', 'type': 'str'},
+                                                             [{'name': 'auth_asym_id', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'auth_seq_id', 'type': 'str'},
                                                               {'name': 'label_asym_id', 'type': 'str'},
                                                               {'name': 'label_seq_id', 'type': 'str'}
@@ -5970,7 +5973,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         has_ins_code = cR.hasItem('pdbx_poly_seq_scheme', 'pdb_ins_code')
 
                         dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id', 'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'seq_id', 'type': 'int'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
@@ -5990,7 +5993,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         has_ins_code = cR.hasItem('atom_site', 'pdbx_PDB_ins_code')
 
                         dataItems = [{'name': 'label_asym_id', 'type': 'str'},
-                                     {'name': 'auth_asym_id', 'type': 'str'},
+                                     {'name': 'auth_asym_id', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'auth_seq_id', 'type': 'int'},
                                      {'name': 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id',
@@ -6061,32 +6064,33 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 mappings = sorted(mappings, key=itemgetter('seq_id'))
 
                     authAsymIds, labelAsymIds = [], []
-                    compIds = set()
-                    for item in mappings:
-                        if item['auth_asym_id'] not in authAsymIds:
-                            authAsymIds.append(item['auth_asym_id'])
-                        if item['label_asym_id'] not in labelAsymIds:
-                            labelAsymIds.append(item['label_asym_id'])
-                        compIds.add(item['comp_id'])
+                    if polySeq is not None:
+                        compIds = set()
+                        for item in mappings:
+                            if item['auth_asym_id'] not in authAsymIds:
+                                authAsymIds.append(item['auth_asym_id'])
+                            if item['label_asym_id'] not in labelAsymIds:
+                                labelAsymIds.append(item['label_asym_id'])
+                            compIds.add(item['comp_id'])
 
-                    # DAOTHER-9674
-                    delIdx = []
-                    for chainId in labelAsymIds:
-                        ps = next(ps for ps in polySeq if ps['chain_id'] == chainId)
-                        if 'unmapped_seq_id' not in ps:
-                            continue
-                        for seqId in ps['unmapped_seq_id']:
-                            try:
-                                item = next(item for item in mappings
-                                            if item['label_asym_id'] == chainId
-                                            and item['seq_id'] == seqId)
-                                delIdx.append(mappings.index(item))
-                            except StopIteration:
-                                pass
+                        # DAOTHER-9674
+                        delIdx = []
+                        for chainId in labelAsymIds:
+                            ps = next(ps for ps in polySeq if ps['chain_id'] == chainId)
+                            if 'unmapped_seq_id' not in ps:
+                                continue
+                            for seqId in ps['unmapped_seq_id']:
+                                try:
+                                    item = next(item for item in mappings
+                                                if item['label_asym_id'] == chainId
+                                                and item['seq_id'] == seqId)
+                                    delIdx.append(mappings.index(item))
+                                except StopIteration:
+                                    pass
 
-                    if len(delIdx) > 0:
-                        for idx in reversed(delIdx):
-                            del mappings[idx]
+                        if len(delIdx) > 0:
+                            for idx in reversed(delIdx):
+                                del mappings[idx]
 
                     for extSeq in nmrExtPolySeq:
                         if extSeq['auth_chain_id'] not in authAsymIds:
@@ -6456,7 +6460,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         has_ins_code = cR.hasItem('pdbx_nonpoly_scheme', 'pdb_ins_code')
 
                         dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id', 'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},

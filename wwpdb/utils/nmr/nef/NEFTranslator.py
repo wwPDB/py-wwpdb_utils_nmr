@@ -1714,6 +1714,9 @@ class NEFTranslator:
 
         try:
 
+            # avoid ValueError: Empty strings are not allowed as values. Use the None singleton, or '.' to represent null values. (DAOTHER-10399)
+            pynmrstar.definitions.STR_CONVERSION_DICT[''] = None
+
             star_data = pynmrstar.Entry.from_file(in_file)
 
         except Exception as e1:
@@ -2458,6 +2461,8 @@ class NEFTranslator:
         is_dihed_lp = 'Torsion_angle_constraint' in lp_category
         is_target_lp = is_dist_lp or is_dihed_lp
 
+        has_coord = coord_assembly_checker is not None and coord_assembly_checker['polymer_sequence'] is not None
+
         def skip_empty_value_error(lp, idx):
             if not is_target_lp:
                 return False
@@ -2498,7 +2503,7 @@ class NEFTranslator:
                             for row in loop:
                                 row[col0], row[col1] = row[col1], row[col0]
 
-                if coord_assembly_checker is not None:
+                if has_coord:
                     cif_br = coord_assembly_checker['branched']
                     if cif_br is not None:
                         ligands = []
@@ -2642,7 +2647,7 @@ class NEFTranslator:
                         if row not in emptyValue:
                             chain_id_set.add(row)
 
-                    if coord_assembly_checker is not None:
+                    if has_coord:
 
                         def resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq):
                             if 'Auth_seq_ID' in _loop.tags:
@@ -2989,7 +2994,7 @@ class NEFTranslator:
                                or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
                                 refresh_entity_assembly(loop, list(alt_chain_id_set))
 
-                if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and coord_assembly_checker is not None:
+                if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and has_coord:
                     pre_comp_data = loop.get_tag(['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])
                     comp_id_col = loop.tags.index('Comp_ID')
                     for idx, row in enumerate(pre_comp_data):
@@ -3174,7 +3179,7 @@ class NEFTranslator:
 
             elif lp_category == '_Atom_chem_shift' and self.__remediation_mode\
                     and set(tags) & set(loop.tags) == set(tags)\
-                    and coord_assembly_checker is not None and len(coord_assembly_checker['polymer_sequence']) > 1:
+                    and has_coord and len(coord_assembly_checker['polymer_sequence']) > 1:
                 factor = 2
                 if seq_id != alt_seq_id and alt_seq_id in loop.tags:
                     pre_tags = [seq_id, alt_seq_id]
@@ -3734,7 +3739,7 @@ class NEFTranslator:
 
                 valid_gap_key, valid_spacer_key = [], []
 
-                if coord_assembly_checker is not None:
+                if has_coord:
                     cif_ps = coord_assembly_checker['polymer_sequence']
                     nmr_ps = []
                     for c in chain_ids:

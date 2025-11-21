@@ -376,6 +376,7 @@ try:
                                                        WEIGHT_RANGE,
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ASYM_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_OFFSET_ATTEMPT,
                                                        CYANA_MR_FILE_EXTS,
@@ -552,6 +553,7 @@ except ImportError:
                                            WEIGHT_RANGE,
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ASYM_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_OFFSET_ATTEMPT,
                                            CYANA_MR_FILE_EXTS,
@@ -2984,14 +2986,14 @@ class NmrDpUtility:
                                 }
 
         # key items of loop
-        self.key_items = {'nef': {'poly_seq': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
+        self.key_items = {'nef': {'poly_seq': [{'name': 'chain_code', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                {'name': 'sequence_code', 'type': 'int',
                                                 'remove-bad-pattern': True},
                                                {'name': 'residue_name', 'type': 'str', 'uppercase': True,
                                                 'remove-bad-pattern': True}
                                                ],
                                   'entity': None,
-                                  'chem_shift': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
+                                  'chem_shift': [{'name': 'chain_code', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                  {'name': 'sequence_code', 'type': 'int',
                                                   'remove-bad-pattern': True},
                                                  {'name': 'residue_name', 'type': 'str',
@@ -3002,14 +3004,14 @@ class NmrDpUtility:
                                                  ],
                                   'chem_shift_ref': None,
                                   'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
-                                                     {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
+                                                     {'name': 'chain_code_1', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                      {'name': 'sequence_code_1', 'type': 'int',
                                                       'remove-bad-pattern': True},
                                                      {'name': 'residue_name_1', 'type': 'str', 'uppercase': True,
                                                       'remove-bad-pattern': True},
                                                      {'name': 'atom_name_1', 'type': 'str',
                                                       'remove-bad-pattern': True},
-                                                     {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
+                                                     {'name': 'chain_code_2', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                      {'name': 'sequence_code_2', 'type': 'int',
                                                       'remove-bad-pattern': True},
                                                      {'name': 'residue_name_2', 'type': 'str', 'uppercase': True,
@@ -3018,28 +3020,28 @@ class NmrDpUtility:
                                                       'remove-bad-pattern': True}
                                                      ],
                                   'dihed_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
-                                                      {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
+                                                      {'name': 'chain_code_1', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                       {'name': 'sequence_code_1', 'type': 'int',
                                                        'remove-bad-pattern': True},
                                                       {'name': 'residue_name_1', 'type': 'str', 'uppercase': True,
                                                        'remove-bad-pattern': True},
                                                       {'name': 'atom_name_1', 'type': 'str',
                                                        'remove-bad-pattern': True},
-                                                      {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
+                                                      {'name': 'chain_code_2', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                       {'name': 'sequence_code_2', 'type': 'int',
                                                        'remove-bad-pattern': True},
                                                       {'name': 'residue_name_2', 'type': 'str', 'uppercase': True,
                                                        'remove-bad-pattern': True},
                                                       {'name': 'atom_name_2', 'type': 'str',
                                                        'remove-bad-pattern': True},
-                                                      {'name': 'chain_code_3', 'type': 'str', 'default': 'A'},
+                                                      {'name': 'chain_code_3', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                       {'name': 'sequence_code_3', 'type': 'int',
                                                        'remove-bad-pattern': True},
                                                       {'name': 'residue_name_3', 'type': 'str', 'uppercase': True,
                                                        'remove-bad-pattern': True},
                                                       {'name': 'atom_name_3', 'type': 'str',
                                                        'remove-bad-pattern': True},
-                                                      {'name': 'chain_code_4', 'type': 'str', 'default': 'A'},
+                                                      {'name': 'chain_code_4', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                       {'name': 'sequence_code_4', 'type': 'int',
                                                        'remove-bad-pattern': True},
                                                       {'name': 'residue_name_4', 'type': 'str', 'uppercase': True,
@@ -3048,14 +3050,14 @@ class NmrDpUtility:
                                                        'remove-bad-pattern': True}
                                                       ],
                                   'rdc_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
-                                                    {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
+                                                    {'name': 'chain_code_1', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                     {'name': 'sequence_code_1', 'type': 'int',
                                                      'remove-bad-pattern': True},
                                                     {'name': 'residue_name_1', 'type': 'str', 'uppercase': True,
                                                      'remove-bad-pattern': True},
                                                     {'name': 'atom_name_1', 'type': 'str',
                                                      'remove-bad-pattern': True},
-                                                    {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
+                                                    {'name': 'chain_code_2', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                     {'name': 'sequence_code_2', 'type': 'int',
                                                      'remove-bad-pattern': True},
                                                     {'name': 'residue_name_2', 'type': 'str', 'uppercase': True,
@@ -3356,27 +3358,27 @@ class NmrDpUtility:
                                                            {'name': 'Atom_ID', 'type': 'str'}
                                                            ]
                                        },
-                          'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                          'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                 {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                                {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
                                                 ],
-                                   'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
+                                   'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                       {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                       {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                                      {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                      {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                       {'name': 'pdb_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
                                                       ],
-                                   'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                   'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                                 {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                                {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                                {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID}
                                                 ],
-                                   'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                   'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                       {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
                                                       {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                                      {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
+                                                      {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID}
                                                       ],
                                    'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
@@ -3411,37 +3413,37 @@ class NmrDpUtility:
                           }
 
         # key items of loop to check consistency
-        self.consist_key_items = {'nef': {'dist_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
+        self.consist_key_items = {'nef': {'dist_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                              {'name': 'sequence_code_1', 'type': 'int'},
                                                              {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                              {'name': 'atom_name_1', 'type': 'str'},
-                                                             {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
+                                                             {'name': 'chain_code_2', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                              {'name': 'sequence_code_2', 'type': 'int'},
                                                              {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                              {'name': 'atom_name_2', 'type': 'str'}
                                                              ],
-                                          'dihed_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
+                                          'dihed_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'sequence_code_1', 'type': 'int'},
                                                               {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                               {'name': 'atom_name_1', 'type': 'str'},
-                                                              {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
+                                                              {'name': 'chain_code_2', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'sequence_code_2', 'type': 'int'},
                                                               {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                               {'name': 'atom_name_2', 'type': 'str'},
-                                                              {'name': 'chain_code_3', 'type': 'str', 'default': 'A'},
+                                                              {'name': 'chain_code_3', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'sequence_code_3', 'type': 'int'},
                                                               {'name': 'residue_name_3', 'type': 'str', 'uppercase': True},
                                                               {'name': 'atom_name_3', 'type': 'str'},
-                                                              {'name': 'chain_code_4', 'type': 'str', 'default': 'A'},
+                                                              {'name': 'chain_code_4', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'sequence_code_4', 'type': 'int'},
                                                               {'name': 'residue_name_4', 'type': 'str', 'uppercase': True},
                                                               {'name': 'atom_name_4', 'type': 'str'}
                                                               ],
-                                          'rdc_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
+                                          'rdc_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                             {'name': 'sequence_code_1', 'type': 'int'},
                                                             {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                             {'name': 'atom_name_1', 'type': 'str'},
-                                                            {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
+                                                            {'name': 'chain_code_2', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                             {'name': 'sequence_code_2', 'type': 'int'},
                                                             {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                             {'name': 'atom_name_2', 'type': 'str'}
@@ -6881,16 +6883,16 @@ class NmrDpUtility:
         # auxiliary loop key items
         self.aux_key_items = {'nef': {'entry_info': None,
                                       'poly_seq': {
-                                          '_nef_covalent_links': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
+                                          '_nef_covalent_links': [{'name': 'chain_code_1', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                                   {'name': 'sequence_code_1', 'type': 'int'},
                                                                   {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'atom_name_1', 'type': 'str'},
-                                                                  {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
+                                                                  {'name': 'chain_code_2', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                                   {'name': 'sequence_code_2', 'type': 'int'},
                                                                   {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'atom_name_2', 'type': 'str'}
                                                                   ],
-                                          '_nef_sequence': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
+                                          '_nef_sequence': [{'name': 'chain_code', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                                             {'name': 'sequence_code', 'type': 'int'},
                                                             {'name': 'residue_name', 'type': 'str', 'uppercase': True}
                                                             ]
@@ -7909,7 +7911,7 @@ class NmrDpUtility:
                 for d in v:
                     if d['name'].startswith('Entity_assembly_ID'):
                         d['type'] = 'str'
-                        d['default'] = 'A'
+                        d['default'] = REPRESENTATIVE_ASYM_ID
                         if 'default-from' in d:
                             del d['default-from']
 
@@ -7919,14 +7921,14 @@ class NmrDpUtility:
                 for d in v:
                     if d['name'].startswith('Entity_assembly_ID'):
                         d['type'] = 'str'
-                        d['default'] = 'A'
+                        d['default'] = REPRESENTATIVE_ASYM_ID
                         if 'default-from' in d:
                             del d['default-from']
 
             for d in self.pk_data_items['nmr-star']:
                 if d['name'].startswith('Entity_assembly_ID'):
                     d['type'] = 'str'
-                    d['default'] = 'A'
+                    d['default'] = REPRESENTATIVE_ASYM_ID
                     if 'default-from' in d:
                         del d['default-from']
                     if 'enforce-non-zero' in d:
@@ -7939,7 +7941,7 @@ class NmrDpUtility:
                     for d in v2:
                         if d['name'].startswith('Entity_assembly_ID'):
                             d['type'] = 'str'
-                            d['default'] = 'A'
+                            d['default'] = REPRESENTATIVE_ASYM_ID
                             if 'default-from' in d:
                                 del d['default-from']
 
@@ -7950,7 +7952,7 @@ class NmrDpUtility:
                     for d in v2:
                         if d['name'].startswith('Entity_assembly_ID'):
                             d['type'] = 'str'
-                            d['default'] = 'A'
+                            d['default'] = REPRESENTATIVE_ASYM_ID
                             if 'default-from' in d:
                                 del d['default-from']
 
@@ -29481,7 +29483,7 @@ class NmrDpUtility:
 
                         chain_id = row[chain_id_col]
                         if chain_id in emptyValue:
-                            chain_id = 'A'
+                            chain_id = REPRESENTATIVE_ASYM_ID
 
                         if chain_id in copied_chain_ids:
                             continue
@@ -52254,6 +52256,9 @@ class NmrDpUtility:
         coord_unobs_res = self.__caC['coord_unobs_res']
         coord_unobs_atom = self.__caC['coord_unobs_atom'] if 'coord_unobs_atom' in self.__caC else {}
 
+        if auth_to_star_seq is None:
+            return False
+
         item_names = []
 
         if content_subtype == 'chem_shift':
@@ -59197,7 +59202,7 @@ class NmrDpUtility:
             try:
 
                 _neighbor = self.__cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},  # non-polymer
                                                              {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                              {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},

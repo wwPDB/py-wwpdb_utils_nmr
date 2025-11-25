@@ -19,6 +19,10 @@ lexer grammar BarePKLexer;
 options { caseInsensitive=true; }
 
 Peak:			'Peak' ([ _] ('Number' | 'Id'))? -> pushMode(PEAK_MODE);
+X_PPM:			'F1' ([ _] '(ppm)')? -> pushMode(PEAK_MODE);
+Y_PPM:			'F2' ([ _] '(ppm)')? -> pushMode(PEAK_MODE);
+Z_PPM:			'F3' ([ _] '(ppm)')? -> pushMode(PEAK_MODE);
+A_PPM:			'F4' ([ _] '(ppm)')? -> pushMode(PEAK_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -59,6 +63,12 @@ X_ppm:			'F1' ([ _] '(ppm)')?;
 Y_ppm:			'F2' ([ _] '(ppm)')?;
 Z_ppm:			'F3' ([ _] '(ppm)')?;
 A_ppm:			'F4' ([ _] '(ppm)')?;
+
+X_width:		'Line '? 'Width F1' ([ _] '(Hz)')?;
+Y_width:		'Line '? 'Width F2' ([ _] '(Hz)')?;
+Z_width:		'Line '? 'Width F3' ([ _] '(Hz)')?;
+A_width:		'Line '? 'Width F4' ([ _] '(Hz)')?;
+
 Amplitude:		'Amplitude' | 'Intensity' | 'Height';
 Volume:			'Volume';
 

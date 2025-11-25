@@ -17,6 +17,10 @@ limitations under the License.
 lexer grammar BarePKLexer;
 
 Peak:			[Pp] 'eak' ([ _] ([Nn] 'umber' | [Ii] 'd'))? -> pushMode(PEAK_MODE);
+X_PPM:			[Ff] '1' ([ _] '(ppm)')? -> pushMode(PEAK_MODE);
+Y_PPM:			[Ff] '2' ([ _] '(ppm)')? -> pushMode(PEAK_MODE);
+Z_PPM:			[Ff] '3' ([ _] '(ppm)')? -> pushMode(PEAK_MODE);
+A_PPM:			[Ff] '4' ([ _] '(ppm)')? -> pushMode(PEAK_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -57,6 +61,12 @@ X_ppm:			[Ff] '1' ([ _] '(ppm)')?;
 Y_ppm:			[Ff] '2' ([ _] '(ppm)')?;
 Z_ppm:			[Ff] '3' ([ _] '(ppm)')?;
 A_ppm:			[Ff] '4' ([ _] '(ppm)')?;
+
+X_width:		([Ll] 'ine ')? [Ww] 'idth [Ff] '1' ([ _] '(Hz)')?;
+Y_width:		([Ll] 'ine ')? [Ww] 'idth [Ff] '2' ([ _] '(Hz)')?;
+Z_width:		([Ll] 'ine ')? [Ww] 'idth [Ff] '3' ([ _] '(Hz)')?;
+A_width:		([Ll] 'ine ')? [Ww] 'idth [Ff] '4' ([ _] '(Hz)')?;
+
 Amplitude:		[Aa] 'mplitude' | [Ii] 'ntensity' | [Hh] 'eight';
 Volume:			[Vv] 'olume';
 

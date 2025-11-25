@@ -365,7 +365,7 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                 elif name == 'error' and len(string) > 0:
                     try:
-                        self.__error = float(string)
+                        self.__error = abs(float(string))
                     except ValueError:
                         pass
 

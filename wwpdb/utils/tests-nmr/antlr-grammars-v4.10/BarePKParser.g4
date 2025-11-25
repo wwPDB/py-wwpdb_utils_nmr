@@ -95,27 +95,27 @@ peak_wo_chain_4d:
 	number* (RETURN | EOF);
 
 row_format_2d:
-	Peak X_ppm Y_ppm Amplitude? Volume? Label? Comment? RETURN_FO
+	(Peak X_ppm | X_PPM) Y_ppm (X_width Y_width)? Amplitude? Volume? Label? Comment? RETURN_FO
 	peak_list_row_2d+;
 
 row_format_3d:
-	Peak X_ppm Y_ppm Z_ppm Amplitude? Volume? Label? Comment? RETURN_FO
+	(Peak X_ppm | X_PPM) Y_ppm Z_ppm (X_width Y_width Z_width)? Amplitude? Volume? Label? Comment? RETURN_FO
 	peak_list_row_3d+;
 
 row_format_4d:
-	Peak X_ppm Y_ppm Z_ppm A_ppm Amplitude? Volume? Label? Comment? RETURN_FO
+	(Peak X_ppm | X_PPM) Y_ppm Z_ppm A_ppm (X_width Y_width Z_width A_width)? Amplitude? Volume? Label? Comment? RETURN_FO
 	peak_list_row_4d+;
 
 rev_row_format_2d:
-	Peak Y_ppm X_ppm Amplitude? Volume? Label? Comment? RETURN_FO
+	(Peak Y_ppm | Y_PPM) X_ppm (Y_width X_width)? Amplitude? Volume? Label? Comment? RETURN_FO
 	peak_list_row_2d+;
 
 rev_row_format_3d:
-	Peak Z_ppm Y_ppm X_ppm Amplitude? Volume? Label? Comment? RETURN_FO
+	(Peak Z_ppm | Z_PPM) Y_ppm X_ppm (Z_width Y_width X_width)? Amplitude? Volume? Label? Comment? RETURN_FO
 	peak_list_row_3d+;
 
 rev_row_format_4d:
-	Peak A_ppm Z_ppm Y_ppm X_ppm Amplitude? Volume? Label? Comment? RETURN_FO
+	(Peak A_ppm | A_PPM) Z_ppm Y_ppm X_ppm (A_width Z_width Y_width X_width)? Amplitude? Volume? Label? Comment? RETURN_FO
 	peak_list_row_4d+;
 
 row_format_wo_label_2d:

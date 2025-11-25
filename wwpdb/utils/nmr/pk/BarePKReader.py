@@ -253,6 +253,12 @@ if __name__ == "__main__":
     reader = BarePKReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-daother-10409/D_1000302219_nmr-peaks-upload_P1.dat.V1',
+                     '../../tests-nmr/mock-data-daother-10409/D_1000302219_model_P1.cif.V3')
+
+    reader = BarePKReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/8ep5/bmr31045/work/data/D_1000268785_nmr-peaks-upload_P1.dat.V1',
                      '../../tests-nmr/mock-data-remediation/8ep5/8ep5.cif')
 

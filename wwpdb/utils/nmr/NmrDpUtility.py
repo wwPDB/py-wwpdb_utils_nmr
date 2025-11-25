@@ -1282,6 +1282,28 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if '# PEAKLIST_VERSION' in string or '# PEAKLIST_DIMENSION' in string:  # XwinNMR peak list
         return 'nm-pea-xwi' if asCode else 'XwinNMR'
 
+    if 'eak' in string and ('able' in string or 'nnotation' in string or 'ssign' in string)\
+       and ('F1' in string or 'f1' in string) and ('F2' in string or 'f2' in string):
+        offset = 0
+        if 'mplitude' in string or 'ntensity' in string or 'eight' in string:
+            offset += 1
+        if 'olume' in string:
+            offset += 1
+        if offset > 0:
+            return 'nm-pea-bar' if asCode else 'unknown'
+
+    if ('F1' in string or 'f1' in string) and ('F2' in string or 'f2' in string):
+        offset = 0
+        if 'mplitude' in string or 'ntensity' in string or 'eight' in string:
+            offset += 1
+        if 'olume' in string:
+            offset += 1
+        if offset > 0:
+            return 'nm-pea-bar' if asCode else 'unknown'
+
+    if '1Dim' in string and '2Dim' in string and 'Intensity' in string:  # 8ep5
+        return 'nm-pea-bar' if asCode else 'unknown'
+
     if header is None:
 
         if 2 <= len_col - 1 <= 4:
@@ -1396,6 +1418,42 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
+    if ('F1' in header or 'f1' in header) and ('F2' in header or 'f2' in header):
+        offset = 0
+        if 'mplitude' in header or 'ntensity' in header or 'eight' in header:
+            offset += 1
+        if 'olume' in header:
+            offset += 1
+        if 'F3' not in header and 'f3' not in header and 'F4' not in header and 'f4' not in header and offset > 0:
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
+        elif 'F4' not in header and 'f4' not in header and offset > 0:
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                float(col[3])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
+        elif offset > 0:
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                float(col[3])
+                float(col[4])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
     if '1Dim' in header and '2Dim' in header and 'Intensity' in header:  # 8ep5
         if '3Dim' not in header and '4Dim' not in header\
            and len_col > 3:
@@ -1449,7 +1507,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
             if line.isspace() or comment_pattern.match(line):
 
                 if 'Number of dimensions' in line or line.startswith('#INAME') or line.startswith('#CYANAFORMAT')\
-                   or ('Amplitude' in line or 'Intensity' in line):
+                   or ('Amplitude' in line or 'Intensity' in line or 'Volume' in line):
                     header = line
 
                 else:  # XwinNMR, but not CCPN
@@ -30527,7 +30585,7 @@ class NmrDpUtility:
                 if trial == 0 and len(incomplete_comp_id_annotation) > 0:  # DAOTHER-9286
                     reparse_request = True
 
-                if not reparse_request:
+                if not reparse_request or trial > 0:
                     break
 
                 trial += 1

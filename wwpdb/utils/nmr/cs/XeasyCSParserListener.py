@@ -75,7 +75,7 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             index = int(str(ctx.Integer()))
             shift = float(str(ctx.Float(0)))
-            shift_error = float(str(ctx.Float(1)))
+            shift_error = abs(float(str(ctx.Float(1))))
             atomId = str(ctx.Simple_name())
             L = f'{self.__cur_residue} {atomId}'
 

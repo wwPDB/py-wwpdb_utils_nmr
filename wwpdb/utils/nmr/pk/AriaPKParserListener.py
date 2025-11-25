@@ -408,7 +408,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.__proton1_ppm = float(string)
 
                 elif name == 'error':
-                    self.__proton1_ppm_error = float(string)
+                    self.__proton1_ppm_error = abs(float(string))
 
             elif self.__cur_path == '/spectrum/peak/proton2/shift' and len(string) > 0:
 
@@ -422,7 +422,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.__proton2_ppm = float(string)
 
                 elif name == 'error':
-                    self.__proton2_ppm_error = float(string)
+                    self.__proton2_ppm_error = abs(float(string))
 
             elif self.__cur_path == '/spectrum/peak/hetero1/shift' and len(string) > 0:
 
@@ -436,7 +436,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.__hetero1_ppm = float(string)
 
                 elif name == 'error':
-                    self.__hetero1_ppm_error = float(string)
+                    self.__hetero1_ppm_error = abs(float(string))
 
             elif self.__cur_path == '/spectrum/peak/hetero2/shift' and len(string) > 0:
 
@@ -450,7 +450,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.__hetero2_ppm = float(string)
 
                 elif name == 'error':
-                    self.__hetero2_ppm_error = float(string)
+                    self.__hetero2_ppm_error = abs(float(string))
 
             elif self.__cur_path == '/spectrum/peak/proton1/assignment/atom' and len(string) > 0:
 

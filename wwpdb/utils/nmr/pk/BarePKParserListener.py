@@ -40,6 +40,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
     __slots__ = ()
 
     __position_order = True
+    __has_width = False
     __has_amplitude = False
     __has_volume = False
     __has_assign = False
@@ -883,6 +884,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__position_order = True
+        self.__has_width = bool(ctx.X_width())
         self.__has_amplitude = bool(ctx.Amplitude())
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
@@ -897,6 +899,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__position_order = True
+        self.__has_width = bool(ctx.X_width())
         self.__has_amplitude = bool(ctx.Amplitude())
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
@@ -911,6 +914,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__position_order = True
+        self.__has_width = bool(ctx.X_width())
         self.__has_amplitude = bool(ctx.Amplitude())
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
@@ -925,6 +929,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__position_order = False
+        self.__has_width = bool(ctx.Y_width())
         self.__has_amplitude = bool(ctx.Amplitude())
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
@@ -939,6 +944,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__position_order = False
+        self.__has_width = bool(ctx.Z_width())
         self.__has_amplitude = bool(ctx.Amplitude())
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
@@ -953,6 +959,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__position_order = False
+        self.__has_width = bool(ctx.A_width())
         self.__has_amplitude = bool(ctx.Amplitude())
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
@@ -968,6 +975,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__position_order = True
         self.__has_amplitude = True
+        self.__has_width = False
 
     # Exit a parse tree produced by BarePKParser#row_format_wo_label_2d.
     def exitRow_format_wo_label_2d(self, ctx: BarePKParser.Row_format_wo_label_2dContext):  # pylint: disable=unused-argument
@@ -980,6 +988,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__position_order = True
         self.__has_amplitude = True
+        self.__has_width = False
 
     # Exit a parse tree produced by BarePKParser#row_format_wo_label_3d.
     def exitRow_format_wo_label_3d(self, ctx: BarePKParser.Row_format_wo_label_3dContext):  # pylint: disable=unused-argument
@@ -992,6 +1001,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__position_order = True
         self.__has_amplitude = True
+        self.__has_width = False
 
     # Exit a parse tree produced by BarePKParser#row_format_wo_label_4d.
     def exitRow_format_wo_label_4d(self, ctx: BarePKParser.Row_format_wo_label_4dContext):  # pylint: disable=unused-argument
@@ -1021,6 +1031,15 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             offset = 0
+
+            x_lw = y_lw = None
+            if self.__has_width:
+                x_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                y_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                if not self.__position_order:
+                    x_lw, y_lw = y_lw, x_lw
 
             height = volume = None
             if self.__has_amplitude:
@@ -1054,7 +1073,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
-                                          None, None, None, None, height, None, volume, None)
+                                          None, None, x_lw, y_lw, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks2D -= 1
@@ -1136,6 +1155,17 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             offset = 0
 
+            x_lw = y_lw = z_lw = None
+            if self.__has_width:
+                x_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                y_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                z_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                if not self.__position_order:
+                    x_lw, z_lw = z_lw, x_lw
+
             height = volume = None
             if self.__has_amplitude:
                 height = self.originalNumberSelection[offset] if len(self.numberSelection) > offset else None
@@ -1168,7 +1198,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, height, None, volume, None)
+                                          None, None, None, x_lw, y_lw, z_lw, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks3D -= 1
@@ -1252,6 +1282,19 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             offset = 0
 
+            x_lw = y_lw = z_lw = a_lw = None
+            if self.__has_width:
+                x_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                y_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                z_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                a_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                offset += 1
+                if not self.__position_order:
+                    x_lw, y_lw, z_lw, a_lw = a_lw, z_lw, y_lw, x_lw
+
             height = volume = None
             if self.__has_amplitude:
                 height = self.originalNumberSelection[offset] if len(self.numberSelection) > offset else None
@@ -1284,7 +1327,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, None, None, height, None, volume, None)
+                                          None, None, None, None, x_lw, y_lw, z_lw, a_lw, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks4D -= 1

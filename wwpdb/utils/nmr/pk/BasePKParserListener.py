@@ -4998,18 +4998,18 @@ class BasePKParserListener():
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:
-            dstFunc['position_uncertainty_1'] = str(pos_unc_1)
+            dstFunc['position_uncertainty_1'] = str(pos_unc_1) if pos_unc_1 > 0.0 else str(abs(pos_unc_1))
         if pos_unc_2 is not None and pos_unc_2 != 0.0:
-            dstFunc['position_uncertainty_2'] = str(pos_unc_2)
+            dstFunc['position_uncertainty_2'] = str(pos_unc_2) if pos_unc_2 > 0.0 else str(abs(pos_unc_2))
 
         if lw_hz_1 is not None and lw_hz_1 != 0.0:
-            dstFunc['line_width_1'] = str(lw_hz_1)
+            dstFunc['line_width_1'] = str(lw_hz_1) if lw_hz_1 > 0.0 else str(abs(lw_hz_1))
         elif lw_1 is not None and lw_1 != 0.0:
-            dstFunc['line_width_1'] = str(lw_1)
+            dstFunc['line_width_1'] = str(lw_1) if lw_1 > 0.0 else str(abs(lw_1))
         if lw_hz_2 is not None and lw_hz_2 != 0.0:
-            dstFunc['line_width_2'] = str(lw_hz_2)
+            dstFunc['line_width_2'] = str(lw_hz_2) if lw_hz_2 > 0.0 else str(abs(lw_hz_2))
         elif lw_2 is not None and lw_2 != 0.0:
-            dstFunc['line_width_2'] = str(lw_2)
+            dstFunc['line_width_2'] = str(lw_2) if lw_2 > 0.0 else str(abs(lw_2))
 
         if figure_of_merit is not None:
             if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:
@@ -5097,24 +5097,24 @@ class BasePKParserListener():
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:
-            dstFunc['position_uncertainty_1'] = str(pos_unc_1)
+            dstFunc['position_uncertainty_1'] = str(pos_unc_1) if pos_unc_1 > 0.0 else str(abs(pos_unc_1))
         if pos_unc_2 is not None and pos_unc_2 != 0.0:
-            dstFunc['position_uncertainty_2'] = str(pos_unc_2)
+            dstFunc['position_uncertainty_2'] = str(pos_unc_2) if pos_unc_2 > 0.0 else str(abs(pos_unc_2))
         if pos_unc_3 is not None and pos_unc_3 != 0.0:
-            dstFunc['position_uncertainty_3'] = str(pos_unc_3)
+            dstFunc['position_uncertainty_3'] = str(pos_unc_3) if pos_unc_3 > 0.0 else str(abs(pos_unc_3))
 
         if lw_hz_1 is not None and lw_hz_1 != 0.0:
-            dstFunc['line_width_1'] = str(lw_hz_1)
+            dstFunc['line_width_1'] = str(lw_hz_1) if lw_hz_1 > 0.0 else str(abs(lw_hz_1))
         elif lw_1 is not None and lw_1 != 0.0:
-            dstFunc['line_width_1'] = str(lw_1)
+            dstFunc['line_width_1'] = str(lw_1) if lw_1 > 0.0 else str(abs(lw_1))
         if lw_hz_2 is not None and lw_hz_2 != 0.0:
-            dstFunc['line_width_2'] = str(lw_hz_2)
+            dstFunc['line_width_2'] = str(lw_hz_2) if lw_hz_2 > 0.0 else str(abs(lw_hz_2))
         elif lw_2 is not None and lw_2 != 0.0:
-            dstFunc['line_width_2'] = str(lw_2)
+            dstFunc['line_width_2'] = str(lw_2) if lw_2 > 0.0 else str(abs(lw_2))
         if lw_hz_3 is not None and lw_hz_3 != 0.0:
-            dstFunc['line_width_3'] = str(lw_hz_3)
+            dstFunc['line_width_3'] = str(lw_hz_3) if lw_hz_3 > 0.0 else str(abs(lw_hz_3))
         elif lw_3 is not None and lw_3 != 0.0:
-            dstFunc['line_width_3'] = str(lw_3)
+            dstFunc['line_width_3'] = str(lw_3) if lw_3 > 0.0 else str(abs(lw_3))
 
         if figure_of_merit is not None:
             if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:
@@ -5215,30 +5215,30 @@ class BasePKParserListener():
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:
-            dstFunc['position_uncertainty_1'] = str(pos_unc_1)
+            dstFunc['position_uncertainty_1'] = str(pos_unc_1) if pos_unc_1 > 0.0 else str(abs(pos_unc_1))
         if pos_unc_2 is not None and pos_unc_2 != 0.0:
-            dstFunc['position_uncertainty_2'] = str(pos_unc_2)
+            dstFunc['position_uncertainty_2'] = str(pos_unc_2) if pos_unc_2 > 0.0 else str(abs(pos_unc_2))
         if pos_unc_3 is not None and pos_unc_3 != 0.0:
-            dstFunc['position_uncertainty_3'] = str(pos_unc_3)
+            dstFunc['position_uncertainty_3'] = str(pos_unc_3) if pos_unc_3 > 0.0 else str(abs(pos_unc_3))
         if pos_unc_4 is not None and pos_unc_4 != 0.0:
-            dstFunc['position_uncertainty_4'] = str(pos_unc_4)
+            dstFunc['position_uncertainty_4'] = str(pos_unc_4) if pos_unc_4 > 0.0 else str(abs(pos_unc_4))
 
         if lw_hz_1 is not None and lw_hz_1 != 0.0:
-            dstFunc['line_width_1'] = str(lw_hz_1)
+            dstFunc['line_width_1'] = str(lw_hz_1) if lw_hz_1 > 0.0 else str(abs(lw_hz_1))
         elif lw_1 is not None and lw_1 != 0.0:
-            dstFunc['line_width_1'] = str(lw_1)
+            dstFunc['line_width_1'] = str(lw_1) if lw_1 > 0.0 else str(abs(lw_1))
         if lw_hz_2 is not None and lw_hz_2 != 0.0:
-            dstFunc['line_width_2'] = str(lw_hz_2)
+            dstFunc['line_width_2'] = str(lw_hz_2) if lw_hz_2 > 0.0 else str(abs(lw_hz_2))
         elif lw_2 is not None and lw_2 != 0.0:
-            dstFunc['line_width_2'] = str(lw_2)
+            dstFunc['line_width_2'] = str(lw_2) if lw_2 > 0.0 else str(abs(lw_2))
         if lw_hz_3 is not None and lw_hz_3 != 0.0:
-            dstFunc['line_width_3'] = str(lw_hz_3)
+            dstFunc['line_width_3'] = str(lw_hz_3) if lw_hz_3 > 0.0 else str(abs(lw_hz_3))
         elif lw_3 is not None and lw_3 != 0.0:
-            dstFunc['line_width_3'] = str(lw_3)
+            dstFunc['line_width_3'] = str(lw_3) if lw_3 > 0.0 else str(abs(lw_3))
         if lw_hz_4 is not None and lw_hz_4 != 0.0:
-            dstFunc['line_width_4'] = str(lw_hz_4)
+            dstFunc['line_width_4'] = str(lw_hz_4) if lw_hz_4 > 0.0 else str(abs(lw_hz_4))
         elif lw_4 is not None and lw_4 != 0.0:
-            dstFunc['line_width_4'] = str(lw_4)
+            dstFunc['line_width_4'] = str(lw_4) if lw_4 > 0.0 else str(abs(lw_4))
 
         if figure_of_merit is not None:
             if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:

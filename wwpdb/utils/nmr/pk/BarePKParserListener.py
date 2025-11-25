@@ -1034,9 +1034,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             x_lw = y_lw = None
             if self.__has_width:
-                x_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                x_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
-                y_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                y_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
                 if not self.__position_order:
                     x_lw, y_lw = y_lw, x_lw
@@ -1157,11 +1157,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             x_lw = y_lw = z_lw = None
             if self.__has_width:
-                x_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                x_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
-                y_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                y_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
-                z_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                z_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
                 if not self.__position_order:
                     x_lw, z_lw = z_lw, x_lw
@@ -1284,13 +1284,13 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             x_lw = y_lw = z_lw = a_lw = None
             if self.__has_width:
-                x_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                x_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
-                y_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                y_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
-                z_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                z_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
-                a_lw = abs(self.numberSelection[offset]) if len(self.numberSelection) > offset else None
+                a_lw = self.numberSelection[offset] if len(self.numberSelection) > offset else None
                 offset += 1
                 if not self.__position_order:
                     x_lw, y_lw, z_lw, a_lw = a_lw, z_lw, y_lw, x_lw

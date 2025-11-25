@@ -640,7 +640,7 @@ class BaseCSParserListener():
                           f"The position='{pos}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if pos_unc is not None and pos_unc != 0.0:
-            dstFunc['position_uncertainty'] = str(pos_unc)
+            dstFunc['position_uncertainty'] = str(pos_unc) if pos_unc > 0.0 else str(abs(pos_unc))
 
         if occupancy is not None:
             if WEIGHT_RANGE_MIN <= occupancy <= WEIGHT_RANGE_MAX:

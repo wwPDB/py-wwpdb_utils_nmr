@@ -141,8 +141,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 W1 = W2 = merit = None
 
                 if self.__has_lw_hz:
-                    W1 = abs(self.positionSelection[float_offset])
-                    W2 = abs(self.positionSelection[float_offset + 1])
+                    W1 = self.positionSelection[float_offset]
+                    W2 = self.positionSelection[float_offset + 1]
                     float_offset += 2
 
                 if self.__has_merit:
@@ -310,9 +310,9 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 W1 = W2 = W3 = merit = None
 
                 if self.__has_lw_hz:
-                    W1 = abs(self.positionSelection[float_offset])
-                    W2 = abs(self.positionSelection[float_offset + 1])
-                    W3 = abs(self.positionSelection[float_offset + 2])
+                    W1 = self.positionSelection[float_offset]
+                    W2 = self.positionSelection[float_offset + 1]
+                    W3 = self.positionSelection[float_offset + 2]
                     float_offset += 3
 
                 if self.__has_merit:
@@ -497,10 +497,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 W1 = W2 = W3 = W4 = merit = None
 
                 if self.__has_lw_hz:
-                    W1 = abs(self.positionSelection[float_offset])
-                    W2 = abs(self.positionSelection[float_offset + 1])
-                    W3 = abs(self.positionSelection[float_offset + 2])
-                    W4 = abs(self.positionSelection[float_offset + 3])
+                    W1 = self.positionSelection[float_offset]
+                    W2 = self.positionSelection[float_offset + 1]
+                    W3 = self.positionSelection[float_offset + 2]
+                    W4 = self.positionSelection[float_offset + 3]
                     float_offset += 4
 
                 if self.__has_merit:

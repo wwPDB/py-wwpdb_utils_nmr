@@ -11218,6 +11218,7 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
             if refChainId != chainId:
                 continue
             if seqId in np['auth_seq_id']\
+               or (seqId in np['seq_id'] and (compId in np['comp_id'] or ('alt_comp_id' in np and compId in np['alt_comp_id'])))\
                or (ligands == 1 and (compId in np['comp_id'] or ('alt_comp_id' in np and compId in np['alt_comp_id']))):
                 idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id']\
                     else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0

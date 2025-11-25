@@ -7966,7 +7966,7 @@ class NmrDpUtility:
 
         self.__submission_mode = 'merge-deposit' in op
         self.__annotation_mode = 'annotate' in op
-        self.__release_mode = 'release' in op
+        self.__release_mode = 'release' in op or 'replace-cs' in op
 
         self.__nefT.set_remediation_mode(self.__remediation_mode)
         self.__nefT.set_annotation_mode(self.__annotation_mode)
@@ -27692,6 +27692,17 @@ class NmrDpUtility:
                     has_ins_code = True
 
         loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+
+        # cleanup uncecessary '?'
+        item_names = [item['name'] for item in self.key_items[file_type][content_subtype]]
+        item_names.extend([item['name'] for item in self.data_items[file_type][content_subtype]])
+        first_row = loop.data[0]
+        for item_name in set(loop.tags) - set(item_names):
+            item_col = loop.tags.index(item_name)
+            if first_row[item_col] == '?':
+                for row in loop:
+                    if row[item_col] == '?':
+                        row[item_col] = None
 
         aux_lp = None
 

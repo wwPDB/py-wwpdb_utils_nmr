@@ -1283,7 +1283,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         return 'nm-pea-xwi' if asCode else 'XwinNMR'
 
     if 'eak' in string and ('able' in string or 'nnotation' in string or 'ssign' in string)\
-       and ('F1' in string or 'f1' in string) and ('F2' in string or 'f2' in string):
+       and ('F1' in string or 'f1' in string) and ('F2' in string or 'f2' in string) and 'Position' not in string:
         offset = 0
         if 'mplitude' in string or 'ntensity' in string or 'eight' in string:
             offset += 1
@@ -1292,7 +1292,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         if offset > 0:
             return 'nm-pea-bar' if asCode else 'unknown'
 
-    if ('F1' in string or 'f1' in string) and ('F2' in string or 'f2' in string):
+    if ('F1' in string or 'f1' in string) and ('F2' in string or 'f2' in string) and 'Position' not in string:
         offset = 0
         if 'mplitude' in string or 'ntensity' in string or 'eight' in string:
             offset += 1
@@ -1380,7 +1380,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
                 pass
 
     if 'eak' in header and ('able' in header or 'nnotation' in header or 'ssign' in header)\
-       and ('F1' in header or 'f1' in header) and ('F2' in header or 'f2' in header):
+       and ('F1' in header or 'f1' in header) and ('F2' in header or 'f2' in header) and 'Position' not in header:
         offset = 0
         if 'mplitude' in header or 'ntensity' in header or 'eight' in header:
             offset += 1
@@ -1418,7 +1418,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
-    if ('F1' in header or 'f1' in header) and ('F2' in header or 'f2' in header):
+    if ('F1' in header or 'f1' in header) and ('F2' in header or 'f2' in header) and 'Position' not in header:
         offset = 0
         if 'mplitude' in header or 'ntensity' in header or 'eight' in header:
             offset += 1

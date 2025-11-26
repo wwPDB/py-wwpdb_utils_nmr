@@ -24431,6 +24431,9 @@ class NmrDpUtility:
                 if content_subtype == 'entity':
                     continue
 
+                if self.__op == 'nmr-str-replace-cs' and fileListId > 0 and content_subtype == 'spectral_peak':
+                    continue
+
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 

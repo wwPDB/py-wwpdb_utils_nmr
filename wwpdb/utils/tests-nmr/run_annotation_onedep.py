@@ -1088,6 +1088,8 @@ class gen_auth_view_onedep:
         utility.addInput(name='avs_letter_path', value=self.__avs_letter_path, type='file')
         if len(sys.argv) > 2:
             utility.addInput(name='elec_dep_hash_code', value=sys.argv[2], type='param')
+        if len(sys.argv) > 3:
+            utility.addInput(name='update_related_entries', value=bool(sys.argv[3]), type='param')
         utility.addOutput(name='leave_intl_note', value=False, type='param')
         utility.addOutput(name='return_letter_path', value=self.__return_letter_path, type='file')
         utility.setDestination(self.__annotated_star_file_path)
@@ -1150,11 +1152,12 @@ class gen_auth_view_onedep:
 
 if __name__ == '__main__':
 
-    if len(sys.argv) not in (2, 3):
+    if len(sys.argv) not in (2, 3, 4):
         print('Usage:')
-        print('  $ run_annotation_onedep [arg1] ([arg2])')
+        print('  $ run_annotation_onedep [arg1] ([arg2]) ([arg3])')
         print('      [arg1]: BMRB_Accession_Number')
         print('      [arg2]: Elecdep uplaod hash code (Optional)')
+        print('      [arg3]: Whether to update _Related_entries via ETS (Optional)')
         sys.exit(1)
 
     updator = gen_auth_view_onedep()

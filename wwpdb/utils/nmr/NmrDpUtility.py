@@ -24360,16 +24360,17 @@ class NmrDpUtility:
 
                                 self.report.setOtherBond(True)
 
-                        except KeyError as e:
-
-                            self.report.error.appendDescription('multiple_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                 'description': str(e).strip("'")})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__testNmrCovalentBond() ++ KeyError  - {str(e)}\n")
-
+                        except KeyError:  # as e:
+                            # """
+                            # self.report.error.appendDescription('multiple_data',
+                            #                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                            #                                      'description': str(e).strip("'")})
+                            # self.report.setError()
+                            #
+                            # if self.__verbose:
+                            #     self.__lfh.write(f"+{self.__class_name__}.__testNmrCovalentBond() ++ KeyError  - {str(e)}\n")
+                            # """
+                            pass
                         except LookupError as e:
 
                             item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
@@ -66910,8 +66911,12 @@ class NmrDpUtility:
 
         sf_category = self.sf_categories[file_type][content_subtype]
 
+        removed_sf_framecode = []
         for sf in master_entry.get_saveframes_by_category(sf_category):
+            removed_sf_framecode.append(sf.name)
             master_entry.remove_saveframe(sf.name)
+
+        added_sf_framecode = []
 
         list_id = 1
 
@@ -66939,6 +66944,7 @@ class NmrDpUtility:
             if isinstance(self.__star_data[fileListId], pynmrstar.Saveframe):
                 self.__c2S.set_local_sf_id(self.__star_data[fileListId], list_id)
 
+                added_sf_framecode.append(self.__star_data[fileListId].name)
                 master_entry.add_saveframe(self.__star_data[fileListId])
 
                 list_id += 1
@@ -66948,8 +66954,22 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     self.__c2S.set_local_sf_id(sf, list_id)
 
+                    added_sf_framecode.append(sf.name)
                     master_entry.add_saveframe(sf)
 
                     list_id += 1
+
+        if list_id > 1:
+            content_subtype = 'spectral_peak'
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+
+            for sf in master_entry.get_saveframes_by_category(sf_category):
+                cs_framecode = get_first_sf_tag(sf, 'Chemical_shift_list')
+                if cs_framecode in removed_sf_framecode:
+                    idx = removed_sf_framecode.index(cs_framecode)
+                    set_sf_tag(sf, 'Chemical_shift_list', added_sf_framecode[idx] if idx < len(added_sf_framecode) else None)
+                else:
+                    set_sf_tag(sf, 'Chemical_shift_list', None)
 
         return list_id > 1

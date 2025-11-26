@@ -45060,7 +45060,7 @@ class NmrDpUtility:
                 weight = row.get(weight_name)
 
                 rest_id = row[id_tag]
-                set_id.add(id)
+                set_id.add(rest_id)
 
                 if (member_logic_code is not None and member_logic_code == 'OR') or rest_id == _rest_id:
                     atom1 = {'chain_id': chain_id_1,

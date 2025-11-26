@@ -3131,8 +3131,8 @@ class NEFTranslator:
                                                     break
 
                 seq_data = loop.get_tag(tags)
-                if isinstance(seq_data[0][2], int):
-                    for row in seq_data:
+                for row in seq_data:
+                    if isinstance(row[2], int):
                         row[2] = str(row[2])
                 has_valid_chain_id = True
                 for row in seq_data:
@@ -3734,6 +3734,9 @@ class NEFTranslator:
                     comp_data = loop.get_tag(comp_tags)
                     if len(comp_data) > 0:
                         has_alt_comp_id = True
+                        for row in comp_data:
+                            if isinstance(row[1], int):
+                                row[1] = str(row[1])
 
                 asm = []  # assembly of a loop
 

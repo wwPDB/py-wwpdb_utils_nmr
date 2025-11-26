@@ -22273,7 +22273,7 @@ class NmrDpUtility:
                                 if auth_atom_id in emptyValue:
                                     continue
 
-                                _auth_atom_id = translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)
+                                _auth_atom_id = translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids, ccU=self.__ccU)
 
                                 auth_atom_ids = self.__getAtomIdList(comp_id, _auth_atom_id)
 
@@ -22318,7 +22318,7 @@ class NmrDpUtility:
                                     continue
 
                                 if not self.__nefT.validate_comp_atom(comp_id,
-                                                                      translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)):
+                                                                      translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids, ccU=self.__ccU)):
 
                                     if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:

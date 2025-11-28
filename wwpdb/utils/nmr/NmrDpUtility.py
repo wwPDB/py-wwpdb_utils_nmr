@@ -28493,7 +28493,6 @@ class NmrDpUtility:
 
                                 index += 1
 
-                                _row[0] = index
                                 _row[6] = atom_ids[-1]
 
                             if fill_auth_atom_id:
@@ -28815,7 +28814,6 @@ class NmrDpUtility:
 
                             index += 1
 
-                            _row[0] = index
                             _row[6] = atom_ids[-1]
 
                         if fill_auth_atom_id:
@@ -28992,8 +28990,6 @@ class NmrDpUtility:
                 for idx, row in enumerate(loop):
 
                     _row = [None] * len(tags)
-
-                    _row[0] = index
 
                     comp_id = _orig_comp_id = row[comp_id_col].upper()
                     _orig_atom_id = row[atom_id_col]
@@ -30346,7 +30342,6 @@ class NmrDpUtility:
 
                                     index += 1
 
-                                    _row[0] = index
                                     _row[6] = atom_ids[-1]
 
                                 if fill_auth_atom_id:
@@ -30628,10 +30623,13 @@ class NmrDpUtility:
                 for _id in conflict_id:
                     del lp.data[_id]
 
-                id_col = lp.tags.index('ID')
+            if not any(True for _row in lp if _row[1] in emptyValue or (isinstance(_row[1], str) and not _row[1].isdigit())):
+                try:
+                    lp.sort_rows(['Atom_ID', 'Atom_isotope_number', 'Comp_index_ID', 'Entity_assembly_ID'])
+                except (TypeError, ValueError):
+                    pass
 
-                for _id, _row in enumerate(lp, start=1):
-                    _row[id_col] = _id
+            lp.renumber_rows('ID')
 
             if has_genuine_ambig_code:
 
@@ -66566,13 +66564,7 @@ class NmrDpUtility:
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
-        is_done = ann.merge(master_entry, self.__cR, self.__bmrb_only and self.__internal_mode)
-
-        # the following __performBMRBAnnTasks() will deposit, instead
-        # if is_done:
-        #     self.__depositNmrData()
-
-        return is_done
+        return ann.merge(master_entry, self.__cR, self.__bmrb_only and self.__internal_mode)
 
     def __mergeNmrIf(self) -> bool:
         """ Merge NMRIF metadata.
@@ -66597,13 +66589,7 @@ class NmrDpUtility:
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
-        is_done = ann.merge(master_entry, self.__nmrIfR, self.__bmrb_only and self.__internal_mode)
-
-        # the following __performBMRBAnnTasks() will deposit, instead
-        # if is_done:
-        #     self.__depositNmrData()
-
-        return is_done
+        return ann.merge(master_entry, self.__nmrIfR, self.__bmrb_only and self.__internal_mode)
 
     def __performBMRBAnnTasks(self) -> bool:
         """ Perform a series of standalone BMRB annotation tasks.

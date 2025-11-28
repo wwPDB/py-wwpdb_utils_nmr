@@ -211,10 +211,7 @@ class BMRBAnnTasks:
                         for _idx in dup_idx:
                             del lp.data[_idx]
 
-                        id_col = lp.tags.index('ID')
-
-                        for idx, row in enumerate(lp, start=1):
-                            row[id_col] = idx
+                        lp.renumber_rows('ID')
 
             except KeyError:
                 pass
@@ -243,10 +240,7 @@ class BMRBAnnTasks:
                         for _idx in dup_idx:
                             del lp.data[_idx]
 
-                        ordinal_col = lp.tags.index('Ordinal')
-
-                        for idx, row in enumerate(lp, start=1):
-                            row[ordinal_col] = idx
+                        lp.renumber_rows('Ordinal')
 
             except KeyError:
                 pass
@@ -282,7 +276,7 @@ class BMRBAnnTasks:
 
                             lp.add_data(row)
 
-                            lp.sort_rows(['Database_name', 'Database_accession_code'])
+                            lp.sort_rows('Database_accession_code')
 
                 except KeyError:
                     # items = ['Database_name', 'Database_accession_code', 'Relationship', 'Entry_ID']
@@ -461,8 +455,10 @@ class BMRBAnnTasks:
                     exp_lp_category = '_Experiment'
 
                     try:
+
                         exp_lp = exp_list_sf.get_loop(exp_lp_category)
                         exp_lp.sort_rows('ID')
+
                     except KeyError:
                         exp_lp = None
 
@@ -555,9 +551,7 @@ class BMRBAnnTasks:
                     lp = sf.get_loop(lp_category)
 
                     if self.__report.getInputSourceIdOfCoord() < 0 and 'Index_ID' in lp.tags:
-                        idx_col = lp.tags.index('Index_ID')
-                        for idx, row in enumerate(lp.data, start=1):
-                            row[idx_col] = idx
+                        lp.renumber_rows('Index_ID')
 
                     tags = ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Auth_seq_ID']
 

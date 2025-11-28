@@ -550,8 +550,27 @@ class BMRBAnnTasks:
 
                     lp = sf.get_loop(lp_category)
 
-                    if self.__report.getInputSourceIdOfCoord() < 0 and 'Index_ID' in lp.tags:
-                        lp.renumber_rows('Index_ID')
+                    if self.__report.getInputSourceIdOfCoord() < 0:
+
+                        try:
+
+                            sf.get_loop('_Ambiguous_atom_chem_shift')
+
+                        except KeyError:
+
+                            if 'Entity_assembly_ID' in lp.tags:
+                                chain_id_col = lp.tags.index('Entity_assembly_ID')
+
+                                if not any(True for _row in lp
+                                           if _row[chain_id_col] in emptyValue
+                                           or (isinstance(_row[chain_id_col], str) and not _row[chain_id_col].isdigit())):
+                                    try:
+                                        lp.sort_rows(['Atom_ID', 'Atom_isotope_number', 'Comp_index_ID', 'Entity_assembly_ID'])
+                                    except (TypeError, ValueError):
+                                        pass
+
+                            if 'Index_ID' in lp.tags:
+                                lp.renumber_rows('Index_ID')
 
                     tags = ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Auth_seq_ID']
 

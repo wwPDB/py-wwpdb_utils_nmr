@@ -22852,7 +22852,7 @@ class NmrDpUtility:
             if file_type == 'nef':
                 continue
 
-            if not self.__combined_mode:
+            if not self.__combined_mode or (self.__op == 'nmr-str-replace-cs' and fileListId > 0):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -30386,7 +30386,7 @@ class NmrDpUtility:
                                             row_ = loop.data[_idx + offset]
                                             if row_[comp_id_col] == comp_id\
                                                and row_[atom_id_col][0] == _atom_type\
-                                               and row_[ambig_code_col] == _ambig_code:
+                                               and str(row_[ambig_code_col]) == _ambig_code:
                                                 if row_[chain_id_col] != _chain_id:
                                                     continue
                                                 if row_[seq_id_col] == _seq_id:
@@ -30396,7 +30396,7 @@ class NmrDpUtility:
                                             row_ = loop.data[_idx - offset]
                                             if row_[comp_id_col] == comp_id\
                                                and row_[atom_id_col][0] == _atom_type\
-                                               and row_[ambig_code_col] == _ambig_code:
+                                               and str(row_[ambig_code_col]) == _ambig_code:
                                                 if row_[chain_id_col] != _chain_id:
                                                     continue
                                                 if row_[seq_id_col] == _seq_id:
@@ -30442,7 +30442,7 @@ class NmrDpUtility:
                                         row_ = loop.data[_idx + offset]
                                         if row_[comp_id_col] == comp_id\
                                            and row_[atom_id_col][0] == _atom_type\
-                                           and row_[ambig_code_col] == _ambig_code:
+                                           and str(row_[ambig_code_col]) == _ambig_code:
                                             if row_[chain_id_col] != _chain_id:
                                                 break
                                             if row_[seq_id_col] == _seq_id:
@@ -30454,7 +30454,7 @@ class NmrDpUtility:
                                         row_ = loop.data[_idx - offset]
                                         if row_[comp_id_col] == comp_id\
                                            and row_[atom_id_col][0] == _atom_type\
-                                           and row_[ambig_code_col] == _ambig_code:
+                                           and str(row_[ambig_code_col]) == _ambig_code:
                                             if row_[chain_id_col] != _chain_id:
                                                 break
                                             if row_[seq_id_col] == _seq_id:
@@ -30470,7 +30470,7 @@ class NmrDpUtility:
                                             row_ = loop.data[_idx + offset]
                                             if row_[comp_id_col] == comp_id\
                                                and row_[atom_id_col][0] == _atom_type\
-                                               and row_[ambig_code_col] == _ambig_code:
+                                               and str(row_[ambig_code_col]) == _ambig_code:
                                                 if row_[chain_id_col] != _chain_id:
                                                     break
                                                 if row_[seq_id_col] == _seq_id:
@@ -30482,7 +30482,7 @@ class NmrDpUtility:
                                             row_ = loop.data[_idx - offset]
                                             if row_[comp_id_col] == comp_id\
                                                and row_[atom_id_col][0] == _atom_type\
-                                               and row_[ambig_code_col] == _ambig_code:
+                                               and str(row_[ambig_code_col]) == _ambig_code:
                                                 if row_[chain_id_col] != _chain_id:
                                                     break
                                                 if row_[seq_id_col] == _seq_id:
@@ -30496,7 +30496,7 @@ class NmrDpUtility:
                                                 row_ = loop.data[_idx + offset]
                                                 if row_[comp_id_col] == comp_id\
                                                    and row_[atom_id_col][0] == _atom_type\
-                                                   and row_[ambig_code_col] == _ambig_code:
+                                                   and str(row_[ambig_code_col]) == _ambig_code:
                                                     if row_[chain_id_col] != _chain_id:
                                                         _row[12] = ambig_code = 6
                                                         break
@@ -30504,7 +30504,7 @@ class NmrDpUtility:
                                                 row_ = loop.data[_idx - offset]
                                                 if row_[comp_id_col] == comp_id\
                                                    and row_[atom_id_col][0] == _atom_type\
-                                                   and row_[ambig_code_col] == _ambig_code:
+                                                   and str(row_[ambig_code_col]) == _ambig_code:
                                                     if row_[chain_id_col] != _chain_id:
                                                         _row[12] = ambig_code = 6
                                                         break
@@ -30526,7 +30526,7 @@ class NmrDpUtility:
                                         row_ = loop.data[_idx + offset]
                                         if row_[comp_id_col] == comp_id\
                                            and row_[atom_id_col][0] == _atom_type\
-                                           and row_[ambig_code_col] == _ambig_code:
+                                           and str(row_[ambig_code_col]) == _ambig_code:
                                             if row_[chain_id_col] != _chain_id:
                                                 continue
                                             if row_[seq_id_col] == _seq_id:
@@ -30537,7 +30537,7 @@ class NmrDpUtility:
                                         row_ = loop.data[_idx - offset]
                                         if row_[comp_id_col] == comp_id\
                                            and row_[atom_id_col][0] == _atom_type\
-                                           and row_[ambig_code_col] == _ambig_code:
+                                           and str(row_[ambig_code_col]) == _ambig_code:
                                             if row_[chain_id_col] != _chain_id:
                                                 continue
                                             if row_[seq_id_col] == _seq_id:
@@ -30550,7 +30550,7 @@ class NmrDpUtility:
                                             row_ = loop.data[_idx + offset]
                                             if row_[comp_id_col] == comp_id\
                                                and row_[atom_id_col][0] == _atom_type\
-                                               and row_[ambig_code_col] == _ambig_code:
+                                               and str(row_[ambig_code_col]) == _ambig_code:
                                                 if row_[chain_id_col] != _chain_id:
                                                     _row[12] = ambig_code = 6
                                                     break
@@ -30558,7 +30558,7 @@ class NmrDpUtility:
                                             row_ = loop.data[_idx - offset]
                                             if row_[comp_id_col] == comp_id\
                                                and row_[atom_id_col][0] == _atom_type\
-                                               and row_[ambig_code_col] == _ambig_code:
+                                               and str(row_[ambig_code_col]) == _ambig_code:
                                                 if row_[chain_id_col] != _chain_id:
                                                     _row[12] = ambig_code = 6
                                                     break

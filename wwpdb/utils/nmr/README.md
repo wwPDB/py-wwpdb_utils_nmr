@@ -290,7 +290,7 @@ For example,
 
 2. Update CCD periodically
 ```bash
-    cd wwpdb/utils/nmr ; ./update_ccd.sh ; ./deploy_ccd.sh  # You must run this command every Wednesday UTC+00:00.
+    cd wwpdb/utils/nmr ; python ChemCompUpdater.py  # You must run this command every Wednesday UTC+00:00.
 ```
 
 3. Test importing modules

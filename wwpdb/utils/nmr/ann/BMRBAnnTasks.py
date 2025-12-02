@@ -2621,7 +2621,9 @@ class BMRBAnnTasks:
         if count > 0:
             input_source = self.__report.input_sources[0]
             input_source_dic = input_source.get()
-            input_source_dic['content_subtype']['spectral_peak'] = count
+
+            if input_source_dic is not None:
+                input_source_dic['content_subtype']['spectral_peak'] = count
 
         # update sample and sample_condition of spectral peak list saveframe
 

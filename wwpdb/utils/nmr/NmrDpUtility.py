@@ -227,6 +227,7 @@
 # 20-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in ROSETTA restraints (DAOTHER-7829, 9785, NMR data remediation)
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints (DAOTHER-7829, 9785, NMR data remediation)
 # 19-Nov-2025  M. Yokochi - add 'nmr-str-replace-cs' workflow operation (DATAQUALITY-2178, NMR data remediation)
+# 02-Dec-2025  M. Yokochi - split concatenation of auth_seq_id and ins_code in CS loop (DAOTHER-10418, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -27964,6 +27965,27 @@ class NmrDpUtility:
             auth_seq_id_col = loop.tags.index('Auth_seq_ID') if 'Auth_seq_ID' in loop.tags else -1
             auth_comp_id_col = loop.tags.index('Auth_comp_ID') if 'Auth_comp_ID' in loop.tags else -1
             auth_atom_id_col = loop.tags.index('Auth_atom_ID') if 'Auth_atom_ID' in loop.tags else -1
+
+            # split concatination of auth_seq_id and ins_code (DAOTHER-10418)
+            if auth_to_ins_code is not None and len(auth_to_ins_code) > 0 and auth_seq_id_col != -1:
+                auth_dat = loop.get_tag(['Auth_seq_ID'])
+                if any(True for row in auth_dat if isinstance(row, str) and row.isdigit()):
+                    concat_seq_id_pat = re.compile(r'(\d+)([A-Za-z\.\?]+)')
+
+                    ins_code_col = loop.tags.index('PDB_ins_code') if 'PDB_ins_code' in loop.tags else -1
+                    if ins_code_col == -1:
+                        loop.add_tag('PDB_ins_code', update_data=True)
+
+                    for idx, row in enumerate(auth_dat):
+                        if isinstance(row, str) and concat_seq_id_pat.match(row):
+                            g = concat_seq_id_pat.search(row).groups()
+                            loop.data[idx][auth_seq_id_col] = g[0]
+                            if g[1] not in emptyValue:
+                                loop.data[idx][ins_code_col] = g[1]
+
+                    if not has_ins_code:
+                        items.append('PDB_ins_code')
+                        has_ins_code = True
 
             valid_auth_seq_per_chain = []
 

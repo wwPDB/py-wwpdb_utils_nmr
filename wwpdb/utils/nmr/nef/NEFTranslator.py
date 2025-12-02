@@ -7202,7 +7202,7 @@ class NEFTranslator:
             @note: used only for annotation (DAOTHER-9286)
         """
 
-        if comp_id in emptyValue:
+        if comp_id in emptyValue or 'alt_atom_id' not in coord_atom_site:
             return [], None, None
 
         comp_id = comp_id.upper()

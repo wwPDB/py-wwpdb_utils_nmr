@@ -33893,12 +33893,12 @@ class NmrDpUtility:
                         ins_code_cols = [loop.tags.index(ins_code_name) for ins_code_name in ins_code_names]
 
                         for idx, row in enumerate(auth_dat):
-                            for ord, val in enumerate(row):
+                            for ordinal, val in enumerate(row):
                                 if isinstance(val, str) and concat_seq_id_ins_code_pattern.match(val):
                                     g = concat_seq_id_ins_code_pattern.search(val).groups()
-                                    loop.data[idx][auth_seq_id_cols[ord]] = g[0]
+                                    loop.data[idx][auth_seq_id_cols[ordinal]] = g[0]
                                     if g[1] not in emptyValue:
-                                        loop.data[idx][ins_code_cols[ord]] = g[1]
+                                        loop.data[idx][ins_code_cols[ordinal]] = g[1]
 
                 offset_holder = {}
 

@@ -33889,9 +33889,15 @@ class NmrDpUtility:
                         ins_code_cols = [loop.tags.index(ins_code_name) if ins_code_name in loop.tags else -1
                                          for ins_code_name in ins_code_names]
 
+                        add_ins_code_tag = False
                         for ins_code_col, ins_code_name in zip(ins_code_cols, ins_code_names):
                             if ins_code_col == -1:
                                 loop.add_tag(ins_code_name, update_data=True)
+                                add_ins_code_tag = True
+
+                        if add_ins_code_tag:
+                            ins_code_cols = [loop.tags.index(ins_code_name) if ins_code_name in loop.tags else -1
+                                             for ins_code_name in ins_code_names]
 
                         for idx, row in enumerate(auth_dat):
                             for ord, val in enumerate(row):

@@ -227,7 +227,7 @@
 # 20-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in ROSETTA restraints (DAOTHER-7829, 9785, NMR data remediation)
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints (DAOTHER-7829, 9785, NMR data remediation)
 # 19-Nov-2025  M. Yokochi - add 'nmr-str-replace-cs' workflow operation (DATAQUALITY-2178, NMR data remediation)
-# 02-Dec-2025  M. Yokochi - split concatenation of auth_seq_id and ins_code in CS loop (DAOTHER-10418, NMR data remediation)
+# 03-Dec-2025  M. Yokochi - split concatenation of auth_seq_id and ins_code in CS/MR loops (DAOTHER-10418, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -383,6 +383,7 @@ try:
                                                        CYANA_MR_FILE_EXTS,
                                                        NMR_STAR_LP_KEY_ITEMS,
                                                        NMR_STAR_LP_DATA_ITEMS,
+                                                       NMR_STAR_LP_DATA_ITEMS_INS_CODE,
                                                        THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                        PLANE_LIKE_LOWER_LIMIT,
                                                        PLANE_LIKE_UPPER_LIMIT,
@@ -560,6 +561,7 @@ except ImportError:
                                            CYANA_MR_FILE_EXTS,
                                            NMR_STAR_LP_KEY_ITEMS,
                                            NMR_STAR_LP_DATA_ITEMS,
+                                           NMR_STAR_LP_DATA_ITEMS_INS_CODE,
                                            THRESHOLD_FOR_CIRCULAR_SHIFT,
                                            PLANE_LIKE_LOWER_LIMIT,
                                            PLANE_LIKE_UPPER_LIMIT,
@@ -27969,7 +27971,8 @@ class NmrDpUtility:
             # split concatination of auth_seq_id and ins_code (DAOTHER-10418)
             if auth_to_ins_code is not None and len(auth_to_ins_code) > 0 and auth_seq_id_col != -1:
                 auth_dat = loop.get_tag(['Auth_seq_ID'])
-                if any(True for row in auth_dat if isinstance(row, str) and row.isdigit()):
+
+                if any(True for row in auth_dat if isinstance(row, str)):
                     concat_seq_id_pat = re.compile(r'(\d+)([A-Za-z\.\?]+)')
 
                     ins_code_col = loop.tags.index('PDB_ins_code') if 'PDB_ins_code' in loop.tags else -1
@@ -33869,6 +33872,34 @@ class NmrDpUtility:
                 auth_atom_name_to_id = self.__caC['auth_atom_name_to_id']
 
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
+
+                # split concatination of auth_seq_id and ins_code (DAOTHER-10418)
+                if auth_to_ins_code is not None and len(auth_to_ins_code) > 0\
+                   and set(auth_seq_id_names) & set(loop.tags) == set(auth_seq_id_names):
+                    auth_dat = loop.get_tag(auth_seq_id_names)
+
+                    if any(True for row in auth_dat if any(True for val in row if isinstance(val, str))):
+                        concat_seq_id_pat = re.compile(r'(\d+)([A-Za-z\.\?]+)')
+
+                        auth_seq_id_cols = [loop.tags.index(auth_seq_id_name) for auth_seq_id_name in auth_seq_id_names]
+
+                        ins_code_names = [auth_item['name'] for auth_item in NMR_STAR_LP_DATA_ITEMS_INS_CODE[content_subtype]
+                                          if auth_item['name'].startswith('PDB_ins_code')]
+
+                        ins_code_cols = [loop.tags.index(ins_code_name) if ins_code_name in loop.tags else -1
+                                         for ins_code_name in ins_code_names]
+
+                        for ins_code_col, ins_code_name in zip(ins_code_cols, ins_code_names):
+                            if ins_code_col == -1:
+                                loop.add_tag(ins_code_name, update_data=True)
+
+                        for idx, row in enumerate(auth_dat):
+                            for ord, val in enumerate(row):
+                                if isinstance(val, str) and concat_seq_id_pat.match(val):
+                                    g = concat_seq_id_pat.search(val).groups()
+                                    loop.data[idx][auth_seq_id_cols[ord]] = g[0]
+                                    if g[1] not in emptyValue:
+                                        loop.data[idx][ins_code_cols[ord]] = g[1]
 
                 offset_holder = {}
 

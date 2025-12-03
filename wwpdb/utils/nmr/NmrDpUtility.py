@@ -734,6 +734,8 @@ sparky_assignment_pattern = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*'
 deep_l_parens_pattern = re.compile(r'.*\(\s*\(\s*\(\s*\(.*')
 deep_r_parens_pattern = re.compile(r'.*\)\s*\)\s*\)\s*\).*')
 
+concat_seq_id_ins_code_pattern = re.compile(r'(\d+)([A-Za-z\.\?]+)')
+
 comment_code_mixed_set = {'#', '!'}
 
 default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
@@ -27973,15 +27975,14 @@ class NmrDpUtility:
                 auth_dat = loop.get_tag(['Auth_seq_ID'])
 
                 if any(True for row in auth_dat if isinstance(row, str)):
-                    concat_seq_id_pat = re.compile(r'(\d+)([A-Za-z\.\?]+)')
 
                     ins_code_col = loop.tags.index('PDB_ins_code') if 'PDB_ins_code' in loop.tags else -1
                     if ins_code_col == -1:
                         loop.add_tag('PDB_ins_code', update_data=True)
 
                     for idx, row in enumerate(auth_dat):
-                        if isinstance(row, str) and concat_seq_id_pat.match(row):
-                            g = concat_seq_id_pat.search(row).groups()
+                        if isinstance(row, str) and concat_seq_id_ins_code_pattern.match(row):
+                            g = concat_seq_id_ins_code_pattern.search(row).groups()
                             loop.data[idx][auth_seq_id_col] = g[0]
                             if g[1] not in emptyValue:
                                 loop.data[idx][ins_code_col] = g[1]
@@ -33879,30 +33880,22 @@ class NmrDpUtility:
                     auth_dat = loop.get_tag(auth_seq_id_names)
 
                     if any(True for row in auth_dat if any(True for val in row if isinstance(val, str))):
-                        concat_seq_id_pat = re.compile(r'(\d+)([A-Za-z\.\?]+)')
 
                         auth_seq_id_cols = [loop.tags.index(auth_seq_id_name) for auth_seq_id_name in auth_seq_id_names]
 
                         ins_code_names = [auth_item['name'] for auth_item in NMR_STAR_LP_DATA_ITEMS_INS_CODE[content_subtype]
                                           if auth_item['name'].startswith('PDB_ins_code')]
 
-                        ins_code_cols = [loop.tags.index(ins_code_name) if ins_code_name in loop.tags else -1
-                                         for ins_code_name in ins_code_names]
-
-                        add_ins_code_tag = False
-                        for ins_code_col, ins_code_name in zip(ins_code_cols, ins_code_names):
-                            if ins_code_col == -1:
+                        for ins_code_name in ins_code_names:
+                            if ins_code_name not in loop.tags:
                                 loop.add_tag(ins_code_name, update_data=True)
-                                add_ins_code_tag = True
 
-                        if add_ins_code_tag:
-                            ins_code_cols = [loop.tags.index(ins_code_name) if ins_code_name in loop.tags else -1
-                                             for ins_code_name in ins_code_names]
+                        ins_code_cols = [loop.tags.index(ins_code_name) for ins_code_name in ins_code_names]
 
                         for idx, row in enumerate(auth_dat):
                             for ord, val in enumerate(row):
-                                if isinstance(val, str) and concat_seq_id_pat.match(val):
-                                    g = concat_seq_id_pat.search(val).groups()
+                                if isinstance(val, str) and concat_seq_id_ins_code_pattern.match(val):
+                                    g = concat_seq_id_ins_code_pattern.search(val).groups()
                                     loop.data[idx][auth_seq_id_cols[ord]] = g[0]
                                     if g[1] not in emptyValue:
                                         loop.data[idx][ins_code_cols[ord]] = g[1]

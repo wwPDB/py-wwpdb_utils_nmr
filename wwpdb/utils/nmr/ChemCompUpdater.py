@@ -49,39 +49,44 @@ class ChemCompUpdater:
 
     def deploy(self):
 
-        if os.path.isdir(self.__work_dir):
-            shutil.rmtree(self.__work_dir)
+        try:
 
-        os.mkdir(self.__work_dir)
+            if os.path.isdir(self.__work_dir):
+                shutil.rmtree(self.__work_dir)
 
-        print(f'Uncompressing {self.__components_tarball!r} ...')
+            os.mkdir(self.__work_dir)
 
-        uncompress_gzip_file(self.__components_tarball, self.__components_cif)
+            print(f'Uncompressing {self.__components_tarball!r} ...')
 
-        print(f'Deplying to {self.__work_dir!r} ...')
+            uncompress_gzip_file(self.__components_tarball, self.__components_cif)
 
-        dBlockList = []
+            print(f'Deplying to {self.__work_dir!r} ...')
 
-        with open(self.__components_cif, 'r', encoding='utf-8') as ifh:
-            pRd = PdbxReader(ifh)
-            pRd.read(dBlockList)
+            dBlockList = []
 
-        for dBlock in dBlockList:
-            compId = dBlock.getName()
+            with open(self.__components_cif, 'r', encoding='utf-8') as ifh:
+                pRd = PdbxReader(ifh)
+                pRd.read(dBlockList)
 
-            subDir = os.path.join(self.__work_dir, compId[-2:] if len(compId) > 3 else compId[0], compId)
+            for dBlock in dBlockList:
+                compId = dBlock.getName()
 
-            os.makedirs(subDir, exist_ok=True)
+                subDir = os.path.join(self.__work_dir, compId[-2:] if len(compId) > 3 else compId[0], compId)
 
-            outPath = os.path.join(subDir, compId + '.cif')
+                os.makedirs(subDir, exist_ok=True)
 
-            with open(outPath, 'w', encoding='utf-8') as ofh:
-                pdbxW = PdbxWriter(ofh)
-                pdbxW.write([dBlock])
+                outPath = os.path.join(subDir, compId + '.cif')
 
-        os.remove(self.__components_cif)
+                with open(outPath, 'w', encoding='utf-8') as ofh:
+                    pdbxW = PdbxWriter(ofh)
+                    pdbxW.write([dBlock])
 
-        print(f'{self.__work_dir!r} is up-to-date.')
+            os.remove(self.__components_cif)
+
+            print(f'{self.__work_dir!r} is up-to-date.')
+
+        except Exception as e:
+            logging.error(str(e))
 
     def download(self):
 
@@ -91,8 +96,6 @@ class ChemCompUpdater:
             r = requests.get(self.__url_for_components, timeout=300.0)
             with open(os.path.join(self.__components_tarball), 'wb') as f:
                 f.write(r.content)
-
-            self.deploy()
 
         except Exception as e:
             logging.error(str(e))
@@ -117,15 +120,17 @@ class ChemCompUpdater:
             file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__components_tarball)).astimezone()
             if url_last_modified > file_last_modified:
                 self.download()
+                self.deploy()
 
             elif not os.path.isdir(self.__work_dir) or self.__force:
                 self.deploy()
 
             else:
-                print(f"{self.__components_tarball!r} is up-to-date.")
+                print(f"{self.__components_tarball!r} is up-to-date. (use '--force' argument)")
 
         else:
             self.download()
+            self.deploy()
 
 
 if __name__ == '__main__':

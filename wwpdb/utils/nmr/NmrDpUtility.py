@@ -4083,13 +4083,13 @@ class NmrDpUtility:
                                                        {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
                                                         'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                         'enforce-enum': True},
-                                                       {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                       {'name': 'Val', 'type': 'range-float', 'mandatory': True, 'default-from': 'Chem_shift_val',
                                                         'remove-bad-pattern': True,
                                                         'range': CS_RESTRAINT_RANGE},
-                                                       {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                       {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True, 'default-from': 'Chem_shift_val_err',
                                                         'clear-bad-pattern': True,
                                                         'range': CS_UNCERTAINTY_RANGE},
-                                                       {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
+                                                       {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False, 'default-from': 'Chem_shift_ambiguity_code',
                                                         'enum': ALLOWED_AMBIGUITY_CODES,
                                                         'enforce-enum': True},
                                                        {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False,
@@ -28106,10 +28106,13 @@ class NmrDpUtility:
             seq_id_col = loop.tags.index('Comp_index_ID')
             comp_id_col = loop.tags.index('Comp_ID')
             atom_id_col = loop.tags.index('Atom_ID')
-            val_col = loop.tags.index('Val')
-            val_err_col = loop.tags.index('Val_err') if 'Val_err' in loop.tags else -1
-            fig_of_merit_col = loop.tags.index('Assign_fig_of_merit') if 'Assign_fig_of_merit' in loop.tags else -1
-            ambig_code_col = loop.tags.index('Ambiguity_code') if 'Ambiguity_code' in loop.tags else -1
+            val_col = loop.tags.index('Val') if 'Val' in loop.tags else loop.tags.index('Chem_shift_val')
+            val_err_col = loop.tags.index('Val_err') if 'Val_err' in loop.tags\
+                else loop.tags.index('Chem_shift_val_err') if 'Chem_shift_val_err' in loop.tags else -1
+            fig_of_merit_col = loop.tags.index('Assign_fig_of_merit') if 'Assign_fig_of_merit' in loop.tags\
+                else loop.tags.index('Chem_shift_assign_fig_of_merit') if 'Chem_shift_assign_fig_of_merit' in loop.tags else -1
+            ambig_code_col = loop.tags.index('Ambiguity_code') if 'Ambiguity_code' in loop.tags\
+                else loop.tags.index('Chem_shift_ambiguity_code') if 'Chem_shift_ambiguity_code' in loop.tags else -1
             ambig_set_id_col = loop.tags.index('Ambiguity_set_ID') if 'Ambiguity_set_ID' in loop.tags else -1
             occupancy_col = loop.tags.index('Occupancy') if 'Occupancy' in loop.tags else -1
             reson_id_col = loop.tags.index('Resonance_ID') if 'Resonance_ID' in loop.tags else -1

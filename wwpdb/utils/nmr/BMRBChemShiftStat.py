@@ -63,7 +63,8 @@ class BMRBChemShiftStat:
                  '__version__',
                  '__verbose',
                  '__lfh',
-                 'lazy_others',
+                 '__lazy_others',
+                 '__load_others',
                  'stat_dir',
                  'url_for_bmrb_cs_stat_dir',
                  'csv_files',
@@ -104,7 +105,10 @@ class BMRBChemShiftStat:
         self.__lfh = log
 
         # lazy import of others (non-standard residues)
-        self.lazy_others = True
+        self.__lazy_others = True
+
+        # whether loading others csv resource
+        self.__load_others = False
 
         # directory
         self.stat_dir = os.path.dirname(__file__) + '/bmrb_cs_stat/'
@@ -216,7 +220,7 @@ class BMRBChemShiftStat:
 
         results = self.__ccU.getTypeOfCompId(comp_id)
 
-        if results[2] and len(self.getAromaticAtoms(comp_id)) > 0:
+        if results[2] and not self.__load_others and len(self.getAromaticAtoms(comp_id)) > 0:
             results = (False, False, False)
 
         self.__cachedDictForTypeOfCompId[comp_id] = results
@@ -835,7 +839,7 @@ class BMRBChemShiftStat:
         self.rna_filt = self.loadStatFromCsvFile(self.stat_dir + 'rna_filt.csv', self.na_threshold)
         self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv', self.na_threshold)
 
-        if not self.lazy_others:
+        if not self.__lazy_others:
             self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
 
         self.__updateCompIdSet()
@@ -846,8 +850,10 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
-        if not self.lazy_others:
+        if not self.__lazy_others:
             return True
+
+        self.__load_others = True
 
         if comp_id_interest is None:
             self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
@@ -860,6 +866,8 @@ class BMRBChemShiftStat:
                 self.__updateCompIdSet()
             else:
                 self.__not_comp_ids.add(comp_id_interest)
+
+        self.__load_others = False
 
         return True
 

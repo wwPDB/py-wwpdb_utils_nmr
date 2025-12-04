@@ -519,7 +519,7 @@ class BMRBAnnTasks:
                                             for idx in reversed(duplicated_idxs):
                                                 del lp.data[idx]
 
-                                except (KeyError, TypeError):
+                                except (KeyError, TypeError, ValueError):
 
                                     if lp is not None:
                                         del sf[lp]
@@ -2622,7 +2622,7 @@ class BMRBAnnTasks:
             input_source = self.__report.input_sources[0]
             input_source_dic = input_source.get()
 
-            if input_source_dic is not None:
+            if isinstance(input_source_dic['content_subtype'], dict):
                 input_source_dic['content_subtype']['spectral_peak'] = count
 
         # update sample and sample_condition of spectral peak list saveframe

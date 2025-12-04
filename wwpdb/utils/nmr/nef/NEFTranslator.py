@@ -4727,7 +4727,7 @@ class NEFTranslator:
                                             else:
                                                 row.append(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[ref[0]][0])
                                         loop.add_tag(d['name'])
-                                    elif 'Entity_assembly_ID' in d['name'] or d['name'] == 'Axis_code':
+                                    elif 'Entity_assembly_ID' in d['name'] or d['name'] in ('Axis_code', 'Val', 'Val_err', 'Ambiguity_code'):
                                         for row in loop:
                                             ref = row[from_col]
                                             row.append(ref)

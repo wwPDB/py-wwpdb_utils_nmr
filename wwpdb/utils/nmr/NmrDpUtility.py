@@ -21950,7 +21950,9 @@ class NmrDpUtility:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature.
         """
 
-        return self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
+        atom_list, _, details = self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id)
+
+        return atom_list if details is None else []
 
     def __getAtomIdListInXplorForLigandRemap(self, comp_id: str, atom_id: str, coord_atom_site: dict) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature
@@ -21973,7 +21975,8 @@ class NmrDpUtility:
 
         return self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
-    def __getAtomIdListWithAmbigCode(self, comp_id: str, atom_id: str, leave_unmatched: bool = True) -> Tuple[List[str], Optional[int], Optional[str]]:
+    def __getAtomIdListWithAmbigCode(self, comp_id: str, atom_id: str, leave_unmatched: bool = True
+                                     ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @see: NEFTranslator.get_valid_star_atom()
         """
@@ -22147,13 +22150,25 @@ class NmrDpUtility:
 
                                     err = f"Invalid atom name {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
 
-                                    self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': err})
-                                    self.report.setError()
+                                    if self.__remediation_mode and len(self.__getAtomIdListInXplor(comp_id, atom_id)) > 0:
 
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                               'description': err})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {err}\n")
+
+                                    else:
+
+                                        self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                             'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
 
                 # non-standard residue
                 else:
@@ -22761,7 +22776,7 @@ class NmrDpUtility:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__remediation_mode and 1 in isotope_nums and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751, 9520
+                            if self.__remediation_mode and 1 in isotope_nums and atom_id[0] in pseProBeginCode:  # DAOTHER-8663, 8751, 9520
                                 continue
 
                             err = f"Invalid atom name {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
@@ -28256,7 +28271,7 @@ class NmrDpUtility:
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, _atom_site_atom_id, ccU=self.__ccU))
                                 if len(atom_ids) == 1 and atom_ids[0] in _atom_site_atom_id and atom_id not in _atom_site_atom_id:
                                     atom_id = atom_ids[0]
-                            if self.__annotation_mode and atom_ids[0] not in _atom_site_atom_id:  # DAOTHER-9286
+                            if self.__annotation_mode and (len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id):  # DAOTHER-9286
                                 atom_ids = self.__getAtomIdListInXplorForLigandRemap(comp_id, atom_id, _coord_atom_site)
                                 if comp_id not in incomplete_comp_id_annotation:
                                     incomplete_comp_id_annotation.append(comp_id)

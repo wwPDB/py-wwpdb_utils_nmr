@@ -2532,6 +2532,25 @@ class NEFTranslator:
                             row.append(def_chain_id)
                         loop.add_tag('Entity_assembly_ID')
 
+                    auth_to_ins_code = coord_assembly_checker['auth_to_ins_code']
+                    if auth_to_ins_code is not None and len(auth_to_ins_code) > 0 and 'Auth_seq_ID' in loop.tags:
+                        auth_dat = loop.get_tag(['Auth_seq_ID'])
+
+                        if any(True for row in auth_dat if isinstance(row, str)):
+                            concat_seq_id_ins_code_pattern = re.compile(r'(\d+)([A-Za-z\.\?]+)')
+                            auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+
+                            ins_code_col = loop.tags.index('PDB_ins_code') if 'PDB_ins_code' in loop.tags else -1
+                            if ins_code_col == -1:
+                                loop.add_tag('PDB_ins_code', update_data=True)
+
+                            for idx, row in enumerate(auth_dat):
+                                if isinstance(row, str) and concat_seq_id_ins_code_pattern.match(row):
+                                    g = concat_seq_id_ins_code_pattern.search(row).groups()
+                                    loop.data[idx][auth_seq_id_col] = g[0]
+                                    if g[1] not in emptyValue:
+                                        loop.data[idx][ins_code_col] = g[1]
+
                 # convert protonated DC -> DNR, protonated C -> CH
                 if 'Atom_ID' in loop.tags and 'Auth_comp_ID' not in loop.tags\
                    and set(tags) & set(loop.tags) == set(tags):
@@ -4829,7 +4848,8 @@ class NEFTranslator:
                                 name = tags[j]
                                 if name in key_names:
                                     k = key_items[key_names.index(name)]
-                                    if not ('remove-bad-pattern' in k and k['remove-bad-pattern']) and 'default' not in k\
+                                    if not ('remove-bad-pattern' in k and k['remove-bad-pattern'])\
+                                       and 'default' not in k and 'default-from' not in k\
                                        and not skip_empty_value_error(loop, idx):
                                         r = {}
                                         for _j, _t in enumerate(loop.tags):
@@ -4838,7 +4858,8 @@ class NEFTranslator:
                                                          f"#_of_row {idx + 1}, data_of_row {r}.")
 
                                 for d in data_items:
-                                    if d['name'] == name and d['mandatory'] and 'default' not in d\
+                                    if d['name'] == name and d['mandatory']\
+                                       and 'default' not in d and 'default-from' not in d\
                                        and not ('remove-bad-pattern' in d and d['detele-bad-pattern'])\
                                        and not skip_empty_value_error(loop, idx):
                                         r = {}
@@ -5482,6 +5503,10 @@ class NEFTranslator:
                                         if 'default-from' in k and k['default-from'] in tags:
                                             if row[tags.index(k['default-from'])][0].upper() in enum:
                                                 val = row[tags.index(k['default-from'])][0].upper()
+                                            elif row[tags.index(k['default-from'])][0] in pseProBeginCode\
+                                                    and len(row[tags.index(k['default-from'])]) > 1\
+                                                    and row[tags.index(k['default-from'])][1].upper() in enum:
+                                                val = row[tags.index(k['default-from'])][1].upper()
                                         elif 'enum-alt' in k and val in k['enum-alt']:
                                             val = k['enum-alt'][val]
                                             row[j] = val
@@ -5516,6 +5541,10 @@ class NEFTranslator:
                                         if 'default-from' in k and k['default-from'] in tags:
                                             if row[tags.index(k['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(k['default-from'])][0].upper()][0]
+                                            elif row[tags.index(k['default-from'])][0] in pseProBeginCode\
+                                                    and len(row[tags.index(k['default-from'])]) > 1\
+                                                    and row[tags.index(k['default-from'])][1].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                                val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(k['default-from'])][1].upper()][0]
                                         if 'enforce-enum' in k and k['enforce-enum']:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"{name} {val!r} must be one of {enum}.")
@@ -5922,6 +5951,10 @@ class NEFTranslator:
                                                 elif 'default-from' in d and d['default-from'] in tags:
                                                     if row[tags.index(d['default-from'])][0].upper() in enum:
                                                         val = row[tags.index(d['default-from'])][0].upper()
+                                                    elif row[tags.index(d['default-from'])][0] in pseProBeginCode\
+                                                            and len(row[tags.index(d['default-from'])]) > 1\
+                                                            and row[tags.index(d['default-from'])][1].upper() in enum:
+                                                        val = row[tags.index(d['default-from'])][1].upper()
                                                 elif 'enum-alt' in d and val in d['enum-alt']:
                                                     val = d['enum-alt'][val]
                                                     row[j] = val
@@ -5962,6 +5995,10 @@ class NEFTranslator:
                                                 if 'default-from' in d and d['default-from'] in tags:
                                                     if row[tags.index(d['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                         val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(d['default-from'])][0].upper()][0]
+                                                    elif row[tags.index(d['default-from'])][0] in pseProBeginCode\
+                                                            and len(row[tags.index(d['default-from'])]) > 1\
+                                                            and row[tags.index(d['default-from'])][1].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                                        val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(d['default-from'])][1].upper()][0]
                                                 if 'enforce-enum' in d and d['enforce-enum']:
                                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                      + f"{name} {val!r} must be one of {enum}.")

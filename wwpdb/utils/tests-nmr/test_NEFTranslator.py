@@ -3406,6 +3406,8 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.is_mandatory_tag("_nef_rdc_restraint_list.potential_type", "nef"), True)
 
     def test_atom_name_conversion(self):
+        self.assertEqual(self.neft.get_valid_star_atom_in_xplor('GLY', 'HA1'), (['HA3'], 1, None))
+        self.assertEqual(self.neft.get_valid_star_atom_in_xplor('ASP', 'HB1'), (['HB3'], 1, None))
         self.assertEqual(self.neft.get_valid_star_atom('6MZ', 'M9'), (['H9C1', 'H9C2', 'H9'], 1, None))
         self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QM1'), (['HM11', 'HM12', 'HM13'], 1, None))
         self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QM2'), (['HM21', 'HM22', 'HM23'], 1, None))

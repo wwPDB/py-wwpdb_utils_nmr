@@ -19468,7 +19468,7 @@ class NmrDpUtility:
             poly_seq = input_source_dic['polymer_sequence']
             poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-            subtype_with_poly_seq = [poly_seq if has_poly_seq else None]
+            subtype_with_poly_seq = ['poly_seq' if has_poly_seq else None]
 
             for subtype in poly_seq_in_lp.keys():
                 subtype_with_poly_seq.append(subtype)
@@ -20255,6 +20255,10 @@ class NmrDpUtility:
                             cs_has_alt_comp_id = len(ext_seq_key) > 3
                             pos = ps['seq_id'].index(ext_seq_key[1])
                             ps['alt_comp_id'][pos] = ext_seq_key[3 if cs_has_alt_comp_id else 2]
+
+        if self.__op == 'nmr-str-replace-cs':
+            self.__valid_seq = False
+            self.__testSequenceConsistency()
 
         return True
 

@@ -3024,6 +3024,7 @@ class NEFTranslator:
 
                                                 rev_seq, _offset = {}, {}
                                                 _entity_assembly_id = _entity_id = None
+                                                _offset_auth_seq_id = 0
 
                                                 for ca in chain_assign:
                                                     if ca['matched'] == 0 or ca['conflict'] > 0:
@@ -3054,6 +3055,7 @@ class NEFTranslator:
                                                                     _k = (ps['auth_chain_id'], auth_seq_id, ps['comp_id'][ps['auth_seq_id'].index(auth_seq_id)])
                                                                     if _k in auth_to_star_seq:
                                                                         _entity_assembly_id, _offset_, _entity_id, _ = auth_to_star_seq[_k]
+                                                                        _offset_auth_seq_id = auth_seq_id - test_seq_id
                                                                         _offset_ -= auth_seq_id
                                                                         _offset[_entity_assembly_id] = _offset_
                                                             except StopIteration:
@@ -3093,6 +3095,8 @@ class NEFTranslator:
                                                         _offset_ = _offset[_entity_assembly_id]
                                                         r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
                                                         if sync_seq:
+                                                            if _offset_auth_seq_id != 0:
+                                                                r[auth_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_auth_seq_id)
                                                             if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
                                                                 continue
                                                             if seq_id_col != -1:

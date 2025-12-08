@@ -8034,7 +8034,7 @@ class NmrDpUtility:
         self.__nefT.set_remediation_mode(self.__remediation_mode)
         self.__nefT.set_annotation_mode(self.__annotation_mode)
         self.__nefT.set_internal_mode(self.__internal_mode)
-        self.__nefT.set_merge_rescue_mode(op == 'nmr-cs-mr-merge')  # DAOTHER-9927
+        self.__nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs'))  # DAOTHER-9927
         self.__nefT.cache_clear()
 
         if not self.__allow_missing_legacy_dist_restraint and self.__remediation_mode:
@@ -18962,7 +18962,9 @@ class NmrDpUtility:
                                         allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
                                         allow_gap=(content_subtype not in ('poly_seq', 'entity')),
                                         check_identity=check_identity,
-                                        coord_assembly_checker=self.__caC if self.__native_combined or not self.__combined_mode else None)
+                                        coord_assembly_checker=self.__caC if self.__native_combined
+                                        or not self.__combined_mode
+                                        or self.__op == 'nmr-str-replace-cs' else None)
 
     def __extractPolymerSequence(self) -> bool:
         """ Extract reference polymer sequence.
@@ -19577,6 +19579,8 @@ class NmrDpUtility:
 
         update_poly_seq = False
 
+        poly_seq0 = None
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -19638,7 +19642,11 @@ class NmrDpUtility:
 
                 # reference polymer sequence exists
                 if has_poly_seq and subtype1 == 'poly_seq':
-                    poly_seq1 = poly_seq
+
+                    if fileListId == 0 and poly_seq0 is None:
+                        poly_seq0 = poly_seq
+
+                    poly_seq1 = poly_seq0 if fileListId > 0 and poly_seq0 is not None else poly_seq
 
                     ref_chain_ids = {ps1['chain_id'] for ps1 in poly_seq1}
 

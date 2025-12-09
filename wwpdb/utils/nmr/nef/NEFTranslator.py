@@ -2673,16 +2673,19 @@ class NEFTranslator:
                         if row not in emptyValue:
                             chain_id_set.add(row)
 
-                    if has_coord and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags:
+                    if has_coord and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and 'Seq_ID' in loop.tags:
                         cif_ps = coord_assembly_checker['polymer_sequence']
+                        auth_to_ins_code = coord_assembly_checker['auth_to_ins_code']
                         if any(True for ps in cif_ps if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
-                            pre_tags = ['Auth_asym_ID', 'Auth_seq_ID', 'Seq_ID']
+                            pre_tags = ['Auth_asym_ID', 'Auth_seq_ID', 'Seq_ID', 'Comp_ID']
                             pre_seq_data = loop.get_tag(pre_tags)
                             for row in pre_seq_data:
                                 if row[1] != row[2] and any(True for ps in cif_ps if ps['auth_chain_id'] == row[0]
                                                             and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
-                                    has_coord = False
-                                    break
+                                    _k = (row[0], int(row[1]), row[3])
+                                    if auth_to_ins_code is not None and len(auth_to_ins_code) > 0 and _k in auth_to_ins_code:
+                                        has_coord = False
+                                        break
 
                     if has_coord:
 
@@ -3003,8 +3006,11 @@ class NEFTranslator:
                                 if 0 < count < len(loop):  # DAOTHER-9927: reset auth_seq_id derived from BMRB archive
                                     cif_ps = coord_assembly_checker['polymer_sequence']
                                     valid = False
+                                    if not any(True for ps in cif_ps if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
+                                        """
                                     if len(coord_assembly_checker['polymer_sequence']) == 1\
                                        and not any(True for ps in cif_ps if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
+                                        """
                                         nmr_chain_id = pre_seq_data[0][1]
                                         nmr_ps = [{'chain_id': nmr_chain_id, 'seq_id': [], 'comp_id': []}]
                                         seq = set()

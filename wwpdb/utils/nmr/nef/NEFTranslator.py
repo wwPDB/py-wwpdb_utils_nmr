@@ -2483,10 +2483,17 @@ class NEFTranslator:
 
             has_auth_asym_id = False
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode:
+                if 'Details' in loop.tags:
+                    pre_tag = ['Auth_asym_ID']
+                    pre_chain_data = loop.get_tag(pre_tag)
+                    if all(row == 'UNMAPPED' for row in pre_chain_data):
+                        continue
                 alt_chain_id_set = set()
                 if 'Auth_asym_ID' in loop.tags:
                     pre_tag = ['Auth_asym_ID']
                     pre_chain_data = loop.get_tag(pre_tag)
+                    if all(row == 'UNMAPPED' for row in pre_chain_data):
+                        continue
                     for row in pre_chain_data:
                         if row not in emptyValue:
                             alt_chain_id_set.add(row)
@@ -2994,8 +3001,10 @@ class NEFTranslator:
                                         else:
                                             count += 1
                                 if 0 < count < len(loop):  # DAOTHER-9927: reset auth_seq_id derived from BMRB archive
+                                    cif_ps = coord_assembly_checker['polymer_sequence']
                                     valid = False
-                                    if len(coord_assembly_checker['polymer_sequence']) == 1:
+                                    if len(coord_assembly_checker['polymer_sequence']) == 1\
+                                       and not any(True for ps in cif_ps if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
                                         nmr_chain_id = pre_seq_data[0][1]
                                         nmr_ps = [{'chain_id': nmr_chain_id, 'seq_id': [], 'comp_id': []}]
                                         seq = set()
@@ -3011,9 +3020,6 @@ class NEFTranslator:
                                                 break
 
                                         if valid:
-                                            cif_ps = coord_assembly_checker['polymer_sequence']
-                                            auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
-
                                             chain_id_col = loop.tags.index('Entity_assembly_ID')
                                             entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
                                             seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
@@ -3022,6 +3028,7 @@ class NEFTranslator:
                                             auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                                             orig_chain_id_col = loop.tags.index('Original_PDB_strand_ID') if 'Original_PDB_strand_ID' in loop.tags else -1
                                             orig_seq_id_col = loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in loop.tags else -1
+                                            auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
 
                                             sorted_seq = sorted(seq, key=itemgetter(0, 1))
                                             for row in sorted_seq:
@@ -3368,6 +3375,7 @@ class NEFTranslator:
                         alt_seq_id_col = loop.tags.index('Seq_ID')
                         for r in loop.data:
                             r[seq_id_col] = r[alt_seq_id_col]
+
                     elif 'Auth_seq_ID' in loop.tags:
                         pre_tag = ['Auth_seq_ID']
                         pre_seq_data = loop.get_tag(pre_tag)

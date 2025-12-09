@@ -19456,6 +19456,9 @@ class NmrDpUtility:
             @return: True for valid sequence, False otherwise
         """
 
+        if self.__bmrb_only and self.__internal_mode:
+            return True
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -19745,7 +19748,7 @@ class NmrDpUtility:
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
 
-                                                if self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id):
+                                                if (self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id)) or self.__remediation_mode:
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})

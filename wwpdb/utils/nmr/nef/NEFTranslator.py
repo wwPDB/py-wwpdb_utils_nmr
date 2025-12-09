@@ -2484,7 +2484,7 @@ class NEFTranslator:
             has_auth_asym_id = False
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode:
                 if 'Details' in loop.tags:
-                    pre_tag = ['Auth_asym_ID']
+                    pre_tag = ['Details']
                     pre_chain_data = loop.get_tag(pre_tag)
                     if all(row == 'UNMAPPED' for row in pre_chain_data):
                         continue
@@ -3006,11 +3006,8 @@ class NEFTranslator:
                                 if 0 < count < len(loop):  # DAOTHER-9927: reset auth_seq_id derived from BMRB archive
                                     cif_ps = coord_assembly_checker['polymer_sequence']
                                     valid = False
-                                    if not any(True for ps in cif_ps if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
-                                        """
                                     if len(coord_assembly_checker['polymer_sequence']) == 1\
                                        and not any(True for ps in cif_ps if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
-                                        """
                                         nmr_chain_id = pre_seq_data[0][1]
                                         nmr_ps = [{'chain_id': nmr_chain_id, 'seq_id': [], 'comp_id': []}]
                                         seq = set()
@@ -3826,7 +3823,8 @@ class NEFTranslator:
                 if not _tags_exist:
                     if seq_id == 'Comp_index_ID' and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
                         return self.get_star_seq(star_data, lp_category, 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_asym_ID',
-                                                 alt_seq_id, alt_seq_id_offset, alt_chain_id, allow_empty, allow_gap, coord_assembly_checker)
+                                                 alt_seq_id, alt_seq_id_offset, alt_chain_id,
+                                                 allow_empty, allow_gap, check_identity, coord_assembly_checker)
 
                     # missing_tags = list(set(tags) - set(loop.tags))
                     # raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
@@ -3864,7 +3862,8 @@ class NEFTranslator:
             if len(f) > 0:
                 if seq_id == 'Comp_index_ID' and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
                     return self.get_star_seq(star_data, lp_category, 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_asym_ID',
-                                             alt_seq_id, alt_seq_id_offset, alt_chain_id, allow_empty, allow_gap, coord_assembly_checker)
+                                             alt_seq_id, alt_seq_id_offset, alt_chain_id,
+                                             allow_empty, allow_gap, check_identity, coord_assembly_checker)
 
                 raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
@@ -3901,10 +3900,11 @@ class NEFTranslator:
 
                             if offset is not None:
                                 return self.get_star_seq(star_data, lp_category, alt_seq_id, comp_id, chain_id,
-                                                         alt_seq_id, offset, alt_chain_id, allow_empty, allow_gap, coord_assembly_checker)
+                                                         alt_seq_id, offset, alt_chain_id,
+                                                         allow_empty, allow_gap, check_identity, coord_assembly_checker)
 
-                        raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({row[1]} and {chk_dict[chk_key]}) "
-                                       f"with the same {chain_id} {row[2]}, {seq_id} {row[0]}.")
+                        # raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({row[1]} and {chk_dict[chk_key]}) "
+                        #                f"with the same {chain_id} {row[2]}, {seq_id} {row[0]}.")
 
                 for c in chain_ids:
                     cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]

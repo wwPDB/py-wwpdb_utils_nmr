@@ -19518,8 +19518,7 @@ class NmrDpUtility:
                                             return False
 
                                     else:
-                                        i = ps1['seq_id'].index(seq_id)
-                                        _comp_id = ps1['comp_id'][i]
+                                        _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
                                         if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                             return False
@@ -19548,8 +19547,7 @@ class NmrDpUtility:
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
                                         if seq_id in ps1['seq_id']:
-                                            i = ps1['seq_id'].index(seq_id)
-                                            _comp_id = ps1['comp_id'][i]
+                                            _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                                 return False
@@ -19665,7 +19663,7 @@ class NmrDpUtility:
 
                                 chain_id = to_entity_id.get(chain_id, chain_id)
 
-                            if chain_id not in ref_chain_ids and not chain_id.isdigit() and self.__combined_mode:
+                            if chain_id not in ref_chain_ids and not chain_id.isdigit() and self.__combined_mode and self.__caC is not None:
                                 chain_id = next((str(item['entity_assembly_id']) for item in self.__caC['entity_assembly']
                                                  if chain_id in item['auth_asym_id'].split(',')), chain_id)
 
@@ -19708,6 +19706,23 @@ class NmrDpUtility:
                                         if __ps1 is not None and len(ps1['seq_id']) != len(__ps1['seq_id']):
                                             continue
 
+                                    has_gap_in_auth_seq = False
+                                    if self.__caC is not None:
+                                        cif_ps = self.__caC['polymer_sequence']
+                                        nmr_ps = [ps1]
+
+                                        seq_align, _ = alignPolymerSequence(self.__pA, cif_ps, nmr_ps)
+                                        if len(seq_align) > 0:
+                                            chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+
+                                            for ca in chain_assign:
+                                                if ca['matched'] == 0 or ca['conflict'] > 0:
+                                                    continue
+                                                ref_chain_id = ca['ref_chain_id']
+                                                ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
+                                                has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
+                                                break
+
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
                                         if seq_id not in ps1['seq_id']:
@@ -19741,15 +19756,14 @@ class NmrDpUtility:
                                                         self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {warn}\n")
 
                                         else:
-                                            i = ps1['seq_id'].index(seq_id)
-                                            _comp_id = ps1['comp_id'][i]
+                                            _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
 
                                                 if (self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id))\
-                                                   or (self.__remediation_mode and (self.__valid_seq or comp_id not in monDict3)):
+                                                   or (self.__remediation_mode and (self.__valid_seq or comp_id not in monDict3 or has_gap_in_auth_seq)):
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})
@@ -19808,8 +19822,7 @@ class NmrDpUtility:
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
                                         if seq_id in ps1['seq_id']:
-                                            i = ps1['seq_id'].index(seq_id)
-                                            _comp_id = ps1['comp_id'][i]
+                                            _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 

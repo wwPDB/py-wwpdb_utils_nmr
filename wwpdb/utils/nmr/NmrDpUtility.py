@@ -19748,7 +19748,8 @@ class NmrDpUtility:
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
 
-                                                if (self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id)) or self.__remediation_mode:
+                                                if (self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id))\
+                                                   or (self.__remediation_mode and (self.__valid_seq or comp_id not in monDict3)):
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})

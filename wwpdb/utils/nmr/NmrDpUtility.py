@@ -8034,7 +8034,7 @@ class NmrDpUtility:
         self.__nefT.set_remediation_mode(self.__remediation_mode)
         self.__nefT.set_annotation_mode(self.__annotation_mode)
         self.__nefT.set_internal_mode(self.__internal_mode)
-        self.__nefT.set_merge_rescue_mode(op == 'nmr-cs-mr-merge')  # DAOTHER-9927
+        self.__nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs'))  # DAOTHER-9927
         self.__nefT.cache_clear()
 
         if not self.__allow_missing_legacy_dist_restraint and self.__remediation_mode:
@@ -18962,7 +18962,9 @@ class NmrDpUtility:
                                         allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
                                         allow_gap=(content_subtype not in ('poly_seq', 'entity')),
                                         check_identity=check_identity,
-                                        coord_assembly_checker=self.__caC if self.__native_combined or not self.__combined_mode else None)
+                                        coord_assembly_checker=self.__caC if self.__native_combined
+                                        or not self.__combined_mode
+                                        or self.__op == 'nmr-str-replace-cs' else None)
 
     def __extractPolymerSequence(self) -> bool:
         """ Extract reference polymer sequence.
@@ -19454,6 +19456,9 @@ class NmrDpUtility:
             @return: True for valid sequence, False otherwise
         """
 
+        if self.__bmrb_only and self.__internal_mode:
+            return True
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -19468,7 +19473,7 @@ class NmrDpUtility:
             poly_seq = input_source_dic['polymer_sequence']
             poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-            subtype_with_poly_seq = [poly_seq if has_poly_seq else None]
+            subtype_with_poly_seq = ['poly_seq' if has_poly_seq else None]
 
             for subtype in poly_seq_in_lp.keys():
                 subtype_with_poly_seq.append(subtype)
@@ -19577,6 +19582,8 @@ class NmrDpUtility:
 
         update_poly_seq = False
 
+        poly_seq0 = None
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -19638,7 +19645,11 @@ class NmrDpUtility:
 
                 # reference polymer sequence exists
                 if has_poly_seq and subtype1 == 'poly_seq':
-                    poly_seq1 = poly_seq
+
+                    if fileListId == 0 and poly_seq0 is None:
+                        poly_seq0 = poly_seq
+
+                    poly_seq1 = poly_seq0 if fileListId > 0 and poly_seq0 is not None else poly_seq
 
                     ref_chain_ids = {ps1['chain_id'] for ps1 in poly_seq1}
 
@@ -19737,7 +19748,8 @@ class NmrDpUtility:
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
 
-                                                if self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id):
+                                                if (self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id))\
+                                                   or (self.__remediation_mode and (self.__valid_seq or comp_id not in monDict3)):
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})
@@ -20255,6 +20267,10 @@ class NmrDpUtility:
                             cs_has_alt_comp_id = len(ext_seq_key) > 3
                             pos = ps['seq_id'].index(ext_seq_key[1])
                             ps['alt_comp_id'][pos] = ext_seq_key[3 if cs_has_alt_comp_id else 2]
+
+        if self.__op == 'nmr-str-replace-cs':
+            self.__valid_seq = False
+            self.__testSequenceConsistency()
 
         return True
 

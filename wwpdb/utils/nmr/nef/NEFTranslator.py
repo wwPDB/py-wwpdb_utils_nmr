@@ -2801,8 +2801,8 @@ class NEFTranslator:
                                                                 _offset[_entity_assembly_id] = _offset_
                                                     except StopIteration:
                                                         rev_seq[rev_seq_key] = (ps['auth_chain_id'], ref_seq_id)
-                                        if any(True for _offset_ in _offset.values() if _offset_ != 0):
-                                            sync_seq = True
+                                        # if any(True for _offset_ in _offset.values() if _offset_ != 0):
+                                        #     sync_seq = True
                                         for r in _loop.data:
                                             k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
                                             if k in rev_seq:
@@ -2827,7 +2827,8 @@ class NEFTranslator:
                                                     _offset_ = _offset[_entity_assembly_id]
                                                     r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
                                                     if sync_seq:
-                                                        if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
+                                                        if r[seq_id_col] in emptyValue\
+                                                           or int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
                                                             continue
                                                         if seq_id_col != -1:
                                                             r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
@@ -2837,7 +2838,8 @@ class NEFTranslator:
                                                 _offset_ = _offset[_entity_assembly_id]
                                                 r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
                                                 if sync_seq:
-                                                    if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
+                                                    if r[seq_id_col] in emptyValue\
+                                                       or int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
                                                         continue
                                                     if seq_id_col != -1:
                                                         r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
@@ -2926,17 +2928,17 @@ class NEFTranslator:
                                                             if alt_seq_id_col != -1:
                                                                 r[alt_seq_id_col] = str(_seq_id)
 
-                        def refresh_entity_assembly(_loop, _alt_chain_id_list):
-                            sync_seq = True
-                            if 'Original_PDB_strand_ID' in _loop.tags:
-                                _pre_tag = ['Auth_asym_ID', 'Original_PDB_strand_ID']
-                                _pre_chain_data = _loop.get_tag(_pre_tag)
-                                for _row in _pre_chain_data:
-                                    if _row[0] != _row[1]:
-                                        sync_seq = False
-                                        break
-                            else:
-                                sync_seq = False
+                        def refresh_entity_assembly(_loop, _alt_chain_id_list, sync_seq):
+                            if sync_seq:
+                                if 'Original_PDB_strand_ID' in _loop.tags:
+                                    _pre_tag = ['Auth_asym_ID', 'Original_PDB_strand_ID']
+                                    _pre_chain_data = _loop.get_tag(_pre_tag)
+                                    for _row in _pre_chain_data:
+                                        if _row[0] != _row[1]:
+                                            sync_seq = False
+                                            break
+                                else:
+                                    sync_seq = False
                             resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq)  # pylint: disable=cell-var-from-loop
 
                         def sync_entity_assembly_with_entity(_loop, _chain_id_set, _alt_chain_id_set):
@@ -3120,7 +3122,8 @@ class NEFTranslator:
                                                         elif _entity_assembly_id in _offset:
                                                             _offset_ = _offset[_entity_assembly_id]
                                                             r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
-                                                            if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
+                                                            if r[seq_id_col] in emptyValue\
+                                                               or int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
                                                                 continue
                                                             if seq_id_col != -1:
                                                                 r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
@@ -3129,14 +3132,15 @@ class NEFTranslator:
                                                     elif _entity_assembly_id in _offset:  # 2k7b
                                                         _offset_ = _offset[_entity_assembly_id]
                                                         r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
-                                                        if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
+                                                        if r[seq_id_col] in emptyValue\
+                                                           or int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
                                                             continue
                                                         if seq_id_col != -1:
                                                             r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
                                                         if alt_seq_id_col != -1:
                                                             r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
 
-                                        elif cs_of_single_poly:
+                                        elif cs_of_single_poly and count > 0:
                                             for idx, row in enumerate(loop):
                                                 loop.data[idx][auth_seq_id_col] = None
                                                 if pdb_seq_id_col != -1:
@@ -3144,7 +3148,7 @@ class NEFTranslator:
                                                 if orig_seq_id_col != -1:
                                                     loop.data[idx][orig_seq_id_col] = None
 
-                                    elif len(cif_ps) == 1 and len(alt_chain_id_set) == 1 and cs_of_single_poly:
+                                    elif len(cif_ps) == 1 and len(alt_chain_id_set) == 1 and cs_of_single_poly and count > 0:
                                         for idx, row in enumerate(loop):
                                             loop.data[idx][auth_seq_id_col] = None
                                             if pdb_seq_id_col != -1:
@@ -3164,12 +3168,12 @@ class NEFTranslator:
                                         r[chain_id_col] = r[alt_chain_id_col]
                                     # if len(alt_chain_id_set) == 1:
                                     if len(chain_id_set) <= len(alt_chain_id_set):
-                                        refresh_entity_assembly(loop, list(alt_chain_id_set))
+                                        refresh_entity_assembly(loop, list(alt_chain_id_set), True)
 
                         elif not sync_entity_assembly_with_entity(loop, chain_id_set, alt_chain_id_set):  # 2kxc
                             if (len(alt_chain_id_set) == 1 and len(chain_id_set) == 1)\
                                or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
-                                refresh_entity_assembly(loop, list(alt_chain_id_set))
+                                refresh_entity_assembly(loop, list(alt_chain_id_set), False)
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and has_coord:
                     pre_comp_data = loop.get_tag(['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])

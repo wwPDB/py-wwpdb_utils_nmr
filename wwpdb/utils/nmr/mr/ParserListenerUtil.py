@@ -75,14 +75,21 @@ MAX_ERR_LINENUM_REPORT = 20
 
 # isotope numbers of NMR observable nucleus
 ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS = {'H': [1, 2, 3],
+                                   'LI': [6],
+                                   'B': [11, 10],
                                    'C': [13],
                                    'N': [15, 14],
                                    'O': [17],
+                                   'F': [19],
+                                   'NA': [23],
+                                   'SI': [29],
                                    'P': [31],
                                    'S': [33],
-                                   'F': [19],
+                                   'CL': [35],
+                                   'CA': [43],
                                    'CD': [113, 111],
-                                   'CA': [43]
+                                   'XE': [129],
+                                   'PT': [195]
                                    }
 
 # isotope names of NMR observable nucleus
@@ -95,10 +102,8 @@ ISOTOPE_NAMES_OF_NMR_OBS_NUCS = tuple(ISOTOPE_NAMES_OF_NMR_OBS_NUCS)
 # nucleus with half spin
 HALF_SPIN_NUCLEUS = ('H', 'C', 'N', 'P', 'F', 'CD')
 
-
 # allowed BMRB ambiguity codes
 ALLOWED_AMBIGUITY_CODES = (1, 2, 3, 4, 5, 6, 9)
-
 
 ALLOWED_ISOTOPE_NUMBERS = []
 for isotopeNums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.values():

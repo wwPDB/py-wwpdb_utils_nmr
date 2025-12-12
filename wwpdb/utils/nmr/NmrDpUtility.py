@@ -30242,7 +30242,7 @@ class NmrDpUtility:
 
                                     _index, _row, reparse = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
                                                                         coord_atom_site, _seq_key,
-                                                                        comp_id, atom_id, loop, index)
+                                                                        comp_id, atom_id, loop, idx)
                                     reparse_request |= reparse
 
                             if not resolved and seq_id is not None and has_coordinate:
@@ -55609,6 +55609,8 @@ class NmrDpUtility:
 
             for fileListId in range(self.__file_path_list_len):
 
+                modified = False
+
                 input_source = self.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
@@ -55627,20 +55629,23 @@ class NmrDpUtility:
 
                 if self.__star_data_type[fileListId] == 'Loop':
                     if self.__star_data[fileListId].category == lp_category:
-                        self.__remediateRdcLoop__(file_type, self.__star_data[fileListId])
+                        modified |= self.__remediateRdcLoop__(file_type, self.__star_data[fileListId])
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
                     try:
-                        self.__remediateRdcLoop__(file_type, self.__star_data[fileListId].get_loop(lp_category))
+                        modified |= self.__remediateRdcLoop__(file_type, self.__star_data[fileListId].get_loop(lp_category))
                     except KeyError:
                         continue
 
                 else:
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                         try:
-                            self.__remediateRdcLoop__(file_type, sf.get_loop(lp_category))
+                            modified |= self.__remediateRdcLoop__(file_type, sf.get_loop(lp_category))
                         except KeyError:
                             continue
+
+                if modified:
+                    self.__depositNmrData()
 
             return True
 
@@ -55654,9 +55659,11 @@ class NmrDpUtility:
 
             return False
 
-    def __remediateRdcLoop__(self, file_type: str, loop: pynmrstar.Loop):
+    def __remediateRdcLoop__(self, file_type: str, loop: pynmrstar.Loop) -> bool:
         """ Remediate rdc target value due to the known OneDep bug, if required.
         """
+
+        modified = False
 
         item_names = self.item_names_in_rdc_loop[file_type]
 
@@ -55674,8 +55681,11 @@ class NmrDpUtility:
 
                 lower_limit, target_value, upper_limit = float(row[0]), float(row[1]), float(row[2])
 
-                if lower_limit < -target_value < upper_limit or abs((lower_limit + upper_limit) / 2.0 + target_value) < 0.01:
+                if abs((lower_limit + upper_limit) / 2.0 + target_value) < 0.01:
                     loop.data[idx][val_col] = str(-target_value)
+                    modified = True
+
+        return modified
 
     def __remediateRawTextPk(self) -> bool:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).

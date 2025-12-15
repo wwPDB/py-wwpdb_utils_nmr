@@ -8034,7 +8034,7 @@ class NmrDpUtility:
         self.__nefT.set_remediation_mode(self.__remediation_mode)
         self.__nefT.set_annotation_mode(self.__annotation_mode)
         self.__nefT.set_internal_mode(self.__internal_mode)
-        self.__nefT.set_merge_rescue_mode(op == 'nmr-cs-mr-merge')  # DAOTHER-9927
+        self.__nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs'))  # DAOTHER-9927
         self.__nefT.cache_clear()
 
         if not self.__allow_missing_legacy_dist_restraint and self.__remediation_mode:
@@ -18962,7 +18962,9 @@ class NmrDpUtility:
                                         allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
                                         allow_gap=(content_subtype not in ('poly_seq', 'entity')),
                                         check_identity=check_identity,
-                                        coord_assembly_checker=self.__caC if self.__native_combined or not self.__combined_mode else None)
+                                        coord_assembly_checker=self.__caC if self.__native_combined
+                                        or not self.__combined_mode
+                                        or self.__op == 'nmr-str-replace-cs' else None)
 
     def __extractPolymerSequence(self) -> bool:
         """ Extract reference polymer sequence.
@@ -19454,6 +19456,9 @@ class NmrDpUtility:
             @return: True for valid sequence, False otherwise
         """
 
+        if self.__bmrb_only and self.__internal_mode:
+            return True
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -19468,7 +19473,7 @@ class NmrDpUtility:
             poly_seq = input_source_dic['polymer_sequence']
             poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-            subtype_with_poly_seq = [poly_seq if has_poly_seq else None]
+            subtype_with_poly_seq = ['poly_seq' if has_poly_seq else None]
 
             for subtype in poly_seq_in_lp.keys():
                 subtype_with_poly_seq.append(subtype)
@@ -19513,8 +19518,7 @@ class NmrDpUtility:
                                             return False
 
                                     else:
-                                        i = ps1['seq_id'].index(seq_id)
-                                        _comp_id = ps1['comp_id'][i]
+                                        _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
                                         if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                             return False
@@ -19543,8 +19547,7 @@ class NmrDpUtility:
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
                                         if seq_id in ps1['seq_id']:
-                                            i = ps1['seq_id'].index(seq_id)
-                                            _comp_id = ps1['comp_id'][i]
+                                            _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                                 return False
@@ -19576,6 +19579,8 @@ class NmrDpUtility:
             return True
 
         update_poly_seq = False
+
+        poly_seq0 = None
 
         for fileListId in range(self.__file_path_list_len):
 
@@ -19638,7 +19643,11 @@ class NmrDpUtility:
 
                 # reference polymer sequence exists
                 if has_poly_seq and subtype1 == 'poly_seq':
-                    poly_seq1 = poly_seq
+
+                    if fileListId == 0 and poly_seq0 is None:
+                        poly_seq0 = poly_seq
+
+                    poly_seq1 = poly_seq0 if fileListId > 0 and poly_seq0 is not None else poly_seq
 
                     ref_chain_ids = {ps1['chain_id'] for ps1 in poly_seq1}
 
@@ -19654,7 +19663,7 @@ class NmrDpUtility:
 
                                 chain_id = to_entity_id.get(chain_id, chain_id)
 
-                            if chain_id not in ref_chain_ids and not chain_id.isdigit() and self.__combined_mode:
+                            if chain_id not in ref_chain_ids and not chain_id.isdigit() and self.__combined_mode and self.__caC is not None:
                                 chain_id = next((str(item['entity_assembly_id']) for item in self.__caC['entity_assembly']
                                                  if chain_id in item['auth_asym_id'].split(',')), chain_id)
 
@@ -19697,6 +19706,23 @@ class NmrDpUtility:
                                         if __ps1 is not None and len(ps1['seq_id']) != len(__ps1['seq_id']):
                                             continue
 
+                                    has_gap_in_auth_seq = False
+                                    if self.__caC is not None:
+                                        cif_ps = self.__caC['polymer_sequence']
+                                        nmr_ps = [ps1]
+
+                                        seq_align, _ = alignPolymerSequence(self.__pA, cif_ps, nmr_ps)
+                                        if len(seq_align) > 0:
+                                            chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+
+                                            for ca in chain_assign:
+                                                if ca['matched'] == 0 or ca['conflict'] > 0:
+                                                    continue
+                                                ref_chain_id = ca['ref_chain_id']
+                                                ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
+                                                has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
+                                                break
+
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
                                         if seq_id not in ps1['seq_id']:
@@ -19730,14 +19756,14 @@ class NmrDpUtility:
                                                         self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {warn}\n")
 
                                         else:
-                                            i = ps1['seq_id'].index(seq_id)
-                                            _comp_id = ps1['comp_id'][i]
+                                            _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
 
-                                                if self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id):
+                                                if (self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id))\
+                                                   or (self.__remediation_mode and (self.__valid_seq or comp_id not in monDict3 or has_gap_in_auth_seq)):
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})
@@ -19796,8 +19822,7 @@ class NmrDpUtility:
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
                                         if seq_id in ps1['seq_id']:
-                                            i = ps1['seq_id'].index(seq_id)
-                                            _comp_id = ps1['comp_id'][i]
+                                            _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
@@ -20255,6 +20280,10 @@ class NmrDpUtility:
                             cs_has_alt_comp_id = len(ext_seq_key) > 3
                             pos = ps['seq_id'].index(ext_seq_key[1])
                             ps['alt_comp_id'][pos] = ext_seq_key[3 if cs_has_alt_comp_id else 2]
+
+        if self.__op == 'nmr-str-replace-cs':
+            self.__valid_seq = False
+            self.__testSequenceConsistency()
 
         return True
 
@@ -21950,7 +21979,9 @@ class NmrDpUtility:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature.
         """
 
-        return self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
+        atom_list, _, details = self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id)
+
+        return atom_list if details is None else []
 
     def __getAtomIdListInXplorForLigandRemap(self, comp_id: str, atom_id: str, coord_atom_site: dict) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature
@@ -21973,7 +22004,8 @@ class NmrDpUtility:
 
         return self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
-    def __getAtomIdListWithAmbigCode(self, comp_id: str, atom_id: str, leave_unmatched: bool = True) -> Tuple[List[str], Optional[int], Optional[str]]:
+    def __getAtomIdListWithAmbigCode(self, comp_id: str, atom_id: str, leave_unmatched: bool = True
+                                     ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @see: NEFTranslator.get_valid_star_atom()
         """
@@ -22147,13 +22179,25 @@ class NmrDpUtility:
 
                                     err = f"Invalid atom name {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
 
-                                    self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': err})
-                                    self.report.setError()
+                                    if self.__remediation_mode and len(self.__getAtomIdListInXplor(comp_id, atom_id)) > 0:
 
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                               'description': err})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {err}\n")
+
+                                    else:
+
+                                        self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                             'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
 
                 # non-standard residue
                 else:
@@ -22761,7 +22805,7 @@ class NmrDpUtility:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__remediation_mode and 1 in isotope_nums and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751, 9520
+                            if self.__remediation_mode and 1 in isotope_nums and atom_id[0] in pseProBeginCode:  # DAOTHER-8663, 8751, 9520
                                 continue
 
                             err = f"Invalid atom name {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
@@ -28256,7 +28300,7 @@ class NmrDpUtility:
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, _atom_site_atom_id, ccU=self.__ccU))
                                 if len(atom_ids) == 1 and atom_ids[0] in _atom_site_atom_id and atom_id not in _atom_site_atom_id:
                                     atom_id = atom_ids[0]
-                            if self.__annotation_mode and atom_ids[0] not in _atom_site_atom_id:  # DAOTHER-9286
+                            if self.__annotation_mode and (len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id):  # DAOTHER-9286
                                 atom_ids = self.__getAtomIdListInXplorForLigandRemap(comp_id, atom_id, _coord_atom_site)
                                 if comp_id not in incomplete_comp_id_annotation:
                                     incomplete_comp_id_annotation.append(comp_id)
@@ -30198,7 +30242,7 @@ class NmrDpUtility:
 
                                     _index, _row, reparse = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
                                                                         coord_atom_site, _seq_key,
-                                                                        comp_id, atom_id, loop, index)
+                                                                        comp_id, atom_id, loop, idx)
                                     reparse_request |= reparse
 
                             if not resolved and seq_id is not None and has_coordinate:
@@ -55565,6 +55609,8 @@ class NmrDpUtility:
 
             for fileListId in range(self.__file_path_list_len):
 
+                modified = False
+
                 input_source = self.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
@@ -55583,20 +55629,23 @@ class NmrDpUtility:
 
                 if self.__star_data_type[fileListId] == 'Loop':
                     if self.__star_data[fileListId].category == lp_category:
-                        self.__remediateRdcLoop__(file_type, self.__star_data[fileListId])
+                        modified |= self.__remediateRdcLoop__(file_type, self.__star_data[fileListId])
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
                     try:
-                        self.__remediateRdcLoop__(file_type, self.__star_data[fileListId].get_loop(lp_category))
+                        modified |= self.__remediateRdcLoop__(file_type, self.__star_data[fileListId].get_loop(lp_category))
                     except KeyError:
                         continue
 
                 else:
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                         try:
-                            self.__remediateRdcLoop__(file_type, sf.get_loop(lp_category))
+                            modified |= self.__remediateRdcLoop__(file_type, sf.get_loop(lp_category))
                         except KeyError:
                             continue
+
+                if modified:
+                    self.__depositNmrData()
 
             return True
 
@@ -55610,9 +55659,11 @@ class NmrDpUtility:
 
             return False
 
-    def __remediateRdcLoop__(self, file_type: str, loop: pynmrstar.Loop):
+    def __remediateRdcLoop__(self, file_type: str, loop: pynmrstar.Loop) -> bool:
         """ Remediate rdc target value due to the known OneDep bug, if required.
         """
+
+        modified = False
 
         item_names = self.item_names_in_rdc_loop[file_type]
 
@@ -55630,8 +55681,11 @@ class NmrDpUtility:
 
                 lower_limit, target_value, upper_limit = float(row[0]), float(row[1]), float(row[2])
 
-                if lower_limit < -target_value < upper_limit or abs((lower_limit + upper_limit) / 2.0 + target_value) < 0.01:
+                if abs((lower_limit + upper_limit) / 2.0 + target_value) < 0.01:
                     loop.data[idx][val_col] = str(-target_value)
+                    modified = True
+
+        return modified
 
     def __remediateRawTextPk(self) -> bool:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).

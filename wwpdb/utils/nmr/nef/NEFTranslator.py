@@ -2767,6 +2767,7 @@ class NEFTranslator:
 
                                         rev_seq, _offset = {}, {}
                                         _entity_assembly_id = _entity_id = None
+                                        _offset_auth_seq_id = 0
 
                                         for ca in chain_assign:
                                             if ca['matched'] == 0 or ca['conflict'] > 0:
@@ -2797,12 +2798,16 @@ class NEFTranslator:
                                                             _k = (ps['auth_chain_id'], auth_seq_id, ps['comp_id'][ps['auth_seq_id'].index(auth_seq_id)])
                                                             if _k in auth_to_star_seq:
                                                                 _entity_assembly_id, _offset_, _entity_id, _ = auth_to_star_seq[_k]
+                                                                _offset_auth_seq_id = ref_seq_id - test_seq_id
                                                                 _offset_ -= auth_seq_id
                                                                 _offset[_entity_assembly_id] = _offset_
                                                     except StopIteration:
                                                         rev_seq[rev_seq_key] = (ps['auth_chain_id'], ref_seq_id)
-                                        # if any(True for _offset_ in _offset.values() if _offset_ != 0):
-                                        #     sync_seq = True
+
+                                        if not sync_seq and _offset_auth_seq_id != 0\
+                                           and any(True for _offset_ in _offset.values() if _offset_ == _offset_auth_seq_id):
+                                            sync_seq = _offset_auth_seq_id > 0 or abs(_offset_auth_seq_id) > 1  # 3zua/8vrc/8wa4/4uei
+
                                         for r in _loop.data:
                                             k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
                                             if k in rev_seq:
@@ -3032,7 +3037,8 @@ class NEFTranslator:
                                     orig_chain_id_col = loop.tags.index('Original_PDB_strand_ID') if 'Original_PDB_strand_ID' in loop.tags else -1
                                     orig_seq_id_col = loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in loop.tags else -1
 
-                                    cs_of_single_poly = len(chain_id_set) == 1\
+                                    # 2n7k
+                                    cs_of_single_poly = len(chain_id_set) == 1 and len(alt_chain_id_set) == 1\
                                         and (cif_np is None or not any(True for row in pre_seq_data if any(True for np in cif_np if row[3] in np['comp_id'])))\
                                         and (cif_br is None or not any(True for row in pre_seq_data if any(True for br in cif_br if row[3] in br['comp_id'])))
 
@@ -3089,16 +3095,22 @@ class NEFTranslator:
 
                                             if _offset_auth_seq_id != 0 and cs_of_single_poly:
                                                 for idx, row in enumerate(loop):
-                                                    if _entity_assembly_id is not None and _offset_auth_seq_id + _offset[_entity_assembly_id] != 0:
-                                                        loop.data[idx][auth_seq_id_col] = str(int(loop.data[idx][auth_seq_id_col]) + _offset_auth_seq_id)
-                                                        if seq_id_col != -1:
-                                                            loop.data[idx][seq_id_col] = loop.data[idx][auth_seq_id_col]
-                                                        if alt_seq_id_col != -1:
-                                                            loop.data[idx][alt_seq_id_col] = loop.data[idx][auth_seq_id_col]
+                                                    if _entity_assembly_id in _offset:
+                                                        if _offset_auth_seq_id == _offset[_entity_assembly_id]:
+                                                            break
+                                                        if _offset_auth_seq_id + _offset[_entity_assembly_id] != 0:
+                                                            loop.data[idx][auth_seq_id_col] = str(int(loop.data[idx][auth_seq_id_col]) + _offset_auth_seq_id)
+                                                            if seq_id_col != -1:
+                                                                loop.data[idx][seq_id_col] = loop.data[idx][auth_seq_id_col]
+                                                            if alt_seq_id_col != -1:
+                                                                loop.data[idx][alt_seq_id_col] = loop.data[idx][auth_seq_id_col]
+                                                        else:
+                                                            loop.data[idx][auth_seq_id_col] = None  # daother-9927-2nd
                                                     else:
                                                         loop.data[idx][auth_seq_id_col] = None
 
-                                            else:
+                                            # 2kfu/8vrc
+                                            elif count > 0 or (cs_of_single_poly and _entity_assembly_id in _offset and _offset[_entity_assembly_id] == 0):
                                                 for r in loop.data:
                                                     k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
                                                     if k in rev_seq:
@@ -3112,7 +3124,6 @@ class NEFTranslator:
                                                                 r[orig_seq_id_col] = str(_rev_seq[1])
                                                             _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
                                                             r[chain_id_col] = str(_entity_assembly_id)
-                                                            _offset_ = _offset[_entity_assembly_id]
                                                             if entity_id_col != -1:
                                                                 r[entity_id_col] = str(_entity_id)
                                                             if seq_id_col != -1:

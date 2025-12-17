@@ -262,19 +262,20 @@ For example,
 - python 3.6 or later
 
 - pip packages:
-	- pynmrstar (3.2.0 or later)
-	- wwpdb.utils.align
-	- munkres
+	- antlr4-python3-runtime
+	- chardet
+	- datetime
 	- mmcif
+	- munkres
 	- numpy
 	- packaging
-	- rmsd
-	- chardet
-	- scikit-learn
-	- antlr4-python3-runtime
-	- striprtf
-	- datetime
+	- pynmrstar (3.2.0 or later)
 	- quickle (optional for minor performance improvement)
+	- requests
+	- rmsd
+	- scikit-learn
+	- striprtf
+	- wwpdb.utils.align
 
 - If your Python version is less than 3.10, downgrade urllib3 from v2 to v1. Otherwise, [the urllib3 v2 requires OpenSSL 1.1.1+](https://github.com/urllib3/urllib3/issues/2168).
 ```bash

@@ -1,0 +1,14 @@
+antlr4-pantlr4-python3-runtime
+chardet
+datetime
+mmcif
+munkres
+numpy
+packaging
+pynmrstar
+quickle
+rmsd
+requests
+scikit-learn
+striprtf
+wwpdb.utils.align

@@ -8,6 +8,7 @@ packaging
 pynmrstar
 quickle
 rmsd
+requests
 scikit-learn
 striprtf
 wwpdb.utils.align

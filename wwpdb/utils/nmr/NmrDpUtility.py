@@ -19723,6 +19723,15 @@ class NmrDpUtility:
                                                 has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
                                                 break
 
+                                    if any(True for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id'])
+                                           if seq_id in ps1['seq_id'] and comp_id not in emptyValue
+                                           and ps1['comp_id'][ps1['seq_id'].index(seq_id)] not in emptyValue
+                                           and comp_id != ps1['comp_id'][ps1['seq_id'].index(seq_id)]):
+                                        seq_align, _ = alignPolymerSequence(self.__pA, [ps1], [ps2])
+
+                                        if seq_align is not None and len(seq_align) == 1 and seq_align[0]['matched'] > 0 and seq_align[0]['conflict'] == 0:
+                                            continue
+
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
                                         if seq_id not in ps1['seq_id']:

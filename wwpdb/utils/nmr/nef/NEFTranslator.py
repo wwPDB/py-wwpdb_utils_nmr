@@ -3106,8 +3106,6 @@ class NEFTranslator:
                                                                 loop.data[idx][alt_seq_id_col] = loop.data[idx][auth_seq_id_col]
                                                         else:
                                                             loop.data[idx][auth_seq_id_col] = None  # daother-9927-2nd
-                                                    else:
-                                                        loop.data[idx][auth_seq_id_col] = None
 
                                             # 2kfu/8vrc
                                             elif count > 0 or (cs_of_single_poly and _entity_assembly_id in _offset and _offset[_entity_assembly_id] == 0):
@@ -3130,7 +3128,7 @@ class NEFTranslator:
                                                                 r[seq_id_col] = str(_seq_id)
                                                             if alt_seq_id_col != -1:
                                                                 r[alt_seq_id_col] = str(_seq_id)
-                                                        elif _entity_assembly_id in _offset:
+                                                        elif _entity_assembly_id in _offset and count > 0:
                                                             _offset_ = _offset[_entity_assembly_id]
                                                             r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
                                                             if r[seq_id_col] in emptyValue\
@@ -3140,7 +3138,7 @@ class NEFTranslator:
                                                                 r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
                                                             if alt_seq_id_col != -1:
                                                                 r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
-                                                    elif _entity_assembly_id in _offset:  # 2k7b
+                                                    elif _entity_assembly_id in _offset and count > 0:
                                                         _offset_ = _offset[_entity_assembly_id]
                                                         r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
                                                         if r[seq_id_col] in emptyValue\
@@ -3878,7 +3876,6 @@ class NEFTranslator:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set((row[2], int(row[0]) + offset_seq_ids[row[2]], row[1].upper()) for row in seq_data),
                                     key=itemgetter(0, 1))
-
                 chk_dict = {(row[2], int(row[0])): row[1].upper() for row in seq_data}
 
                 for row in seq_data:
@@ -3934,7 +3931,7 @@ class NEFTranslator:
                 if has_coord:
                     nmr_ps = []
                     for c in chain_ids:
-                        nmr_ps.append({'chain_id': c, 'seq_id': seq_dict[c], 'comp_id': cmp_dict[c]})
+                        nmr_ps.append({'chain_id': c, 'seq_id': copy.copy(seq_dict[c]), 'comp_id': copy.copy(cmp_dict[c])})
                     seq_align, _ = alignPolymerSequence(self.__pA, cif_ps, nmr_ps)
                     chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
 
@@ -4010,6 +4007,7 @@ class NEFTranslator:
 
                             ent['seq_id'].append(_seq_id)
                             ent['comp_id'].append(_comp_id)
+
                             if has_alt_comp_id:
                                 try:
                                     r = next(r for r in comp_data

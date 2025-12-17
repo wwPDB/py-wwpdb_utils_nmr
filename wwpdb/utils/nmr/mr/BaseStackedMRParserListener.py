@@ -6320,24 +6320,27 @@ class BaseStackedMRParserListener():
                         if self.mrAtomNameMapping is not None:
                             # 6u24: split during annotation
                             if isPolySeq and compId in monDict3 and 'alt_comp_id' in ps and self.hasNonPolySeq:
-                                if _seqId in ps['auth_seq_id']:
-                                    authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId)]
-                                else:
-                                    authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId_)]
-                                if authCompId not in monDict3:
-                                    __seqId__, __compId__, __atomId__ = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId,
-                                                                                                   authCompId, atomId, ignoreSeqId=True)
-                                    split = 0
-                                    for np in self.nonPolySeq:
-                                        if __compId__ in np['comp_id']:
-                                            split += 1
-                                    if split == 1:
+                                try:
+                                    if _seqId in ps['auth_seq_id']:
+                                        authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId)]
+                                    else:
+                                        authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId_)]
+                                    if authCompId not in monDict3:
+                                        __seqId__, __compId__, __atomId__ = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId,
+                                                                                                       authCompId, atomId, ignoreSeqId=True)
+                                        split = 0
                                         for np in self.nonPolySeq:
                                             if __compId__ in np['comp_id']:
-                                                _factor['chain_id'] = [np['auth_chain_id']]
-                                                _factor['seq_id'] = [__seqId__]
-                                                _factor['atom_id'] = [__atomId__]
-                                        continue
+                                                split += 1
+                                        if split == 1:
+                                            for np in self.nonPolySeq:
+                                                if __compId__ in np['comp_id']:
+                                                    _factor['chain_id'] = [np['auth_chain_id']]
+                                                    _factor['seq_id'] = [__seqId__]
+                                                    _factor['atom_id'] = [__atomId__]
+                                            continue
+                                except IndexError:
+                                    pass
 
                             if compId not in monDict3\
                                and ((_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id'])

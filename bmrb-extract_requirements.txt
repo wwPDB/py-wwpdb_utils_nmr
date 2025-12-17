@@ -6,7 +6,7 @@ munkres
 numpy
 packaging
 pynmrstar
-quickle
+# quickle (requires gcc)
 rmsd
 requests
 scikit-learn

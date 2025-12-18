@@ -310,6 +310,7 @@ try:
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
+                                           alignPolymerSequenceWithConflicts,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomNameMappingFromRevisions,
@@ -488,6 +489,7 @@ except ImportError:
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
+                               alignPolymerSequenceWithConflicts,
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomNameMappingFromRevisions,
@@ -19733,7 +19735,7 @@ class NmrDpUtility:
                                             sa = seq_align[0]
                                             if sa['matched'] > 0 and sa['conflict'] == 0:
                                                 continue
-                                        elif fileListId > 0:
+                                        else:
                                             has_alt_seq_align = False
                                             for ps0 in poly_seq1:
                                                 if ps0['chain_id'] == ps1['chain_id']:
@@ -19747,6 +19749,21 @@ class NmrDpUtility:
 
                                             if has_alt_seq_align:
                                                 continue
+
+                                            for c in range(1, 5):
+                                                seq_align, _ = alignPolymerSequenceWithConflicts(self.__pA, [ps1], [ps2], c)
+
+                                                if len(seq_align) == 1:
+                                                    sa = seq_align[0]
+                                                    if sa['matched'] > sa['conflict'] and sa['conflict'] <= c:
+                                                        _ps1 = copy.deepcopy(ps1)
+                                                        _ps2 = copy.deepcopy(ps2)
+                                                        _ps1['seq_id'] = sa['test_seq_id']
+                                                        _ps1['comp_id'] = sa['ref_comp_id']
+                                                        _ps2['seq_id'] = sa['test_seq_id']
+                                                        _ps2['comp_id'] = sa['test_comp_id']
+                                                        ps1, ps2 = _ps1, _ps2
+                                                        break
 
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 

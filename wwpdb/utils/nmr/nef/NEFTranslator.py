@@ -3972,6 +3972,9 @@ class NEFTranslator:
                                     if ref_auth_seq_id in unmapped_ref_seq_ids:
                                         valid_spacer_key.append((c, ref_auth_seq_id))
 
+                    if len(seq_align) == 0:
+                        allow_gap = False
+
                 for c in chain_ids:
                     ent = {}  # entity
 
@@ -3995,14 +3998,14 @@ class NEFTranslator:
                                             continue
                                         ent['seq_id'].append(s)
                                         ent['comp_id'].append('.')
-                                        if has_alt_comp_id:
+                                        if 'alt_comp_id' in ent:
                                             ent['alt_comp_id'].append('.')
                                 if any((c, s) in valid_spacer_key for s in range(_seq_id_ + 1, _seq_id)):
                                     for s in range(_seq_id_ + 1, _seq_id):
                                         if s not in ent['seq_id']:
                                             ent['seq_id'].append(s)
                                             ent['comp_id'].append('.')
-                                            if has_alt_comp_id:
+                                            if 'alt_comp_id' in ent:
                                                 ent['alt_comp_id'].append('.')
 
                             ent['seq_id'].append(_seq_id)
@@ -4014,21 +4017,24 @@ class NEFTranslator:
                                              if r[0] == c and r[1] not in emptyValue and r[1].isdigit() and int(r[1]) == _seq_id and r[2] == _comp_id)
                                     if len(r) == 5:
                                         if r[4] not in emptyValue:
-                                            ent['alt_comp_id'].append(r[4])
+                                            if 'alt_comp_id' in ent:
+                                                ent['alt_comp_id'].append(r[4])
                                         elif r[3] not in emptyValue:
-                                            ent['alt_comp_id'].append(r[3])
+                                            if 'alt_comp_id' in ent:
+                                                ent['alt_comp_id'].append(r[3])
                                         else:
-                                            del ent['alt_comp_id']
-                                            has_alt_comp_id = False
+                                            if 'alt_comp_id' in ent:
+                                                del ent['alt_comp_id']
                                     else:
                                         if r[3] not in emptyValue:
-                                            ent['alt_comp_id'].append(r[3])
+                                            if 'alt_comp_id' in ent:
+                                                ent['alt_comp_id'].append(r[3])
                                         else:
-                                            del ent['alt_comp_id']
-                                            has_alt_comp_id = False
+                                            if 'alt_comp_id' in ent:
+                                                del ent['alt_comp_id']
                                 except StopIteration:
-                                    del ent['alt_comp_id']
-                                    has_alt_comp_id = False
+                                    if 'alt_comp_id' in ent:
+                                        del ent['alt_comp_id']
 
                             _seq_id_ = _seq_id
 
@@ -4042,21 +4048,24 @@ class NEFTranslator:
                                              if r[0] == c and r[1] not in emptyValue and r[1].isdigit() and int(r[1]) == _seq_id and r[2] == _comp_id)
                                     if len(r) == 5:
                                         if r[4] not in emptyValue:
-                                            ent['alt_comp_id'].append(r[4])
+                                            if 'alt_comp_id' in ent:
+                                                ent['alt_comp_id'].append(r[4])
                                         elif r[3] not in emptyValue:
-                                            ent['alt_comp_id'].append(r[3])
+                                            if 'alt_comp_id' in ent:
+                                                ent['alt_comp_id'].append(r[3])
                                         else:
-                                            del ent['alt_comp_id']
-                                            has_alt_comp_id = False
+                                            if 'alt_comp_id' in ent:
+                                                del ent['alt_comp_id']
                                     else:
                                         if r[3] not in emptyValue:
-                                            ent['alt_comp_id'].append(r[3])
+                                            if 'alt_comp_id' in ent:
+                                                ent['alt_comp_id'].append(r[3])
                                         else:
-                                            del ent['alt_comp_id']
-                                            has_alt_comp_id = False
+                                            if 'alt_comp_id' in ent:
+                                                del ent['alt_comp_id']
                                 except StopIteration:
-                                    del ent['alt_comp_id']
-                                    has_alt_comp_id = False
+                                    if 'alt_comp_id' in ent:
+                                        del ent['alt_comp_id']
 
                     if len(chain_ids) > 1 and check_identity:
                         identity = []

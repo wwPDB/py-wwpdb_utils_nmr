@@ -1627,6 +1627,29 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
+            # mitigation for sparse distance restraints like disulfide bond, hydrogen bond (8rlz)
+            if _matched > 0 and conflict > 0:
+                _ps1, _ps2 = beautifyPolySeq(ps1, ps2, seqIdName1='seq_id')
+
+                pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                pA.addTestSequence(_ps2['comp_id'], chain_id)
+                pA.doAlign()
+
+                myAlign = pA.getAlignment(chain_id)
+
+                length = len(myAlign)
+
+                _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                if _matched > 0 and conflict <= conflictTh:
+
+                    if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0) - conflictTh:
+                        continue
+
+                    ps1, ps2 = _ps1, _ps2
+
+                    seq_id_name = 'auth_seq_id' if 'auth_seq_id' in ps1 else 'seq_id'
+
             if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0) - conflictTh:
                 continue
 
@@ -1651,6 +1674,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
             if conflict == 0:
                 if hasLargeInnerSeqGap(_ps2) and not hasLargeInnerSeqGap(_ps1):
                     _ps2 = fillInnerBlankCompId(_ps2)
+            else:
+                _ps2 = fillInnerBlankCompId(_ps2)
 
             has_auth_seq_id1 = 'auth_seq_id' in _ps1
             has_auth_seq_id2 = 'auth_seq_id' in _ps2
@@ -1863,6 +1888,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                          'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
                          'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
+                         'ref_comp_id': _ps1['comp_id'], 'test_comp_id': _ps2['comp_id'],
                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 

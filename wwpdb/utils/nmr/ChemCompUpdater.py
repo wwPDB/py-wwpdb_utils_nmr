@@ -39,9 +39,11 @@ class ChemCompUpdater:
 
     def __init__(self, force: bool = False):
         self.__components_cif = 'components.cif'
-        self.__components_tarball = self.__components_cif + '.gz'
-        self.__url_for_components = 'https://files.wwpdb.org/pub/pdb/data/monomers/' + self.__components_tarball
-        self.__work_dir = 'ligand_dict'
+        self.__components_cif_gz = self.__components_cif + '.gz'
+        self.__components_cif_path = os.path.join(os.path.dirname(__file__), self.__components_cif)
+        self.__components_cif_gz_path = os.path.join(os.path.dirname(__file__), self.__components_cif_gz)
+        self.__url_for_components = 'https://files.wwpdb.org/pub/pdb/data/monomers/' + self.__components_cif_gz
+        self.__work_dir = os.path.join(os.path.dirname(__file__), 'ligand_dict')
 
         self.__force = force
 
@@ -56,15 +58,15 @@ class ChemCompUpdater:
 
             os.mkdir(self.__work_dir)
 
-            print(f'Uncompressing {self.__components_tarball!r} ...')
+            print(f'Uncompressing {self.__components_cif_gz!r} ...')
 
-            uncompress_gzip_file(self.__components_tarball, self.__components_cif)
+            uncompress_gzip_file(self.__components_cif_gz_path, self.__components_cif_path)
 
             print(f'Deplying to {self.__work_dir!r} ...')
 
             dBlockList = []
 
-            with open(self.__components_cif, 'r', encoding='utf-8') as ifh:
+            with open(self.__components_cif_path, 'r', encoding='utf-8') as ifh:
                 pRd = PdbxReader(ifh)
                 pRd.read(dBlockList)
 
@@ -81,7 +83,7 @@ class ChemCompUpdater:
                     pdbxW = PdbxWriter(ofh)
                     pdbxW.write([dBlock])
 
-            os.remove(self.__components_cif)
+            os.remove(self.__components_cif_path)
 
             print(f'{self.__work_dir!r} is up-to-date.')
 
@@ -94,7 +96,7 @@ class ChemCompUpdater:
             print(f'Downloading {self.__url_for_components} ...')
 
             r = requests.get(self.__url_for_components, timeout=300.0)
-            with open(os.path.join(self.__components_tarball), 'wb') as f:
+            with open(os.path.join(self.__components_cif_gz_path), 'wb') as f:
                 f.write(r.content)
 
         except Exception as e:
@@ -116,8 +118,8 @@ class ChemCompUpdater:
 
         url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
 
-        if os.path.exists(self.__components_tarball):
-            file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__components_tarball)).astimezone()
+        if os.path.exists(self.__components_cif_gz_path):
+            file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__components_cif_gz_path)).astimezone()
             if url_last_modified > file_last_modified:
                 self.download()
                 self.deploy()
@@ -126,7 +128,7 @@ class ChemCompUpdater:
                 self.deploy()
 
             else:
-                print(f"{self.__components_tarball!r} is up-to-date. (use '--force' argument)")
+                print(f"{self.__components_cif_gz!r} is up-to-date. (use '--force' argument)")
 
         else:
             self.download()

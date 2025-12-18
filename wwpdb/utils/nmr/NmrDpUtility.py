@@ -19729,8 +19729,24 @@ class NmrDpUtility:
                                            and comp_id != ps1['comp_id'][ps1['seq_id'].index(seq_id)]):
                                         seq_align, _ = alignPolymerSequence(self.__pA, [ps1], [ps2])
 
-                                        if seq_align is not None and len(seq_align) == 1 and seq_align[0]['matched'] > 0 and seq_align[0]['conflict'] == 0:
-                                            continue
+                                        if len(seq_align) == 1:
+                                            sa = seq_align[0]
+                                            if sa['matched'] > 0 and sa['conflict'] == 0:
+                                                continue
+                                        elif fileListId > 0:
+                                            has_alt_seq_align = False
+                                            for ps0 in poly_seq1:
+                                                if ps0['chain_id'] == ps1['chain_id']:
+                                                    continue
+                                                seq_align, _ = alignPolymerSequence(self.__pA, [ps0], [ps2])
+                                                if len(seq_align) == 1:
+                                                    sa = seq_align[0]
+                                                    if sa['matched'] > 0 and sa['conflict'] == 0:
+                                                        has_alt_seq_align = True
+                                                        break
+
+                                            if has_alt_seq_align:
+                                                continue
 
                                     for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
@@ -25862,17 +25878,17 @@ class NmrDpUtility:
                                     seq_key = (row[0], row[1])
                                     seq_key_set.add(seq_key)
                                 if len(invalid_ambig_code_set) > len(seq_key_set) * 2:
-                                    for row in loop.data:
+                                    for row in loop:
                                         row[ambig_code_col] = '.'
                                 else:
-                                    for row in loop.data:
+                                    for row in loop:
                                         if row[ambig_code_col] in invalid_ambig_code_set:
                                             row[ambig_code_col] = '.'
                         if len(ambig_code_set) == 1:
                             if 1 not in ambig_code_set:  # 2lrk
                                 comp_id_col = loop.tags.index(comp_id_name)
                                 atom_id_col = loop.tags.index(atom_id_name)
-                                for row in loop.data:
+                                for row in loop:
                                     comp_id = row[comp_id_col]
                                     _atom_id = atom_id = row[atom_id_col]
                                     if self.__isNmrAtomName(comp_id, atom_id):
@@ -28172,7 +28188,7 @@ class NmrDpUtility:
             details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
             if self.__annotation_mode and details_col != -1:
-                for row in loop.data:
+                for row in loop:
                     if row[details_col] == 'UNMAPPED':
                         row[details_col] = None
 
@@ -52011,7 +52027,7 @@ class NmrDpUtility:
 
         modified = False
 
-        for row in loop.data:
+        for row in loop:
             if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in emptyValue:
                 continue
 
@@ -52160,7 +52176,7 @@ class NmrDpUtility:
 
         modified = False
 
-        for row in loop.data:
+        for row in loop:
             if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in emptyValue:
                 continue
 
@@ -52183,7 +52199,7 @@ class NmrDpUtility:
                     except StopIteration:  # D_1300044764
                         return False
 
-        for row in loop.data:
+        for row in loop:
             if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in emptyValue:
                 continue
 

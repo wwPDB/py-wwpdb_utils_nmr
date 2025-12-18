@@ -2650,8 +2650,8 @@ class NEFTranslator:
                     if 0 < len(seq_id_set) < len(alt_seq_id_set) // factor:  # 2kyb
                         seq_id_col = loop.tags.index('Comp_index_ID')
                         alt_seq_id_col = loop.tags.index('Seq_ID')
-                        for r in loop.data:
-                            r[seq_id_col] = r[alt_seq_id_col]
+                        for row in loop:
+                            row[seq_id_col] = row[alt_seq_id_col]
 
                     elif 'Auth_seq_ID' in loop.tags:
                         pre_tag = ['Auth_seq_ID']
@@ -2662,8 +2662,8 @@ class NEFTranslator:
                         if 0 < len(seq_id_set) < len(alt_seq_id_set) // factor:  # 6wux, 2lnh
                             seq_id_col = loop.tags.index('Comp_index_ID')
                             alt_seq_id_col = loop.tags.index('Auth_seq_ID')
-                            for r in loop.data:
-                                r[seq_id_col] = r[alt_seq_id_col]
+                            for row in loop:
+                                row[seq_id_col] = row[alt_seq_id_col]
 
                 if 'Entity_assembly_ID' in loop.tags and 'Auth_asym_ID' in loop.tags:
                     pre_tag = ['Entity_assembly_ID']
@@ -3094,76 +3094,76 @@ class NEFTranslator:
                                                             rev_seq[rev_seq_key] = (ps['auth_chain_id'], ref_seq_id)
 
                                             if _offset_auth_seq_id != 0 and cs_of_single_poly:
-                                                for idx, row in enumerate(loop):
+                                                for row in loop:
                                                     if _entity_assembly_id in _offset:
                                                         if _offset_auth_seq_id == _offset[_entity_assembly_id]:
                                                             break
                                                         if _offset_auth_seq_id + _offset[_entity_assembly_id] != 0:
-                                                            loop.data[idx][auth_seq_id_col] = str(int(loop.data[idx][auth_seq_id_col]) + _offset_auth_seq_id)
+                                                            row[auth_seq_id_col] = str(int(row[auth_seq_id_col]) + _offset_auth_seq_id)
                                                             if seq_id_col != -1:
-                                                                loop.data[idx][seq_id_col] = loop.data[idx][auth_seq_id_col]
+                                                                row[seq_id_col] = row[auth_seq_id_col]
                                                             if alt_seq_id_col != -1:
-                                                                loop.data[idx][alt_seq_id_col] = loop.data[idx][auth_seq_id_col]
+                                                                row[alt_seq_id_col] = row[auth_seq_id_col]
                                                         else:
-                                                            loop.data[idx][auth_seq_id_col] = None  # daother-9927-2nd
+                                                            row[auth_seq_id_col] = None  # daother-9927-2nd
 
                                             # 2kfu/8vrc
                                             elif count > 0 or (cs_of_single_poly and _entity_assembly_id in _offset and _offset[_entity_assembly_id] == 0):
-                                                for r in loop.data:
-                                                    k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
+                                                for row in loop:
+                                                    k = (row[alt_chain_id_col], int(row[auth_seq_id_col]))
                                                     if k in rev_seq:
                                                         _rev_seq = rev_seq[k]
-                                                        _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
+                                                        _k = (_rev_seq[0], _rev_seq[1], row[comp_id_col])
                                                         if _k in auth_to_star_seq:
-                                                            r[alt_chain_id_col], r[auth_seq_id_col] = _rev_seq[0], str(_rev_seq[1])
+                                                            row[alt_chain_id_col], row[auth_seq_id_col] = _rev_seq[0], str(_rev_seq[1])
                                                             if orig_chain_id_col != -1:
-                                                                r[orig_chain_id_col] = _rev_seq[0]
+                                                                row[orig_chain_id_col] = _rev_seq[0]
                                                             if orig_seq_id_col != -1:
-                                                                r[orig_seq_id_col] = str(_rev_seq[1])
+                                                                row[orig_seq_id_col] = str(_rev_seq[1])
                                                             _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
-                                                            r[chain_id_col] = str(_entity_assembly_id)
+                                                            row[chain_id_col] = str(_entity_assembly_id)
                                                             if entity_id_col != -1:
-                                                                r[entity_id_col] = str(_entity_id)
+                                                                row[entity_id_col] = str(_entity_id)
                                                             if seq_id_col != -1:
-                                                                r[seq_id_col] = str(_seq_id)
+                                                                row[seq_id_col] = str(_seq_id)
                                                             if alt_seq_id_col != -1:
-                                                                r[alt_seq_id_col] = str(_seq_id)
+                                                                row[alt_seq_id_col] = str(_seq_id)
                                                         elif _entity_assembly_id in _offset and count > 0:
                                                             _offset_ = _offset[_entity_assembly_id]
-                                                            r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
-                                                            if r[seq_id_col] in emptyValue\
-                                                               or int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
+                                                            row[chain_id_col], row[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
+                                                            if row[seq_id_col] in emptyValue\
+                                                               or int(row[seq_id_col]) - int(row[auth_seq_id_col]) == _offset_:
                                                                 continue
                                                             if seq_id_col != -1:
-                                                                r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
+                                                                row[seq_id_col] = str(int(row[auth_seq_id_col]) + _offset_)
                                                             if alt_seq_id_col != -1:
-                                                                r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
+                                                                row[alt_seq_id_col] = str(int(row[auth_seq_id_col]) + _offset_)
                                                     elif _entity_assembly_id in _offset and count > 0:
                                                         _offset_ = _offset[_entity_assembly_id]
-                                                        r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
-                                                        if r[seq_id_col] in emptyValue\
-                                                           or int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
+                                                        row[chain_id_col], row[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
+                                                        if row[seq_id_col] in emptyValue\
+                                                           or int(row[seq_id_col]) - int(row[auth_seq_id_col]) == _offset_:
                                                             continue
                                                         if seq_id_col != -1:
-                                                            r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
+                                                            row[seq_id_col] = str(int(row[auth_seq_id_col]) + _offset_)
                                                         if alt_seq_id_col != -1:
-                                                            r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
+                                                            row[alt_seq_id_col] = str(int(row[auth_seq_id_col]) + _offset_)
 
                                         elif cs_of_single_poly and count > 0:
-                                            for idx, row in enumerate(loop):
-                                                loop.data[idx][auth_seq_id_col] = None
+                                            for row in loop:
+                                                row[auth_seq_id_col] = None
                                                 if pdb_seq_id_col != -1:
-                                                    loop.data[idx][pdb_seq_id_col] = None
+                                                    row[pdb_seq_id_col] = None
                                                 if orig_seq_id_col != -1:
-                                                    loop.data[idx][orig_seq_id_col] = None
+                                                    row[orig_seq_id_col] = None
 
                                     elif len(cif_ps) == 1 and len(alt_chain_id_set) == 1 and cs_of_single_poly and count > 0:
-                                        for idx, row in enumerate(loop):
-                                            loop.data[idx][auth_seq_id_col] = None
+                                        for row in loop:
+                                            row[auth_seq_id_col] = None
                                             if pdb_seq_id_col != -1:
-                                                loop.data[idx][pdb_seq_id_col] = None
+                                                row[pdb_seq_id_col] = None
                                             if orig_seq_id_col != -1:
-                                                loop.data[idx][orig_seq_id_col] = None
+                                                row[orig_seq_id_col] = None
 
                         if valid and len(alt_chain_id_set) > 0 and (len(chain_id_set) > LEN_LARGE_ASYM_ID or len(chain_id_set) == 0):
                             if 'UNMAPPED' in alt_chain_id_set:  # 2c34, 2ksi
@@ -3173,8 +3173,8 @@ class NEFTranslator:
                                 if not sync_entity_assembly_with_entity(loop, chain_id_set, alt_chain_id_set):  # 2rqz
                                     chain_id_col = loop.tags.index('Entity_assembly_ID')
                                     alt_chain_id_col = loop.tags.index('Auth_asym_ID')
-                                    for r in loop.data:
-                                        r[chain_id_col] = r[alt_chain_id_col]
+                                    for row in loop:
+                                        row[chain_id_col] = row[alt_chain_id_col]
                                     # if len(alt_chain_id_set) == 1:
                                     if len(chain_id_set) <= len(alt_chain_id_set):
                                         refresh_entity_assembly(loop, list(alt_chain_id_set), True)
@@ -3374,8 +3374,8 @@ class NEFTranslator:
                     if 0 < len(seq_id_set) < len(alt_seq_id_set) // factor:  # 2kyb
                         seq_id_col = loop.tags.index('Comp_index_ID')
                         alt_seq_id_col = loop.tags.index('Seq_ID')
-                        for r in loop.data:
-                            r[seq_id_col] = r[alt_seq_id_col]
+                        for row in loop:
+                            row[seq_id_col] = row[alt_seq_id_col]
 
                     elif 'Auth_seq_ID' in loop.tags:
                         pre_tag = ['Auth_seq_ID']
@@ -3386,8 +3386,8 @@ class NEFTranslator:
                         if 0 < len(seq_id_set) < len(alt_seq_id_set) // factor:  # 6wux, 2lnh
                             seq_id_col = loop.tags.index('Comp_index_ID')
                             alt_seq_id_col = loop.tags.index('Auth_seq_ID')
-                            for r in loop.data:
-                                r[seq_id_col] = r[alt_seq_id_col]
+                            for row in loop:
+                                row[seq_id_col] = row[alt_seq_id_col]
 
                 valid = True
                 if self.__merge_rescue_mode and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags and 'Details' in loop.tags:
@@ -3502,22 +3502,22 @@ class NEFTranslator:
                                         alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
                                         auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
                                         _entity_assembly_id = _entity_id = None
-                                        for r in loop.data:
-                                            k = (test_chain_id, int(r[seq_id_col]))
+                                        for row in loop:
+                                            k = (test_chain_id, int(row[seq_id_col]))
                                             if k in rev_seq:
                                                 _rev_seq = rev_seq[k]
-                                                r[alt_chain_id_col] = _rev_seq[0]
-                                                r[auth_seq_id_col] = str(_rev_seq[1])
-                                                _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
+                                                row[alt_chain_id_col] = _rev_seq[0]
+                                                row[auth_seq_id_col] = str(_rev_seq[1])
+                                                _k = (_rev_seq[0], _rev_seq[1], row[comp_id_col])
                                                 if _k in auth_to_star_seq:
                                                     _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
-                                                    r[chain_id_col] = str(_entity_assembly_id)
+                                                    row[chain_id_col] = str(_entity_assembly_id)
                                                     if seq_id_col != -1:
-                                                        r[seq_id_col] = str(_seq_id)
+                                                        row[seq_id_col] = str(_seq_id)
                                                     if alt_seq_id_col != -1:
-                                                        r[alt_seq_id_col] = str(_seq_id)
+                                                        row[alt_seq_id_col] = str(_seq_id)
                                                     if entity_id_col != -1:
-                                                        r[entity_id_col] = str(_entity_id)
+                                                        row[entity_id_col] = str(_entity_id)
                                                 else:
                                                     _comp_id = next((_comp_id for _seq_id, _auth_seq_id, _comp_id, _auth_comp_id, _alt_comp_id
                                                                      in zip(ps['seq_id'], ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'],
@@ -3527,43 +3527,43 @@ class NEFTranslator:
                                                         _k = (_rev_seq[0], _rev_seq[1], _comp_id)
                                                         if _k in auth_to_star_seq:
                                                             _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
-                                                            r[chain_id_col] = str(_entity_assembly_id)
+                                                            row[chain_id_col] = str(_entity_assembly_id)
                                                             if seq_id_col != -1:
-                                                                r[seq_id_col] = str(_seq_id)
+                                                                row[seq_id_col] = str(_seq_id)
                                                             if alt_seq_id_col != -1:
-                                                                r[alt_seq_id_col] = str(_seq_id)
+                                                                row[alt_seq_id_col] = str(_seq_id)
                                                             if entity_id_col != -1:
-                                                                r[entity_id_col] = str(_entity_id)
+                                                                row[entity_id_col] = str(_entity_id)
                                                             if _comp_id not in monDict3:
-                                                                r[comp_id_col] = _comp_id
+                                                                row[comp_id_col] = _comp_id
                                             else:
                                                 for c in range(1, 5):
-                                                    k = (test_chain_id, int(r[seq_id_col]) + c)
+                                                    k = (test_chain_id, int(row[seq_id_col]) + c)
                                                     if k in rev_seq:
-                                                        r[chain_id_col] = str(_entity_assembly_id)
+                                                        row[chain_id_col] = str(_entity_assembly_id)
                                                         if entity_id_col != -1:
-                                                            r[entity_id_col] = str(_entity_id)
+                                                            row[entity_id_col] = str(_entity_id)
                                                         break
-                                                    k = (test_chain_id, int(r[seq_id_col]) - c)
+                                                    k = (test_chain_id, int(row[seq_id_col]) - c)
                                                     if k in rev_seq:
-                                                        r[chain_id_col] = str(_entity_assembly_id)
+                                                        row[chain_id_col] = str(_entity_assembly_id)
                                                         if entity_id_col != -1:
-                                                            r[entity_id_col] = str(_entity_id)
+                                                            row[entity_id_col] = str(_entity_id)
                                                         break
-                                                if r[auth_seq_id_col] not in emptyValue and r[auth_seq_id_col].isdigit():  # DAOTHER-10324
-                                                    auth_seq_id = int(r[auth_seq_id_col])
+                                                if row[auth_seq_id_col] not in emptyValue and row[auth_seq_id_col].isdigit():  # DAOTHER-10324
+                                                    auth_seq_id = int(row[auth_seq_id_col])
                                                     cif_ps_can = [_ps for _ps in cif_ps if _ps['auth_chain_id'] != ref_chain_id and auth_seq_id in _ps['auth_seq_id']]
                                                     if len(cif_ps_can) == 1:
-                                                        _k = (cif_ps_can[0]['auth_chain_id'], auth_seq_id, r[comp_id_col])
+                                                        _k = (cif_ps_can[0]['auth_chain_id'], auth_seq_id, row[comp_id_col])
                                                         if _k in auth_to_star_seq:
                                                             _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
-                                                            r[chain_id_col] = str(_entity_assembly_id)
+                                                            row[chain_id_col] = str(_entity_assembly_id)
                                                             if seq_id_col != -1:
-                                                                r[seq_id_col] = str(_seq_id)
+                                                                row[seq_id_col] = str(_seq_id)
                                                             if alt_seq_id_col != -1:
-                                                                r[alt_seq_id_col] = str(_seq_id)
+                                                                row[alt_seq_id_col] = str(_seq_id)
                                                             if entity_id_col != -1:
-                                                                r[entity_id_col] = str(_entity_id)
+                                                                row[entity_id_col] = str(_entity_id)
                                     else:
 
                                         valid = False
@@ -3617,16 +3617,16 @@ class NEFTranslator:
                                                 alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
                                                 auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
                                                 _offset = _entity_assembly_id = _entity_id = None
-                                                for r in loop.data:
-                                                    k = (test_chain_id, int(r[seq_id_col]))
+                                                for row in loop:
+                                                    k = (test_chain_id, int(row[seq_id_col]))
                                                     if k in rev_seq:
                                                         _rev_seq = rev_seq[k]
-                                                        r[alt_chain_id_col] = _rev_seq[0]
-                                                        r[auth_seq_id_col] = str(_rev_seq[1])
-                                                        _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
+                                                        row[alt_chain_id_col] = _rev_seq[0]
+                                                        row[auth_seq_id_col] = str(_rev_seq[1])
+                                                        _k = (_rev_seq[0], _rev_seq[1], row[comp_id_col])
                                                         if _k in auth_to_star_seq:
                                                             _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
-                                                            _offset = _seq_id - int(r[seq_id_col])
+                                                            _offset = _seq_id - int(row[seq_id_col])
                                                             break
                                                         _comp_id = next((_comp_id for _seq_id, _auth_seq_id, _comp_id, _auth_comp_id, _alt_comp_id
                                                                          in zip(ps['seq_id'], ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'],
@@ -3636,25 +3636,25 @@ class NEFTranslator:
                                                             _k = (_rev_seq[0], _rev_seq[1], _comp_id)
                                                             if _k in auth_to_star_seq:
                                                                 _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
-                                                                _offset = _seq_id - int(r[seq_id_col])
+                                                                _offset = _seq_id - int(row[seq_id_col])
                                                                 break
 
-                                                for r in loop.data:
-                                                    k = (test_chain_id, int(r[seq_id_col]))
+                                                for row in loop:
+                                                    k = (test_chain_id, int(row[seq_id_col]))
                                                     if k in rev_seq:
                                                         _rev_seq = rev_seq[k]
-                                                        r[alt_chain_id_col] = _rev_seq[0]
-                                                        r[auth_seq_id_col] = str(_rev_seq[1])
-                                                        _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
+                                                        row[alt_chain_id_col] = _rev_seq[0]
+                                                        row[auth_seq_id_col] = str(_rev_seq[1])
+                                                        _k = (_rev_seq[0], _rev_seq[1], row[comp_id_col])
                                                         if _k in auth_to_star_seq:
                                                             _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
-                                                            r[chain_id_col] = str(_entity_assembly_id)
+                                                            row[chain_id_col] = str(_entity_assembly_id)
                                                             if seq_id_col != -1:
-                                                                r[seq_id_col] = str(_seq_id)
+                                                                row[seq_id_col] = str(_seq_id)
                                                             if alt_seq_id_col != -1:
-                                                                r[alt_seq_id_col] = str(_seq_id)
+                                                                row[alt_seq_id_col] = str(_seq_id)
                                                             if entity_id_col != -1:
-                                                                r[entity_id_col] = str(_entity_id)
+                                                                row[entity_id_col] = str(_entity_id)
                                                         else:
                                                             _comp_id = next((_comp_id for _seq_id, _auth_seq_id, _comp_id, _auth_comp_id, _alt_comp_id
                                                                              in zip(ps['seq_id'], ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'],
@@ -3664,25 +3664,25 @@ class NEFTranslator:
                                                                 _k = (_rev_seq[0], _rev_seq[1], _comp_id)
                                                                 if _k in auth_to_star_seq:
                                                                     _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
-                                                                    r[chain_id_col] = str(_entity_assembly_id)
+                                                                    row[chain_id_col] = str(_entity_assembly_id)
                                                                     if seq_id_col != -1:
-                                                                        r[seq_id_col] = str(_seq_id)
+                                                                        row[seq_id_col] = str(_seq_id)
                                                                     if alt_seq_id_col != -1:
-                                                                        r[alt_seq_id_col] = str(_seq_id)
+                                                                        row[alt_seq_id_col] = str(_seq_id)
                                                                     if entity_id_col != -1:
-                                                                        r[entity_id_col] = str(_entity_id)
+                                                                        row[entity_id_col] = str(_entity_id)
                                                                     if _comp_id not in monDict3:
-                                                                        r[comp_id_col] = _comp_id
+                                                                        row[comp_id_col] = _comp_id
 
                                                     else:
-                                                        r[chain_id_col] = str(_entity_assembly_id)
-                                                        _seq_id = int(r[seq_id_col]) + _offset
+                                                        row[chain_id_col] = str(_entity_assembly_id)
+                                                        _seq_id = int(row[seq_id_col]) + _offset
                                                         if seq_id_col != -1:
-                                                            r[seq_id_col] = str(_seq_id)
+                                                            row[seq_id_col] = str(_seq_id)
                                                         if alt_seq_id_col != -1:
-                                                            r[alt_seq_id_col] = str(_seq_id)
+                                                            row[alt_seq_id_col] = str(_seq_id)
                                                         if entity_id_col != -1:
-                                                            r[entity_id_col] = str(_entity_id)
+                                                            row[entity_id_col] = str(_entity_id)
 
                                     if 'identical_chain_id' in ps:
                                         break
@@ -4214,13 +4214,14 @@ class NEFTranslator:
                     min_seq_id = min(int(row[3]) for row in seq_data if row[4] == c)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set((row[4], int(row[3]) + offset_seq_ids[row[4]], row[2], row[0].strip(), row[1]) for row in seq_data),
+                sorted_seq = sorted(set((row[4], int(row[3]) + offset_seq_ids[row[4]], row[2],
+                                         row[0].strip() if isinstance(row[0], str) else str(row[0]), row[1]) for row in seq_data),
                                     key=itemgetter(0, 1))
 
-                chk_dict = {(row[4], int(row[3]), row[2], row[0].strip()): row[1] for row in seq_data}
+                chk_dict = {(row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0])): row[1] for row in seq_data}
 
                 for row in seq_data:
-                    chk_key = (row[4], int(row[3]), row[2], row[0].strip())
+                    chk_key = (row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0]))
                     if chk_dict[chk_key] != row[1]:
                         raise KeyError(f"Author sequence must be unique. {chain_id} {row[4]}, {seq_id} {row[3]}, "
                                        f"{asym_id} {row[2]}, {aseq_id} {row[0]}, "

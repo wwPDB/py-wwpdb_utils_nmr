@@ -5,8 +5,8 @@ mmcif
 munkres
 numpy
 packaging
-pynmrstar
-# quickle (requires gcc)
+pynmrstar>=3.2.0
+quickle
 rmsd
 requests
 scikit-learn

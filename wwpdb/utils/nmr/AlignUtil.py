@@ -1155,7 +1155,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
             # mitigation for sparse distance restraints like disulfide bond, hydrogen bond (8rlz)
-            if _matched > 0 and conflict > 0 and hasLargeInnerSeqGap(ps2) and not hasLargeInnerSeqGap(ps1):
+            if _matched > 0 and conflict > 0:  # and hasLargeInnerSeqGap(ps2) and not hasLargeInnerSeqGap(ps1):
                 _ps2 = fillInnerBlankCompId(ps2)
 
                 pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)

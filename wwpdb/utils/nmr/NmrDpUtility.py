@@ -19798,7 +19798,11 @@ class NmrDpUtility:
                                                         self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {warn}\n")
 
                                         else:
-                                            _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
+
+                                            try:
+                                                _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
+                                            except IndexError:
+                                                continue
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 

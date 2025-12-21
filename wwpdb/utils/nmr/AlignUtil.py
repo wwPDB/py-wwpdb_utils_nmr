@@ -1155,18 +1155,34 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
             # mitigation for sparse distance restraints like disulfide bond, hydrogen bond (8rlz)
-            if _matched > 0 and conflict > 0:  # and hasLargeInnerSeqGap(ps2) and not hasLargeInnerSeqGap(ps1):
+            if _matched > 0 and conflict > 0 and ((hasLargeInnerSeqGap(ps2) and not hasLargeInnerSeqGap(ps1))
+                                                  or conflict == 1):
                 _ps2 = fillInnerBlankCompId(ps2)
 
                 pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
                 pA.addTestSequence(_ps2['comp_id'], chain_id)
                 pA.doAlign()
 
-                myAlign = pA.getAlignment(chain_id)
+                if hasLargeInnerSeqGap(ps2) and not hasLargeInnerSeqGap(ps1):
+                    myAlign = pA.getAlignment(chain_id)
 
-                length = len(myAlign)
+                    length = len(myAlign)
 
-                _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                else:
+                    _myAlign = pA.getAlignment(chain_id)
+
+                    _length = len(_myAlign)
+
+                    __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(_myAlign)
+
+                    if _conflict == 0 and not any(True for i in range(_length - 1)
+                                                  if (str(_myAlign[i][0]) == '.' and str(_myAlign[i + 1][1]) == '.')
+                                                  or (str(_myAlign[i][1]) == '.' and str(_myAlign[i + 1][0]) == '.')):
+                        myAlign = deepcopy(_myAlign)
+                        length, _matched, unmapped, conflict, offset_1, offset_2 =\
+                            _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
 
             prefer_ps1_alt_comp_id = prefer_ps2_auth_comp_id = False
 

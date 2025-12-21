@@ -3972,8 +3972,8 @@ class NEFTranslator:
                                     if ref_auth_seq_id in unmapped_ref_seq_ids:
                                         valid_spacer_key.append((c, ref_auth_seq_id))
 
-                    if len(seq_align) == 0:
-                        allow_gap = False
+                    # if len(seq_align) == 0:
+                    #     allow_gap = False
 
                 for c in chain_ids:
                     ent = {}  # entity

@@ -29,8 +29,6 @@ RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install 
         --no-cache-dir \
         -r bmrb-extract_requirements.txt
 
-WORKDIR /opt/py-wwpdb_utils_nmr
-
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
 
@@ -42,22 +40,23 @@ RUN python wwpdb/utils/nmr/ChemCompUpdater.py
 # This updates: wwpdb/utils/nmr/bmrb_cs_stat
 RUN python wwpdb/utils/nmr/BMRBCsStatUpdater.py
 
-# Remove .git, unit test directories and micellaneous files to reduce image size, except for wwpdb/utils/nmr directory
+# Remove .git, unit test directories and micellaneous files to reduce image size
 RUN rm -rf .git\
            wwpdb/utils/tests-nmr \
            wwpdb/utils/tests-nmr-tox\
            wwpdb/utils/nmr/nef/lib \
            wwpdb/utils/nmr/ann/lib && \
     rm -f .gitignore .gitlab-ci.yml Dockerfile MANIFEST.in *.yml pylintc setup.* tox.ini && \
-    cat bmrb-extract_requirements.txt | grep -v python-dateutil | grep -v requests > mininum_requrements.txt && \
+    cat bmrb-extract_requirements.txt | grep -v python-dateutil | grep -v requests > bmrb-extract_min_requrements.txt && \
     rm -f wwpdb/utils/nmr/components.cif.gz wwpdb/utils/nmr/ChemCompUpdater.py wwpdb/utils/nmr/BMRBCsStatUpdater.py
 
 # Install Python dependencies for runtime
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
         --no-cache-dir \
         --prefix=/install \
-        -r minimum_requirements.txt
+        -r bmrb-extract_min_requirements.txt
 
+# Remove requirement.txt
 RUN rm -f *.txt
 
 # ============================================================

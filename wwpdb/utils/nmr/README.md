@@ -306,6 +306,20 @@ For example,
    python test_BMRBChemShiftStat.py  # Run twice test_BMRBChemShiftStat.py just in case.
 ```
 
+### Running your script using Docker image
+
+Standalone Docker image is available. Please pull the image from the GitHub Container Repository. The Docker image will be published on every Wednesday (03:10~ UTC).
+```shell
+docker pull ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main
+```
+
+Then, run your Python script (e.g. app.py)
+```shell
+docker run --rm -it -v $(pwd)/app.py:/opt/app.py ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main python /opt/app.py
+```
+
+For more information, see the Dockerfile in [forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr)
+
 ## Appendix
 
 The codes used for specifying each file type in NmrDpUtility are compatible with OneDep system as follows:

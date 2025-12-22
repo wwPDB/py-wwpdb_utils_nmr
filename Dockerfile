@@ -48,6 +48,7 @@ RUN python wwpdb/utils/nmr/BMRBCsStatUpdater.py
 RUN rm -rf .git\
            wwpdb/utils/tests-nmr \
            wwpdb/utils/tests-nmr-tox\
+           wepdb/utils/nmr/obsolete \
            wwpdb/utils/nmr/nef/lib \
            wwpdb/utils/nmr/ann/lib && \
     rm -f .gitignore .gitlab-ci.yml Dockerfile MANIFEST.in *.yml *.txt pylintc setup.* tox.ini && \

@@ -27,7 +27,11 @@ RUN pip install --upgrade pip
 # Install Python dependencies for resource update
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
         --no-cache-dir \
+        --prefix=/install \
         -r bmrb-extract_requirements.txt
+
+# Set custom path for Python package
+ENV PYTHONUSERBASE=/install
 
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
@@ -46,18 +50,8 @@ RUN rm -rf .git\
            wwpdb/utils/tests-nmr-tox\
            wwpdb/utils/nmr/nef/lib \
            wwpdb/utils/nmr/ann/lib && \
-    rm -f .gitignore .gitlab-ci.yml Dockerfile MANIFEST.in *.yml pylintc setup.* tox.ini && \
-    cat bmrb-extract_requirements.txt | grep -v python-dateutil | grep -v requests > bmrb-extract_min_requirements.txt && \
+    rm -f .gitignore .gitlab-ci.yml Dockerfile MANIFEST.in *.yml *.txt pylintc setup.* tox.ini && \
     rm -f wwpdb/utils/nmr/components.cif.gz wwpdb/utils/nmr/ChemCompUpdater.py wwpdb/utils/nmr/BMRBCsStatUpdater.py
-
-# Install Python dependencies for runtime
-RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
-        --no-cache-dir \
-        --prefix=/install \
-        -r bmrb-extract_min_requirements.txt
-
-# Remove requirement.txt
-RUN rm -f *.txt
 
 # ============================================================
 # Stage 2: Runtime (minimal, non-root)

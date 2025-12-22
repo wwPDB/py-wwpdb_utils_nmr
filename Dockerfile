@@ -47,7 +47,7 @@ RUN rm -rf .git\
            wwpdb/utils/nmr/nef/lib \
            wwpdb/utils/nmr/ann/lib && \
     rm -f .gitignore .gitlab-ci.yml Dockerfile MANIFEST.in *.yml pylintc setup.* tox.ini && \
-    cat bmrb-extract_requirements.txt | grep -v python-dateutil | grep -v requests > bmrb-extract_min_requrements.txt && \
+    cat bmrb-extract_requirements.txt | grep -v python-dateutil | grep -v requests > bmrb-extract_min_requirements.txt && \
     rm -f wwpdb/utils/nmr/components.cif.gz wwpdb/utils/nmr/ChemCompUpdater.py wwpdb/utils/nmr/BMRBCsStatUpdater.py
 
 # Install Python dependencies for runtime

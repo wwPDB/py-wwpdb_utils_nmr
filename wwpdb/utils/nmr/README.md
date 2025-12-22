@@ -270,6 +270,7 @@ For example,
 	- numpy
 	- packaging
 	- pynmrstar (3.2.0 or later)
+	- python-dateutil
 	- quickle (optional for minor performance improvement)
 	- requests
 	- rmsd

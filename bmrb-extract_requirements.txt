@@ -1,6 +1,7 @@
 antlr4-python3-runtime
 chardet
 datetime
+dateutil
 mmcif
 munkres
 numpy

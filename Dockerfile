@@ -1,7 +1,6 @@
 # ============================================================
 # Stage 1: Builder
 # ============================================================
-# Use a slim but full-featured Python base image
 FROM python:3.11-slim AS builder
 
 # Prevent interactive prompts during package installation
@@ -10,19 +9,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Minimal build deps
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        git build-essential \
+        build-essential \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the repository
 COPY . /opt/py-wwpdb_utils_nmr
 
-# Working directory
-# WORKDIR /opt
-# Clone the py-wwpdb_utils_nmr repository
-# RUN git clone https://github.com/yokochi47/py-wwpdb_utils_nmr.git
-
-# Move working directory to package directory
+# Move working directory to the repo directory
 WORKDIR /opt/py-wwpdb_utils_nmr
 
 # Upgrade pip
@@ -79,14 +73,14 @@ COPY --from=builder /install /usr/local
 # Copy application code with generated ligand_dict
 COPY --from=builder --chown=webmaster:webmaster /opt/py-wwpdb_utils_nmr /opt/py-wwpdb_utils_nmr
 
-# Working directory
-WORKDIR /opt/py-wwpdb_utils_nmr
-
 # Switch to no-root user
 USER webmaster
 
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
+
+# Set working directory
+WORKDIR /opt/py-wwpdb_utils_nmr
 
 # Default command
 CMD ["python"]

@@ -6,10 +6,8 @@ munkres
 numpy
 packaging
 pynmrstar>=3.2.0
-python-dateutil
 quickle
 rmsd
-requests
 scikit-learn
 striprtf
 wwpdb.utils.align

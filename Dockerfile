@@ -51,7 +51,7 @@ RUN cat bmrb-extract_requirements.txt | grep -v python-dateutil | grep -v reques
 RUN rm -rf .git\
            wwpdb/utils/tests-nmr \
            wwpdb/utils/tests-nmr-tox\
-           wepdb/utils/nmr/obsolete \
+           wwpdb/utils/nmr/obsolete \
            wwpdb/utils/nmr/nef/lib \
            wwpdb/utils/nmr/ann/lib && \
     rm -f .gitignore \

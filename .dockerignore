@@ -1,0 +1,16 @@
+.git
+.gitignore
+.gitlab-ci.yml
+MANIFEST.in
+*.yml
+*.txt
+pylintc
+setup.*
+tox.ini
+
+wwpdb/utils/tests-nmr
+wwpdb/utils/tests-nmr-tox
+wwpdb/utils/nmr/obsolete
+wwpdb/utils/nmr/nef/lib
+wwpdb/utils/nmr/ann/lib
+  

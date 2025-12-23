@@ -27,9 +27,10 @@ WORKDIR /opt/py-wwpdb_utils_nmr
 RUN pip install --upgrade pip
 
 # Install Python dependencies for resource update
-RUN pip install \
+RUN cp standalone_update_requirements.txt requirements.txt && \
+    pip install \
         --no-cache-dir \
-        -r standalone_update_requirements.txt
+        -r requirements.txt
 
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
@@ -43,10 +44,11 @@ RUN python wwpdb/utils/nmr/ChemCompUpdater.py
 RUN python wwpdb/utils/nmr/BMRBCsStatUpdater.py
 
 # Install Python dependencies for runtime
+RUN cp standalone_runtime_requirements.txt requirements.txt &&
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
         --no-cache-dir \
         --prefix=/install \
-        -r standalone_runtime_requirements.txt
+        -r requirements.txt
 
 # Remove .git, unit test directories and micellaneous files to reduce image size
 RUN rm -rf .git\

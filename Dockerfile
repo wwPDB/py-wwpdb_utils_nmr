@@ -29,7 +29,14 @@ RUN pip install --upgrade pip
 # Install Python dependencies for resource update
 RUN pip install \
         --no-cache-dir \
-        -r standalone_update_requirements.txt
+        mmcif \
+        packaging \
+        pynmrstar>=3.2.0 \
+        python-dateutil \
+        requests \
+        rmsd \
+        scikit-learn \
+        wwpdb.utils.align
 
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils

@@ -1,0 +1,8 @@
+mmcif
+packaging
+pynmrstar>=3.2.0
+python-dateutil
+rmsd
+requests
+scikit-learn
+wwpdb.utils.align

@@ -50,7 +50,6 @@ RUN python wwpdb/utils/nmr/ChemCompUpdater.py
 RUN python wwpdb/utils/nmr/BMRBCsStatUpdater.py
 
 # Install Python dependencies for runtime
-RUN cp standalone_runtime_requirements.txt requirements.txt &&
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
         --no-cache-dir \
         --prefix=/install \

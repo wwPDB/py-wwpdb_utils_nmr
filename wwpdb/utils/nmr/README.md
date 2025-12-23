@@ -283,32 +283,26 @@ For example,
     pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9 users.
 ```
 
-### How to set up
+### Set up standalone mode
 
-1. Set enviromnent variable PYTHONPATH
+Set enviromnent variable PYTHONPATH
 ```bash
     export PYTHONPATH=$PYTHONPATH:(path to wwpdb/utils)  # Required only the first time.
 ```
 
-2. Update CCD periodically
+Update Chemical Component Dictionary (CCD) periodically
 ```bash
-    cd wwpdb/utils/nmr ; python ChemCompUpdater.py  # You must run this command every Wednesday UTC+00:00.
+    python wwpdb/utils/nmr/ChemCompUpdater.py  # You must run this command every Wednesday UTC+00:00.
 ```
 
-3. Test importing modules
+Import test
 ```python
     from nmr.NmrDpUtility import NmrDpUtility
 ```
 
-4. Run unit tests in wwpdb/utils/tests-nmr
-```bash
-   python test_ChemCompUtil.py
-   python test_BMRBChemShiftStat.py  # Run twice test_BMRBChemShiftStat.py just in case.
-```
+### Running your script using standalone Docker container
 
-### Running your script using Docker image
-
-Standalone Docker image is available. Please pull the image from the GitHub Container Repository. The Docker image will be published on every Wednesday (03:10~ UTC).
+Docker container of py-wwpdb_utils_nmr with update CCD is available from the GitHub Container Repository. The container will be published on every Wednesday (03:10~ UTC).
 ```shell
 docker pull ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main
 ```
@@ -318,7 +312,7 @@ Then, run your Python script (e.g. app.py)
 docker run --rm -it -v $(pwd)/app.py:/opt/app.py ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main python /opt/app.py
 ```
 
-For more information, see the Dockerfile in [forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr)
+For more information, see [Docker image in forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr/blob/bmrb-extract_main/Dockerfile)
 
 ## Appendix
 

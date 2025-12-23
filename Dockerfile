@@ -7,9 +7,6 @@ FROM python:3.11-slim AS builder
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Working directory
-WORKDIR /opt
-
 # Minimal build deps
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -17,8 +14,13 @@ RUN apt-get update && \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy the repository
+COPY . /opt/py-wwpdb_utils_nmr
+
+# Working directory
+# WORKDIR /opt
 # Clone the py-wwpdb_utils_nmr repository
-RUN git clone https://github.com/yokochi47/py-wwpdb_utils_nmr.git
+# RUN git clone https://github.com/yokochi47/py-wwpdb_utils_nmr.git
 
 # Move working directory to package directory
 WORKDIR /opt/py-wwpdb_utils_nmr
@@ -48,22 +50,10 @@ RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install 
         --prefix=/install \
         -r standalone_runtime_requirements.txt
 
-# Remove .git, unit test directories and micellaneous files to reduce image size
-RUN rm -rf .git\
-           wwpdb/utils/tests-nmr \
-           wwpdb/utils/tests-nmr-tox\
-           wwpdb/utils/nmr/obsolete \
-           wwpdb/utils/nmr/nef/lib \
-           wwpdb/utils/nmr/ann/lib && \
-    rm -f .gitignore \
-          .gitlab-ci.yml \
+# Remove micellaneous files to reduce image size
+RUN rm -f .dockerignore \
           Dockerfile \
-          MANIFEST.in \
-          *.yml \
           *.txt \
-          pylintc \
-          setup.* \
-          tox.ini \
           wwpdb/utils/nmr/components.cif.gz \
           wwpdb/utils/nmr/bmrb_cs_stat/*.csv \
           wwpdb/utils/nmr/ChemCompUpdater.py \

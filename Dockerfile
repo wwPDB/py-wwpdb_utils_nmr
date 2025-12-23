@@ -7,6 +7,7 @@ FROM python:3.11-slim AS builder
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Working directory
 WORKDIR /opt
 
 # Minimal build deps
@@ -19,6 +20,7 @@ RUN apt-get update && \
 # Clone the py-wwpdb_utils_nmr repository
 RUN git clone https://github.com/yokochi47/py-wwpdb_utils_nmr.git
 
+# Move working directory to package directory
 WORKDIR /opt/py-wwpdb_utils_nmr
 
 # Upgrade pip
@@ -27,7 +29,7 @@ RUN pip install --upgrade pip
 # Install Python dependencies for resource update
 RUN pip install \
         --no-cache-dir \
-        mmcif packaging pynmrstar python-dateutil rmsd requests scikit-learn wwpdb.utils.align
+        -r standalone_update_requirements.txt
 
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
@@ -41,11 +43,10 @@ RUN python wwpdb/utils/nmr/ChemCompUpdater.py
 RUN python wwpdb/utils/nmr/BMRBCsStatUpdater.py
 
 # Install Python dependencies for runtime
-RUN cat bmrb-extract_requirements.txt | grep -v python-dateutil | grep -v requests > requirements.txt && \
-    CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
+RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
         --no-cache-dir \
         --prefix=/install \
-        -r requirements.txt
+        -r standalone_runtime_requirements.txt
 
 # Remove .git, unit test directories and micellaneous files to reduce image size
 RUN rm -rf .git\
@@ -73,8 +74,6 @@ RUN rm -rf .git\
 # ============================================================
 FROM python:3.11-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
-
 # Minimal build deps
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -93,7 +92,7 @@ COPY --from=builder --chown=webmaster:webmaster /opt/py-wwpdb_utils_nmr /opt/py-
 # Working directory
 WORKDIR /opt/py-wwpdb_utils_nmr
 
-# Switch to no-root use
+# Switch to no-root user
 USER webmaster
 
 # Set Python path for standalone mode

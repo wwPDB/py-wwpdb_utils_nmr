@@ -292,7 +292,7 @@ Set enviromnent variable PYTHONPATH
 
 Update Chemical Component Dictionary (CCD) periodically
 ```bash
-    python wwpdb/utils/nmr/ChemCompUpdater.py  # You must run this command every Wednesday UTC+00:00.
+    python wwpdb/utils/nmr/ChemCompUpdater.py  # Please run the script every Wednesday UTC+00:00.
 ```
 
 Import test
@@ -302,14 +302,15 @@ Import test
 
 ### Running your script using standalone Docker container
 
-Docker container of py-wwpdb_utils_nmr with update CCD is available from the GitHub Container Repository. The container will be published on every Wednesday (03:10~ UTC).
+Docker container of py-wwpdb_utils_nmr with reqularly updated CCD is available from the GitHub Container Repository. The container will be published on every Wednesday (03:10~ UTC).
+
 ```shell
-docker pull ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main
+    docker pull ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main
 ```
 
-Then, run your Python script (e.g. app.py)
+Then, run your Python script (e.g. app.py). It is recommended to write a wrapper program.
 ```shell
-docker run --rm -it -v $(pwd)/app.py:/opt/app.py ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main python /opt/app.py
+    docker run --rm -it -v $(pwd)/app.py:/opt/app.py ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main python /opt/app.py
 ```
 
 For more information, see [Docker image in forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr/blob/bmrb-extract_main/Dockerfile)

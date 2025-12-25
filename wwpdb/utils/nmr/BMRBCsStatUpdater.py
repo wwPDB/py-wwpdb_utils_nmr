@@ -27,4 +27,6 @@ if __name__ == '__main__':
 
     cs_stat.loadStatFromCsvFiles()
 
+    assert cs_stat.testAtomNomenclatureOfLibrary()
+
     cs_stat.writeStatAsPickleFiles()

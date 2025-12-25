@@ -17,6 +17,8 @@
 # 20-Apr-2023  M. Yokochi - change backbone definition to be consistent with NMR restraint validation
 # 13-Dec-2023  M. Yokochi - support peptide-like residues containing symmetric aromatic ring (DAOTHER-8945)
 # 22-Apr-2024  M. Yokochi - remap chemical shift statistics in reference to CCD (DAOTHER-9317)
+# 25-Dec-2025  M. Yokochi - allow to ignore specific residues from other chemical shift statistics
+#                           when CCD status is obsolete but not replaced-by (N9K)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -84,6 +86,7 @@ class BMRBChemShiftStat:
                  '__std_comp_ids',
                  '__all_comp_ids',
                  '__not_comp_ids',
+                 '__ignored_comp_ids',
                  'aa_threshold',
                  'na_threshold',
                  'max_count_th',
@@ -144,6 +147,8 @@ class BMRBChemShiftStat:
         self.__std_comp_ids = set()
         self.__all_comp_ids = set()
         self.__not_comp_ids = set()
+
+        self.__ignored_comp_ids = ('N9K',)
 
         self.aa_threshold = 0.1
         self.na_threshold = 0.25
@@ -2489,8 +2494,12 @@ class BMRBChemShiftStat:
                         cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
 
                 if len(ref_atom_ids) == 0 or cc_rel_status != 'REL':
-                    print(f'[Error] {comp_id} is not valid CCD ID, status code: {cc_rel_status}.')
-                    ret['error'] += 1
+                    if comp_id in self.__ignored_comp_ids:
+                        print(f'[Warning] {comp_id} is not valid CCD ID, status code: {cc_rel_status}.')
+                        ret['warning'] += 1
+                    else:
+                        print(f'[Error] {comp_id} is not valid CCD ID, status code: {cc_rel_status}.')
+                        ret['error'] += 1
                     continue
 
                 ref_alt_atom_ids = [a[self.__ccU.ccaAltAtomId] for a in self.__ccU.lastAtomList]
@@ -2535,7 +2544,7 @@ class BMRBChemShiftStat:
 
         status = True
 
-        print('\nBMRB CS statistics name: aa_filt')
+        print('\nBMRB chemical shift statistics name: aa_filt')
         result = check_bmrb_cs_stat(self.aa_filt)
         if result['warning'] == 0 and result['error'] == 0:
             print('OK')
@@ -2545,7 +2554,7 @@ class BMRBChemShiftStat:
         else:
             print(f"{result['warning']} Warning")
 
-        print('\nBMRB CS statistics name: dna_filt')
+        print('\nBMRB chemical shift statistics name: dna_filt')
         result = check_bmrb_cs_stat(self.dna_filt)
         if result['warning'] == 0 and result['error'] == 0:
             print('OK')
@@ -2555,7 +2564,7 @@ class BMRBChemShiftStat:
         else:
             print(f"{result['warning']} Warning")
 
-        print('\nBMRB CS statistics name: rna_filt')
+        print('\nBMRB chemical shift statistics name: rna_filt')
         result = check_bmrb_cs_stat(self.rna_filt)
         if result['warning'] == 0 and result['error'] == 0:
             print('OK')
@@ -2565,7 +2574,7 @@ class BMRBChemShiftStat:
         else:
             print(f"{result['warning']} Warning")
 
-        print('\nBMRB CS statistics name: aa_full')
+        print('\nBMRB chemical shift statistics name: aa_full')
         result = check_bmrb_cs_stat(self.aa_full)
         if result['warning'] == 0 and result['error'] == 0:
             print('OK')
@@ -2575,7 +2584,7 @@ class BMRBChemShiftStat:
         else:
             print(f"{result['warning']} Warning")
 
-        print('\nBMRB CS statistics name: dna_full')
+        print('\nBMRB chemical shift statistics name: dna_full')
         result = check_bmrb_cs_stat(self.dna_full)
         if result['warning'] == 0 and result['error'] == 0:
             print('OK')
@@ -2585,7 +2594,7 @@ class BMRBChemShiftStat:
         else:
             print(f"{result['warning']} Warning")
 
-        print('\nBMRB CS statistics name: rna_full')
+        print('\nBMRB chemical shift statistics name: rna_full')
         result = check_bmrb_cs_stat(self.rna_full)
         if result['warning'] == 0 and result['error'] == 0:
             print('OK')
@@ -2595,7 +2604,7 @@ class BMRBChemShiftStat:
         else:
             print(f"{result['warning']} Warning")
 
-        print('\nBMRB CS statistics name: others')
+        print('\nBMRB chemical shift statistics name: others')
         result = check_bmrb_cs_stat(self.others)
         if result['warning'] == 0 and result['error'] == 0:
             print('OK')

@@ -6,6 +6,9 @@ FROM python:3.11-slim AS builder
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Ignore irrelevant warning of pip
+ENV PIP_ROOT_USER_ACTION=ignore
+
 # Minimal build deps
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

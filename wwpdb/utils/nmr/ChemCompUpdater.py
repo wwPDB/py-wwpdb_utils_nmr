@@ -62,7 +62,7 @@ class ChemCompUpdater:
 
             uncompress_gzip_file(self.__components_cif_gz_path, self.__components_cif_path)
 
-            print(f'Deplying to {self.__work_dir!r} ...')
+            print(f'Deplying CCD to {self.__work_dir!r} ...')
 
             dBlockList = []
 

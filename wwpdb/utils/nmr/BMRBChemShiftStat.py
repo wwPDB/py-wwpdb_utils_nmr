@@ -65,7 +65,7 @@ class BMRBChemShiftStat:
                  '__lfh',
                  '__lazy_others',
                  '__load_others',
-                 'stat_dir',
+                 '__work_dir',
                  'url_for_bmrb_cs_stat_dir',
                  'csv_files',
                  'aa_filt',
@@ -111,7 +111,7 @@ class BMRBChemShiftStat:
         self.__load_others = False
 
         # directory
-        self.stat_dir = os.path.dirname(__file__) + '/bmrb_cs_stat/'
+        self.__work_dir = os.path.dirname(__file__) + '/bmrb_cs_stat/'
 
         # URL for BMRB chemical shift statistics
         self.url_for_bmrb_cs_stat_dir = 'https://bmrb.io/ftp/pub/bmrb/statistics/chem_shifts/'
@@ -827,20 +827,20 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
-        if any(not os.path.exists(self.stat_dir + csv_file) for csv_file in self.csv_files):
+        if any(not os.path.exists(self.__work_dir + csv_file) for csv_file in self.csv_files):
             return False
 
-        self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', self.aa_threshold)
-        self.aa_full = self.loadStatFromCsvFile(self.stat_dir + 'aa_full.csv', self.aa_threshold)
+        self.aa_filt = self.loadStatFromCsvFile(self.__work_dir + 'aa_filt.csv', self.aa_threshold)
+        self.aa_full = self.loadStatFromCsvFile(self.__work_dir + 'aa_full.csv', self.aa_threshold)
 
-        self.dna_filt = self.loadStatFromCsvFile(self.stat_dir + 'dna_filt.csv', self.na_threshold)
-        self.dna_full = self.loadStatFromCsvFile(self.stat_dir + 'dna_full.csv', self.na_threshold)
+        self.dna_filt = self.loadStatFromCsvFile(self.__work_dir + 'dna_filt.csv', self.na_threshold)
+        self.dna_full = self.loadStatFromCsvFile(self.__work_dir + 'dna_full.csv', self.na_threshold)
 
-        self.rna_filt = self.loadStatFromCsvFile(self.stat_dir + 'rna_filt.csv', self.na_threshold)
-        self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv', self.na_threshold)
+        self.rna_filt = self.loadStatFromCsvFile(self.__work_dir + 'rna_filt.csv', self.na_threshold)
+        self.rna_full = self.loadStatFromCsvFile(self.__work_dir + 'rna_full.csv', self.na_threshold)
 
         if not self.__lazy_others:
-            self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
+            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', self.aa_threshold, self.na_threshold)
 
         self.__updateCompIdSet()
 
@@ -856,11 +856,11 @@ class BMRBChemShiftStat:
         self.__load_others = True
 
         if comp_id_interest is None:
-            self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
+            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', self.aa_threshold, self.na_threshold)
             self.__updateCompIdSet()
 
         elif comp_id_interest not in self.__all_comp_ids and comp_id_interest not in self.__not_comp_ids:
-            stat = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold, comp_id_interest)
+            stat = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', self.aa_threshold, self.na_threshold, comp_id_interest)
             if len(stat) > 0:
                 self.others.extend(stat)
                 self.__updateCompIdSet()
@@ -2327,27 +2327,29 @@ class BMRBChemShiftStat:
                 with open(file_name, 'wb') as ofh:
                     pickle.dump(obj, ofh)
 
-        write_stat_as_pickle(self.aa_filt, self.stat_dir + 'aa_filt.pkl')
-        write_stat_as_pickle(self.aa_full, self.stat_dir + 'aa_full.pkl')
+        write_stat_as_pickle(self.aa_filt, self.__work_dir + 'aa_filt.pkl')
+        write_stat_as_pickle(self.aa_full, self.__work_dir + 'aa_full.pkl')
 
-        write_stat_as_pickle(self.dna_filt, self.stat_dir + 'dna_filt.pkl')
-        write_stat_as_pickle(self.dna_full, self.stat_dir + 'dna_full.pkl')
+        write_stat_as_pickle(self.dna_filt, self.__work_dir + 'dna_filt.pkl')
+        write_stat_as_pickle(self.dna_full, self.__work_dir + 'dna_full.pkl')
 
-        write_stat_as_pickle(self.rna_filt, self.stat_dir + 'rna_filt.pkl')
-        write_stat_as_pickle(self.rna_full, self.stat_dir + 'rna_full.pkl')
+        write_stat_as_pickle(self.rna_filt, self.__work_dir + 'rna_filt.pkl')
+        write_stat_as_pickle(self.rna_full, self.__work_dir + 'rna_full.pkl')
 
         self.loadOtherStatFromCsvFiles()
 
-        write_stat_as_pickle(sorted(self.others, key=itemgetter('comp_id')), self.stat_dir + 'others.pkl')
+        write_stat_as_pickle(sorted(self.others, key=itemgetter('comp_id')), self.__work_dir + 'others.pkl')
+
+        print(f'{self.__work_dir!r} is up-to-date.')
 
     def loadStatFromPickleFiles(self) -> bool:
         """ Load all BMRB chemical shift statistics from pickle files if possible.
         """
 
-        pickle_files = (self.stat_dir + 'aa_filt.pkl', self.stat_dir + 'aa_full.pkl',
-                        self.stat_dir + 'dna_filt.pkl', self.stat_dir + 'dna_full.pkl',
-                        self.stat_dir + 'rna_filt.pkl', self.stat_dir + 'rna_full.pkl',
-                        self.stat_dir + 'others.pkl')
+        pickle_files = (self.__work_dir + 'aa_filt.pkl', self.__work_dir + 'aa_full.pkl',
+                        self.__work_dir + 'dna_filt.pkl', self.__work_dir + 'dna_full.pkl',
+                        self.__work_dir + 'rna_filt.pkl', self.__work_dir + 'rna_full.pkl',
+                        self.__work_dir + 'others.pkl')
 
         for pickle_file in pickle_files:
             if not os.path.exists(pickle_file):
@@ -2364,16 +2366,16 @@ class BMRBChemShiftStat:
 
             return []
 
-        self.aa_filt = load_stat_from_pickle(self.stat_dir + 'aa_filt.pkl')
-        self.aa_full = load_stat_from_pickle(self.stat_dir + 'aa_full.pkl')
+        self.aa_filt = load_stat_from_pickle(self.__work_dir + 'aa_filt.pkl')
+        self.aa_full = load_stat_from_pickle(self.__work_dir + 'aa_full.pkl')
 
-        self.dna_filt = load_stat_from_pickle(self.stat_dir + 'dna_filt.pkl')
-        self.dna_full = load_stat_from_pickle(self.stat_dir + 'dna_full.pkl')
+        self.dna_filt = load_stat_from_pickle(self.__work_dir + 'dna_filt.pkl')
+        self.dna_full = load_stat_from_pickle(self.__work_dir + 'dna_full.pkl')
 
-        self.rna_filt = load_stat_from_pickle(self.stat_dir + 'rna_filt.pkl')
-        self.rna_full = load_stat_from_pickle(self.stat_dir + 'rna_full.pkl')
+        self.rna_filt = load_stat_from_pickle(self.__work_dir + 'rna_filt.pkl')
+        self.rna_full = load_stat_from_pickle(self.__work_dir + 'rna_full.pkl')
 
-        self.others = load_stat_from_pickle(self.stat_dir + 'others.pkl')
+        self.others = load_stat_from_pickle(self.__work_dir + 'others.pkl')
 
         self.__updateCompIdSet()
 
@@ -2407,12 +2409,12 @@ class BMRBChemShiftStat:
 
         def update_csv_file(csv_file):
             try:
-                print(f'Downloading {self.url_for_bmrb_cs_stat_dir + csv_file} -> {self.stat_dir + csv_file} ...')
+                print(f'Downloading {self.url_for_bmrb_cs_stat_dir + csv_file} ...')
                 r = requests.get(self.url_for_bmrb_cs_stat_dir + csv_file, timeout=5.0)
-                with open(os.path.join(self.stat_dir + csv_file), 'w') as f_out:
+                with open(os.path.join(self.__work_dir + csv_file), 'w') as f_out:
                     f_out.write(r.text)
                 if csv_file in ('rna_filt.csv', 'rna_full.csv'):
-                    src_csv_file = os.path.join(self.stat_dir, csv_file)
+                    src_csv_file = os.path.join(self.__work_dir, csv_file)
                     dst_csv_file = src_csv_file + '~'
                     shutil.copyfile(src_csv_file, dst_csv_file)
                     with open(dst_csv_file, 'r') as f_in, \
@@ -2441,15 +2443,15 @@ class BMRBChemShiftStat:
 
             url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
 
-            if not os.path.exists(self.stat_dir + csv_file):
+            if not os.path.exists(self.__work_dir + csv_file):
                 update_csv_file(csv_file)
 
             else:
-                file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.stat_dir + csv_file)).astimezone()
+                file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__work_dir + csv_file)).astimezone()
                 if url_last_modified > file_last_modified:
                     update_csv_file(csv_file)
                 else:
-                    print(f'{self.stat_dir + csv_file} is update (Last-Modified: {url_last_modified})')
+                    print(f'{self.__work_dir + csv_file} is update (Last-Modified: {url_last_modified})')
 
         return True
 

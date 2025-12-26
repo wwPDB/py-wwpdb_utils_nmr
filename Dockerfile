@@ -59,13 +59,10 @@ RUN rm -f .dockerignore \
 # ============================================================
 # Stage 2: Runtime (minimal, non-root)
 # ============================================================
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
-# Minimal build deps
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Runtime OS deps
+RUN apk add --no-cache ca-certificates
 
 # Create non-root user
 RUN groupadd -r webmaster && useradd -r -g webmaster -s /bin/bash webmaster

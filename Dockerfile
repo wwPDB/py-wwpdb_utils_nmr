@@ -65,7 +65,8 @@ FROM python:3.11-alpine
 RUN apk add --no-cache ca-certificates
 
 # Create non-root user
-RUN groupadd -r webmaster && useradd -r -g webmaster -s /bin/bash webmaster
+RUN addgroup -S webmaster && \
+    adduser -S webmaster -G webmaster -D
 
 # Copy installed Python environment
 COPY --from=builder /install /usr/local

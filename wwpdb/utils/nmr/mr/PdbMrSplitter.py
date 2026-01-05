@@ -23,6 +23,7 @@ from striprtf.striprtf import rtf_to_text
 from typing import Any, IO, List, Tuple, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpUtilConst import MR_MAX_SPACER_LINES
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
@@ -73,6 +74,7 @@ try:
     from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
     from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 except ImportError:
+    from nmr.NmrDpUtilConst import MR_MAX_SPACER_LINES
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import (NEFTranslator,
@@ -446,7 +448,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
             file_type = get_peak_list_format_from_string(line, header, asCode)
 
-            if file_type is not None or idx >= 20:  # self.__mr_max_spacer_lines:
+            if file_type is not None or idx >= MR_MAX_SPACER_LINES:
 
                 if file_type in ('Sparky', 'nm-pea-spa') and idx < 20 and header is not None\
                    and 'Assignment' in header and 'Shift (ppm)' in header:
@@ -900,7 +902,7 @@ def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]
             if dimensions is not None and 0 < dimensions <= MAX_DIM_NUM_OF_SPECTRA:
                 return dimensions
 
-            if idx >= 20:  # self.__mr_max_spacer_lines:
+            if idx >= MR_MAX_SPACER_LINES:
                 break
 
     return None
@@ -1039,7 +1041,6 @@ class PdbMrSplitter:
                  '__lfh',
                  '__remediation_mode',
                  '__mr_content_subtypes',
-                 '__mr_max_spacer_lines',
                  '__inputParamDict',
                  '__file_path_list_len',
                  '__sll_pred_holder',
@@ -1057,7 +1058,7 @@ class PdbMrSplitter:
                  '__nefT')
 
     def __init__(self, verbose: bool, debug: bool, log: IO,
-                 remediationMode: bool, mrContentSubtypes: List[str], mrMaxSpacerLines: int,
+                 remediationMode: bool, mrContentSubtypes: List[str],
                  filePathListIdLen: int, inputParamDict: dict, sslPredHolder: dict,
                  divideMrErrorMessage: List[str], peelMrErrorMessage: List[str],
                  suspendedErrorsForLazyEval: List[dict],
@@ -1076,9 +1077,6 @@ class PdbMrSplitter:
 
         # supported content subtypes of restraint
         self.__mr_content_subtypes = mrContentSubtypes
-
-        # maximum number of lines as spacer for recognition of MR files
-        self.__mr_max_spacer_lines = mrMaxSpacerLines
 
         # atypical restraint file id begins with
         self.__file_path_list_len = filePathListIdLen
@@ -3824,7 +3822,7 @@ class PdbMrSplitter:
                 open(div_try_file, 'w') as ofh2:
             for line in ifh:
                 i += 1
-                if i < err_line_number - self.__mr_max_spacer_lines:
+                if i < err_line_number - MR_MAX_SPACER_LINES:
                     if ws_or_comment:
                         if line.isspace() or comment_pattern.match(line)\
                            or (gromacs_file_type and gromacs_comment_pattern.match(line)):
@@ -3905,7 +3903,7 @@ class PdbMrSplitter:
                             k += 1
                             if k <= err_line_number:
                                 continue
-                            if k < err_line_number + self.__mr_max_spacer_lines:
+                            if k < err_line_number + MR_MAX_SPACER_LINES:
                                 if xplor_assi_pattern.match(line) or comment_pattern.match(line) or line.isspace():
                                     k2 = k
                                     break
@@ -4402,7 +4400,7 @@ class PdbMrSplitter:
                                             k += 1
                                         else:
                                             l += 1  # noqa: E741
-                                            if l >= self.__mr_max_spacer_lines:
+                                            if l >= MR_MAX_SPACER_LINES:
                                                 break
 
                                 if not is_valid and not re_valid:
@@ -4706,7 +4704,7 @@ class PdbMrSplitter:
             with open(file_path, 'r') as ifh:
                 for line in ifh:
                     i += 1
-                    if i < err_line_number - self.__mr_max_spacer_lines:
+                    if i < err_line_number - MR_MAX_SPACER_LINES:
                         continue
                     if i < err_line_number - 1:
                         interval.append({'line': line,
@@ -4772,7 +4770,7 @@ class PdbMrSplitter:
                     open(div_try_file, 'w') as ofh3:
                 for line in ifh:
                     i += 1
-                    if i < err_line_number - self.__mr_max_spacer_lines:
+                    if i < err_line_number - MR_MAX_SPACER_LINES:
                         ofh.write(line)
                         j += 1
                         continue

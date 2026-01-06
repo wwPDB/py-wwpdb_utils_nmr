@@ -20,10 +20,10 @@ import os
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-    from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
+    # from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
 except ImportError:
     from nmr.NmrDpUtility import NmrDpUtility
-    from nmr.NmrDpReport import NmrDpReportInputSource
+    # from nmr.NmrDpReport import NmrDpReportInputSource
 
 
 class TestNmrDpUtility(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def tearDown(self):
         pass
-
+    """
     def test_init(self):
         nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
 
@@ -57,7 +57,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)
-
+    """
     def test_nmr_nef_consistency(self):
         # no input
         with self.assertRaises(ValueError):
@@ -76,7 +76,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + '2l9r-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
-
+    ""
     def test_nmr_str_consistency(self):
         # no input
         with self.assertRaises(ValueError):

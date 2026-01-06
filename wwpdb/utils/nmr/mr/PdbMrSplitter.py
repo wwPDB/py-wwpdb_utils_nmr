@@ -17,15 +17,15 @@ import re
 import codecs
 import shutil
 import chardet
+import pynmrstar
 
 from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
-from typing import Any, IO, List, Tuple, Optional
+from typing import Any, IO, List, Tuple, Union, Optional
 
 try:
-    from wwpdb.utils.nmr.NmrDpUtilConst import MR_MAX_SPACER_LINES
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NmrDpConstant import MR_MAX_SPACER_LINES
+    # from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
     from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
                                                    MAX_DIM_NUM_OF_SPECTRA)
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
@@ -74,9 +74,8 @@ try:
     from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
     from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 except ImportError:
-    from nmr.NmrDpUtilConst import MR_MAX_SPACER_LINES
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NmrDpConstant import MR_MAX_SPACER_LINES
+    # from nmr.NmrDpFirstAid import NmrDpFirstAid
     from nmr.nef.NEFTranslator import (NEFTranslator,
                                        MAX_DIM_NUM_OF_SPECTRA)
     from nmr.AlignUtil import (monDict3,
@@ -1040,31 +1039,36 @@ class PdbMrSplitter:
                  '__debug',
                  '__lfh',
                  '__remediation_mode',
+                 '__has_star_chem_shift',
                  '__mr_content_subtypes',
-                 '__inputParamDict',
+                 '__star_data_type',
+                 '__star_data',
                  '__file_path_list_len',
+                 '__inputParamDict',
                  '__sll_pred_holder',
                  '__divide_mr_error_message',
-                 '__peel_mr_error_message',
+                 '__strip_mr_error_message',
                  '__suspended_errors_for_lazy_eval',
                  'report',
-                 '__public_mr_has_valid_star_restraint',
+                 '__pdb_mr_has_valid_star_restraint',
                  '__has_legacy_sf_issue',
                  '__cur_original_ar_file_name',
                  '__mr_atom_name_mapping',
                  '__ccU',
                  '__csStat',
                  '__c2S',
-                 '__nefT')
+                 '__nefT',
+                 '__firstAid')
 
     def __init__(self, verbose: bool, debug: bool, log: IO,
-                 remediationMode: bool, mrContentSubtypes: List[str],
+                 remediationMode: bool, hasStarChemShift: bool, mrContentSubtypes: List[str],
+                 starDataType: List[str], starData: List[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]],
                  filePathListIdLen: int, inputParamDict: dict, sslPredHolder: dict,
-                 divideMrErrorMessage: List[str], peelMrErrorMessage: List[str],
+                 divideMrErrorMessage: List[str], stripMrErrorMessage: List[str],
                  suspendedErrorsForLazyEval: List[dict],
                  report: NmrDpReport,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
-                 c2S: Optional[CifToNmrStar] = None, nefT: Optional[NEFTranslator] = None):
+                 c2S: Optional[CifToNmrStar] = None, nefT: Optional[NEFTranslator] = None,
+                 firstAid=None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -1075,21 +1079,32 @@ class PdbMrSplitter:
         # whether to enable remediation routines
         self.__remediation_mode = remediationMode
 
+        # whether a CS loop is in the primary NMR-STAR file (used only for NMR data remediation)
+        self.__has_star_chem_shift = hasStarChemShift
+
         # supported content subtypes of restraint
         self.__mr_content_subtypes = mrContentSubtypes
+
+        # list of pynmrstar data types
+        self.__star_data_type = starDataType
+
+        # list of pynmrstar data
+        self.__star_data = starData
 
         # atypical restraint file id begins with
         self.__file_path_list_len = filePathListIdLen
 
-        # auxiliary input resource
+        # input parameters
         self.__inputParamDict = inputParamDict
 
         # ANTLR4 SLL prediction mode holder for performance
         self.__sll_pred_holder = sslPredHolder
 
-        # error messages holder
+        # error message holder while file division
         self.__divide_mr_error_message = divideMrErrorMessage
-        self.__peel_mr_error_message = peelMrErrorMessage
+
+        # error message holder while file strip off
+        self.__strip_mr_error_message = stripMrErrorMessage
 
         # suspended error items for lazy evaluation
         self.__suspended_errors_for_lazy_eval = suspendedErrorsForLazyEval
@@ -1098,7 +1113,7 @@ class PdbMrSplitter:
         self.report = report
 
         # whether public MR file contains valid NMR-STAR restraints (used only for NMR data remediation)
-        self.__public_mr_has_valid_star_restraint = False
+        self.__pdb_mr_has_valid_star_restraint = False
 
         # whether sf_framecode has to be fixed
         self.__has_legacy_sf_issue = False
@@ -1109,19 +1124,21 @@ class PdbMrSplitter:
         # atom name mapping of public MR file between the coordinates and submitted file
         self.__mr_atom_name_mapping = None
 
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
-
-        # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
-
         # CifToNmrStar
         self.__c2S = CifToNmrStar(log) if c2S is None else c2S
 
         # NEFTranslator
-        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
-        if nefT is None:
-            self.__nefT.set_remediation_mode(True)
+        self.__nefT = nefT
+
+        self.__ccU = nefT.ccU
+        self.__csStat = nefT.csStat
+
+        # NmrDpFirstAid
+        self.__firstAid = firstAid
+
+    @property
+    def file_path_list_len(self):
+        return self.__file_path_list_len
 
     @property
     def sll_pred_holder(self):
@@ -1132,16 +1149,16 @@ class PdbMrSplitter:
         return self.__divide_mr_error_message
 
     @property
-    def peel_mr_error_message(self):
-        return self.__peel_mr_error_message
+    def strip_mr_error_message(self):
+        return self.__strip_mr_error_message
 
     @property
     def suspended_errors_for_lazy_eval(self):
         return self.__suspended_errors_for_lazy_eval
 
     @property
-    def public_mr_has_valid_star_restraint(self):
-        return self.__public_mr_has_valid_star_restraint
+    def pdb_mr_has_valid_star_restraint(self):
+        return self.__pdb_mr_has_valid_star_restraint
 
     @property
     def has_legacy_sf_issue(self):
@@ -1222,11 +1239,11 @@ class PdbMrSplitter:
 
                     err = f"The restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
 
-                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                     return False
 
@@ -1240,11 +1257,11 @@ class PdbMrSplitter:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -1278,7 +1295,7 @@ class PdbMrSplitter:
 
             if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
-                settled_file_type, _ = self.__getPeakListFileTypeAndContentSubtype(ign_pk_file)
+                settled_file_type, _ = self.getPeakListFileTypeAndContentSubtype(ign_pk_file)
 
                 _ar = ar.copy()
 
@@ -1637,7 +1654,7 @@ class PdbMrSplitter:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             else:
 
@@ -1648,7 +1665,18 @@ class PdbMrSplitter:
 
                                 if star_data_type == 'Saveframe':
                                     self.__has_legacy_sf_issue = True
-                                    self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
+
+                                    self.__firstAid.star_data_type = self.star_data_type
+                                    self.__firstAid.star_data = self.star_data
+
+                                    self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                                hasLegacySfIssue=self.__has_legacy_sf_issue)
+
+                                    self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                                    self.__star_data_type = self.__firstAid.star_data_type
+                                    self.__star_data = self.__firstAid.star_data
+                                    self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+
                                     _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
                                 if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -1660,8 +1688,13 @@ class PdbMrSplitter:
                                     self.__star_data_type.append(star_data_type)
                                     self.__star_data.append(star_data)
 
-                                    self.__rescueFormerNef(insert_index)
-                                    self.__rescueImmatureStr(insert_index)
+                                    self.__firstAid.star_data_type = self.star_data_type
+                                    self.__firstAid.star_data = self.star_data
+
+                                    self.__firstAid.rescueFormerNef(insert_index)
+                                    self.__firstAid.rescueImmatureStr(insert_index)
+
+                                    self.__star_data = self.__firstAid.star_data
 
                                 if _is_done:
                                     self.__detectContentSubType__(insert_index, input_source, dir_path)
@@ -1669,11 +1702,20 @@ class PdbMrSplitter:
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
                                         if any(True for mr_content_subtype in self.__mr_content_subtypes if mr_content_subtype in content_subtype):
-                                            self.__public_mr_has_valid_star_restraint = True
+                                            self.__pdb_mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
-                        elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
-                            pass
+                        else:
+
+                            self.__firstAid.star_data_type = self.star_data_type
+                            self.__firstAid.star_data = self.star_data
+
+                            if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                           hasLegacySfIssue=self.__has_legacy_sf_issue):
+                                self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                                self.__star_data_type = self.__firstAid.star_data_type
+                                self.__star_data = self.__firstAid.star_data
+                                self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
 
                         if _mrPath is not None:
                             try:
@@ -1818,7 +1860,7 @@ class PdbMrSplitter:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             else:
 
@@ -1829,7 +1871,18 @@ class PdbMrSplitter:
 
                                 if star_data_type == 'Saveframe':
                                     self.__has_legacy_sf_issue = True
-                                    self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
+
+                                    self.__firstAid.star_data_type = self.star_data_type
+                                    self.__firstAid.star_data = self.star_data
+
+                                    self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                                hasLegacySfIssue=self.__has_legacy_sf_issue)
+
+                                    self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                                    self.__star_data_type = self.__firstAid.star_data_type
+                                    self.__star_data = self.__firstAid.star_data
+                                    self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+
                                     _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
                                 if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -1841,8 +1894,13 @@ class PdbMrSplitter:
                                     self.__star_data_type.append(star_data_type)
                                     self.__star_data.append(star_data)
 
-                                    self.__rescueFormerNef(insert_index)
-                                    self.__rescueImmatureStr(insert_index)
+                                    self.__firstAid.star_data_type = self.star_data_type
+                                    self.__firstAid.star_data = self.star_data
+
+                                    self.__firstAid.rescueFormerNef(insert_index)
+                                    self.__firstAid.rescueImmatureStr(insert_index)
+
+                                    self.__star_data = self.__firstAid.star_data
 
                                 if _is_done:
                                     self.__detectContentSubType__(insert_index, input_source, dir_path)
@@ -1850,11 +1908,20 @@ class PdbMrSplitter:
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
                                         if any(True for mr_content_subtype in self.__mr_content_subtypes if mr_content_subtype in content_subtype):
-                                            self.__public_mr_has_valid_star_restraint = True
+                                            self.__pdb_mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
-                        elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
-                            pass
+                        else:
+
+                            self.__firstAid.star_data_type = self.star_data_type
+                            self.__firstAid.star_data = self.star_data
+
+                            if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                           hasLegacySfIssue=self.__has_legacy_sf_issue):
+                                self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                                self.__star_data_type = self.__firstAid.star_data_type
+                                self.__star_data = self.__firstAid.star_data
+                                self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
 
                         if _mrPath is not None:
                             try:
@@ -1864,11 +1931,11 @@ class PdbMrSplitter:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
 
                 return False
 
@@ -1881,7 +1948,7 @@ class PdbMrSplitter:
                     break
 
             if not has_content:
-                if not self.__public_mr_has_valid_star_restraint:
+                if not self.__pdb_mr_has_valid_star_restraint:
                     with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofh:
                         ofh.write('')
 
@@ -1969,7 +2036,7 @@ class PdbMrSplitter:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                     else:
 
@@ -1980,7 +2047,18 @@ class PdbMrSplitter:
 
                         if star_data_type == 'Saveframe':
                             self.__has_legacy_sf_issue = True
-                            self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
+
+                            self.__firstAid.star_data_type = self.star_data_type
+                            self.__firstAid.star_data = self.star_data
+
+                            self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                        hasLegacySfIssue=self.__has_legacy_sf_issue)
+
+                            self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                            self.__star_data_type = self.__firstAid.star_data_type
+                            self.__star_data = self.__firstAid.star_data
+                            self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+
                             _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
                         if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -1992,8 +2070,13 @@ class PdbMrSplitter:
                             self.__star_data_type.append(star_data_type)
                             self.__star_data.append(star_data)
 
-                            self.__rescueFormerNef(insert_index)
-                            self.__rescueImmatureStr(insert_index)
+                            self.__firstAid.star_data_type = self.star_data_type
+                            self.__firstAid.star_data = self.star_data
+
+                            self.__firstAid.rescueFormerNef(insert_index)
+                            self.__firstAid.rescueImmatureStr(insert_index)
+
+                            self.__star_data = self.__firstAid.star_data
 
                         if _is_done:
                             self.__detectContentSubType__(insert_index, input_source, dir_path)
@@ -2001,11 +2084,20 @@ class PdbMrSplitter:
                             if 'content_subtype' in input_source_dic:
                                 content_subtype = input_source_dic['content_subtype']
                                 if any(True for mr_content_subtype in self.__mr_content_subtypes if mr_content_subtype in content_subtype):
-                                    self.__public_mr_has_valid_star_restraint = True
+                                    self.__pdb_mr_has_valid_star_restraint = True
                                     mr_part_paths.append({'nmr-star': mrPath})
 
-                elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
-                    pass
+                else:
+
+                    self.__firstAid.star_data_type = self.star_data_type
+                    self.__firstAid.star_data = self.star_data
+
+                    if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                   hasLegacySfIssue=self.__has_legacy_sf_issue):
+                        self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                        self.__star_data_type = self.__firstAid.star_data_type
+                        self.__star_data = self.__firstAid.star_data
+                        self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
 
                 if _mrPath is not None:
                     try:
@@ -2053,7 +2145,7 @@ class PdbMrSplitter:
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
-                            settled_file_type, _ = self.__getPeakListFileTypeAndContentSubtype(ign_pk_file)
+                            settled_file_type, _ = self.getPeakListFileTypeAndContentSubtype(ign_pk_file)
 
                             _ar = ar.copy()
 
@@ -2121,7 +2213,7 @@ class PdbMrSplitter:
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
-                            settled_file_type, _ = self.__getPeakListFileTypeAndContentSubtype(ign_pk_file)
+                            settled_file_type, _ = self.getPeakListFileTypeAndContentSubtype(ign_pk_file)
 
                             _ar = ar.copy()
 
@@ -2209,7 +2301,7 @@ class PdbMrSplitter:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -2279,11 +2371,11 @@ class PdbMrSplitter:
                             err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                 "@todo: It needs to be split properly."
 
-                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -2298,11 +2390,11 @@ class PdbMrSplitter:
                         err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                             "@todo: It needs to be reviewed."
 
-                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -2315,11 +2407,11 @@ class PdbMrSplitter:
                         err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                             "@todo: It needs to be reviewed."
 
-                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -2540,7 +2632,7 @@ class PdbMrSplitter:
 
                     if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
-                        settled_file_type, _ = self.__getPeakListFileTypeAndContentSubtype(ign_pk_file)
+                        settled_file_type, _ = self.getPeakListFileTypeAndContentSubtype(ign_pk_file)
 
                         _ar = ar.copy()
 
@@ -2652,7 +2744,7 @@ class PdbMrSplitter:
 
                         remediated = True
 
-                    settled_file_type, _ = self.__getPeakListFileTypeAndContentSubtype(dst_file)
+                    settled_file_type, _ = self.getPeakListFileTypeAndContentSubtype(dst_file)
 
                     if settled_file_type is not None:
 
@@ -2760,7 +2852,7 @@ class PdbMrSplitter:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 else:
 
@@ -2771,7 +2863,18 @@ class PdbMrSplitter:
 
                                     if star_data_type == 'Saveframe':
                                         self.__has_legacy_sf_issue = True
-                                        self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
+
+                                        self.__firstAid.star_data_type = self.star_data_type
+                                        self.__firstAid.star_data = self.star_data
+
+                                        self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                                    hasLegacySfIssue=self.__has_legacy_sf_issue)
+
+                                        self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                                        self.__star_data_type = self.__firstAid.star_data_type
+                                        self.__star_data = self.__firstAid.star_data
+                                        self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+
                                         _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
                                     if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -2783,8 +2886,13 @@ class PdbMrSplitter:
                                         self.__star_data_type.append(star_data_type)
                                         self.__star_data.append(star_data)
 
-                                        self.__rescueFormerNef(insert_index)
-                                        self.__rescueImmatureStr(insert_index)
+                                        self.__firstAid.star_data_type = self.star_data_type
+                                        self.__firstAid.star_data = self.star_data
+
+                                        self.__firstAid.rescueFormerNef(insert_index)
+                                        self.__firstAid.rescueImmatureStr(insert_index)
+
+                                        self.__star_data = self.__firstAid.star_data
 
                                     if _is_done:
                                         self.__detectContentSubType__(insert_index, input_source, dir_path)
@@ -2795,8 +2903,17 @@ class PdbMrSplitter:
                                                 mr_part_paths.append({'nmr-star': mrPath,
                                                                       'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
-                            elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
-                                pass
+                            else:
+
+                                self.__firstAid.star_data_type = self.star_data_type
+                                self.__firstAid.star_data = self.star_data
+
+                            if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                           hasLegacySfIssue=self.__has_legacy_sf_issue):
+                                self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                                self.__star_data_type = self.__firstAid.star_data_type
+                                self.__star_data = self.__firstAid.star_data
+                                self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
 
                             if _mrPath is not None:
                                 try:
@@ -2893,7 +3010,7 @@ class PdbMrSplitter:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 else:
 
@@ -2904,7 +3021,18 @@ class PdbMrSplitter:
 
                                     if star_data_type == 'Saveframe':
                                         self.__has_legacy_sf_issue = True
-                                        self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
+
+                                        self.__firstAid.star_data_type = self.star_data_type
+                                        self.__firstAid.star_data = self.star_data
+
+                                        self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                                    hasLegacySfIssue=self.__has_legacy_sf_issue)
+
+                                        self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                                        self.__star_data_type = self.__firstAid.star_data_type
+                                        self.__star_data = self.__firstAid.star_data
+                                        self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+
                                         _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
 
                                     if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -2916,8 +3044,13 @@ class PdbMrSplitter:
                                         self.__star_data_type.append(star_data_type)
                                         self.__star_data.append(star_data)
 
-                                        self.__rescueFormerNef(insert_index)
-                                        self.__rescueImmatureStr(insert_index)
+                                        self.__firstAid.star_data_type = self.star_data_type
+                                        self.__firstAid.star_data = self.star_data
+
+                                        self.__firstAid.rescueFormerNef(insert_index)
+                                        self.__firstAid.rescueImmatureStr(insert_index)
+
+                                        self.__star_data = self.__firstAid.star_data
 
                                     if _is_done:
                                         self.__detectContentSubType()
@@ -2928,8 +3061,17 @@ class PdbMrSplitter:
                                                 mr_part_paths.append({'nmr-star': mrPath,
                                                                       'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
-                            elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
-                                pass
+                            else:
+
+                                self.__firstAid.star_data_type = self.star_data_type
+                                self.__firstAid.star_data = self.star_data
+
+                                if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                               hasLegacySfIssue=self.__has_legacy_sf_issue):
+                                    self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
+                                    self.__star_data_type = self.__firstAid.star_data_type
+                                    self.__star_data = self.__firstAid.star_data
+                                    self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
 
                             if _mrPath is not None:
                                 try:
@@ -2952,7 +3094,7 @@ class PdbMrSplitter:
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
-                            settled_file_type, _ = self.__getPeakListFileTypeAndContentSubtype(ign_pk_file)
+                            settled_file_type, _ = self.getPeakListFileTypeAndContentSubtype(ign_pk_file)
 
                             _ar = ar.copy()
 
@@ -3056,7 +3198,7 @@ class PdbMrSplitter:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -3165,11 +3307,11 @@ class PdbMrSplitter:
                                 err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                     "@todo: It needs to be split properly."
 
-                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + err)
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 aborted = True
 
@@ -3184,11 +3326,11 @@ class PdbMrSplitter:
                             err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                                 "@todo: It needs to be reviewed."
 
-                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -3203,11 +3345,11 @@ class PdbMrSplitter:
                             err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                                 "@todo: It needs to be reviewed."
 
-                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.split() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -3269,7 +3411,7 @@ class PdbMrSplitter:
                         except OSError:
                             pass
 
-                elif not self.__public_mr_has_valid_star_restraint:
+                elif not self.__pdb_mr_has_valid_star_restraint:
 
                     touch_file = os.path.join(dir_path, '.entry_without_mr')
                     if not os.path.exists(touch_file):
@@ -3291,7 +3433,7 @@ class PdbMrSplitter:
                                                                      {'file_name': mr_file_name, 'description': err}})
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.split() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
         if has_spectral_peak:
 
@@ -3400,7 +3542,7 @@ class PdbMrSplitter:
 
         return not self.report.isError()
 
-    def __getPeakListFileTypeAndContentSubtype(self, file_path: str) -> Tuple[Optional[str], Optional[dict]]:
+    def getPeakListFileTypeAndContentSubtype(self, file_path: str) -> Tuple[Optional[str], Optional[dict]]:
         """ Return peak list file type and content subtype of a given file path.
         """
 
@@ -4329,7 +4471,7 @@ class PdbMrSplitter:
                         if self.__debug:
                             self.__lfh.write('DIV-MR-EXIT #5-1\n')
 
-                        return self.peelLegacyMrIfNecessary(file_path, file_type, err_desc, src_path, offset)
+                        return self.stripLegacyMrIfNecessary(file_path, file_type, err_desc, src_path, offset)
 
                     if self.__debug:
                         self.__lfh.write('DIV-MR-EXIT #5-2\n')
@@ -4559,8 +4701,8 @@ class PdbMrSplitter:
 
         return True
 
-    def peelLegacyMrIfNecessary(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
-        """ Peel uninterpretable restraints from the legacy NMR file if necessary.
+    def stripLegacyMrIfNecessary(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
+        """ Strip off uninterpretable restraints from the legacy NMR file if necessary.
         """
 
         src_basename = os.path.splitext(file_path)[0]
@@ -4570,7 +4712,7 @@ class PdbMrSplitter:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        if any(True for _err_desc in self.__peel_mr_error_message
+        if any(True for _err_desc in self.__strip_mr_error_message
                if err_desc['file_path'] == _err_desc['file_path']
                and err_desc['line_number'] == _err_desc['line_number']
                and err_desc['column_position'] == _err_desc['column_position']
@@ -4583,7 +4725,7 @@ class PdbMrSplitter:
                 os.remove(div_ext_file)
             return False
 
-        self.__peel_mr_error_message.append(err_desc)
+        self.__strip_mr_error_message.append(err_desc)
 
         if self.__debug:
             self.__lfh.write('PEEL-MR\n')
@@ -5541,9 +5683,9 @@ class PdbMrSplitter:
             if has_lexer_error and has_parser_error and has_content:
                 # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
                 if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                    self.peelLegacyMrIfNecessary(file_path, file_type,
-                                                 parser_err_listener.getMessageList()[0],
-                                                 src_path, offset)
+                    self.stripLegacyMrIfNecessary(file_path, file_type,
+                                                  parser_err_listener.getMessageList()[0],
+                                                  src_path, offset)
                     div_test = True
 
             fixed_line_num = -1

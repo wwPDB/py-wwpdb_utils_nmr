@@ -219,6 +219,8 @@ class NmrDpFirstAid:
 
     @star_data_type.setter
     def star_data_type(self, star_data_type: List[str]):
+        if star_data_type == self.__star_data_type:
+            return
         self.__star_data_type = star_data_type
 
     @property
@@ -227,6 +229,8 @@ class NmrDpFirstAid:
 
     @star_data.setter
     def star_data(self, star_data: List[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]]):
+        if star_data == self.__star_data:
+            return
         self.__star_data = star_data
 
     @property

@@ -87,7 +87,7 @@
 # 04-Jul-2022  M. Yokochi - add support for old XPLOR atom nomenclature, e.g. 1HB (v3.1.4, NMR restraint remediation)
 # 01-Sep-2022  M. Yokochi - fix NEF atom name conversion for excess wild card (v3.1.5, NMR restraint remediation)
 # 09-Sep-2022  M. Yokochi - add support for NEF atom name conversion starting with wild card, e.g. '%HN' (v3.2.0, NMR restraint remediation)
-# 20-Oct-2022  M. Yokochi - allow missing distance restraints via allow_missing_dist_restraint(bool) (v3.2.1, DAOTHER-8088 1.b, 8108)
+# 20-Oct-2022  M. Yokochi - permit missing distance restraints via permit_missing_dist_restraint(bool) (v3.2.1, DAOTHER-8088 1.b, 8108)
 # 16-Dec-2022  M. Yokochi - remove deprecated functions with minor code revisions (v3.2.2)
 # 27-Feb-2023  M. Yokochi - preserve author sequence scheme of the coordinates during NMR-STAR to NEF conversion (v3.2.3)
 # 13-Mar-2023  M. Yokochi - preserve the original atom nomenclature of NMR restraints into Auth_atom_name_* data items (v3.4.0)
@@ -105,9 +105,10 @@
 # 27-Dec-2024  M. Yokochi - change class path and visibility of class method (v4.1.1)
 # 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
 # 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
-# 09-Apr-2025  M. Yokochi - allow missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
+# 09-Apr-2025  M. Yokochi - permit missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
 # 23-May-2025  M. Yokochi - resolve pseudo atom name of non-standard residue based on local CCD derived from the coordinated (v4.5.0, DAOTHER-10105)
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
+# 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -116,7 +117,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "4.8.1"
+__version__ = "5.0.0"
 
 import sys
 import os
@@ -621,14 +622,14 @@ class NEFTranslator:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__remediation_mode',
                  '__annotation_mode',
                  '__internal_mode',
                  '__merge_rescue_mode',
                  '__bmrb_only',
-                 '__allow_missing_dist_restraint',
-                 '__allow_missing_chem_shift',
+                 '__permit_missing_dist_restraint',
+                 '__permit_missing_chem_shift',
                  'sfCatMap',
                  'tagMap',
                  'nefMandatoryTag',
@@ -664,7 +665,7 @@ class NEFTranslator:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         # whether to enable remediation routine
         self.__remediation_mode = False
@@ -676,10 +677,10 @@ class NEFTranslator:
         self.__merge_rescue_mode = False
         # whether the initial sequence number starts from '1' in NEF file, otherwise preserves author sequence scheme of the coordinates
         self.__bmrb_only = False
-        # whether allow missing distance restraints
-        self.__allow_missing_dist_restraint = False
+        # whether permit missing distance restraints
+        self.__permit_missing_dist_restraint = False
         # whether to skip missing_mandatory_content error for data conversion server (DAOTHER-9785)
-        self.__allow_missing_chem_shift = False
+        self.__permit_missing_chem_shift = False
 
         # libDirPath = os.path.dirname(__file__) + '/lib/'
 
@@ -1556,13 +1557,13 @@ class NEFTranslator:
         self.__pA.setVerbose(self.__verbose)
 
         # CCD accessing utility
-        self.__ccU = ChemCompUtil(self.__verbose, self.__lfh) if ccU is None else ccU
+        self.__ccU = ChemCompUtil(self.__verbose, self.__log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh, self.__ccU) if csStat is None else csStat
+        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__log, self.__ccU) if csStat is None else csStat
 
         # CifToNmrStar
-        self.__c2S = CifToNmrStar(self.__lfh) if c2S is None else c2S
+        self.__c2S = CifToNmrStar(self.__log) if c2S is None else c2S
 
         # readable item type
         self.readableItemType = {'str': 'a string',
@@ -1631,17 +1632,17 @@ class NEFTranslator:
 
         self.__bmrb_only = flag
 
-    def allow_missing_dist_restraint(self, flag: bool):
-        """ Whether allow missing distance restraint.
+    def permit_missing_dist_restraint(self, flag: bool):
+        """ Whether permit missing distance restraint.
         """
 
-        self.__allow_missing_dist_restraint = flag
+        self.__permit_missing_dist_restraint = flag
 
-    def allow_missing_chem_shift(self, flag: bool):
-        """ Whether allow missing assigned chemical shift.
+    def permit_missing_chem_shift(self, flag: bool):
+        """ Whether permit missing assigned chemical shift.
         """
 
-        self.__allow_missing_chem_shift = flag
+        self.__permit_missing_chem_shift = flag
 
     def cache_clear(self):
         """ Clear cache.
@@ -1699,7 +1700,7 @@ class NEFTranslator:
     #         data_map = list(map(list, zip(*data))) if transpose else data
     #
     #     except Exception as e:
-    #         self.__lfh.write(f"+{self.__class_name__}.load_csv_data() ++ Error  - {str(e)}\n")
+    #         self.__log.write(f"+{self.__class_name__}.load_csv_data() ++ Error  - {str(e)}\n")
     #
     #     return data_map
 
@@ -1858,7 +1859,7 @@ class NEFTranslator:
                 minimal_lp_category_nef_r = ['_nef_distance_restraint']
 
                 minimal_lp_category_star_a = ['_Atom_chem_shift', '_Gen_dist_constraint']
-                minimal_lp_category_star_s = [] if self.__allow_missing_chem_shift else ['_Atom_chem_shift']
+                minimal_lp_category_star_s = [] if self.__permit_missing_chem_shift else ['_Atom_chem_shift']
                 minimal_lp_category_star_r = ['_Gen_dist_constraint']
                 allowed_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint',
                                               '_Homonucl_NOE', '_J_three_bond_constraint', '_RDC',
@@ -1877,7 +1878,7 @@ class NEFTranslator:
                 minimal_sf_category_nef_r = ['nef_distance_restraint_list']
 
                 minimal_sf_category_star_a = ['assigned_chemical_shifts', 'general_distance_constraints']
-                minimal_sf_category_star_s = [] if self.__allow_missing_chem_shift else ['assigned_chemical_shifts']
+                minimal_sf_category_star_s = [] if self.__permit_missing_chem_shift else ['assigned_chemical_shifts']
                 minimal_sf_category_star_r = ['general_distance_constraints']
                 allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints',
                                               'homonucl_NOEs', 'J_three_bond_constraints', 'RDCs',
@@ -1892,7 +1893,7 @@ class NEFTranslator:
                 if self.__internal_mode:
                     allowed_sf_category_star_o.append('spectral_peak_list')
 
-                if self.__allow_missing_dist_restraint:
+                if self.__permit_missing_dist_restraint:
                     minimal_lp_category_nef_a = ['_nef_chemical_shift']
                     minimal_lp_category_nef_r = ['']
 
@@ -7549,13 +7550,13 @@ class NEFTranslator:
                         elif wc_code == '*':
                             pattern = re.compile(fr'{_atom_type}\S+')
                         elif self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                            self.__log.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                     elif wc_code == '%':
                         pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
                     elif wc_code == '*':
                         pattern = re.compile(fr'{atom_type}\S+')
                     elif self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        self.__log.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                 else:
                     _wc_code = atom_type[0]
                     atom_type = atom_type[1:]
@@ -7566,16 +7567,16 @@ class NEFTranslator:
                         elif wc_code == '*':
                             pattern = re.compile(fr'\d+{atom_type}\S+') if is_std_comp_id else re.compile(fr'\S?{atom_type}\S+$')
                         elif self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                            self.__log.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                     elif _wc_code == '*':
                         if wc_code == '%':
                             pattern = re.compile(fr'\S+{atom_type}\d+') if is_std_comp_id else re.compile(fr'\S+{atom_type}\S?$')
                         elif wc_code == '*':
                             pattern = re.compile(fr'\S+{atom_type}\S+')
                         elif self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                            self.__log.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                     elif self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        self.__log.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                 atom_list = [a for a in atoms if re.match(pattern, a) and nef_atom[0] in ('H', '1', '2', '3', a[0])]
 
@@ -7618,7 +7619,7 @@ class NEFTranslator:
                 elif xy_code == 'x':
                     atom_list = atom_list[:1]
                 elif self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    self.__log.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                 ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
@@ -7636,7 +7637,7 @@ class NEFTranslator:
                 elif wc_code == '*':
                     pattern = re.compile(fr'\S+{atom_type}')
                 elif self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    self.__log.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                 atom_list = [a for a in atoms if re.match(pattern, a)]
 
@@ -7651,7 +7652,7 @@ class NEFTranslator:
                     ambiguity_code = guess_ambiguity_code(atom_list)
 
             elif self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                self.__log.write(f"+{self.__class_name__}.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
         except IndexError:
             pass
@@ -8265,7 +8266,7 @@ class NEFTranslator:
                 if leave_unmatched:
                     details = f"Unknown non-standard residue {comp_id} found."
                 elif self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
+                    self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
 
             if self.__csStat.getTypeOfCompId(comp_id)[1]:
                 if "'" in nef_atom:
@@ -8373,13 +8374,13 @@ class NEFTranslator:
                             elif wc_code == '*':
                                 pattern = re.compile(fr'{_atom_type}\S+')
                             elif self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                                self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                         elif wc_code == '%':
                             pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
                         elif wc_code == '*':
                             pattern = re.compile(fr'{atom_type}\S+')
                         elif self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                            self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                     else:
                         _wc_code = atom_type[0]
                         atom_type = atom_type[1:]
@@ -8390,16 +8391,16 @@ class NEFTranslator:
                             elif wc_code == '*':
                                 pattern = re.compile(fr'\d+{atom_type}\S+') if is_std_comp_id else re.compile(fr'\S?{atom_type}\S+$')
                             elif self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                                self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                         elif _wc_code == '*':
                             if wc_code == '%':
                                 pattern = re.compile(fr'\S+{atom_type}\d+') if is_std_comp_id else re.compile(fr'\S+{atom_type}\S?$')
                             elif wc_code == '*':
                                 pattern = re.compile(fr'\S+{atom_type}\S+')
                             elif self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                                self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                         elif self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                            self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                     atom_list = [a for a in atoms if re.match(pattern, a) and nef_atom[0] in ('H', '1', '2', '3', a[0])]
 
@@ -8442,7 +8443,7 @@ class NEFTranslator:
                     elif xy_code == 'x':
                         atom_list = atom_list[:1]
                     elif self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                     ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
@@ -8460,7 +8461,7 @@ class NEFTranslator:
                     elif wc_code == '*':
                         pattern = re.compile(fr'\S+{atom_type}')
                     elif self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                     atom_list = [a for a in atoms if re.match(pattern, a)]
 
@@ -8475,7 +8476,7 @@ class NEFTranslator:
                         ambiguity_code = guess_ambiguity_code(atom_list)
 
                 elif self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    self.__log.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
             except IndexError:
                 pass
@@ -8622,9 +8623,9 @@ class NEFTranslator:
                                 atom_id_map[atom_id] = atom_id
                             elif self.__verbose:
                                 if not self.__ccU.lastStatus:
-                                    self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
+                                    self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
                                 else:
-                                    self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+                                    self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                             continue
 
@@ -8644,7 +8645,7 @@ class NEFTranslator:
                             details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
                             atom_id_map[atom_id] = atom_id
                         elif self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
+                            self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
 
                         continue
 
@@ -8661,7 +8662,7 @@ class NEFTranslator:
                                     details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+                                    self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                             else:
 
@@ -8704,7 +8705,7 @@ class NEFTranslator:
                                 details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
                                 atom_id_map[atom_id] = atom_id
                             elif self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
+                                self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
 
                         elif atom_id[0] in protonBeginCode:
 
@@ -8720,7 +8721,7 @@ class NEFTranslator:
                                         details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                         atom_id_map[atom_id] = atom_id
                                     elif self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+                                        self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                                 else:
 
@@ -8786,7 +8787,7 @@ class NEFTranslator:
                                         details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                         atom_id_map[atom_id] = atom_id
                                     elif self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+                                        self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                                 else:
 
@@ -8847,7 +8848,7 @@ class NEFTranslator:
                                     details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+                                    self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                             else:
 
@@ -8898,7 +8899,7 @@ class NEFTranslator:
                                 details[atom_id] = f"{atom_id} has invalid ambiguity code {ambig_code}."
                                 atom_id_map[atom_id] = atom_id
                             elif self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
+                                self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid ambiguity code {ambig_code} for atom_id {atom_id} found.\n")
 
                         else:
 
@@ -8911,7 +8912,7 @@ class NEFTranslator:
                                     details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
+                                    self.__log.write(f"+{self.__class_name__}.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
 
                             else:
 

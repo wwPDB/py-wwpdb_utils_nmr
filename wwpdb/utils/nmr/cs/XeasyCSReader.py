@@ -45,7 +45,7 @@ class XeasyCSReader:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__debug',
                  '__maxLexerErrorReport',
                  '__maxParserErrorReport',
@@ -65,7 +65,7 @@ class XeasyCSReader:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
         self.__debug = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
@@ -114,7 +114,7 @@ class XeasyCSReader:
 
                 if not os.access(csFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() {csFilePath} is not accessible.\n")
+                        self.__log.write(f"+{self.__class_name__}.parse() {csFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifh = open(csFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
@@ -125,7 +125,7 @@ class XeasyCSReader:
 
                 if csString is None or len(csString) == 0:
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() Empty string.\n")
+                        self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(csString)
@@ -140,10 +140,10 @@ class XeasyCSReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                     if 'input' in description:
-                        self.__lfh.write(f"{description['input']}\n")
-                        self.__lfh.write(f"{description['marker']}\n")
+                        self.__log.write(f"{description['input']}\n")
+                        self.__log.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
             parser = XeasyPROTParser(stream)
@@ -155,7 +155,7 @@ class XeasyCSReader:
             tree = parser.xeasy_prot()
 
             walker = ParseTreeWalker()
-            listener = XeasyCSParserListener(self.__verbose, self.__lfh,
+            listener = XeasyCSParserListener(self.__verbose, self.__log,
                                              self.__polySeq, self.__entityAssembly,
                                              self.__nefT,
                                              self.__reasons)
@@ -176,22 +176,22 @@ class XeasyCSReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                     if 'input' in description:
-                        self.__lfh.write(f"{description['input']}\n")
-                        self.__lfh.write(f"{description['marker']}\n")
+                        self.__log.write(f"{description['input']}\n")
+                        self.__log.write(f"{description['marker']}\n")
 
             if self.__verbose and self.__debug:
                 if listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
+                    self.__log.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
                 if isFilePath:
-                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
+                    self.__log.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
 
             return listener, parser_error_listener, lexer_error_listener
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
             return None, None, None
         finally:
             if isFilePath and ifh is not None:

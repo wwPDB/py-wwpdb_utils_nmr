@@ -233,7 +233,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__representativeModelId',
                  '__representativeAltId',
                  '__mrAtomNameMapping',
@@ -371,7 +371,7 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         self.__representativeModelId = representativeModelId
         self.__representativeAltId = representativeAltId
@@ -2791,7 +2791,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 
@@ -2961,7 +2961,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+                self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 
@@ -5441,7 +5441,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             except Exception as e:
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.exitDisulfide_bond_linkage() ++ Error  - {str(e)}")
+                    self.__log.write(f"+{self.__class_name__}.exitDisulfide_bond_linkage() ++ Error  - {str(e)}")
 
             if self.__createSfDict:
                 sf = self.__getSf()

@@ -290,7 +290,7 @@ class BaseStackedMRParserListener():
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  'representativeModelId',
                  'representativeAltId',
                  'mrAtomNameMapping',
@@ -661,7 +661,7 @@ class BaseStackedMRParserListener():
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         self.representativeModelId = representativeModelId
         self.representativeAltId = representativeAltId
@@ -956,7 +956,7 @@ class BaseStackedMRParserListener():
 
     @property
     def log(self):
-        return self.__lfh
+        return self.__log
 
     @property
     def verbose_debug(self):
@@ -7596,7 +7596,7 @@ class BaseStackedMRParserListener():
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 
@@ -7766,7 +7766,7 @@ class BaseStackedMRParserListener():
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+                self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 
@@ -7827,7 +7827,7 @@ class BaseStackedMRParserListener():
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.isRealisticDistanceRestraint() ++ Error  - {str(e)}")
+                self.__log.write(f"+{self.__class_name__}.isRealisticDistanceRestraint() ++ Error  - {str(e)}")
 
         return True
 

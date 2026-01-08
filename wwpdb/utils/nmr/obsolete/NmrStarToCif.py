@@ -30,7 +30,7 @@ class NmrStarToCif:
 
     def __init__(self, verbose=False, log=sys.stderr):
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         # whether to remove _pdbx_nmr_assigned_chem_shift_list (DAOTHER-2874)
         self.__remove_cs_list_cif = True
@@ -178,7 +178,7 @@ class NmrStarToCif:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"+ERROR- NmrStarToCif.clean() {str(e)}\n")
+            self.__log.write(f"+ERROR- NmrStarToCif.clean() {str(e)}\n")
 
             return False
 
@@ -201,7 +201,7 @@ class NmrStarToCif:
             if containerList is not None and len(containerList) > 1:
 
                 if self.__verbose:
-                    self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+                    self.__log.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                 for c in containerList:
                     c.setType('data')
@@ -485,6 +485,6 @@ class NmrStarToCif:
                 return True
 
         except Exception as e:
-            self.__lfh.write(f"+ERROR- NmrStarToCif.convert() {str(e)}\n")
+            self.__log.write(f"+ERROR- NmrStarToCif.convert() {str(e)}\n")
 
         return False

@@ -39,7 +39,7 @@ class RCI:
     """ Wrapper class for Random Coil Index calculation.
     """
     __slots__ = ('__verbose',
-                 '__lfh',
+                 '__log',
                  'pos_neg_value',
                  'floor_value',
                  'floor_value1',
@@ -154,7 +154,7 @@ class RCI:
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr):  # pylint: disable=redefined-builtin,redefined-outer-name
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         self.pos_neg_value = 0  # If 1, different scaling is used for pos and neg sec chem shifts
 
@@ -6177,10 +6177,22 @@ class RCI:
         if len(L_list) > 0:
             done = 0
             while not done:
-                for L_aa in self.__bmrb_to_aa_list:
+                for idx, L_aa in enumerate(self.__bmrb_to_aa_list):
                     L_residue_number_found = 0
                     L_residue_number = L_aa[1]
                     L_residue_name = self.__aa_names_full_all_CAP[L_aa[0][0:3]]
+                    if L_residue_number is None:
+                        for offset in range(1, self.gap_limit + 1):
+                            if idx + offset < len(self.__bmrb_to_aa_list) and self.__bmrb_to_aa_list[idx + offset][1] is not None:
+                                L_residue_number = self.__bmrb_to_aa_list[idx + offset][1] - offset
+                                break
+                            if idx - offset >= 0 and self.__bmrb_to_aa_list[idx - offset][1] is not None:
+                                L_residue_number = self.__bmrb_to_aa_list[idx - offset][1] + offset
+                                break
+                        if L_residue_number is not None:
+                            self.__bmrb_to_aa_list[idx][1] = L_residue_number
+                        else:
+                            continue
                     while not L_residue_number_found:
                         for L_item in L_list:
                             if L_residue_number == L_item[0] and L_residue_name == L_item[1] and l_atom == L_item[6]:
@@ -6241,10 +6253,22 @@ class RCI:
         if len(L_list) > 0:
             done = 0
             while not done:
-                for L_aa in self.__bmrb_to_aa_list:
+                for idx, L_aa in enumerate(self.__bmrb_to_aa_list):
                     L_residue_number_found = 0
                     L_residue_number = L_aa[1]
                     L_residue_name = self.__aa_names_full_all_CAP[L_aa[0][0:3]]
+                    if L_residue_number is None:
+                        for offset in range(1, self.gap_limit + 1):
+                            if idx + offset < len(self.__bmrb_to_aa_list) and self.__bmrb_to_aa_list[idx + offset][1] is not None:
+                                L_residue_number = self.__bmrb_to_aa_list[idx + offset][1] - offset
+                                break
+                            if idx - offset >= 0 and self.__bmrb_to_aa_list[idx - offset][1] is not None:
+                                L_residue_number = self.__bmrb_to_aa_list[idx - offset][1] + offset
+                                break
+                        if L_residue_number is not None:
+                            self.__bmrb_to_aa_list[idx][1] = L_residue_number
+                        else:
+                            continue
                     while not L_residue_number_found:
                         for L_item in L_list:
                             if L_residue_number == L_item[0] and L_residue_name == L_item[1] and l_atom == L_item[6]:
@@ -7963,7 +7987,7 @@ class RCI:
                                 logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
                                     f"whereas it is {dyna_simp_res_name_i} in Simpred output of Dynamr\n"
                                 if self.__verbose:
-                                    self.__lfh.write(logwrite)
+                                    self.__log.write(logwrite)
 
                 if dyna_simp_res_num == res_i_minus_1:
                     # res_num_i_minus_1_sec_str = "C"
@@ -7985,7 +8009,7 @@ class RCI:
                                 logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
                                     f"whereas it is {dyna_simp_res_name_i_minus_1} in Simpred output of Dynamr\n"
                                 if self.__verbose:
-                                    self.__lfh.write(logwrite)
+                                    self.__log.write(logwrite)
 
                 if dyna_simp_res_num == res_i_minus_2:
                     # res_num_i_minus_2_sec_str = "C"
@@ -8007,7 +8031,7 @@ class RCI:
                                 logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
                                     f"whereas it is {dyna_simp_res_name_i_minus_2} in Simpred output of Dynamr\n"
                                 if self.__verbose:
-                                    self.__lfh.write(logwrite)
+                                    self.__log.write(logwrite)
 
                 if dyna_simp_res_num == res_i_plus_1:
                     # res_num_i_plus_1_sec_str = "C"
@@ -8029,7 +8053,7 @@ class RCI:
                                 logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
                                     f"whereas it is {dyna_simp_res_name_i_plus_1} in Simpred output of Dynamr\n"
                                 if self.__verbose:
-                                    self.__lfh.write(logwrite)
+                                    self.__log.write(logwrite)
 
                 if dyna_simp_res_num == res_i_plus_2:
                     # res_num_i_plus_2_sec_str = "C"
@@ -8051,7 +8075,7 @@ class RCI:
                                 logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
                                     f"whereas it is {dyna_simp_res_name_i_plus_2} in Simpred output of Dynamr\n"
                                 if self.__verbose:
-                                    self.__lfh.write(logwrite)
+                                    self.__log.write(logwrite)
 
             if self.NoNextProPro_flag == 1 and ((dyna_simp_res_name_i_plus_1 == dyna_simp_res_name_i == "P")
                                                 or (dyna_simp_res_name_i_plus_1 == dyna_simp_res_name_i_plus_2 == "P")):
@@ -8236,27 +8260,27 @@ class RCI:
             if res_i_found == 0:
                 logwrite = f"Warning. Residue i,{res_i}, has not been found\n"
                 if self.__verbose:
-                    self.__lfh.write(logwrite)
+                    self.__log.write(logwrite)
             if res_i_minus_1_found == 0:
                 logwrite = f"Warning. Residue i-1,{res_i_minus_1}, for residue {res_i} has not been found\n"
                 if self.__verbose:
-                    self.__lfh.write(logwrite)
+                    self.__log.write(logwrite)
             if res_i_plus_1_found == 0:
                 logwrite = f"Warning. Residue i+1,{res_i_plus_1}, for residue {res_i} has not been found\n"
                 if self.__verbose:
-                    self.__lfh.write(logwrite)
+                    self.__log.write(logwrite)
             if res_num_i_minus_1_sec_str_found == 0:
                 logwrite = f"Warning. Secondary structure type of residue i-1,{res_i_plus_1},(for residue {res_i}) has not been found. Random coil type is used.\n"
                 if self.__verbose:
-                    self.__lfh.write(logwrite)
+                    self.__log.write(logwrite)
             if res_num_i_plus_1_sec_str_found == 0:
                 logwrite = f"Warning. Secondary structure type of residue i+1,{res_i_minus_1},(for residue {res_i}) has not been found. Random coil type is used.\n"
                 if self.__verbose:
-                    self.__lfh.write(logwrite)
+                    self.__log.write(logwrite)
             if res_num_i_sec_str_found == 0:
                 logwrite = f"Warning. Secondary structure type of residue i,{res_i}, has not been found. Random coil type is used.\n"
                 if self.__verbose:
-                    self.__lfh.write(logwrite)
+                    self.__log.write(logwrite)
 
         self.__number_of_best_matches += 1
 

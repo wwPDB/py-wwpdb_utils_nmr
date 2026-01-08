@@ -27,7 +27,7 @@ else:
     from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
+# from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
 from testfixtures import LogCapture
 
 
@@ -44,6 +44,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def tearDown(self):
         pass
+
     # """
     # def test_init(self):
     #     nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
@@ -85,6 +86,7 @@ class TestNmrDpUtility(unittest.TestCase):
     #     # data directory exists
     #     self.assertEqual(os.path.isdir(self.data_dir_path), True)
     # """
+
     def test_nmr_nef_consistency(self):
         # no input
         with LogCapture() as _logs:

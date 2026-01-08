@@ -3909,14 +3909,6 @@ class NmrDpUtility:
         """ Extract/split public MR file into legacy restraint files for NMR restraint remediation.
         """
 
-        if self.__reg.combined_mode or not self.__reg.remediation_mode:
-            return True
-
-        ar_file_path_list = 'atypical_restraint_file_path_list'
-
-        if ar_file_path_list not in self.__reg.inputParamDict:
-            return True
-
         return self.__reg.dpS.extractPublicMrFileIntoLegacyMr()
 
     def __getPolymerSequence(self, file_list_id: int, sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], content_subtype: str

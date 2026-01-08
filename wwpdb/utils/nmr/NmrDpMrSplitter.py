@@ -1038,7 +1038,13 @@ class NmrDpMrSplitter:
         """ Extract/split public PDB-MR file into legacy restraint files for NMR restraint remediation.
         """
 
+        if self.__reg.combined_mode or not self.__reg.remediation_mode:
+            return True
+
         ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__reg.inputParamDict:
+            return True
 
         fileListId = self.__reg.file_path_list_len
 

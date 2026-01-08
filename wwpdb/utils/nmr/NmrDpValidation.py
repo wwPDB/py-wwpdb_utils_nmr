@@ -1590,6 +1590,81 @@ class NmrDpValidation:
 
         return is_done
 
+    def __convertCsToEntry(self, src_data: Optional[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]] = None, list_id: int = 1
+                           ) -> Optional[pynmrstar.Entry]:
+        """ Convert NMR-STAR CS loop/saveframe to pynmrstar Entry object.
+        """
+
+        if src_data is None:
+            return None
+
+        file_type = 'nmr-star'
+
+        def update_entry_info_saveframe(master_entry):
+            content_subtype = 'entry_info'
+
+            sf_category = SF_CATEGORIES[file_type][content_subtype]
+
+            orig_ent_sf = next((sf for sf in master_entry.frame_list if sf_category in (sf.category, sf.name)), None)
+
+            if orig_ent_sf is not None:
+
+                tagNames = [t[0] for t in orig_ent_sf.tags]
+
+                if 'Sf_category' not in tagNames:
+                    orig_ent_sf.add_tag('Sf_category', sf_category)
+                if 'Sf_framecode' not in tagNames:
+                    orig_ent_sf.add_tag('Sf_framecode', orig_ent_sf.name)
+                set_sf_tag(orig_ent_sf, 'ID', self.__reg.entry_id)
+
+            else:
+
+                ent_sf = pynmrstar.Saveframe.from_scratch(sf_category, SF_TAG_PREFIXES[file_type][content_subtype])
+                ent_sf.add_tag('Sf_category', sf_category)
+                ent_sf.add_tag('Sf_framecode', sf_category)
+                ent_sf.add_tag('ID', self.__reg.entry_id)
+
+                master_entry.add_saveframe(ent_sf)
+
+            return master_entry
+
+        if isinstance(src_data, pynmrstar.Entry):
+            return update_entry_info_saveframe(src_data)
+
+        content_subtype = 'chem_shift'
+
+        master_entry = pynmrstar.Entry.from_scratch(self.__reg.entry_id)
+
+        if isinstance(src_data, (pynmrstar.Saveframe, pynmrstar.Loop)):
+
+            if isinstance(src_data, pynmrstar.Saveframe):
+                set_sf_tag(src_data, 'Sf_category', SF_CATEGORIES[file_type][content_subtype])
+                set_sf_tag(src_data, 'Entry_ID', self.__reg.entry_id)
+                set_sf_tag(src_data, 'ID', list_id)
+                set_sf_tag(src_data, 'Data_file_name', self.__reg.srcName)
+
+                master_entry.add_saveframe(src_data)
+
+            else:
+                sf_framecode = f'assigned_chemical_shifts_{list_id}'
+                sf_tag_prefix = SF_TAG_PREFIXES[file_type][content_subtype]
+
+                acs_sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
+
+                acs_sf.add_tag('Sf_category', SF_CATEGORIES[file_type][content_subtype])
+                acs_sf.add_tag('Sf_framecode', sf_framecode)
+                acs_sf.add_tag('Entry_ID', self.__reg.entry_id)
+                acs_sf.add_tag('ID', list_id)
+                acs_sf.add_tag('Data_file_name', self.__reg.srcName)
+
+                acs_sf.add_loop(src_data)
+
+                master_entry.add_saveframe(acs_sf)
+
+            src_data = update_entry_info_saveframe(master_entry)
+
+        return src_data
+
     def detectContentSubType(self, file_list_id: int, input_source: NmrDpReportInputSource, dir_path: Optional[str] = None):
         """ Detect content subtype of NMR data file in any STAR format.
         """

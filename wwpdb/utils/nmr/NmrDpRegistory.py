@@ -33,6 +33,8 @@ try:
                                                PK_DATA_ITEMS,
                                                AUX_KEY_ITEMS,
                                                AUX_DATA_ITEMS)
+    from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,
+                                             NmrDpReportOutputStatistics)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
 except ImportError:
@@ -47,6 +49,8 @@ except ImportError:
                                    PK_DATA_ITEMS,
                                    AUX_KEY_ITEMS,
                                    AUX_DATA_ITEMS)
+    from nmr.NmrDpReport import (NmrDpReport,
+                                 NmrDpReportOutputStatistics)
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
 
@@ -247,10 +251,10 @@ class NmrDpRegistory:
     workFlowOps: tuple = field(default_factory=lambda: WORKFLOW_OPS)
 
     # data processing report
-    report = None
-    report_prev = None
+    report: NmrDpReport = None
+    report_prev: NmrDpReport = None
 
-    output_statistics = None
+    output_statistics: NmrDpReportOutputStatistics = None
 
     # CCD accessing utility
     ccU = None

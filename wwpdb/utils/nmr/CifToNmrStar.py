@@ -212,7 +212,7 @@ class CifToNmrStar:
     """
     __slots__ = ('__class_name__',
                  '__version__',
-                 '__lfh',
+                 '__log',
                  'schema_dir',
                  'schema',
                  'category_order',
@@ -222,7 +222,7 @@ class CifToNmrStar:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__lfh = log
+        self.__log = log
 
         # directory
         self.schema_dir = os.path.dirname(__file__) + '/nmr-star_schema/'
@@ -279,27 +279,27 @@ class CifToNmrStar:
         with open(self.schema_dir + 'headers.txt', 'w') as ofh:
             for header in schema.headers:
                 ofh.write(header + '\n')
-        self.__lfh.write('headers.txt: Done.\n')
+        self.__log.write('headers.txt: Done.\n')
 
         # print(schema.schema)
         write_schema_as_pickle(schema.schema, self.schema_dir + 'schema.pkl')
-        self.__lfh.write('schema.pkl: Done.\n')
+        self.__log.write('schema.pkl: Done.\n')
 
         # print(schema.schema_order)
         write_schema_as_pickle(schema.schema_order, self.schema_dir + 'schema_order.pkl')
-        self.__lfh.write('schema_order.pkl: Done.\n')
+        self.__log.write('schema_order.pkl: Done.\n')
 
         # print(schema.category_order)
         write_schema_as_pickle(schema.category_order, self.schema_dir + 'category_order.pkl')
-        self.__lfh.write('category_order.pkl: Done.\n')
+        self.__log.write('category_order.pkl: Done.\n')
 
         # print(schema.data_types)
         write_schema_as_pickle(schema.data_types, self.schema_dir + 'data_types.pkl')
-        self.__lfh.write('data_types.pkl: Done.\n')
+        self.__log.write('data_types.pkl: Done.\n')
 
         with open(self.schema_dir + 'version.txt', 'w') as ofh:
             ofh.write(schema.version)
-        self.__lfh.write(f"version: {schema.version}\n")
+        self.__log.write(f"version: {schema.version}\n")
 
     def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None,
                 datablockName: Optional[str] = None, originalFileName: Optional[str] = None, maxRepeat: int = 1) -> bool:
@@ -686,12 +686,12 @@ class CifToNmrStar:
             except OSError:
                 pass
 
-            self.__lfh.write(f"+{self.__class_name__}.convert() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.convert() ++ Error  - {str(e)}\n")
 
             return False
 
         except Exception as e:
-            self.__lfh.write(f"+{self.__class_name__}.convert() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.convert() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -964,7 +964,7 @@ class CifToNmrStar:
                     lp.sort_tags()
 
         except Exception as e:
-            self.__lfh.write(f"+{self.__class_name__}.normalize() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.normalize() ++ Error  - {str(e)}\n")
 
         for sf in strData.get_saveframes_by_tag_and_value('_Other_data_type_list.Text_data_format', 'json'):
             text_data = get_first_sf_tag(sf, 'Text_data')
@@ -999,7 +999,7 @@ class CifToNmrStar:
         try:
             strData.frame_list.sort(key=sf_key)
         except Exception as e:
-            self.__lfh.write(f"+{self.__class_name__}.normalize_nef() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.normalize_nef() ++ Error  - {str(e)}\n")
 
         return strData
 

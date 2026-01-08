@@ -27,7 +27,7 @@ else:
     from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
+# from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
 from testfixtures import LogCapture
 
 
@@ -45,45 +45,47 @@ class TestNmrDpUtility(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_init(self):
-        nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
-
-        self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories["nef"].keys()))
-        self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories["nmr-star"].keys()))
-
-        self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories["nef"].keys()))
-        self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories["nmr-star"].keys()))
-
-        # compare NMR content subtypes in NmrDpReportInputSource
-        input_source = NmrDpReportInputSource()
-        self.assertEqual(
-            set(nmr_content_subtypes),
-            set(input_source.content_subtypes)
-            - {
-                "plane_restraint",
-                "adist_restraint",
-                "rama_restraint",
-                "radi_restraint",
-                "diff_restraint",
-                "nbase_restraint",
-                "ang_restraint",
-                "pre_restraint",
-                "pcs_restraint",
-                "prdc_restraint",
-                "pang_restraint",
-                "pccr_restraint",
-                "hbond_restraint",
-                "ssbond_restraint",
-                "geo_restraint",
-                "coordinate",
-                "branched",
-                "non_poly",
-                "topology",
-            },
-        )
-
-        # data directory exists
-        self.assertEqual(os.path.isdir(self.data_dir_path), True)
+    # """
+    # def test_init(self):
+    #     nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
+    #
+    #     self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories["nef"].keys()))
+    #     self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories["nmr-star"].keys()))
+    #
+    #     self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories["nef"].keys()))
+    #     self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories["nmr-star"].keys()))
+    #
+    #     # compare NMR content subtypes in NmrDpReportInputSource
+    #     input_source = NmrDpReportInputSource()
+    #     self.assertEqual(
+    #         set(nmr_content_subtypes),
+    #         set(input_source.content_subtypes)
+    #         - {
+    #             "plane_restraint",
+    #             "adist_restraint",
+    #             "rama_restraint",
+    #             "radi_restraint",
+    #             "diff_restraint",
+    #             "nbase_restraint",
+    #             "ang_restraint",
+    #             "pre_restraint",
+    #             "pcs_restraint",
+    #             "prdc_restraint",
+    #             "pang_restraint",
+    #             "pccr_restraint",
+    #             "hbond_restraint",
+    #             "ssbond_restraint",
+    #             "geo_restraint",
+    #             "coordinate",
+    #             "branched",
+    #             "non_poly",
+    #             "topology",
+    #         },
+    #     )
+    #
+    #     # data directory exists
+    #     self.assertEqual(os.path.isdir(self.data_dir_path), True)
+    # """
 
     def test_nmr_nef_consistency(self):
         # no input

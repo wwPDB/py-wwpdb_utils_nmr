@@ -53,7 +53,7 @@ class AriaPKReader:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__debug',
                  '__enforcePeakRowFormat',
                  '__internal',
@@ -80,7 +80,7 @@ class AriaPKReader:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
         self.__debug = False
         self.__enforcePeakRowFormat = False
         self.__internal = False
@@ -145,7 +145,7 @@ class AriaPKReader:
 
                 if not os.access(pkFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() {pkFilePath} is not accessible.\n")
+                        self.__log.write(f"+{self.__class_name__}.parse() {pkFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifh = open(pkFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
@@ -156,7 +156,7 @@ class AriaPKReader:
 
                 if pkString is None or len(pkString) == 0:
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() Empty string.\n")
+                        self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(pkString)
@@ -164,14 +164,14 @@ class AriaPKReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not accessible.\n")
+                        self.__log.write(f"+{self.__class_name__}.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
-                    self.__cR = CifReader(self.__verbose, self.__lfh)
+                    self.__cR = CifReader(self.__verbose, self.__log)
                     if not self.__cR.parse(cifFilePath):
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
+                            self.__log.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
             lexer = XMLLexer(input)
@@ -184,10 +184,10 @@ class AriaPKReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                     if 'input' in description:
-                        self.__lfh.write(f"{description['input']}\n")
-                        self.__lfh.write(f"{description['marker']}\n")
+                        self.__log.write(f"{description['input']}\n")
+                        self.__log.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
             parser = XMLParser(stream)
@@ -199,7 +199,7 @@ class AriaPKReader:
             tree = parser.document()
 
             walker = ParseTreeWalker()
-            listener = AriaPKParserListener(self.__verbose, self.__lfh,
+            listener = AriaPKParserListener(self.__verbose, self.__log,
                                             self.__representativeModelId,
                                             self.__representativeAltId,
                                             self.__mrAtomNameMapping,
@@ -227,22 +227,22 @@ class AriaPKReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                     if 'input' in description:
-                        self.__lfh.write(f"{description['input']}\n")
-                        self.__lfh.write(f"{description['marker']}\n")
+                        self.__log.write(f"{description['input']}\n")
+                        self.__log.write(f"{description['marker']}\n")
 
             if self.__verbose and self.__debug:
                 if listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
+                    self.__log.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
                 if isFilePath:
-                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
+                    self.__log.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
 
             return listener, parser_error_listener, lexer_error_listener
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
             return None, None, None
         finally:
             if isFilePath and ifh is not None:

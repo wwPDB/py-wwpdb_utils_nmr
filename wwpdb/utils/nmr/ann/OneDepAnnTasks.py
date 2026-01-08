@@ -142,7 +142,7 @@ class OneDepAnnTasks:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__sfCategoryList',
                  '__entryId',
                  '__cifPages',
@@ -170,7 +170,7 @@ class OneDepAnnTasks:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         self.__sfCategoryList = sfCategoryList
         self.__entryId = entryId
@@ -1284,7 +1284,7 @@ class OneDepAnnTasks:
     #         data_map = list(map(list, zip(*data))) if transpose else data
     #
     #     except Exception as e:
-    #         self.__lfh.write(f"+{self.__class_name__}.load_csv_data() ++ Error  - {str(e)}\n")
+    #         self.__log.write(f"+{self.__class_name__}.load_csv_data() ++ Error  - {str(e)}\n")
     #
     #     return data_map
     # """
@@ -1314,7 +1314,7 @@ class OneDepAnnTasks:
                         has_cif_category = True
                         break
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} saveframe category does not exist in NMRIF\n")
+                        self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} saveframe category does not exist in NMRIF\n")
                 if not has_cif_category:
                     continue
 
@@ -1330,7 +1330,7 @@ class OneDepAnnTasks:
 
                 elif sf_category not in self.__sfCategoryList:
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_category!r} category does not exist in NMR data\n")
+                        self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_category!r} category does not exist in NMR data\n")
                     continue
 
                 sf_tag_maps = [tag_map for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix]
@@ -1355,7 +1355,7 @@ class OneDepAnnTasks:
                 if len(list_ids) == 0:
                     if not insert_one:
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_id_map[0]}.{sf_id_map[1]} is not set in NMRIF\n")
+                            self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_id_map[0]}.{sf_id_map[1]} is not set in NMRIF\n")
                         continue
                     list_ids.append(1)
 
@@ -1503,7 +1503,7 @@ class OneDepAnnTasks:
                             master_entry.add_saveframe(sf)
                         else:
                             if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - Could not identify loop category for {sf_category!r}\n")
+                                self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - Could not identify loop category for {sf_category!r}\n")
                         continue
 
                     if reset and has_uniq_sf_tag:
@@ -1522,7 +1522,7 @@ class OneDepAnnTasks:
                         for cif_category in cif_categories:
                             if not nmrif.hasCategory(cif_category) or nmrif.getRowLength(cif_category) == 0:
                                 if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} loop category does not exist in NMRIF\n")
+                                    self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} loop category does not exist in NMRIF\n")
 
                         list_id_tag = f'{sf_tag_prefix[1:]}_ID'
                         lp_list_id_tag = lp_tag_dict[list_id_tag][0] if list_id_tag in lp_tag_dict else None
@@ -1867,7 +1867,7 @@ class OneDepAnnTasks:
                     array[idx] = str(val)
             return array
 
-        cifObj = mmCIFUtil(self.__verbose, self.__lfh)
+        cifObj = mmCIFUtil(self.__verbose, self.__log)
 
         cifObj.addDataBlock(self.__entryId)
 

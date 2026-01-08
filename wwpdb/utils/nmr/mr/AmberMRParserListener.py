@@ -275,7 +275,7 @@ class AmberMRParserListener(ParseTreeListener):
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__representativeModelId',
                  '__representativeAltId',
                  '__mrAtomNameMapping',
@@ -664,7 +664,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         self.__representativeModelId = representativeModelId
         self.__representativeAltId = representativeAltId
@@ -7472,7 +7472,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 
@@ -7646,7 +7646,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+                self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 
@@ -7727,7 +7727,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.getNeighborCandidateAtom() ++ Error  - {str(e)}")
+                self.__log.write(f"+{self.__class_name__}.getNeighborCandidateAtom() ++ Error  - {str(e)}")
 
         return None
 

@@ -85,7 +85,7 @@ class BMRBAnnTasks:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__sfCategoryList',
                  '__entryId',
                  '__annotationMode',
@@ -109,7 +109,7 @@ class BMRBAnnTasks:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         self.__sfCategoryList = sfCategoryList
         self.__entryId = entryId
@@ -2564,10 +2564,8 @@ class BMRBAnnTasks:
                                                              'sf_framecode': sf_framecode,
                                                              'description': warn})
 
-                    self.__report.setWarning()
-
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {warn}\n")
+                        self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {warn}\n")
 
                     master_entry.remove_saveframe(sf_framecode)
 

@@ -58,7 +58,7 @@ class AmberMRReader:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__debug',
                  '__internal',
                  '__maxLexerErrorReport',
@@ -88,7 +88,7 @@ class AmberMRReader:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
         self.__debug = False
         self.__internal = False
 
@@ -156,7 +156,7 @@ class AmberMRReader:
 
                 if not os.access(mrFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() {mrFilePath} is not accessible.\n")
+                        self.__log.write(f"+{self.__class_name__}.parse() {mrFilePath} is not accessible.\n")
                     return None, None, None
 
             else:
@@ -164,24 +164,24 @@ class AmberMRReader:
 
                 if mrString is None or len(mrString) == 0:
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() Empty string.\n")
+                        self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not accessible.\n")
+                        self.__log.write(f"+{self.__class_name__}.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
-                    self.__cR = CifReader(self.__verbose, self.__lfh)
+                    self.__cR = CifReader(self.__verbose, self.__log)
                     if not self.__cR.parse(cifFilePath):
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
+                            self.__log.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
             if ptFilePath is not None and self.__atomNumberDict is None:
-                ptR = AmberPTReader(self.__verbose, self.__lfh,
+                ptR = AmberPTReader(self.__verbose, self.__log,
                                     self.__representativeModelId,
                                     self.__representativeAltId,
                                     self.__mrAtomNameMapping,
@@ -209,10 +209,10 @@ class AmberMRReader:
 
                 if messageList is not None and self.__verbose:
                     for description in messageList:
-                        self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                        self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                         if 'input' in description:
-                            self.__lfh.write(f"{description['input']}\n")
-                            self.__lfh.write(f"{description['marker']}\n")
+                            self.__log.write(f"{description['input']}\n")
+                            self.__log.write(f"{description['marker']}\n")
 
                 stream = CommonTokenStream(lexer)
                 parser = AmberMRParser(stream)
@@ -224,7 +224,7 @@ class AmberMRReader:
                 tree = parser.amber_mr()
 
                 walker = ParseTreeWalker()
-                listener = AmberMRParserListener(self.__verbose, self.__lfh,
+                listener = AmberMRParserListener(self.__verbose, self.__log,
                                                  self.__representativeModelId,
                                                  self.__representativeAltId,
                                                  self.__mrAtomNameMapping,
@@ -246,19 +246,19 @@ class AmberMRReader:
 
                 if messageList is not None and self.__verbose:
                     for description in messageList:
-                        self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                        self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                         if 'input' in description:
-                            self.__lfh.write(f"{description['input']}\n")
-                            self.__lfh.write(f"{description['marker']}\n")
+                            self.__log.write(f"{description['input']}\n")
+                            self.__log.write(f"{description['marker']}\n")
 
                 if self.__verbose and self.__debug:
                     if listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                        self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
+                        self.__log.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
 
                 if self.__atomNumberDict is not None:
                     if self.__verbose and self.__debug:
                         if isFilePath:
-                            self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
+                            self.__log.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
                     break
 
                 reasons = self.__reasons = listener.getReasonsForReparsing()
@@ -298,10 +298,10 @@ class AmberMRReader:
 
                     if messageList is not None and self.__verbose:
                         for description in messageList:
-                            self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                            self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                             if 'input' in description:
-                                self.__lfh.write(f"{description['input']}\n")
-                                self.__lfh.write(f"{description['marker']}\n")
+                                self.__log.write(f"{description['input']}\n")
+                                self.__log.write(f"{description['marker']}\n")
 
                     stream = CommonTokenStream(lexer)
                     parser = AmberMRParser(stream)
@@ -312,7 +312,7 @@ class AmberMRReader:
                     parser.addErrorListener(parser_error_listener)
                     tree = parser.amber_mr()
                     walker = ParseTreeWalker()
-                    listener = AmberMRParserListener(self.__verbose, self.__lfh,
+                    listener = AmberMRParserListener(self.__verbose, self.__log,
                                                      self.__representativeModelId,
                                                      self.__representativeAltId,
                                                      self.__mrAtomNameMapping,
@@ -343,16 +343,16 @@ class AmberMRReader:
 
                     if messageList is not None and self.__verbose:
                         for description in messageList:
-                            self.__lfh.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                            self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
                             if 'input' in description:
-                                self.__lfh.write(f"{description['input']}\n")
-                                self.__lfh.write(f"{description['marker']}\n")
+                                self.__log.write(f"{description['input']}\n")
+                                self.__log.write(f"{description['marker']}\n")
 
                     if self.__verbose and self.__debug:
                         if listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                            self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
+                            self.__log.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
                         if isFilePath:
-                            self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
+                            self.__log.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
 
                 sanderAtomNumberDict = listener.getSanderAtomNumberDict()
                 if sanderAtomNumberDict is not None and len(sanderAtomNumberDict) > 0:
@@ -371,7 +371,7 @@ class AmberMRReader:
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
             return None, None, None
         finally:
             if isFilePath and ifh is not None:

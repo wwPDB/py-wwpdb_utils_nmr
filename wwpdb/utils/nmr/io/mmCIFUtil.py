@@ -57,7 +57,7 @@ class mmCIFUtil:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__dBlockList',
                  '__dBlockNameList',
                  '__dBlockMap')
@@ -73,7 +73,7 @@ class mmCIFUtil:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         # the datablock list
         self.__dBlockList = []
@@ -91,7 +91,7 @@ class mmCIFUtil:
 
             if not os.access(filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__} ++ Error  - Missing file {filePath}\n")
+                    self.__log.write(f"+{self.__class_name__} ++ Error  - Missing file {filePath}\n")
                 return
 
             with open(filePath, 'r', encoding='utf-8') as ifh:
@@ -120,7 +120,7 @@ class mmCIFUtil:
 
         except Exception as e:
             if self.__verbose and 'loop_ declaration outside of data_ block or save_ frame' not in str(e):
-                self.__lfh.write(f"+{self.__class_name__} ++ Error  - Read {filePath} failed {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__} ++ Error  - Read {filePath} failed {str(e)}\n")
 
     def getDataBlockList(self) -> List[DataContainer]:
         """ Return list of datablocks.

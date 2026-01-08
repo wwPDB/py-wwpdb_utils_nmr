@@ -1,5 +1,5 @@
-# File: PdbMrSplitter.py
-# Date: 05-Jan-2026
+# File: NmrDpMrSplitter.py
+# Date: 07-Jan-2026
 #
 # Updates:
 ##
@@ -10,29 +10,25 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.0"
+__version__ = "5.0.0"
 
 import os
 import re
 import codecs
 import shutil
 import chardet
-import pynmrstar
 
 from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
-from typing import Any, IO, List, Tuple, Union, Optional
+from typing import Any, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import MR_MAX_SPACER_LINES
-    # from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
-    from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
-                                                   MAX_DIM_NUM_OF_SPECTRA)
+    from wwpdb.utils.nmr.NmrDpRegistory import NmrDpRegistory
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            getRestraintFormatName)
-    from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
-    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.NmrVrptUtility import uncompress_gzip_file
+    from wwpdb.utils.nmr.nef.NEFTranslator import MAX_DIM_NUM_OF_SPECTRA
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        startsWithPdbRecord,
                                                        getRestraintName,
@@ -75,14 +71,11 @@ try:
     from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 except ImportError:
     from nmr.NmrDpConstant import MR_MAX_SPACER_LINES
-    # from nmr.NmrDpFirstAid import NmrDpFirstAid
-    from nmr.nef.NEFTranslator import (NEFTranslator,
-                                       MAX_DIM_NUM_OF_SPECTRA)
+    from nmr.NmrDpRegistory import NmrDpRegistory
     from nmr.AlignUtil import (monDict3,
                                getRestraintFormatName)
-    from nmr.CifToNmrStar import CifToNmrStar
-    from nmr.NmrDpReport import NmrDpReport
     from nmr.NmrVrptUtility import uncompress_gzip_file
+    from nmr.nef.NEFTranslator import MAX_DIM_NUM_OF_SPECTRA
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            startsWithPdbRecord,
                                            getRestraintName,
@@ -1030,151 +1023,21 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
     return None
 
 
-class PdbMrSplitter:
+class NmrDpMrSplitter:
     """ Wrapper class for public PDB-MR format file splitter.
     """
     __slots__ = ('__class_name__',
                  '__version__',
-                 '__verbose',
-                 '__debug',
-                 '__lfh',
-                 '__remediation_mode',
-                 '__has_star_chem_shift',
-                 '__mr_content_subtypes',
-                 '__star_data_type',
-                 '__star_data',
-                 '__file_path_list_len',
-                 '__inputParamDict',
-                 '__sll_pred_holder',
-                 '__divide_mr_error_message',
-                 '__strip_mr_error_message',
-                 '__suspended_errors_for_lazy_eval',
-                 'report',
-                 '__pdb_mr_has_valid_star_restraint',
-                 '__has_legacy_sf_issue',
-                 '__cur_original_ar_file_name',
-                 '__mr_atom_name_mapping',
-                 '__ccU',
-                 '__csStat',
-                 '__c2S',
-                 '__nefT',
-                 '__firstAid')
+                 '__reg',
+                 '__cur_original_ar_file_name')
 
-    def __init__(self, verbose: bool, debug: bool, log: IO,
-                 remediationMode: bool, hasStarChemShift: bool, mrContentSubtypes: List[str],
-                 starDataType: List[str], starData: List[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]],
-                 filePathListIdLen: int, inputParamDict: dict, sslPredHolder: dict,
-                 divideMrErrorMessage: List[str], stripMrErrorMessage: List[str],
-                 suspendedErrorsForLazyEval: List[dict],
-                 report: NmrDpReport,
-                 c2S: Optional[CifToNmrStar] = None, nefT: Optional[NEFTranslator] = None,
-                 firstAid=None):
+    def __init__(self, registory: NmrDpRegistory):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__verbose = verbose
-        self.__debug = debug
-        self.__lfh = log
+        self.__reg = registory
 
-        # whether to enable remediation routines
-        self.__remediation_mode = remediationMode
-
-        # whether a CS loop is in the primary NMR-STAR file (used only for NMR data remediation)
-        self.__has_star_chem_shift = hasStarChemShift
-
-        # supported content subtypes of restraint
-        self.__mr_content_subtypes = mrContentSubtypes
-
-        # list of pynmrstar data types
-        self.__star_data_type = starDataType
-
-        # list of pynmrstar data
-        self.__star_data = starData
-
-        # atypical restraint file id begins with
-        self.__file_path_list_len = filePathListIdLen
-
-        # input parameters
-        self.__inputParamDict = inputParamDict
-
-        # ANTLR4 SLL prediction mode holder for performance
-        self.__sll_pred_holder = sslPredHolder
-
-        # error message holder while file division
-        self.__divide_mr_error_message = divideMrErrorMessage
-
-        # error message holder while file strip off
-        self.__strip_mr_error_message = stripMrErrorMessage
-
-        # suspended error items for lazy evaluation
-        self.__suspended_errors_for_lazy_eval = suspendedErrorsForLazyEval
-
-        # NmrDpReport
-        self.report = report
-
-        # whether public MR file contains valid NMR-STAR restraints (used only for NMR data remediation)
-        self.__pdb_mr_has_valid_star_restraint = False
-
-        # whether sf_framecode has to be fixed
-        self.__has_legacy_sf_issue = False
-
-        # original file name of atypical restraint file
         self.__cur_original_ar_file_name = None
-
-        # atom name mapping of public MR file between the coordinates and submitted file
-        self.__mr_atom_name_mapping = None
-
-        # CifToNmrStar
-        self.__c2S = CifToNmrStar(log) if c2S is None else c2S
-
-        # NEFTranslator
-        self.__nefT = nefT
-
-        self.__ccU = nefT.ccU
-        self.__csStat = nefT.csStat
-
-        # NmrDpFirstAid
-        self.__firstAid = firstAid
-
-    @property
-    def file_path_list_len(self):
-        return self.__file_path_list_len
-
-    @property
-    def sll_pred_holder(self):
-        return self.__sll_pred_holder
-
-    @property
-    def divide_mr_error_message(self):
-        return self.__divide_mr_error_message
-
-    @property
-    def strip_mr_error_message(self):
-        return self.__strip_mr_error_message
-
-    @property
-    def suspended_errors_for_lazy_eval(self):
-        return self.__suspended_errors_for_lazy_eval
-
-    @property
-    def pdb_mr_has_valid_star_restraint(self):
-        return self.__pdb_mr_has_valid_star_restraint
-
-    @property
-    def has_legacy_sf_issue(self):
-        return self.__has_legacy_sf_issue
-
-    @property
-    def cur_original_ar_file_name(self):
-        return self.__cur_original_ar_file_name
-
-    @cur_original_ar_file_name.setter
-    def cur_original_ar_file_name(self, cur_original_ar_file_name: str):
-        self.__cur_original_ar_file_name = cur_original_ar_file_name
-
-    @property
-    def mr_atom_name_mapping(self):
-        return self.__mr_atom_name_mapping
 
     def extractPublicMrFileIntoLegacyMr(self) -> bool:
         """ Extract/split public PDB-MR file into legacy restraint files for NMR restraint remediation.
@@ -1182,12 +1045,12 @@ class PdbMrSplitter:
 
         ar_file_path_list = 'atypical_restraint_file_path_list'
 
-        fileListId = self.__file_path_list_len
+        fileListId = self.__reg.file_path_list_len
 
         dir_path = mr_file_name = '.'
         split_file_list, peak_file_list = [], []
 
-        self.__mr_atom_name_mapping = []
+        self.__reg.mr_atom_name_mapping = []
 
         remediated = aborted = False
         src_basename = mr_core_path = mr_file_path = mr_file_link = None
@@ -1197,10 +1060,10 @@ class PdbMrSplitter:
         settled_file_types.extend(list(parsable_pk_file_types))
         settled_file_types.append('nm-res-sax')
 
-        for ar in self.__inputParamDict[ar_file_path_list]:
+        for ar in self.__reg.inputParamDict[ar_file_path_list]:
             src_file = ar['file_name']
 
-            input_source = self.report.input_sources[fileListId]
+            input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_name = input_source_dic['file_name']
@@ -1239,11 +1102,10 @@ class PdbMrSplitter:
 
                     err = f"The restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
 
-                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
-                    self.report.setError()
+                    self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                    if self.__reg.verbose:
+                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                     return False
 
@@ -1257,11 +1119,10 @@ class PdbMrSplitter:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
-                        self.report.setError()
+                        self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -1456,8 +1317,8 @@ class PdbMrSplitter:
                                                     'original_atom_id': col[4].upper(),
                                                     'original_comp_id': original_comp_id,
                                                     'original_seq_id': int(col[6])}
-                                        if atom_map not in self.__mr_atom_name_mapping:
-                                            self.__mr_atom_name_mapping.append(atom_map)
+                                        if atom_map not in self.__reg.mr_atom_name_mapping:
+                                            self.__reg.mr_atom_name_mapping.append(atom_map)
                                     except ValueError:
                                         pass
                             elif len_col >= 8:  # 2liw 4 digits residue number
@@ -1486,8 +1347,8 @@ class PdbMrSplitter:
                                                         'original_atom_id': col[3].upper(),
                                                         'original_comp_id': orig_comp_id.upper(),
                                                         'original_seq_id': orig_seq_id}
-                                            if atom_map not in self.__mr_atom_name_mapping:
-                                                self.__mr_atom_name_mapping.append(atom_map)
+                                            if atom_map not in self.__reg.mr_atom_name_mapping:
+                                                self.__reg.mr_atom_name_mapping.append(atom_map)
                                     elif len_col == 9:
                                         if auth_comp_id is not None and col[4] not in monDict3:
                                             try:
@@ -1497,8 +1358,8 @@ class PdbMrSplitter:
                                                             'original_atom_id': col[3].upper(),
                                                             'original_comp_id': col[4].upper(),
                                                             'original_seq_id': int(col[5])}
-                                                if atom_map not in self.__mr_atom_name_mapping:
-                                                    self.__mr_atom_name_mapping.append(atom_map)
+                                                if atom_map not in self.__reg.mr_atom_name_mapping:
+                                                    self.__reg.mr_atom_name_mapping.append(atom_map)
                                             except ValueError:
                                                 pass
                                 elif len(col[5]) > 4 and len_col == 9:
@@ -1511,8 +1372,8 @@ class PdbMrSplitter:
                                                         'original_atom_id': col[4].upper(),
                                                         'original_comp_id': orig_comp_id.upper(),
                                                         'original_seq_id': orig_seq_id}
-                                            if atom_map not in self.__mr_atom_name_mapping:
-                                                self.__mr_atom_name_mapping.append(atom_map)
+                                            if atom_map not in self.__reg.mr_atom_name_mapping:
+                                                self.__reg.mr_atom_name_mapping.append(atom_map)
                                         except ValueError:
                                             pass
 
@@ -1584,22 +1445,22 @@ class PdbMrSplitter:
 
                         mr_file_path_list = 'restraint_file_path_list'
 
-                        if mr_file_path_list not in self.__inputParamDict:
-                            self.__inputParamDict[mr_file_path_list] = [mrPath]
+                        if mr_file_path_list not in self.__reg.inputParamDict:
+                            self.__reg.inputParamDict[mr_file_path_list] = [mrPath]
                         else:
-                            self.__inputParamDict[mr_file_path_list].append(mrPath)
+                            self.__reg.inputParamDict[mr_file_path_list].append(mrPath)
 
-                        insert_index = self.__file_path_list_len
+                        insert_index = self.__reg.file_path_list_len
 
-                        if insert_index > len(self.__star_data):
-                            self.__star_data.append(None)
-                            self.__star_data_type.append(None)
+                        if insert_index > len(self.__reg.star_data):
+                            self.__reg.star_data.append(None)
+                            self.__reg.star_data_type.append(None)
 
-                        self.report.insertInputSource(insert_index)
+                        self.__reg.report.insertInputSource(insert_index)
 
-                        self.__file_path_list_len += 1
+                        self.__reg.file_path_list_len += 1
 
-                        input_source = self.report.input_sources[insert_index]
+                        input_source = self.__reg.report.input_sources[insert_index]
 
                         file_type = 'nmr-star'
                         file_name = os.path.basename(mrPath)
@@ -1624,14 +1485,14 @@ class PdbMrSplitter:
 
                         file_subtype = 'O'
 
-                        is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+                        is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
-                        if not is_valid or not self.__has_star_chem_shift:
-                            _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                        if not is_valid or not self.__reg.has_star_chem_shift:
+                            _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
                             if _is_valid:
                                 has_cs_str = True
 
-                        self.__original_error_message.append(message)
+                        self.__reg.original_error_message.append(message)
 
                         _file_type = message['file_type']  # nef/nmr-star/unknown
 
@@ -1649,73 +1510,53 @@ class PdbMrSplitter:
                                         if 'No such file or directory' not in err_message:
                                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                                self.report.error.appendDescription('content_mismatch',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
+                                self.__reg.report.error.appendDescription('content_mismatch',
+                                                                          {'file_name': file_name, 'description': err})
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                if self.__reg.verbose:
+                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             else:
 
                                 # NEFTranslator.validate_file() generates this object internally, but not re-used.
-                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                                _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                                self.__has_legacy_sf_issue = False
+                                self.__reg.has_legacy_sf_issue = False
 
                                 if star_data_type == 'Saveframe':
-                                    self.__has_legacy_sf_issue = True
+                                    self.__reg.has_legacy_sf_issue = True
 
-                                    self.__firstAid.star_data_type = self.star_data_type
-                                    self.__firstAid.star_data = self.star_data
+                                    self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                               hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
-                                    self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                                hasLegacySfIssue=self.__has_legacy_sf_issue)
+                                    _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                                    self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                                    self.__star_data_type = self.__firstAid.star_data_type
-                                    self.__star_data = self.__firstAid.star_data
-                                    self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                                if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                                    _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                                    if len(self.__reg.star_data_type) == self.__reg.file_path_list_len:
+                                        del self.__reg.star_data_type[-1]
+                                        del self.__reg.star_data[-1]
 
-                                if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                                    self.__reg.star_data_type.append(star_data_type)
+                                    self.__reg.star_data.append(star_data)
 
-                                    if len(self.__star_data_type) == self.__file_path_list_len:
-                                        del self.__star_data_type[-1]
-                                        del self.__star_data[-1]
-
-                                    self.__star_data_type.append(star_data_type)
-                                    self.__star_data.append(star_data)
-
-                                    self.__firstAid.star_data_type = self.star_data_type
-                                    self.__firstAid.star_data = self.star_data
-
-                                    self.__firstAid.rescueFormerNef(insert_index)
-                                    self.__firstAid.rescueImmatureStr(insert_index)
-
-                                    self.__star_data = self.__firstAid.star_data
+                                    self.__reg.dpA.rescueFormerNef(insert_index)
+                                    self.__reg.dpA.rescueImmatureStr(insert_index)
 
                                 if _is_done:
                                     self.__detectContentSubType__(insert_index, input_source, dir_path)
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if any(True for mr_content_subtype in self.__mr_content_subtypes if mr_content_subtype in content_subtype):
-                                            self.__pdb_mr_has_valid_star_restraint = True
+                                        if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            self.__reg.mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
                         else:
 
-                            self.__firstAid.star_data_type = self.star_data_type
-                            self.__firstAid.star_data = self.star_data
-
-                            if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                           hasLegacySfIssue=self.__has_legacy_sf_issue):
-                                self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                                self.__star_data_type = self.__firstAid.star_data_type
-                                self.__star_data = self.__firstAid.star_data
-                                self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                            if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                              hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
+                                _is_done = False
 
                         if _mrPath is not None:
                             try:
@@ -1783,29 +1624,29 @@ class PdbMrSplitter:
                                 ofh.write(line)
 
                         _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
-                        if not self.__c2S.convert(mrPath, _mrPath):
+                        if not self.__reg.c2S.convert(mrPath, _mrPath):
                             _mrPath = mrPath
 
                         mrPath = _mrPath
 
                         mr_file_path_list = 'restraint_file_path_list'
 
-                        if mr_file_path_list not in self.__inputParamDict:
-                            self.__inputParamDict[mr_file_path_list] = [mrPath]
+                        if mr_file_path_list not in self.__reg.inputParamDict:
+                            self.__reg.inputParamDict[mr_file_path_list] = [mrPath]
                         else:
-                            self.__inputParamDict[mr_file_path_list].append(mrPath)
+                            self.__reg.inputParamDict[mr_file_path_list].append(mrPath)
 
-                        insert_index = self.__file_path_list_len
+                        insert_index = self.__reg.file_path_list_len
 
-                        if insert_index > len(self.__star_data):
-                            self.__star_data.append(None)
-                            self.__star_data_type.append(None)
+                        if insert_index > len(self.__reg.star_data):
+                            self.__reg.star_data.append(None)
+                            self.__reg.star_data_type.append(None)
 
-                        self.report.insertInputSource(insert_index)
+                        self.__reg.report.insertInputSource(insert_index)
 
-                        self.__file_path_list_len += 1
+                        self.__reg.file_path_list_len += 1
 
-                        input_source = self.report.input_sources[insert_index]
+                        input_source = self.__reg.report.input_sources[insert_index]
 
                         file_type = 'nmr-star'
                         file_name = os.path.basename(mrPath)
@@ -1830,14 +1671,14 @@ class PdbMrSplitter:
 
                         file_subtype = 'O'
 
-                        is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+                        is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
-                        if not is_valid or not self.__has_star_chem_shift:
-                            _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                        if not is_valid or not self.__reg.has_star_chem_shift:
+                            _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
                             if _is_valid:
                                 has_cs_str = True
 
-                        self.__original_error_message.append(message)
+                        self.__reg.original_error_message.append(message)
 
                         _file_type = message['file_type']  # nef/nmr-star/unknown
 
@@ -1855,73 +1696,53 @@ class PdbMrSplitter:
                                         if 'No such file or directory' not in err_message:
                                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                                self.report.error.appendDescription('content_mismatch',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
+                                self.__reg.report.error.appendDescription('content_mismatch',
+                                                                          {'file_name': file_name, 'description': err})
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                if self.__reg.verbose:
+                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             else:
 
                                 # NEFTranslator.validate_file() generates this object internally, but not re-used.
-                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                                _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                                self.__has_legacy_sf_issue = False
+                                self.__reg.has_legacy_sf_issue = False
 
                                 if star_data_type == 'Saveframe':
-                                    self.__has_legacy_sf_issue = True
+                                    self.__reg.has_legacy_sf_issue = True
 
-                                    self.__firstAid.star_data_type = self.star_data_type
-                                    self.__firstAid.star_data = self.star_data
+                                    self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                               hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
-                                    self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                                hasLegacySfIssue=self.__has_legacy_sf_issue)
+                                    _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                                    self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                                    self.__star_data_type = self.__firstAid.star_data_type
-                                    self.__star_data = self.__firstAid.star_data
-                                    self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                                if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                                    _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                                    if len(self.__reg.star_data_type) == self.__reg.file_path_list_len:
+                                        del self.__reg.star_data_type[-1]
+                                        del self.__reg.star_data[-1]
 
-                                if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                                    self.__reg.star_data_type.append(star_data_type)
+                                    self.__reg.star_data.append(star_data)
 
-                                    if len(self.__star_data_type) == self.__file_path_list_len:
-                                        del self.__star_data_type[-1]
-                                        del self.__star_data[-1]
-
-                                    self.__star_data_type.append(star_data_type)
-                                    self.__star_data.append(star_data)
-
-                                    self.__firstAid.star_data_type = self.star_data_type
-                                    self.__firstAid.star_data = self.star_data
-
-                                    self.__firstAid.rescueFormerNef(insert_index)
-                                    self.__firstAid.rescueImmatureStr(insert_index)
-
-                                    self.__star_data = self.__firstAid.star_data
+                                    self.__reg.dpA.rescueFormerNef(insert_index)
+                                    self.__reg.dpA.rescueImmatureStr(insert_index)
 
                                 if _is_done:
                                     self.__detectContentSubType__(insert_index, input_source, dir_path)
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if any(True for mr_content_subtype in self.__mr_content_subtypes if mr_content_subtype in content_subtype):
-                                            self.__pdb_mr_has_valid_star_restraint = True
+                                        if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            self.__reg.mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
                         else:
 
-                            self.__firstAid.star_data_type = self.star_data_type
-                            self.__firstAid.star_data = self.star_data
-
-                            if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                           hasLegacySfIssue=self.__has_legacy_sf_issue):
-                                self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                                self.__star_data_type = self.__firstAid.star_data_type
-                                self.__star_data = self.__firstAid.star_data
-                                self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                            if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                              hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
+                                _is_done = False
 
                         if _mrPath is not None:
                             try:
@@ -1931,11 +1752,10 @@ class PdbMrSplitter:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
-                self.report.setError()
+                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
 
                 return False
 
@@ -1948,7 +1768,7 @@ class PdbMrSplitter:
                     break
 
             if not has_content:
-                if not self.__pdb_mr_has_valid_star_restraint:
+                if not self.__reg.mr_has_valid_star_restraint:
                     with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofh:
                         ofh.write('')
 
@@ -1965,22 +1785,22 @@ class PdbMrSplitter:
                         'file_type': 'nmr-star',
                         'original_file_name': os.path.basename(src_basename) + '.mr'}
 
-                if mr_file_path_list not in self.__inputParamDict:
-                    self.__inputParamDict[mr_file_path_list] = [item]
+                if mr_file_path_list not in self.__reg.inputParamDict:
+                    self.__reg.inputParamDict[mr_file_path_list] = [item]
                 else:
-                    self.__inputParamDict[mr_file_path_list].append(item)
+                    self.__reg.inputParamDict[mr_file_path_list].append(item)
 
-                insert_index = self.__file_path_list_len
+                insert_index = self.__reg.file_path_list_len
 
-                if insert_index > len(self.__star_data):
-                    self.__star_data.append(None)
-                    self.__star_data_type.append(None)
+                if insert_index > len(self.__reg.star_data):
+                    self.__reg.star_data.append(None)
+                    self.__reg.star_data_type.append(None)
 
-                self.report.insertInputSource(insert_index)
+                self.__reg.report.insertInputSource(insert_index)
 
-                self.__file_path_list_len += 1
+                self.__reg.file_path_list_len += 1
 
-                input_source = self.report.input_sources[insert_index]
+                input_source = self.__reg.report.input_sources[insert_index]
 
                 file_type = 'nmr-star'
                 file_name = os.path.basename(mrPath)
@@ -2006,14 +1826,14 @@ class PdbMrSplitter:
 
                 file_subtype = 'O'
 
-                is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+                is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
-                if not is_valid or not self.__has_star_chem_shift:
-                    _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                if not is_valid or not self.__reg.has_star_chem_shift:
+                    _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
                     if _is_valid:
                         has_cs_str = True
 
-                self.__original_error_message.append(message)
+                self.__reg.original_error_message.append(message)
 
                 _file_type = message['file_type']  # nef/nmr-star/unknown
 
@@ -2031,73 +1851,53 @@ class PdbMrSplitter:
                                 if 'No such file or directory' not in err_message:
                                     err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                        self.__reg.report.error.appendDescription('content_mismatch',
+                                                                  {'file_name': file_name, 'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                     else:
 
                         # NEFTranslator.validate_file() generates this object internally, but not re-used.
-                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                        _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                        self.__has_legacy_sf_issue = False
+                        self.__reg.has_legacy_sf_issue = False
 
                         if star_data_type == 'Saveframe':
-                            self.__has_legacy_sf_issue = True
+                            self.__reg.has_legacy_sf_issue = True
 
-                            self.__firstAid.star_data_type = self.star_data_type
-                            self.__firstAid.star_data = self.star_data
+                            self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                       hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
-                            self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                        hasLegacySfIssue=self.__has_legacy_sf_issue)
+                            _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                            self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                            self.__star_data_type = self.__firstAid.star_data_type
-                            self.__star_data = self.__firstAid.star_data
-                            self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                        if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                            if len(self.__reg.star_data_type) == self.__reg.file_path_list_len:
+                                del self.__reg.star_data_type[-1]
+                                del self.__reg.star_data[-1]
 
-                        if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                            self.__reg.star_data_type.append(star_data_type)
+                            self.__reg.star_data.append(star_data)
 
-                            if len(self.__star_data_type) == self.__file_path_list_len:
-                                del self.__star_data_type[-1]
-                                del self.__star_data[-1]
-
-                            self.__star_data_type.append(star_data_type)
-                            self.__star_data.append(star_data)
-
-                            self.__firstAid.star_data_type = self.star_data_type
-                            self.__firstAid.star_data = self.star_data
-
-                            self.__firstAid.rescueFormerNef(insert_index)
-                            self.__firstAid.rescueImmatureStr(insert_index)
-
-                            self.__star_data = self.__firstAid.star_data
+                            self.__reg.dpA.rescueFormerNef(insert_index)
+                            self.__reg.dpA.rescueImmatureStr(insert_index)
 
                         if _is_done:
                             self.__detectContentSubType__(insert_index, input_source, dir_path)
                             input_source_dic = input_source.get()
                             if 'content_subtype' in input_source_dic:
                                 content_subtype = input_source_dic['content_subtype']
-                                if any(True for mr_content_subtype in self.__mr_content_subtypes if mr_content_subtype in content_subtype):
-                                    self.__pdb_mr_has_valid_star_restraint = True
+                                if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                    self.__reg.mr_has_valid_star_restraint = True
                                     mr_part_paths.append({'nmr-star': mrPath})
 
                 else:
 
-                    self.__firstAid.star_data_type = self.star_data_type
-                    self.__firstAid.star_data = self.star_data
-
-                    if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                   hasLegacySfIssue=self.__has_legacy_sf_issue):
-                        self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                        self.__star_data_type = self.__firstAid.star_data_type
-                        self.__star_data = self.__firstAid.star_data
-                        self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                    if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                      hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
+                        _is_done = False
 
                 if _mrPath is not None:
                     try:
@@ -2274,8 +2074,8 @@ class PdbMrSplitter:
                     len_valid_types = len(valid_types)
                     len_possible_types = len(possible_types)
 
-                    if self.__debug:
-                        self.__lfh.write(f'{valid_types} {possible_types}\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write(f'{valid_types} {possible_types}\n')
 
                     if len_valid_types == 0 and len_possible_types == 0:
 
@@ -2296,12 +2096,11 @@ class PdbMrSplitter:
                         err = f"The restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
                             "@todo: It needs to be reviewed or marked as entry without restraints."
 
-                        self.report.error.appendDescription('internal_error',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                        self.__reg.report.error.appendDescription('internal_error',
+                                                                  {'file_name': file_name, 'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -2371,11 +2170,10 @@ class PdbMrSplitter:
                             err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                 "@todo: It needs to be split properly."
 
-                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
+                            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -2390,11 +2188,10 @@ class PdbMrSplitter:
                         err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                             "@todo: It needs to be reviewed."
 
-                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
-                        self.report.setError()
+                        self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -2407,11 +2204,10 @@ class PdbMrSplitter:
                         err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                             "@todo: It needs to be reviewed."
 
-                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
-                        self.report.setError()
+                        self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -2587,8 +2383,8 @@ class PdbMrSplitter:
                                     is_seq = False
                                     break
                                 if len_seq == 2:
-                                    if (translateToStdResName(seq[0], ccU=self.__ccU) in monDict3 and seq[1].isdigit())\
-                                       or (translateToStdResName(seq[1], ccU=self.__ccU) in monDict3 and seq[0].isdigit()):
+                                    if (translateToStdResName(seq[0], ccU=self.__reg.ccU) in monDict3 and seq[1].isdigit())\
+                                       or (translateToStdResName(seq[1], ccU=self.__reg.ccU) in monDict3 and seq[0].isdigit()):
                                         is_seq = True
                                     else:
                                         is_seq = False
@@ -2781,22 +2577,22 @@ class PdbMrSplitter:
                                     'file_type': 'nmr-star',
                                     'original_file_name': os.path.basename(src_basename) + '.mr'}
 
-                            if mr_file_path_list not in self.__inputParamDict:
-                                self.__inputParamDict[mr_file_path_list] = [item]
+                            if mr_file_path_list not in self.__reg.inputParamDict:
+                                self.__reg.inputParamDict[mr_file_path_list] = [item]
                             else:
-                                self.__inputParamDict[mr_file_path_list].append(item)
+                                self.__reg.inputParamDict[mr_file_path_list].append(item)
 
-                            insert_index = self.__file_path_list_len
+                            insert_index = self.__reg.file_path_list_len
 
-                            if insert_index > len(self.__star_data):
-                                self.__star_data.append(None)
-                                self.__star_data_type.append(None)
+                            if insert_index > len(self.__reg.star_data):
+                                self.__reg.star_data.append(None)
+                                self.__reg.star_data_type.append(None)
 
-                            self.report.insertInputSource(insert_index)
+                            self.__reg.report.insertInputSource(insert_index)
 
-                            self.__file_path_list_len += 1
+                            self.__reg.file_path_list_len += 1
 
-                            input_source = self.report.input_sources[insert_index]
+                            input_source = self.__reg.report.input_sources[insert_index]
 
                             file_type = 'nmr-star'
                             file_name = os.path.basename(mrPath)
@@ -2822,14 +2618,14 @@ class PdbMrSplitter:
 
                             file_subtype = 'O'
 
-                            is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+                            is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
-                            if not is_valid or not self.__has_star_chem_shift:
-                                _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                            if not is_valid or not self.__reg.has_star_chem_shift:
+                                _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
                                 if _is_valid:
                                     has_cs_str = True
 
-                            self.__original_error_message.append(message)
+                            self.__reg.original_error_message.append(message)
 
                             _file_type = message['file_type']  # nef/nmr-star/unknown
 
@@ -2847,73 +2643,53 @@ class PdbMrSplitter:
                                             if 'No such file or directory' not in err_message:
                                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                                    self.report.error.appendDescription('content_mismatch',
-                                                                        {'file_name': file_name, 'description': err})
-                                    self.report.setError()
+                                    self.__reg.report.error.appendDescription('content_mismatch',
+                                                                              {'file_name': file_name, 'description': err})
 
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                    if self.__reg.verbose:
+                                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 else:
 
                                     # NEFTranslator.validate_file() generates this object internally, but not re-used.
-                                    _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                                    _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                                    self.__has_legacy_sf_issue = False
+                                    self.__reg.has_legacy_sf_issue = False
 
                                     if star_data_type == 'Saveframe':
-                                        self.__has_legacy_sf_issue = True
+                                        self.__reg.has_legacy_sf_issue = True
 
-                                        self.__firstAid.star_data_type = self.star_data_type
-                                        self.__firstAid.star_data = self.star_data
+                                        self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                                   hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
-                                        self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                                    hasLegacySfIssue=self.__has_legacy_sf_issue)
+                                        _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                                        self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                                        self.__star_data_type = self.__firstAid.star_data_type
-                                        self.__star_data = self.__firstAid.star_data
-                                        self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                                    if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                                        if len(self.__reg.star_data_type) == self.__reg.file_path_list_len:
+                                            del self.__reg.star_data_type[-1]
+                                            del self.__reg.star_data[-1]
 
-                                    if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                                        self.__reg.star_data_type.append(star_data_type)
+                                        self.__reg.star_data.append(star_data)
 
-                                        if len(self.__star_data_type) == self.__file_path_list_len:
-                                            del self.__star_data_type[-1]
-                                            del self.__star_data[-1]
-
-                                        self.__star_data_type.append(star_data_type)
-                                        self.__star_data.append(star_data)
-
-                                        self.__firstAid.star_data_type = self.star_data_type
-                                        self.__firstAid.star_data = self.star_data
-
-                                        self.__firstAid.rescueFormerNef(insert_index)
-                                        self.__firstAid.rescueImmatureStr(insert_index)
-
-                                        self.__star_data = self.__firstAid.star_data
+                                        self.__reg.dpA.rescueFormerNef(insert_index)
+                                        self.__reg.dpA.rescueImmatureStr(insert_index)
 
                                     if _is_done:
                                         self.__detectContentSubType__(insert_index, input_source, dir_path)
                                         input_source_dic = input_source.get()
                                         if 'content_subtype' in input_source_dic:
                                             content_subtype = input_source_dic['content_subtype']
-                                            if any(True for mr_content_subtype in self.__mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
                                                 mr_part_paths.append({'nmr-star': mrPath,
                                                                       'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                             else:
 
-                                self.__firstAid.star_data_type = self.star_data_type
-                                self.__firstAid.star_data = self.star_data
-
-                            if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                           hasLegacySfIssue=self.__has_legacy_sf_issue):
-                                self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                                self.__star_data_type = self.__firstAid.star_data_type
-                                self.__star_data = self.__firstAid.star_data
-                                self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                                if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                                  hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
+                                    _is_done = False
 
                             if _mrPath is not None:
                                 try:
@@ -2928,7 +2704,7 @@ class PdbMrSplitter:
                             mrPath = dst_file
 
                             _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
-                            if not self.__c2S.convert(mrPath, _mrPath):
+                            if not self.__reg.c2S.convert(mrPath, _mrPath):
                                 _mrPath = mrPath
 
                             mrPath = _mrPath
@@ -2939,22 +2715,22 @@ class PdbMrSplitter:
                                     'file_type': 'nmr-star',
                                     'original_file_name': os.path.basename(src_basename) + '.mr'}
 
-                            if mr_file_path_list not in self.__inputParamDict:
-                                self.__inputParamDict[mr_file_path_list] = [item]
+                            if mr_file_path_list not in self.__reg.inputParamDict:
+                                self.__reg.inputParamDict[mr_file_path_list] = [item]
                             else:
-                                self.__inputParamDict[mr_file_path_list].append(item)
+                                self.__reg.inputParamDict[mr_file_path_list].append(item)
 
-                            insert_index = self.__file_path_list_len
+                            insert_index = self.__reg.file_path_list_len
 
-                            if insert_index > len(self.__star_data):
-                                self.__star_data.append(None)
-                                self.__star_data_type.append(None)
+                            if insert_index > len(self.__reg.star_data):
+                                self.__reg.star_data.append(None)
+                                self.__reg.star_data_type.append(None)
 
-                            self.report.insertInputSource(insert_index)
+                            self.__reg.report.insertInputSource(insert_index)
 
-                            self.__file_path_list_len += 1
+                            self.__reg.file_path_list_len += 1
 
-                            input_source = self.report.input_sources[insert_index]
+                            input_source = self.__reg.report.input_sources[insert_index]
 
                             file_type = 'nmr-star'
                             file_name = os.path.basename(mrPath)
@@ -2980,14 +2756,14 @@ class PdbMrSplitter:
 
                             file_subtype = 'O'
 
-                            is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+                            is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
-                            if not is_valid or not self.__has_star_chem_shift:
-                                _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                            if not is_valid or not self.__reg.has_star_chem_shift:
+                                _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
                                 if _is_valid:
                                     has_cs_str = True
 
-                            self.__original_error_message.append(message)
+                            self.__reg.original_error_message.append(message)
 
                             _file_type = message['file_type']  # nef/nmr-star/unknown
 
@@ -3005,73 +2781,53 @@ class PdbMrSplitter:
                                             if 'No such file or directory' not in err_message:
                                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                                    self.report.error.appendDescription('content_mismatch',
-                                                                        {'file_name': file_name, 'description': err})
-                                    self.report.setError()
+                                    self.__reg.report.error.appendDescription('content_mismatch',
+                                                                              {'file_name': file_name, 'description': err})
 
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                    if self.__reg.verbose:
+                                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 else:
 
                                     # NEFTranslator.validate_file() generates this object internally, but not re-used.
-                                    _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                                    _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                                    self.__has_legacy_sf_issue = False
+                                    self.__reg.has_legacy_sf_issue = False
 
                                     if star_data_type == 'Saveframe':
-                                        self.__has_legacy_sf_issue = True
+                                        self.__reg.has_legacy_sf_issue = True
 
-                                        self.__firstAid.star_data_type = self.star_data_type
-                                        self.__firstAid.star_data = self.star_data
+                                        self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                                   hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
-                                        self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                                    hasLegacySfIssue=self.__has_legacy_sf_issue)
+                                        _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                                        self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                                        self.__star_data_type = self.__firstAid.star_data_type
-                                        self.__star_data = self.__firstAid.star_data
-                                        self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                                    if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
-                                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+                                        if len(self.__reg.star_data_type) == self.__reg.file_path_list_len:
+                                            del self.__reg.star_data_type[-1]
+                                            del self.__reg.star_data[-1]
 
-                                    if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                                        self.__reg.star_data_type.append(star_data_type)
+                                        self.__reg.star_data.append(star_data)
 
-                                        if len(self.__star_data_type) == self.__file_path_list_len:
-                                            del self.__star_data_type[-1]
-                                            del self.__star_data[-1]
-
-                                        self.__star_data_type.append(star_data_type)
-                                        self.__star_data.append(star_data)
-
-                                        self.__firstAid.star_data_type = self.star_data_type
-                                        self.__firstAid.star_data = self.star_data
-
-                                        self.__firstAid.rescueFormerNef(insert_index)
-                                        self.__firstAid.rescueImmatureStr(insert_index)
-
-                                        self.__star_data = self.__firstAid.star_data
+                                        self.__reg.dpA.rescueFormerNef(insert_index)
+                                        self.__reg.dpA.rescueImmatureStr(insert_index)
 
                                     if _is_done:
                                         self.__detectContentSubType()
                                         input_source_dic = input_source.get()
                                         if 'content_subtype' in input_source_dic:
                                             content_subtype = input_source_dic['content_subtype']
-                                            if any(True for mr_content_subtype in self.__mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
                                                 mr_part_paths.append({'nmr-star': mrPath,
                                                                       'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                             else:
 
-                                self.__firstAid.star_data_type = self.star_data_type
-                                self.__firstAid.star_data = self.star_data
-
-                                if self.__firstAid.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
-                                                                               hasLegacySfIssue=self.__has_legacy_sf_issue):
-                                    self.__has_star_chem_shift = self.__firstAid.has_star_chem_shift
-                                    self.__star_data_type = self.__firstAid.star_data_type
-                                    self.__star_data = self.__firstAid.star_data
-                                    self.__suspended_errors_for_lazy_eval = self.__firstAid.suspended_errors_for_lazy_eval
+                                if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                                                                  hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
+                                    _is_done = False
 
                             if _mrPath is not None:
                                 try:
@@ -3170,8 +2926,8 @@ class PdbMrSplitter:
                         len_valid_types = len(valid_types)
                         len_possible_types = len(possible_types)
 
-                        if self.__debug:
-                            self.__lfh.write(f'{valid_types} {possible_types}\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write(f'{valid_types} {possible_types}\n')
 
                         if len_valid_types == 0 and len_possible_types == 0:
 
@@ -3193,12 +2949,11 @@ class PdbMrSplitter:
                             err = f"The restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
                                 "@todo: It needs to be reviewed or marked as entry without restraints."
 
-                            self.report.error.appendDescription('internal_error',
-                                                                {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      {'file_name': file_name, 'description': err})
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -3307,11 +3062,10 @@ class PdbMrSplitter:
                                 err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                     "@todo: It needs to be split properly."
 
-                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
-                                self.report.setError()
+                                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                if self.__reg.verbose:
+                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 aborted = True
 
@@ -3326,11 +3080,10 @@ class PdbMrSplitter:
                             err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                                 "@todo: It needs to be reviewed."
 
-                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
+                            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -3345,11 +3098,10 @@ class PdbMrSplitter:
                             err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                                 "@todo: It needs to be reviewed."
 
-                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
+                            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -3357,13 +3109,13 @@ class PdbMrSplitter:
         has_spectral_peak = len_peak_file_list > 0
 
         if len(split_file_list) > 0:
-            self.__inputParamDict[ar_file_path_list].extend(split_file_list)
+            self.__reg.inputParamDict[ar_file_path_list].extend(split_file_list)
 
             for _ar in split_file_list:
 
-                self.report.appendInputSource()
+                self.__reg.report.appendInputSource()
 
-                input_source = self.report.input_sources[-1]
+                input_source = self.__reg.report.input_sources[-1]
 
                 input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
                 input_source.setItemValue('file_type', _ar['file_type'])
@@ -3375,9 +3127,9 @@ class PdbMrSplitter:
 
             has_restraint = False
 
-            for fileListId in range(self.__file_path_list_len):
+            for fileListId in range(self.__reg.file_path_list_len):
 
-                input_source = self.report.input_sources[fileListId]
+                input_source = self.__reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
                 file_name = input_source_dic['file_name']
@@ -3411,14 +3163,14 @@ class PdbMrSplitter:
                         except OSError:
                             pass
 
-                elif not self.__pdb_mr_has_valid_star_restraint:
+                elif not self.__reg.mr_has_valid_star_restraint:
 
                     touch_file = os.path.join(dir_path, '.entry_without_mr')
                     if not os.path.exists(touch_file):
                         with open(touch_file, 'w') as ofh:
                             ofh.write('')
 
-                    if not any(re.search(r'\/bmr\d+\/work\/data\/', ar['file_name']) for ar in self.__inputParamDict[ar_file_path_list]
+                    if not any(re.search(r'\/bmr\d+\/work\/data\/', ar['file_name']) for ar in self.__reg.inputParamDict[ar_file_path_list]
                                if ar['file_type'].startswith('nm-res') and ar['file_type'] != 'nm-res-mr'):
 
                         hint = ' or is not recognized properly'
@@ -3429,23 +3181,23 @@ class PdbMrSplitter:
                         err = f"The restraint file contains no restraints{hint}. "\
                             "Please re-upload the restraint file."
 
-                        self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                     {'file_name': mr_file_name, 'description': err}})
+                        self.__reg.suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                          {'file_name': mr_file_name, 'description': err}})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
         if has_spectral_peak:
 
             if len_peak_file_list > 0:
 
-                self.__inputParamDict[ar_file_path_list].extend(peak_file_list)
+                self.__reg.inputParamDict[ar_file_path_list].extend(peak_file_list)
 
                 for _ar in peak_file_list:
 
-                    self.report.appendInputSource()
+                    self.__reg.report.appendInputSource()
 
-                    input_source = self.report.input_sources[-1]
+                    input_source = self.__reg.report.input_sources[-1]
 
                     input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
                     input_source.setItemValue('file_type', _ar['file_type'])
@@ -3540,7 +3292,7 @@ class PdbMrSplitter:
             except OSError:
                 pass
 
-        return not self.report.isError()
+        return not self.__reg.report.isError()
 
     def getPeakListFileTypeAndContentSubtype(self, file_path: str) -> Tuple[Optional[str], Optional[dict]]:
         """ Return peak list file type and content subtype of a given file path.
@@ -3587,7 +3339,7 @@ class PdbMrSplitter:
             if os.path.isfile(os.path.join(dir_path, div_file_name))\
                and (div_file_name.endswith('-div_src.mr') or div_file_name.endswith('-div_dst.mr')):
                 div_file_path = os.path.join(dir_path, div_file_name)
-                if not any(True for ar in self.__inputParamDict[ar_file_path_list] if ar['file_name'] == div_file_path):
+                if not any(True for ar in self.__reg.inputParamDict[ar_file_path_list] if ar['file_name'] == div_file_path):
                     os.remove(div_file_path)
 
         if os.path.exists(src_path):
@@ -3610,162 +3362,162 @@ class PdbMrSplitter:
         """
 
         if file_type == 'nm-aux-amb':
-            return AmberPTReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT)
+            return AmberPTReader(verbose, self.__reg.log, None, None, None, None, None,
+                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
         if file_type == 'nm-aux-cha':
-            return CharmmCRDReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
+            return CharmmCRDReader(verbose, self.__reg.log, None, None, None, None, None,
+                                   self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
         if file_type == 'nm-aux-gro':
-            return GromacsPTReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
+            return GromacsPTReader(verbose, self.__reg.log, None, None, None, None, None,
+                                   self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
         if file_type == 'nm-aux-pdb':
-            return BarePDBReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT)
+            return BarePDBReader(verbose, self.__reg.log, None, None, None, None, None,
+                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
 
         if file_type == 'nm-res-amb':
-            return AmberMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT)
+            return AmberMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
         if file_type == 'nm-res-ari':
-            return AriaMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                self.__ccU, self.__csStat, self.__nefT,
+            return AriaMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                 reasons)
         if file_type == 'nm-res-arx':
-            return AriaMRXReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT,
+            return AriaMRXReader(verbose, self.__reg.log, None, None, None, None, None,
+                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                  reasons)
         if file_type == 'nm-res-bar':
-            return BareMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                self.__ccU, self.__csStat, self.__nefT,
+            return BareMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                 reasons)
         if file_type == 'nm-res-bio':
-            return BiosymMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
+            return BiosymMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                   reasons)
         if file_type == 'nm-res-cha':
-            reader = CharmmMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                    self.__ccU, self.__csStat, self.__nefT)
+            reader = CharmmMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                    self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
             reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-cns':
-            reader = CnsMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT,
+            reader = CnsMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                  reasons)
             reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-cya':
-            reader = CyanaMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT,
+            reader = CyanaMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                   self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                    reasons,
                                    file_ext=self.retrieveOriginalFileExtensionOfCyanaMrFile())
-            reader.setRemediateMode(self.__remediation_mode)
+            reader.setRemediateMode(self.__reg.remediation_mode)
             # do not use SLL prediction mode for CyanaMRReader
             # reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-dyn':
-            return DynamoMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
+            return DynamoMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                   reasons)
         if file_type == 'nm-res-gro':
-            return GromacsMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
+            return GromacsMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                   self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
         if file_type == 'nm-res-isd':
-            return IsdMRReader(verbose, self.__lfh, None, None, None, None, None,
-                               self.__ccU, self.__csStat, self.__nefT,
+            return IsdMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                reasons)
         if file_type == 'nm-res-noa':
-            return CyanaNOAReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
+            return CyanaNOAReader(verbose, self.__reg.log, None, None, None, None, None,
+                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                   reasons)
         if file_type == 'nm-res-ros':
-            reader = RosettaMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT,
+            reader = RosettaMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                      reasons)
-            reader.setRemediateMode(self.__remediation_mode)
+            reader.setRemediateMode(self.__reg.remediation_mode)
             return reader
         if file_type == 'nm-res-sch':
-            reader = SchrodingerMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                         self.__ccU, self.__csStat, self.__nefT,
+            reader = SchrodingerMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                          reasons)
             reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-syb':
-            return SybylMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT,
+            return SybylMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                  reasons)
         if file_type == 'nm-res-xpl':
-            reader = XplorMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT,
+            reader = XplorMRReader(verbose, self.__reg.log, None, None, None, None, None,
+                                   self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                    reasons)
             reader.setSllPredMode(sll_pred)
             return reader
 
         if file_type == 'nm-aux-xea':
-            reader = XeasyPROTReader(verbose, self.__lfh, None, None, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT)
+            reader = XeasyPROTReader(verbose, self.__reg.log, None, None, None, None, None,
+                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
             return reader
 
         if file_type == 'nm-pea-ari':
-            reader = AriaPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
+            reader = AriaPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                   reasons)
             return reader
         if file_type == 'nm-pea-bar':
-            reader = BarePKReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
+            reader = BarePKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                   reasons)
             return reader
         if file_type == 'nm-pea-ccp':
-            reader = CcpnPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
+            reader = CcpnPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                   reasons)
             return reader
         if file_type == 'nm-pea-oli':
-            reader = OliviaPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                    self.__ccU, self.__csStat, self.__nefT,
+            reader = OliviaPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                    self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                     reasons)
             return reader
         if file_type == 'nm-pea-pip':
-            reader = NmrPipePKReader(verbose, self.__lfh, None, None, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT,
+            reader = NmrPipePKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                      reasons)
             return reader
         if file_type == 'nm-pea-pon':
-            reader = PonderosaPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                       self.__ccU, self.__csStat, self.__nefT,
+            reader = PonderosaPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                        reasons)
             return reader
         if file_type == 'nm-pea-spa':
-            reader = SparkyPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                    self.__ccU, self.__csStat, self.__nefT,
+            reader = SparkyPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                    self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                     reasons)
             return reader
         if file_type == 'nm-pea-sps':
-            reader = SparkySPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT,
+            reader = SparkySPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                      reasons)
             return reader
         if file_type == 'nm-pea-top':
-            reader = TopSpinPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT,
+            reader = TopSpinPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                      reasons)
             return reader
         if file_type == 'nm-pea-vie':
-            reader = NmrViewPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT,
+            reader = NmrViewPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                      reasons)
             return reader
         if file_type == 'nm-pea-vnm':
-            reader = VnmrPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
+            reader = VnmrPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                   reasons)
             return reader
         if file_type == 'nm-pea-xea':
-            reader = XeasyPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
+            reader = XeasyPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                   self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
             return reader
         if file_type == 'nm-pea-xwi':
-            reader = XwinNmrPKReader(verbose, self.__lfh, None, None, None, None, None,
-                                     self.__ccU, self.__csStat, self.__nefT,
+            reader = XwinNmrPKReader(verbose, self.__reg.log, None, None, None, None, None,
+                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
                                      reasons)
             return reader
 
@@ -3782,7 +3534,7 @@ class PdbMrSplitter:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        if any(True for _err_desc in self.__divide_mr_error_message
+        if any(True for _err_desc in self.__reg.divide_mr_error_message
                if err_desc['file_path'] == _err_desc['file_path']
                and err_desc['line_number'] == _err_desc['line_number']
                and err_desc['column_position'] == _err_desc['column_position']
@@ -3795,10 +3547,10 @@ class PdbMrSplitter:
                 os.remove(div_ext_file)
             return False
 
-        self.__divide_mr_error_message.append(err_desc)
+        self.__reg.divide_mr_error_message.append(err_desc)
 
-        if self.__debug:
-            self.__lfh.write('DIV-MR\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write('DIV-MR\n')
 
         if file_type not in parsable_mr_file_types:
             return False
@@ -3888,13 +3640,13 @@ class PdbMrSplitter:
 
                     if comment_pattern.match(concat_input) or (len(concat_input) > 0 and concat_input[0].isalnum()):
 
-                        if self.__debug:
-                            self.__lfh.write('DIV-MR-EXIT #1-1\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DIV-MR-EXIT #1-1\n')
 
                         return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset)
 
-                    if self.__debug:
-                        self.__lfh.write('DIV-MR-EXIT #1-2\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DIV-MR-EXIT #1-2\n')
 
                     return False
 
@@ -3936,20 +3688,20 @@ class PdbMrSplitter:
                                 if cor_test:
                                     os.rename(cor_src_path, src_path)
 
-                                if self.__debug:
-                                    self.__lfh.write('DIV-MR-EXIT #2-1\n')
+                                if self.__reg.mr_debug:
+                                    self.__reg.log.write('DIV-MR-EXIT #2-1\n')
 
                             else:
 
-                                if self.__debug:
-                                    self.__lfh.write('DIV-MR-EXIT #2-2\n')
+                                if self.__reg.mr_debug:
+                                    self.__reg.log.write('DIV-MR-EXIT #2-2\n')
 
                                 corrected = False
 
                         else:
 
-                            if self.__debug:
-                                self.__lfh.write('DIV-MR-EXIT #2-3\n')
+                            if self.__reg.mr_debug:
+                                self.__reg.log.write('DIV-MR-EXIT #2-3\n')
 
                         return corrected
 
@@ -4076,8 +3828,8 @@ class PdbMrSplitter:
                             if cor_test:
                                 os.rename(cor_src_path, src_path)
 
-                            if self.__debug:
-                                self.__lfh.write('DIV-MR-EXIT #3-1\n')
+                            if self.__reg.mr_debug:
+                                self.__reg.log.write('DIV-MR-EXIT #3-1\n')
 
                             return True
 
@@ -4089,8 +3841,8 @@ class PdbMrSplitter:
                 if prev_input is not None:
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
-                if self.__debug and not corrected:
-                    self.__lfh.write('DIV-MR-EXIT #3-2\n')
+                if self.__reg.mr_debug and not corrected:
+                    self.__reg.log.write('DIV-MR-EXIT #3-2\n')
 
                 return False
 
@@ -4111,8 +3863,8 @@ class PdbMrSplitter:
                     if cor_test:
                         os.rename(cor_src_path, src_path)
 
-                    if self.__debug:
-                        self.__lfh.write('DIV-MR-EXIT #3-3\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DIV-MR-EXIT #3-3\n')
 
                     corrected = True
 
@@ -4152,8 +3904,8 @@ class PdbMrSplitter:
                         if cor_test:
                             os.rename(cor_src_path, src_path)
 
-                        if self.__debug:
-                            self.__lfh.write('DIV-MR-EXIT #3-4\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DIV-MR-EXIT #3-4\n')
 
                         corrected = True
 
@@ -4215,8 +3967,8 @@ class PdbMrSplitter:
                                 if cor_test:
                                     os.rename(cor_src_path, src_path)
 
-                                if self.__debug:
-                                    self.__lfh.write('DIV-MR-EXIT #3-5\n')
+                                if self.__reg.mr_debug:
+                                    self.__reg.log.write('DIV-MR-EXIT #3-5\n')
 
                                 corrected = True
 
@@ -4233,8 +3985,8 @@ class PdbMrSplitter:
 
                     if not _has_lexer_error:
 
-                        if self.__debug:
-                            self.__lfh.write('DIV-MR-EXIT #3-6\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DIV-MR-EXIT #3-6\n')
 
                         return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset)
 
@@ -4246,8 +3998,8 @@ class PdbMrSplitter:
 
                     if not _has_lexer_error:
 
-                        if self.__debug:
-                            self.__lfh.write('DIV-MR-EXIT #3-7\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DIV-MR-EXIT #3-7\n')
 
                         return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset)
 
@@ -4293,8 +4045,8 @@ class PdbMrSplitter:
                             if cor_test:
                                 os.rename(cor_src_path, src_path)
 
-                            if self.__debug:
-                                self.__lfh.write('DIV-MR-EXIT #3-8\n')
+                            if self.__reg.mr_debug:
+                                self.__reg.log.write('DIV-MR-EXIT #3-8\n')
 
                             corrected = True
 
@@ -4328,8 +4080,8 @@ class PdbMrSplitter:
                         if cor_test:
                             os.rename(cor_src_path, src_path)
 
-                        if self.__debug:
-                            self.__lfh.write('DIV-MR-EXIT #3-9\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DIV-MR-EXIT #3-9\n')
 
                         corrected = True
 
@@ -4353,8 +4105,8 @@ class PdbMrSplitter:
                     if cor_test:
                         os.rename(cor_src_path, src_path)
 
-                    if self.__debug:
-                        self.__lfh.write('DIV-MR-EXIT #3-10\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DIV-MR-EXIT #3-10\n')
 
                     corrected = True
 
@@ -4373,8 +4125,8 @@ class PdbMrSplitter:
                     if cor_test:
                         os.rename(cor_src_path, src_path)
 
-                    if self.__debug:
-                        self.__lfh.write('DIV-MR-EXIT #3-11\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DIV-MR-EXIT #3-11\n')
 
                     corrected = True
 
@@ -4410,8 +4162,8 @@ class PdbMrSplitter:
                         if cor_test:
                             os.rename(cor_src_path, src_path)
 
-                        if self.__debug:
-                            self.__lfh.write('DIV-MR-EXIT #3-12\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DIV-MR-EXIT #3-12\n')
 
                         corrected = True
 
@@ -4426,8 +4178,8 @@ class PdbMrSplitter:
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                     err_desc['previous_input'] = prev_input
 
-            if self.__debug and not corrected:
-                self.__lfh.write('DIV-MR-EXIT #3-13\n')
+            if self.__reg.mr_debug and not corrected:
+                self.__reg.log.write('DIV-MR-EXIT #3-13\n')
 
             return corrected
 
@@ -4435,8 +4187,8 @@ class PdbMrSplitter:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                self.__lfh.write('DIV-MR-EXIT #4\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('DIV-MR-EXIT #4\n')
 
             return False
 
@@ -4468,13 +4220,13 @@ class PdbMrSplitter:
 
                     if get_peak_list_format_from_string(err_input) is not None:
 
-                        if self.__debug:
-                            self.__lfh.write('DIV-MR-EXIT #5-1\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DIV-MR-EXIT #5-1\n')
 
                         return self.stripLegacyMrIfNecessary(file_path, file_type, err_desc, src_path, offset)
 
-                    if self.__debug:
-                        self.__lfh.write('DIV-MR-EXIT #5-2\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DIV-MR-EXIT #5-2\n')
 
                     return False  # not split MR file because of the lexer errors to be handled by manual
 
@@ -4565,8 +4317,8 @@ class PdbMrSplitter:
 
                                     os.remove(div_dst_file)
 
-                                if self.__debug:
-                                    self.__lfh.write('DIV-MR-EXIT #6\n')
+                                if self.__reg.mr_debug:
+                                    self.__reg.log.write('DIV-MR-EXIT #6\n')
 
                                 return True
 
@@ -4579,8 +4331,8 @@ class PdbMrSplitter:
                         elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                             err_desc['previous_input'] = prev_input
 
-                    if self.__debug:
-                        self.__lfh.write('DIV-MR-EXIT #7\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DIV-MR-EXIT #7\n')
 
                     return False  # not split MR file because of the lexer errors to be handled by manual
 
@@ -4589,8 +4341,8 @@ class PdbMrSplitter:
 
             os.rename(div_try_file, div_ext_file)
 
-            if self.__debug:
-                self.__lfh.write('DIV-MR-EXIT #8\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('DIV-MR-EXIT #8\n')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -4604,8 +4356,8 @@ class PdbMrSplitter:
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                     err_desc['previous_input'] = prev_input
 
-            if self.__debug:
-                self.__lfh.write('DIV-MR-EXIT #9\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('DIV-MR-EXIT #9\n')
 
             return False
 
@@ -4619,8 +4371,8 @@ class PdbMrSplitter:
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                     err_desc['previous_input'] = prev_input
 
-            if self.__debug:
-                self.__lfh.write('DIV-MR-EXIT #10\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('DIV-MR-EXIT #10\n')
 
             return False  # actual issue in the line before the parser error should be handled by manual
 
@@ -4648,8 +4400,8 @@ class PdbMrSplitter:
 
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
-                    if self.__debug:
-                        self.__lfh.write('DIV-MR-EXIT #11\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DIV-MR-EXIT #11\n')
 
                     return False  # actual issue in the line before the parser error should be handled by manual
 
@@ -4659,8 +4411,8 @@ class PdbMrSplitter:
         if div_src:
             os.remove(file_path)
 
-        if self.__debug:
-            self.__lfh.write(f'{valid_types} {possible_types}\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write(f'{valid_types} {possible_types}\n')
 
         os.rename(div_try_file, div_dst_file)
 
@@ -4691,13 +4443,13 @@ class PdbMrSplitter:
             elif set_valid_types == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}:
                 file_type = 'nm-res-xpl'
 
-        if self.__debug:
-            self.__lfh.write(f' -> {file_type}\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write(f' -> {file_type}\n')
 
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
-        if self.__debug:
-            self.__lfh.write('DIV-MR-DONE\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write('DIV-MR-DONE\n')
 
         return True
 
@@ -4712,7 +4464,7 @@ class PdbMrSplitter:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        if any(True for _err_desc in self.__strip_mr_error_message
+        if any(True for _err_desc in self.__reg.strip_mr_error_message
                if err_desc['file_path'] == _err_desc['file_path']
                and err_desc['line_number'] == _err_desc['line_number']
                and err_desc['column_position'] == _err_desc['column_position']
@@ -4725,10 +4477,10 @@ class PdbMrSplitter:
                 os.remove(div_ext_file)
             return False
 
-        self.__strip_mr_error_message.append(err_desc)
+        self.__reg.strip_mr_error_message.append(err_desc)
 
-        if self.__debug:
-            self.__lfh.write('PEEL-MR\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write('PEEL-MR\n')
 
         reader = self.getSimpleFileReader(file_type, False)
 
@@ -4798,8 +4550,8 @@ class PdbMrSplitter:
 
             if comment_pattern.match(test_line):
 
-                if self.__debug:
-                    self.__lfh.write('PEEL-MR-EXIT #1\n')
+                if self.__reg.mr_debug:
+                    self.__reg.log.write('PEEL-MR-EXIT #1\n')
 
                 return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset) | corrected
 
@@ -4817,8 +4569,8 @@ class PdbMrSplitter:
 
                 if not _has_lexer_error and not _has_parser_error:
 
-                    if self.__debug:
-                        self.__lfh.write('PEEL-MR-EXIT #2\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('PEEL-MR-EXIT #2\n')
 
                     return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset) | corrected
 
@@ -4828,8 +4580,8 @@ class PdbMrSplitter:
 
             if has_lexer_error or not has_parser_error:
 
-                if self.__debug:
-                    self.__lfh.write('PEEL-MR-EXIT #3\n')
+                if self.__reg.mr_debug:
+                    self.__reg.log.write('PEEL-MR-EXIT #3\n')
 
                 return False | corrected
 
@@ -4980,8 +4732,8 @@ class PdbMrSplitter:
                 os.remove(div_try_file)
 
             if j3 > 0:
-                if self.__debug:
-                    self.__lfh.write('PEEL-MR-EXIT #5\n')
+                if self.__reg.mr_debug:
+                    self.__reg.log.write('PEEL-MR-EXIT #5\n')
 
                 return False | corrected
 
@@ -4991,8 +4743,8 @@ class PdbMrSplitter:
 
                 os.rename(div_ext_file, div_ext_file.replace('dst-div_ext.mr', '_ext.mr'))  # shrink div_ext file name
 
-                if self.__debug:
-                    self.__lfh.write('PEEL-MR-EXIT #6\n')
+                if self.__reg.mr_debug:
+                    self.__reg.log.write('PEEL-MR-EXIT #6\n')
 
                 return True
 
@@ -5036,8 +4788,8 @@ class PdbMrSplitter:
                             os.remove(div_ext_file)
                         os.remove(div_try_file)
 
-                    if self.__debug:
-                        self.__lfh.write('PEEL-MR-EXIT #7\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('PEEL-MR-EXIT #7\n')
 
                     return False | corrected  # not split MR file because of the lexer errors to be handled by manual
 
@@ -5049,8 +4801,8 @@ class PdbMrSplitter:
                     ofh.write(line)
             os.remove(div_try_file)
 
-            if self.__debug:
-                self.__lfh.write('PEEL-MR-EXIT #8\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('PEEL-MR-EXIT #8\n')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -5059,8 +4811,8 @@ class PdbMrSplitter:
             os.remove(div_ext_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                self.__lfh.write('PEEL-MR-EXIT #9\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('PEEL-MR-EXIT #9\n')
 
             return False | corrected
 
@@ -5072,8 +4824,8 @@ class PdbMrSplitter:
         if j3 == 0:
             os.remove(div_try_file)
 
-        if self.__debug:
-            self.__lfh.write(f'{valid_types} {possible_types}\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write(f'{valid_types} {possible_types}\n')
 
         file_path = div_dst_file
 
@@ -5102,13 +4854,13 @@ class PdbMrSplitter:
             elif set_valid_types == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}:
                 file_type = 'nm-res-xpl'
 
-        if self.__debug:
-            self.__lfh.write(f' -> {file_type}\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write(f' -> {file_type}\n')
 
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
-        if self.__debug:
-            self.__lfh.write('PEEL-MR-DONE\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write('PEEL-MR-DONE\n')
 
         return True
 
@@ -5123,8 +4875,8 @@ class PdbMrSplitter:
         div_try_file = src_basename + '-div_try.mr'
         div_dst_file = src_basename + '-div_dst.mr'
 
-        if self.__debug:
-            self.__lfh.write('DO-DIV-MR\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write('DO-DIV-MR\n')
 
         if file_type not in parsable_mr_file_types:
             return False
@@ -5136,8 +4888,8 @@ class PdbMrSplitter:
 
         if 0 in (err_column_position, len(err_input)):
 
-            if self.__debug:
-                self.__lfh.write('DO-DIV-MR-EXIT #1\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('DO-DIV-MR-EXIT #1\n')
 
             return False
 
@@ -5253,8 +5005,8 @@ class PdbMrSplitter:
                 if prev_input is not None:
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
-                if self.__debug and not corrected:
-                    self.__lfh.write('DO-DIV-MR-EXIT #2-1\n')
+                if self.__reg.mr_debug and not corrected:
+                    self.__reg.log.write('DO-DIV-MR-EXIT #2-1\n')
 
                 return False
 
@@ -5275,8 +5027,8 @@ class PdbMrSplitter:
                     if cor_test:
                         os.rename(cor_src_path, src_path)
 
-                    if self.__debug:
-                        self.__lfh.write('DO-DIV-MR-EXIT #2-2\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DO-DIV-MR-EXIT #2-2\n')
 
                     corrected = True
 
@@ -5316,8 +5068,8 @@ class PdbMrSplitter:
                         if cor_test:
                             os.rename(cor_src_path, src_path)
 
-                        if self.__debug:
-                            self.__lfh.write('DO-DIV-MR-EXIT #2-3\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DO-DIV-MR-EXIT #2-3\n')
 
                         corrected = True
 
@@ -5379,8 +5131,8 @@ class PdbMrSplitter:
                                 if cor_test:
                                     os.rename(cor_src_path, src_path)
 
-                                if self.__debug:
-                                    self.__lfh.write('DIV-MR-EXIT #2-4\n')
+                                if self.__reg.mr_debug:
+                                    self.__reg.log.write('DIV-MR-EXIT #2-4\n')
 
                                 corrected = True
 
@@ -5426,8 +5178,8 @@ class PdbMrSplitter:
                             if cor_test:
                                 os.rename(cor_src_path, src_path)
 
-                            if self.__debug:
-                                self.__lfh.write('DO-DIV-MR-EXIT #2-5\n')
+                            if self.__reg.mr_debug:
+                                self.__reg.log.write('DO-DIV-MR-EXIT #2-5\n')
 
                             corrected = True
 
@@ -5461,8 +5213,8 @@ class PdbMrSplitter:
                         if cor_test:
                             os.rename(cor_src_path, src_path)
 
-                        if self.__debug:
-                            self.__lfh.write('DO-DIV-MR-EXIT #2-6\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DO-DIV-MR-EXIT #2-6\n')
 
                         corrected = True
 
@@ -5486,8 +5238,8 @@ class PdbMrSplitter:
                     if cor_test:
                         os.rename(cor_src_path, src_path)
 
-                    if self.__debug:
-                        self.__lfh.write('DIV-MR-EXIT #2-7\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DIV-MR-EXIT #2-7\n')
 
                     corrected = True
 
@@ -5506,8 +5258,8 @@ class PdbMrSplitter:
                     if cor_test:
                         os.rename(cor_src_path, src_path)
 
-                    if self.__debug:
-                        self.__lfh.write('DO-DIV-MR-EXIT #2-8\n')
+                    if self.__reg.mr_debug:
+                        self.__reg.log.write('DO-DIV-MR-EXIT #2-8\n')
 
                     corrected = True
 
@@ -5543,8 +5295,8 @@ class PdbMrSplitter:
                         if cor_test:
                             os.rename(cor_src_path, src_path)
 
-                        if self.__debug:
-                            self.__lfh.write('DO-DIV-MR-EXIT #2-9\n')
+                        if self.__reg.mr_debug:
+                            self.__reg.log.write('DO-DIV-MR-EXIT #2-9\n')
 
                         corrected = True
 
@@ -5553,8 +5305,8 @@ class PdbMrSplitter:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if self.__debug and not corrected:
-                self.__lfh.write('DO-DIV-MR-EXIT #2-10\n')
+            if self.__reg.mr_debug and not corrected:
+                self.__reg.log.write('DO-DIV-MR-EXIT #2-10\n')
 
             return corrected
 
@@ -5562,8 +5314,8 @@ class PdbMrSplitter:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                self.__lfh.write('DO-DIV-MR-EXIT #3\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('DO-DIV-MR-EXIT #3\n')
 
             return False
 
@@ -5587,8 +5339,8 @@ class PdbMrSplitter:
                 os.remove(div_src_file)
                 os.remove(div_try_file)
 
-                if self.__debug:
-                    self.__lfh.write('DO-DIV-MR-EXIT #4\n')
+                if self.__reg.mr_debug:
+                    self.__reg.log.write('DO-DIV-MR-EXIT #4\n')
 
                 return False
 
@@ -5596,8 +5348,8 @@ class PdbMrSplitter:
                 os.remove(file_path)
             os.rename(div_try_file, div_ext_file)
 
-            if self.__debug:
-                self.__lfh.write('DO-DIV-MR-EXIT #5\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('DO-DIV-MR-EXIT #5\n')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -5605,8 +5357,8 @@ class PdbMrSplitter:
             os.remove(div_src_file)
             os.remove(div_try_file)
 
-            if self.__debug:
-                self.__lfh.write('DO-DIV-MR-EXIT #6\n')
+            if self.__reg.mr_debug:
+                self.__reg.log.write('DO-DIV-MR-EXIT #6\n')
 
             return False
 
@@ -5615,8 +5367,8 @@ class PdbMrSplitter:
 
         os.rename(div_try_file, div_dst_file)
 
-        if self.__debug:
-            self.__lfh.write(f'{valid_types} {possible_types}\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write(f'{valid_types} {possible_types}\n')
 
         file_path = div_dst_file
 
@@ -5645,13 +5397,13 @@ class PdbMrSplitter:
             elif set_valid_types == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}:
                 file_type = 'nm-res-xpl'
 
-        if self.__debug:
-            self.__lfh.write(f' -> {file_type}\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write(f' -> {file_type}\n')
 
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
-        if self.__debug:
-            self.__lfh.write('DO-DIV-MR-DONE\n')
+        if self.__reg.mr_debug:
+            self.__reg.log.write('DO-DIV-MR-DONE\n')
 
         return True
 
@@ -5720,11 +5472,10 @@ class PdbMrSplitter:
 
         except ValueError as e:
 
-            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
-            self.report.setError()
+            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - {str(e)}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - {str(e)}\n")
 
     def detectOtherPossibleFormatAsErrorOfLegacyMr(self, file_path: str, file_name: str, file_type: str,
                                                    dismiss_err_lines: List[int], multiple_check: bool = False
@@ -6175,11 +5926,11 @@ class PdbMrSplitter:
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                 has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
 
-            if file_path not in self.__sll_pred_holder:
-                self.__sll_pred_holder[file_path] = {}
+            if file_path not in self.__reg.sll_pred_holder:
+                self.__reg.sll_pred_holder[file_path] = {}
 
             if not has_lexer_error and not has_parser_error:
-                self.__sll_pred_holder[file_path][_file_type] = sll_pred
+                self.__reg.sll_pred_holder[file_path][_file_type] = sll_pred
 
             # 'rdc_restraint' occasionally matches with CYANA restraints
             # 'geo_restraint' include CS-ROSETTA disulfide bond linkage, which matches any integer array
@@ -6254,12 +6005,11 @@ class PdbMrSplitter:
                             possible_types[_file_type] = len(_content_subtype)
 
                     if file_type == 'nm-res-oth':
-                        self.report.error.appendDescription('content_mismatch',
-                                                            {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                        self.__reg.report.error.appendDescription('content_mismatch',
+                                                                  {'file_name': file_name, 'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.detectOtherPossibleFormatAsErrorOfLegacyMr() ++ Error  - {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.detectOtherPossibleFormatAsErrorOfLegacyMr() ++ Error  - {err}\n")
 
         except ValueError:
             pass

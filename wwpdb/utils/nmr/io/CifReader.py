@@ -230,7 +230,7 @@ class CifReader:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__debug',
                  '__use_cache',
                  '__sub_dir_name_for_cache',
@@ -262,7 +262,7 @@ class CifReader:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
         self.__debug = False
 
         # whether to use cache file
@@ -309,8 +309,8 @@ class CifReader:
         self.__single_model_rotation_test = True
 
         if self.__random_rotaion_test:
-            self.__lfh.write(f"+{self.__class_name__}.__init__() ++ Warning  - Enabled random rotation test\n")
-            self.__lfh.write(f"+{self.__class_name__}.__init__() ++ Warning  - Single model rotation test: {self.__single_model_rotation_test}\n")
+            self.__log.write(f"+{self.__class_name__}.__init__() ++ Warning  - Enabled random rotation test\n")
+            self.__log.write(f"+{self.__class_name__}.__init__() ++ Warning  - Single model rotation test: {self.__single_model_rotation_test}\n")
 
         # clustering parameters for recognition of well-defined regions
         self.__min_features_for_clustering = 4
@@ -356,7 +356,7 @@ class CifReader:
 
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__} ++ Error  - Missing file {self.__filePath}\n")
+                    self.__log.write(f"+{self.__class_name__} ++ Error  - Missing file {self.__filePath}\n")
                 return False
 
             if self.__use_cache:
@@ -367,7 +367,7 @@ class CifReader:
 
         except Exception as e:
             if self.__verbose and 'loop_ declaration outside of data_ block or save_ frame' not in str(e):
-                self.__lfh.write(f"+{self.__class_name__} ++ Error  - Parse {self.__filePath} failed {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__} ++ Error  - Parse {self.__filePath} failed {str(e)}\n")
             return False
 
     def __getDataBlockFromFile(self, blockName: Optional[str] = None) -> Optional[DataContainer]:
@@ -1676,7 +1676,7 @@ class CifReader:
                         stop_min_samples = min_samples - 2
 
                     if self.__verbose and self.__debug:
-                        self.__lfh.write(f'{result}\n')
+                        self.__log.write(f'{result}\n')
 
                     if score < min_score or (n_noise == 0 and min_score < self.__rmsd_overlaid_exactly):
                         min_score = score
@@ -1708,7 +1708,7 @@ class CifReader:
 
         n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
         if self.__verbose and self.__debug:
-            self.__lfh.write(f"feature: {min_result['features']}, "
+            self.__log.write(f"feature: {min_result['features']}, "
                              f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
                              f"clusters: {n_clusters} (effective domains: {len(eff_labels)}), score: {min_score}\n")
 
@@ -1719,14 +1719,14 @@ class CifReader:
         for label, chain_id, seq_id in zip(labels, _chain_ids, _seq_ids):
             if label not in eff_labels:
                 if self.__verbose and self.__debug:
-                    self.__lfh.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: -1\n")
+                    self.__log.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: -1\n")
             else:
                 _label = int(label)
                 if _label not in eff_domain_id:
                     eff_domain_id[_label] = domain_id
                     domain_id += 1
                 if self.__verbose and self.__debug:
-                    self.__lfh.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: {eff_domain_id[_label]} label: {_label}\n")
+                    self.__log.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: {eff_domain_id[_label]} label: {_label}\n")
 
         rlist = []
         for chain_id in chain_ids:
@@ -1944,6 +1944,6 @@ class CifReader:
                 dlist[chain_ids.index(chain_id)].append(_item)
 
         if self.__verbose and self.__debug:
-            self.__lfh.write(f"{dlist}\n")
+            self.__log.write(f"{dlist}\n")
 
         return rlist, dlist

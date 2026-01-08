@@ -1,6 +1,6 @@
 ##
 # File: NmrDpFirstAid.py
-# Date: 06-Jan-2026
+# Date: 07-Jan-2026
 #
 # Updates:
 ##
@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.8.1"
+__version__ = "5.0.0"
 
 import os
 import re
@@ -19,7 +19,7 @@ import shutil
 import pynmrstar
 
 from packaging import version
-from typing import IO, List, Union, Optional
+from typing import List, Union, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (NMR_CONTENT_SUBTYPES,
@@ -31,27 +31,25 @@ try:
                                                ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG,
                                                SF_TAG_PREFIXES,
                                                AUX_LP_CATEGORIES)
-    from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
-                                                   NEF_VERSION,
-                                                   MAX_DIM_NUM_OF_SPECTRA)
-    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+    from wwpdb.utils.nmr.NmrDpRegistory import NmrDpRegistory
+    from wwpdb.utils.nmr.NmrDpMrSplitter import (datablock_pattern,
+                                                 sf_anonymous_pattern,
+                                                 save_pattern,
+                                                 loop_pattern,
+                                                 stop_pattern,
+                                                 cif_stop_pattern,
+                                                 category_pattern,
+                                                 tagvalue_pattern,
+                                                 sf_category_pattern,
+                                                 sf_framecode_pattern,
+                                                 pynmrstar_lp_obj_pattern,
+                                                 onedep_upload_file_pattern,
+                                                 onedep_file_pattern)
     from wwpdb.utils.nmr.AlignUtil import emptyValue
-    from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
-                                              get_first_sf_tag,
+    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
-    from wwpdb.utils.nmr.mr.PdbMrSplitter import (datablock_pattern,
-                                                  sf_anonymous_pattern,
-                                                  save_pattern,
-                                                  loop_pattern,
-                                                  stop_pattern,
-                                                  cif_stop_pattern,
-                                                  category_pattern,
-                                                  tagvalue_pattern,
-                                                  sf_category_pattern,
-                                                  sf_framecode_pattern,
-                                                  pynmrstar_lp_obj_pattern,
-                                                  onedep_upload_file_pattern,
-                                                  onedep_file_pattern)
+    from wwpdb.utils.nmr.nef.NEFTranslator import (NEF_VERSION,
+                                                   MAX_DIM_NUM_OF_SPECTRA)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS
 except ImportError:
     from nmr.NmrDpConstant import (NMR_CONTENT_SUBTYPES,
@@ -63,27 +61,25 @@ except ImportError:
                                    ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG,
                                    SF_TAG_PREFIXES,
                                    AUX_LP_CATEGORIES)
-    from nmr.nef.NEFTranslator import (NEFTranslator,
-                                       NEF_VERSION,
-                                       MAX_DIM_NUM_OF_SPECTRA)
-    from nmr.NmrDpReport import NmrDpReport
+    from nmr.NmrDpRegistory import NmrDpRegistory
+    from nmr.NmrDpMrSplitter import (datablock_pattern,
+                                     sf_anonymous_pattern,
+                                     save_pattern,
+                                     loop_pattern,
+                                     stop_pattern,
+                                     cif_stop_pattern,
+                                     category_pattern,
+                                     tagvalue_pattern,
+                                     sf_category_pattern,
+                                     sf_framecode_pattern,
+                                     pynmrstar_lp_obj_pattern,
+                                     onedep_upload_file_pattern,
+                                     onedep_file_pattern)
     from nmr.AlignUtil import emptyValue
-    from nmr.CifToNmrStar import (CifToNmrStar,
-                                  get_first_sf_tag,
+    from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
-    from nmr.mr.PdbMrSplitter import (datablock_pattern,
-                                      sf_anonymous_pattern,
-                                      save_pattern,
-                                      loop_pattern,
-                                      stop_pattern,
-                                      cif_stop_pattern,
-                                      category_pattern,
-                                      tagvalue_pattern,
-                                      sf_category_pattern,
-                                      sf_framecode_pattern,
-                                      pynmrstar_lp_obj_pattern,
-                                      onedep_upload_file_pattern,
-                                      onedep_file_pattern)
+    from nmr.nef.NEFTranslator import (NEF_VERSION,
+                                       MAX_DIM_NUM_OF_SPECTRA)
     from nmr.mr.ParserListenerUtil import ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS
 
 
@@ -95,159 +91,13 @@ class NmrDpFirstAid:
     """
     __slots__ = ('__class_name__',
                  '__version__',
-                 '__verbose',
-                 '__lfh',
-                 '__op',
-                 '__rescue_mode',
-                 '__remediation_mode',
-                 '__combined_mode',
-                 '__release_mode',
-                 '__resolve_conflict',
-                 '__check_mandatory_tag',
-                 '__fix_format_issue',
-                 '__has_star_chem_shift',
-                 '__star_data_type',
-                 '__star_data',
-                 '__sf_name_corr',
-                 '__sf_category_list',
-                 '__lp_category_list',
-                 '__cs_file_path_list_len',
-                 '__inputParamDict',
-                 '__outputParamDict',
-                 '__srcPath',
-                 '__tmpPath',
-                 '__original_error_message',
-                 '__suspended_errors_for_lazy_eval',
-                 'report',
-                 '__pdb_mr_has_valid_star_restraint',
-                 '__cur_original_ar_file_name',
-                 '__mr_atom_name_mapping',
-                 '__c2S',
-                 '__nefT')
+                 '__reg')
 
-    def __init__(self, verbose: bool, log: IO,
-                 op: str, rescueMode: bool, remediationMode: bool, combinedMode: bool, releaseMode: bool,
-                 resolveConflict: bool, checkMandatoryTag: bool, fixFormatIssue: bool,
-                 sfNameCorr: List[dict], sfCategoryList: List[str], lpCategoryList: List[str],
-                 csFilePathListIdLen: int, inputParamDict: dict, outputParamDict: dict,
-                 srcPath: str, originalErrorMessage: List[str],
-                 suspendedErrorsForLazyEval: List[dict],
-                 report: NmrDpReport,
-                 c2S: Optional[CifToNmrStar] = None, nefT: Optional[NEFTranslator] = None):
+    def __init__(self, registory: NmrDpRegistory):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__verbose = verbose
-        self.__lfh = log
-
-        # current workflow operation
-        self.__op = op
-
-        # whether to enable rescue routine
-        self.__rescue_mode = rescueMode
-
-        # whether to enable remediation routines
-        self.__remediation_mode = remediationMode
-
-        # whether NMR combined deposition or not (NMR conventional deposition)
-        self.__combined_mode = combinedMode
-
-        # whether to use datablock name of public release
-        self.__release_mode = releaseMode
-
-        # whether to resolve conflict
-        self.__resolve_conflict = resolveConflict
-
-        # whether to detect missing mandatory tags as errors
-        self.__check_mandatory_tag = checkMandatoryTag
-
-        # whether to fix format issue (enabled if NMR conventional deposition or release mode)
-        self.__fix_format_issue = fixFormatIssue
-
-        # whether a CS loop is in the primary NMR-STAR file (used only for NMR data remediation)
-        self.__has_star_chem_shift = True
-
-        # list of pynmrstar data types
-        self.__star_data_type = None
-
-        # list of pynmrstar data
-        self.__star_data = None
-
-        # history of saveframe name corrections
-        self.__sf_name_corr = sfNameCorr
-
-        # list of saveframe categories
-        self.__sf_category_list = sfCategoryList
-
-        # list of loop categories
-        self.__lp_category_list = lpCategoryList
-
-        # the number of cs files
-        self.__cs_file_path_list_len = csFilePathListIdLen
-
-        # input parameters
-        self.__inputParamDict = inputParamDict
-
-        # output parameters
-        self.__outputParamDict = outputParamDict
-
-        # source file path
-        self.__srcPath = srcPath
-
-        # error message holder
-        self.__original_error_message = originalErrorMessage
-
-        # suspended error items for lazy evaluation
-        self.__suspended_errors_for_lazy_eval = suspendedErrorsForLazyEval
-
-        # NmrDpReport
-        self.report = report
-
-        # CifToNmrStar
-        self.__c2S = CifToNmrStar(log) if c2S is None else c2S
-
-        # NEFTranslator
-        self.__nefT = nefT
-
-    @property
-    def has_star_chem_shift(self):
-        return self.__has_star_chem_shift
-
-    @property
-    def star_data_type(self):
-        return self.__star_data_type
-
-    @star_data_type.setter
-    def star_data_type(self, star_data_type: List[str]):
-        if star_data_type == self.__star_data_type:
-            return
-        self.__star_data_type = star_data_type
-
-    @property
-    def star_data(self):
-        return self.__star_data
-
-    @star_data.setter
-    def star_data(self, star_data: List[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]]):
-        if star_data == self.__star_data:
-            return
-        self.__star_data = star_data
-
-    @property
-    def sf_category_list(self):
-        return self.__sf_category_list
-
-    @property
-    def lp_category_list(self):
-        return self.__lp_category_list
-
-    @property
-    def srcPath(self):
-        return self.__srcPath
-
-    @property
-    def suspended_errors_for_lazy_eval(self):
-        return self.__suspended_errors_for_lazy_eval
+        self.__reg = registory
 
     def fixFormatIssueOfInputSource(self, file_list_id: int, file_name: str, file_type: str,
                                     srcPath: Optional[str] = None, fileSubType: str = 'S',
@@ -256,7 +106,7 @@ class NmrDpFirstAid:
         """ Fix format issue of NMR data.
         """
 
-        if not self.__fix_format_issue or srcPath is None or fileSubType not in ('A', 'S', 'R', 'O') or message is None:
+        if not self.__reg.fix_format_issue or srcPath is None or fileSubType not in ('A', 'S', 'R', 'O') or message is None:
 
             if message is not None:
 
@@ -277,33 +127,32 @@ class NmrDpFirstAid:
                     else:
                         missing_loop = False
 
-                        for err_message in self.__original_error_message[file_list_id]['error']:
+                        for err_message in self.__reg.original_error_message[file_list_id]['error']:
                             if 'No such file or directory' not in err_message:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                if not self.__remediation_mode or not missing_loop or file_list_id > 0:
+                if not self.__reg.remediation_mode or not missing_loop or file_list_id > 0:
 
-                    self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
-                                                        {'file_name': file_name, 'description': err})
-                    self.report.setError()
+                    self.__reg.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
+                                                              {'file_name': file_name, 'description': err})
 
-                    self.__lfh.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - "
-                                     f"{file_name} {err}\n")
+                    self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - "
+                                         f"{file_name} {err}\n")
 
                 else:
 
-                    self.__has_star_chem_shift = False
+                    self.__reg.has_star_chem_shift = False
 
-                    self.__suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
-                                                                  {'file_name': file_name, 'description': err}})
+                    self.__reg.suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                                      {'file_name': file_name, 'description': err}})
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                    if self.__reg.verbose:
+                        self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
             if not hasLegacySfIssue and fileSubType in ('S', 'R', 'O'):
                 return False
 
-        star_data_type = self.__nefT.read_input_file(srcPath)[1] if hasLegacySfIssue else None
+        star_data_type = self.__reg.nefT.read_input_file(srcPath)[1] if hasLegacySfIssue else None
 
         _srcPath = srcPath
         if tmpPaths is None:
@@ -316,12 +165,11 @@ class NmrDpFirstAid:
         if any(True for msg in message['error'] if msg_template in msg):
             warn = msg_template
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -338,12 +186,11 @@ class NmrDpFirstAid:
         if any(True for msg in message['error'] if msg_template in msg):
             warn = msg_template
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -361,12 +208,11 @@ class NmrDpFirstAid:
         if any(True for msg in message['error'] if msg_template in msg) or (hasLegacySfIssue and star_data_type == 'Saveframe'):
             warn = 'The datablock must hook saveframe(s).'
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh:
                 lines = ifh.read().splitlines()
@@ -394,7 +240,7 @@ class NmrDpFirstAid:
                 tmpPaths.append(_srcPath)
 
             # fix single loop file without datablock (D_1300055931)
-            if self.__c2S.convert(_srcPath, _srcPath + '~'):
+            if self.__reg.c2S.convert(_srcPath, _srcPath + '~'):
                 _srcPath = _srcPath + '~'
                 tmpPaths.append(_srcPath)
 
@@ -403,12 +249,11 @@ class NmrDpFirstAid:
         if any(True for msg in message['error'] if msg_template in msg):
             warn = 'A saveframe, instead of the datablock, must hook the loop.'
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
 
             pass_datablock = False
 
@@ -433,12 +278,11 @@ class NmrDpFirstAid:
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = 'Loops must properly terminated.'
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
 
@@ -477,12 +321,11 @@ class NmrDpFirstAid:
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = "Loops must start with the 'loop_' keyword."
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
 
@@ -517,7 +360,7 @@ class NmrDpFirstAid:
 
             is_cs_cif = False
 
-            if self.__op == 'nmr-cs-str-consistency-check':
+            if self.__reg.op == 'nmr-cs-str-consistency-check':
 
                 is_cs_cif = True
 
@@ -575,7 +418,7 @@ class NmrDpFirstAid:
 
                         else:
 
-                            if self.__c2S.convert(_srcPath, _srcPath + '~'):
+                            if self.__reg.c2S.convert(_srcPath, _srcPath + '~'):
                                 _srcPath += '~'
                                 tmpPaths.append(_srcPath)
 
@@ -587,12 +430,11 @@ class NmrDpFirstAid:
                 msg = next(msg for msg in message['error'] if msg_template in msg)
                 warn = "Loops must start with the 'loop_' keyword."
 
-                self.report.warning.appendDescription('corrected_format_issue',
-                                                      {'file_name': file_name, 'description': warn})
-                self.report.setWarning()
+                self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                            {'file_name': file_name, 'description': warn})
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
                 msg_pattern = re.compile(r'^.*' + msg_template + r" '(.*)'.*$")
 
@@ -629,12 +471,11 @@ class NmrDpFirstAid:
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = "The saveframe must have a specified saveframe name."
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
 
@@ -674,12 +515,11 @@ class NmrDpFirstAid:
             warn = 'The saveframe must have NMR-STAR V3.2 tags. Saveframe error occured:'\
                 + msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'")
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^' + msg_template + r" '(.*)'$")
 
@@ -766,12 +606,11 @@ class NmrDpFirstAid:
             warn = 'Saveframe(s), instead of the datablock, must hook more than one loop. Loops detected:'\
                 + msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'")
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^' + msg_template + r" \[(.*)\]$")
 
@@ -960,12 +799,11 @@ class NmrDpFirstAid:
 
             if len(targets) > 0:
 
-                self.report.warning.appendDescription('corrected_format_issue',
-                                                      {'file_name': file_name, 'description': warn})
-                self.report.setWarning()
+                self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                            {'file_name': file_name, 'description': warn})
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
                 target_category_begins = [target['category_2_begin'] for target in targets]
                 target_category_ends = [target['category_2_end'] for target in targets]
@@ -1036,12 +874,11 @@ class NmrDpFirstAid:
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = "Sf_framecode tag value should match with the saveframe name."
 
-            self.report.warning.appendDescription('corrected_format_issue',
-                                                  {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                        {'file_name': file_name, 'description': warn})
 
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             if __pynmrstar_v3_3__:
                 msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with the saveframe name (\S+)\. "
@@ -1083,7 +920,7 @@ class NmrDpFirstAid:
 
         if len(tmpPaths) > len_tmp_paths:
 
-            is_valid, _message = self.__nefT.validate_file(_srcPath, fileSubType, allowEmpty)
+            is_valid, _message = self.__reg.nefT.validate_file(_srcPath, fileSubType, allowEmpty)
 
             if not is_valid:
 
@@ -1102,30 +939,30 @@ class NmrDpFirstAid:
 
         is_done = True
 
-        is_valid, message = self.__nefT.validate_file(_srcPath, fileSubType, allowEmpty)
+        is_valid, message = self.__reg.nefT.validate_file(_srcPath, fileSubType, allowEmpty)
 
         _file_type = message['file_type']  # nef/nmr-star/unknown
 
-        if not self.__combined_mode:
+        if not self.__reg.combined_mode:
 
-            if file_list_id < self.__cs_file_path_list_len:
+            if file_list_id < self.__reg.cs_file_path_list_len:
 
                 cs_file_path_list = 'chem_shift_file_path_list'
 
-                if cs_file_path_list in self.__outputParamDict:
-                    if file_list_id < len(self.__outputParamDict[cs_file_path_list]):
-                        dstPath = self.__outputParamDict[cs_file_path_list][file_list_id]
-                        if dstPath is not None and dstPath not in self.__inputParamDict[cs_file_path_list]:
+                if cs_file_path_list in self.__reg.outputParamDict:
+                    if file_list_id < len(self.__reg.outputParamDict[cs_file_path_list]):
+                        dstPath = self.__reg.outputParamDict[cs_file_path_list][file_list_id]
+                        if dstPath is not None and dstPath not in self.__reg.inputParamDict[cs_file_path_list]:
                             shutil.copyfile(_srcPath, dstPath)
 
             else:
 
                 mr_file_path_list = 'restraint_file_path_list'
 
-                if mr_file_path_list in self.__outputParamDict:
-                    if file_list_id - self.__cs_file_path_list_len < len(self.__outputParamDict[mr_file_path_list]):
-                        dstPath = self.__outputParamDict[mr_file_path_list][file_list_id - self.__cs_file_path_list_len]
-                        if dstPath is not None and dstPath not in self.__inputParamDict[mr_file_path_list]:
+                if mr_file_path_list in self.__reg.outputParamDict:
+                    if file_list_id - self.__reg.cs_file_path_list_len < len(self.__reg.outputParamDict[mr_file_path_list]):
+                        dstPath = self.__reg.outputParamDict[mr_file_path_list][file_list_id - self.__reg.cs_file_path_list_len]
+                        if dstPath is not None and dstPath not in self.__reg.inputParamDict[mr_file_path_list]:
                             shutil.copyfile(_srcPath, dstPath)
 
         if is_valid:
@@ -1140,26 +977,25 @@ class NmrDpFirstAid:
                         if 'No such file or directory' not in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                self.report.error.appendDescription('content_mismatch',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                self.__reg.report.error.appendDescription('content_mismatch',
+                                                          {'file_name': file_name, 'description': err})
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
             else:
 
                 # NEFTranslator.validate_file() generates this object internally, but not re-used.
-                is_done, star_data_type, star_data = self.__nefT.read_input_file(_srcPath)
+                is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(_srcPath)
 
                 rescued = hasLegacySfIssue and is_done and star_data_type == 'Entry'
 
-                if len(self.__star_data_type) > file_list_id:
-                    self.__star_data_type[file_list_id] = star_data_type
-                    self.__star_data[file_list_id] = star_data
+                if len(self.__reg.star_data_type) > file_list_id:
+                    self.__reg.star_data_type[file_list_id] = star_data_type
+                    self.__reg.star_data[file_list_id] = star_data
                 else:
-                    self.__star_data_type.append(star_data_type)
-                    self.__star_data.append(star_data)
+                    self.__reg.star_data_type.append(star_data_type)
+                    self.__reg.star_data.append(star_data)
 
                 self.rescueFormerNef(file_list_id)
                 self.rescueImmatureStr(file_list_id)
@@ -1173,7 +1009,7 @@ class NmrDpFirstAid:
                             g = onedep_file_pattern.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
 
-                    self.__star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+                    self.__reg.star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
         else:
 
@@ -1194,35 +1030,34 @@ class NmrDpFirstAid:
                 else:
                     missing_loop = False
 
-                    for err_message in self.__original_error_message[file_list_id]['error']:
+                    for err_message in self.__reg.original_error_message[file_list_id]['error']:
                         if 'No such file or directory' not in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-            if not self.__remediation_mode or not missing_loop or file_list_id > 0:
+            if not self.__reg.remediation_mode or not missing_loop or file_list_id > 0:
 
-                self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                self.__reg.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
+                                                          {'file_name': file_name, 'description': err})
 
-                self.__lfh.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - "
-                                 f"{file_name} {err}\n")
+                self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - "
+                                     f"{file_name} {err}\n")
 
                 is_done = False
 
             else:
 
-                self.__has_star_chem_shift = False
+                self.__reg.has_star_chem_shift = False
 
-                self.__suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
-                                                              {'file_name': file_name, 'description': err}})
+                self.__reg.suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                                  {'file_name': file_name, 'description': err}})
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
         try:
 
-            if self.__release_mode and len(tmpPaths) > 0:
-                self.__srcPath = tmpPaths[-1]
+            if self.__reg.release_mode and len(tmpPaths) > 0:
+                self.__reg.srcPath = tmpPaths[-1]
                 for tmpPath in tmpPaths[:-1]:
                     if os.path.exists(tmpPath):
                         os.remove(tmpPath)
@@ -1240,16 +1075,16 @@ class NmrDpFirstAid:
         """ Rescue former NEF version prior to 1.0.
         """
 
-        input_source = self.report.input_sources[file_list_id]
+        input_source = self.__reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nef' or file_list_id >= len(self.__star_data) or self.__star_data[file_list_id] is None:
+        if file_type != 'nef' or file_list_id >= len(self.__reg.star_data) or self.__reg.star_data[file_list_id] is None:
             return True
 
-        if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
+        if self.__reg.combined_mode or self.__reg.star_data_type[file_list_id] == 'Entry':
 
             for content_subtype in NMR_CONTENT_SUBTYPES:
 
@@ -1258,47 +1093,45 @@ class NmrDpFirstAid:
                 if sf_category is None:
                     continue
 
-                for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if self.__getSaveframeByName(file_list_id, sf_framecode) is None:
+                    if self.getSaveframeByName(file_list_id, sf_framecode) is None:
 
                         itName = '_' + sf_category + '.sf_framecode'
 
-                        if self.__resolve_conflict:
+                        if self.__reg.resolve_conflict:
                             warn = f"{itName} {sf_framecode!r} should be matched with saveframe name {sf.name!r}. {itName} will be overwritten."
 
-                            self.report.warning.appendDescription('missing_saveframe',
-                                                                  {'file_name': file_name, 'sf_framecode': sf.name,
-                                                                   'description': warn})
-                            self.report.setWarning()
+                            self.__reg.report.warning.appendDescription('missing_saveframe',
+                                                                        {'file_name': file_name, 'sf_framecode': sf.name,
+                                                                         'description': warn})
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.rescueFormerNef() ++ Warning  - {warn}\n")
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ Warning  - {warn}\n")
 
                             set_sf_tag(sf, 'sf_framecode', sf.name)
 
                         else:
                             err = f"{itName} {sf_framecode!r} must be matched with saveframe name {sf.name!r}."
 
-                            self.report.error.appendDescription('format_issue',
-                                                                {'file_name': file_name, 'sf_framecode': sf.name,
-                                                                 'description': err})
-                            self.report.setError()
+                            self.__reg.report.error.appendDescription('format_issue',
+                                                                      {'file_name': file_name, 'sf_framecode': sf.name,
+                                                                       'description': err})
 
-                            self.__lfh.write(f"+{self.__class_name__}.rescueFormerNef() ++ Error  - "
-                                             f"{file_name} {sf.name} {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ Error  - "
+                                                 f"{file_name} {sf.name} {err}\n")
 
-        if not self.__rescue_mode:
+        if not self.__reg.rescue_mode:
             return True
 
-        if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
+        if self.__reg.combined_mode or self.__reg.star_data_type[file_list_id] == 'Entry':
 
             content_subtype = 'entry_info'
 
             sf_category = SF_CATEGORIES[file_type][content_subtype]
 
-            for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+            for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
                 format_version = get_first_sf_tag(sf, 'format_version')
 
                 if not format_version.startswith('0.'):
@@ -1312,7 +1145,7 @@ class NmrDpFirstAid:
                 if None in (sf_category, lp_category):
                     continue
 
-                for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                     if not any(True for loop in sf.loops if loop.category == lp_category):
@@ -1322,13 +1155,13 @@ class NmrDpFirstAid:
 
             return True
 
-        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id])
+        self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in NMR_CONTENT_SUBTYPES}
 
         # increment loop counter of each content subtype
-        for lp_category in self.__lp_category_list:
+        for lp_category in self.__reg.lp_category_list:
             if lp_category in LP_CATEGORIES[file_type].values():
                 lp_counts[[k for k, v in LP_CATEGORIES[file_type].items() if v == lp_category][0]] += 1
 
@@ -1342,12 +1175,12 @@ class NmrDpFirstAid:
             if None in (sf_category, lp_category):
                 continue
 
-            if self.__star_data_type[file_list_id] == 'Loop':
+            if self.__reg.star_data_type[file_list_id] == 'Loop':
 
                 if content_subtype not in content_subtypes:
                     continue
 
-                sf = self.__star_data[file_list_id]
+                sf = self.__reg.star_data[file_list_id]
                 sf_framecode = ''
 
                 self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
@@ -1357,7 +1190,7 @@ class NmrDpFirstAid:
                 if content_subtype not in content_subtypes:
                     continue
 
-                sf = self.__star_data[file_list_id]
+                sf = self.__reg.star_data[file_list_id]
                 sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                 self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
@@ -1406,15 +1239,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.index'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1442,15 +1274,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.element'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1467,7 +1298,7 @@ class NmrDpFirstAid:
                     except ValueError:
                         pass
 
-                elif not self.__combined_mode:
+                elif not self.__reg.combined_mode:
 
                     atom_type_col = loop.tags.index('element')
                     atom_name_col = loop.tags.index('atom_name')
@@ -1484,15 +1315,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1509,7 +1339,7 @@ class NmrDpFirstAid:
                     except ValueError:
                         pass
 
-                elif not self.__combined_mode:
+                elif not self.__reg.combined_mode:
 
                     iso_num_col = loop.tags.index('isotope_number')
                     atom_name_col = loop.tags.index('atom_name')
@@ -1528,15 +1358,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.name'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1599,16 +1428,16 @@ class NmrDpFirstAid:
         """ Rescue immature NMR-STAR.
         """
 
-        input_source = self.report.input_sources[file_list_id]
+        input_source = self.__reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nmr-star' or file_list_id >= len(self.__star_data) or self.__star_data[file_list_id] is None:
+        if file_type != 'nmr-star' or file_list_id >= len(self.__reg.star_data) or self.__reg.star_data[file_list_id] is None:
             return True
 
-        if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
+        if self.__reg.combined_mode or self.__reg.star_data_type[file_list_id] == 'Entry':
 
             for content_subtype in NMR_CONTENT_SUBTYPES:
 
@@ -1620,23 +1449,22 @@ class NmrDpFirstAid:
                 if sf_category is None:
                     continue
 
-                for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
-                    if self.__getSaveframeByName(file_list_id, sf_framecode) is None:
+                    if self.getSaveframeByName(file_list_id, sf_framecode) is None:
 
                         itName = '_' + sf_category + '.Sf_framecode'
 
-                        if self.__resolve_conflict:
+                        if self.__reg.resolve_conflict:
                             warn = f"{itName} {sf_framecode!r} should be matched with saveframe name {sf.name!r}. {itName} will be overwritten."
 
-                            self.report.warning.appendDescription('missing_saveframe',
-                                                                  {'file_name': file_name, 'sf_framecode': sf.name,
-                                                                   'description': warn})
-                            self.report.setWarning()
+                            self.__reg.report.warning.appendDescription('missing_saveframe',
+                                                                        {'file_name': file_name, 'sf_framecode': sf.name,
+                                                                         'description': warn})
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.rescueImmatureStr() ++ Warning  - {warn}\n")
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ Warning  - {warn}\n")
 
                             tagNames = [t[0] for t in sf.tags]
 
@@ -1648,24 +1476,23 @@ class NmrDpFirstAid:
                         else:
                             err = f"{itName} {sf_framecode!r} must be matched with saveframe name {sf.name!r}."
 
-                            self.report.error.appendDescription('format_issue',
-                                                                {'file_name': file_name, 'sf_framecode': sf.name,
-                                                                 'description': err})
-                            self.report.setError()
+                            self.__reg.report.error.appendDescription('format_issue',
+                                                                      {'file_name': file_name, 'sf_framecode': sf.name,
+                                                                       'description': err})
 
-                            self.__lfh.write(f"+{self.__class_name__}.rescueImmatureStr() ++ Error  - "
-                                             f"{file_name} {sf.name} {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ Error  - "
+                                                 f"{file_name} {sf.name} {err}\n")
 
-        if not self.__rescue_mode:
+        if not self.__reg.rescue_mode:
             return True
 
-        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id])
+        self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in NMR_CONTENT_SUBTYPES}
 
         # increment loop counter of each content subtype
-        for lp_category in self.__lp_category_list:
+        for lp_category in self.__reg.lp_category_list:
             if lp_category in LP_CATEGORIES[file_type].values():
                 lp_counts[[k for k, v in LP_CATEGORIES[file_type].items() if v == lp_category][0]] += 1
 
@@ -1682,29 +1509,29 @@ class NmrDpFirstAid:
             if None in (sf_category, lp_category):
                 continue
 
-            if self.__star_data_type[file_list_id] == 'Loop':
+            if self.__reg.star_data_type[file_list_id] == 'Loop':
 
                 if content_subtype not in content_subtypes:
                     continue
 
-                sf = self.__star_data[file_list_id]
+                sf = self.__reg.star_data[file_list_id]
                 sf_framecode = ''
 
                 self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category)
 
-            elif self.__star_data_type[file_list_id] == 'Saveframe':
+            elif self.__reg.star_data_type[file_list_id] == 'Saveframe':
 
                 if content_subtype not in content_subtypes:
                     continue
 
-                sf = self.__star_data[file_list_id]
+                sf = self.__reg.star_data[file_list_id]
                 sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                 self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category)
 
             else:
 
-                for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     if not any(True for loop in sf.loops if loop.category == lp_category):
@@ -1734,15 +1561,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.Atom_type'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1759,7 +1585,7 @@ class NmrDpFirstAid:
                     except ValueError:
                         pass
 
-                elif not self.__combined_mode:
+                elif not self.__reg.combined_mode:
 
                     atom_type_col = loop.tags.index('Atom_type')
                     atom_name_col = loop.tags.index('Atom_ID')
@@ -1776,15 +1602,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.Atom_isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1801,7 +1626,7 @@ class NmrDpFirstAid:
                     except ValueError:
                         pass
 
-                elif not self.__combined_mode:
+                elif not self.__reg.combined_mode:
 
                     iso_num_col = loop.tags.index('Atom_isotope_number')
                     atom_name_col = loop.tags.index('Atom_ID')
@@ -1844,15 +1669,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.Torsion_angle_name'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1868,15 +1692,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.Atom_type'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1896,15 +1719,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.Atom_isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1924,15 +1746,14 @@ class NmrDpFirstAid:
                     lp_tag = lp_category + '.Axis_code'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                    if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.__reg.report.error.appendDescription('missing_mandatory_item',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': err})
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -1960,20 +1781,20 @@ class NmrDpFirstAid:
         except KeyError:
             pass
 
-    def __getSaveframeByName(self, file_list_id: int, sf_framecode: str) -> Optional[pynmrstar.Saveframe]:
+    def getSaveframeByName(self, file_list_id: int, sf_framecode: str) -> Optional[pynmrstar.Saveframe]:
         """ Retrieve saveframe content from a given name.
         """
 
         try:
 
-            return self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+            return self.__reg.star_data[file_list_id].get_saveframe_by_name(sf_framecode)
 
         except KeyError:  # DAOTHER-7389, issue #4
 
-            if file_list_id < len(self.__sf_name_corr) and sf_framecode in self.__sf_name_corr[file_list_id]:
+            if file_list_id < len(self.__reg.sf_name_corrections) and sf_framecode in self.__reg.sf_name_corrections[file_list_id]:
 
                 try:
-                    return self.__star_data[file_list_id].get_saveframe_by_name(self.__sf_name_corr[file_list_id][sf_framecode])
+                    return self.__reg.star_data[file_list_id].get_saveframe_by_name(self.__reg.sf_name_corrections[file_list_id][sf_framecode])
                 except KeyError:
                     return None
 
@@ -1984,7 +1805,7 @@ class NmrDpFirstAid:
 
                 try:
                     g = chk_unresolved_sf_name_pattern.search(sf_framecode).groups()
-                    return self.__star_data[file_list_id].get_saveframe_by_name(g[0])
+                    return self.__reg.star_data[file_list_id].get_saveframe_by_name(g[0])
                 except AttributeError:
                     return None
                 except KeyError:

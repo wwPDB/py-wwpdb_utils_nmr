@@ -76,7 +76,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + '2l9r-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
-    ""
+
     def test_nmr_str_consistency(self):
         # no input
         with self.assertRaises(ValueError):
@@ -442,4 +442,4 @@ class TestNmrDpUtility(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(failfast=True)

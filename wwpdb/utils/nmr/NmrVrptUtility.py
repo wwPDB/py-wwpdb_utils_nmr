@@ -532,7 +532,7 @@ class NmrVrptUtility:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__debug',
                  '__trust_pdbx_auth_atom_name',
                  '__use_cache',
@@ -587,7 +587,7 @@ class NmrVrptUtility:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
 
         self.__debug = False
         self.__trust_pdbx_auth_atom_name = False
@@ -794,7 +794,7 @@ class NmrVrptUtility:
         """
 
         if self.__verbose:
-            self.__lfh.write(f"+{self.__class_name__}.op() starting op {op}, use_cache {self.__use_cache}\n")
+            self.__log.write(f"+{self.__class_name__}.op() starting op {op}, use_cache {self.__use_cache}\n")
 
         if op not in self.__workFlowOps:
             raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Unknown workflow operation {op}.")
@@ -804,7 +804,7 @@ class NmrVrptUtility:
             for task in self.__procTasksDict[op]:
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.op() starting op {op} - task {task.__name__}\n")
+                    self.__log.write(f"+{self.__class_name__}.op() starting op {op} - task {task.__name__}\n")
 
                 start_time = time.time()
 
@@ -814,7 +814,7 @@ class NmrVrptUtility:
                 if self.__debug and self.__verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
-                        self.__lfh.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
+                        self.__log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
 
         return self.__results
 
@@ -849,7 +849,7 @@ class NmrVrptUtility:
                 err = f"No such {self.__inputParamDict['coordinate_file_path']!r} file."
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
+                    self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
             return False
 
@@ -862,7 +862,7 @@ class NmrVrptUtility:
                 err = f"{file_name!r} is invalid PDBx/mmCIF file."
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
+                    self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
                 return False
 
@@ -909,7 +909,7 @@ class NmrVrptUtility:
                     except Exception as e:
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
+                            self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
 
             if len(ensemble) > 0 and 'representative_conformer' in ensemble[0]:
 
@@ -942,7 +942,7 @@ class NmrVrptUtility:
                 except Exception as e:
 
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
+                        self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
 
             if self.__cR.hasItem('atom_site', 'label_alt_id'):
                 alt_ids = self.__cR.getDictListWithFilter('atom_site',
@@ -984,7 +984,7 @@ class NmrVrptUtility:
                     except Exception as e:
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__checkCoordInputSource() ++ Error  - {str(e)}\n")
+                            self.__log.write(f"+{self.__class_name__}.__checkCoordInputSource() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -1002,7 +1002,7 @@ class NmrVrptUtility:
                     if not os.path.isdir(self.__cacheDirPath):
                         os.makedirs(self.__cacheDirPath)
 
-                self.__cR = CifReader(self.__verbose, self.__lfh,
+                self.__cR = CifReader(self.__verbose, self.__log,
                                       use_cache=self.__use_cache,
                                       sub_dir_name_for_cache=self.__sub_dir_name_for_cache)
 
@@ -1050,7 +1050,7 @@ class NmrVrptUtility:
                 err = f"No such {self.__inputParamDict['nmr_cif_file_path']!r} file."
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__parseNmrData() ++ Error  - {err}\n")
+                    self.__log.write(f"+{self.__class_name__}.__parseNmrData() ++ Error  - {err}\n")
 
             return False
 
@@ -1080,7 +1080,7 @@ class NmrVrptUtility:
                     except Exception as e:
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
+                            self.__log.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -1088,7 +1088,7 @@ class NmrVrptUtility:
 
             try:
 
-                self.__rR = CifReader(self.__verbose, self.__lfh,
+                self.__rR = CifReader(self.__verbose, self.__log,
                                       use_cache=False)
 
                 if self.__rR.parse(fPath):
@@ -1122,20 +1122,20 @@ class NmrVrptUtility:
 
             try:
 
-                myIo = IoAdapterPy(False, self.__lfh)
+                myIo = IoAdapterPy(False, self.__log)
                 containerList = myIo.readFile(fPath)
 
                 if containerList is not None and len(containerList) > 1:
 
                     if self.__verbose:
-                        self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+                        self.__log.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                     for c in containerList:
                         c.setType('data')
 
                     myIo.writeFile(_fPath, containerList=containerList[1:])
 
-                    self.__rR = CifReader(self.__verbose, self.__lfh,
+                    self.__rR = CifReader(self.__verbose, self.__log,
                                           use_cache=False)
 
                     if self.__rR.parse(_fPath, self.__dirPath):
@@ -1145,7 +1145,7 @@ class NmrVrptUtility:
                         return True
 
             except Exception as e:
-                self.__lfh.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
             finally:
                 try:
                     if os.path.exists(_fPath):
@@ -1164,20 +1164,20 @@ class NmrVrptUtility:
 
                 master_entry.write_to_file(_fPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
-                myIo = IoAdapterPy(False, self.__lfh)
+                myIo = IoAdapterPy(False, self.__log)
                 containerList = myIo.readFile(_fPath)
 
                 if containerList is not None and len(containerList) > 1:
 
                     if self.__verbose:
-                        self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+                        self.__log.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                     for c in containerList:
                         c.setType('data')
 
                     myIo.writeFile(__fPath, containerList=containerList[1:])
 
-                    self.__rR = CifReader(self.__verbose, self.__lfh,
+                    self.__rR = CifReader(self.__verbose, self.__log,
                                           use_cache=False)
 
                     if self.__rR.parse(__fPath, self.__dirPath):
@@ -1187,7 +1187,7 @@ class NmrVrptUtility:
                         return True
 
             except Exception as e:
-                self.__lfh.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
             finally:
                 try:
                     if os.path.exists(_fPath):
@@ -1237,7 +1237,7 @@ class NmrVrptUtility:
                 if self.__caC is not None:
                     return True
 
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__log,
                                               self.__representative_model_id,
                                               self.__representative_alt_id,
                                               self.__cR, self.__ccU, None, None)
@@ -1246,7 +1246,7 @@ class NmrVrptUtility:
                 write_as_pickle(self.__caC, cache_path)
 
         else:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__log,
                                               self.__representative_model_id,
                                               self.__representative_alt_id,
                                               self.__cR, self.__ccU, None, None, False)
@@ -1380,8 +1380,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
 
             self.__atomIdList = self.__coordinates = None
 
@@ -1501,7 +1501,7 @@ class NmrVrptUtility:
                     if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
                         if 'HOH' not in (comp_id_1, comp_id_2):
-                            self.__lfh.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1534,7 +1534,7 @@ class NmrVrptUtility:
                                            lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__lfh.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1605,8 +1605,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
 
             self.__distRestDict = self.__distRestSeqDict = None
 
@@ -1743,7 +1743,7 @@ class NmrVrptUtility:
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
                        or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
                         if angle_type not in ('PPA', 'UNNAMED'):
-                            self.__lfh.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1760,7 +1760,7 @@ class NmrVrptUtility:
                                             lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__lfh.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1806,8 +1806,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
 
             self.__dihedRestDict = self.__dihedRestSeqDict = None
 
@@ -1920,7 +1920,7 @@ class NmrVrptUtility:
 
                     if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
-                        self.__lfh.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1939,7 +1939,7 @@ class NmrVrptUtility:
                                           lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__lfh.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1979,8 +1979,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - {str(e)}\n")
 
             self.__rdcRestDict = self.__rdcRestSeqDict = None
 
@@ -2126,7 +2126,7 @@ class NmrVrptUtility:
                             pos_1 = get_uninstanced_hydrogen_coord(model_id, atom_key_1)
                             if pos_1 is None:
                                 if self.__verbose:
-                                    self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
+                                    self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
                                                      f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
                                                      f"not found in the coordinates for distance restraint {rest_key}.\n")
                                 atom_present = False
@@ -2137,7 +2137,7 @@ class NmrVrptUtility:
                             pos_2 = get_uninstanced_hydrogen_coord(model_id, atom_key_2)
                             if pos_2 is None:
                                 if self.__verbose:
-                                    self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
+                                    self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
                                                      f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
                                                      f"not found in the coordinates for distance restraint {rest_key}.\n")
                                 atom_present = False
@@ -2146,7 +2146,7 @@ class NmrVrptUtility:
 
                             d = distance(pos_1, pos_2)
                             if d == 0.0:
-                                self.__lfh.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - "
+                                self.__log.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - "
                                                  f"distance restraint {rest_key} {r} does not make sense, "
                                                  f"{os.path.basename(self.__nmrDataPath)}.\n")
                             dist_list_set[bound_key].append(d)
@@ -2272,8 +2272,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__distRestViolDict = self.__distRestUnmapped = None
 
@@ -2330,7 +2330,7 @@ class NmrVrptUtility:
                             pos_1 = self.__coordinates[model_id][atom_key_1]
                         except KeyError:
                             if self.__verbose:
-                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
                                                  f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
                                                  f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                             atom_present = False
@@ -2339,7 +2339,7 @@ class NmrVrptUtility:
                             pos_2 = self.__coordinates[model_id][atom_key_2]
                         except KeyError:
                             if self.__verbose:
-                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
                                                  f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
                                                  f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                             atom_present = False
@@ -2348,7 +2348,7 @@ class NmrVrptUtility:
                             pos_3 = self.__coordinates[model_id][atom_key_3]
                         except KeyError:
                             if self.__verbose:
-                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_3[0]}, auth_seq_id: {atom_key_3[1]}, "
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_3[0]}, auth_seq_id: {atom_key_3[1]}, "
                                                  f"comp_id: {atom_key_3[2]}, atom_id: {atom_key_3[3]}) "
                                                  f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                             atom_present = False
@@ -2357,7 +2357,7 @@ class NmrVrptUtility:
                             pos_4 = self.__coordinates[model_id][atom_key_4]
                         except KeyError:
                             if self.__verbose:
-                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_4[0]}, auth_seq_id: {atom_key_4[1]}, "
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_4[0]}, auth_seq_id: {atom_key_4[1]}, "
                                                  f"comp_id: {atom_key_4[2]}, atom_id: {atom_key_4[3]}) "
                                                  f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                             atom_present = False
@@ -2453,8 +2453,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__dihedRestViolDict = self.__dihedRestUnmapped = None
 
@@ -2506,7 +2506,7 @@ class NmrVrptUtility:
                             pos_1 = self.__coordinates[model_id][atom_key_1]  # noqa: F841, pylint: disable='unused-variable'
                         except KeyError:
                             if self.__verbose:
-                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
                                                  f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
                                                  f"not found in the coordinates for RDC restraint {rest_key}.\n")
                             atom_present = False
@@ -2515,7 +2515,7 @@ class NmrVrptUtility:
                             pos_2 = self.__coordinates[model_id][atom_key_2]  # noqa: F841, pylint: disable='unused-variable'
                         except KeyError:
                             if self.__verbose:
-                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
                                                  f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
                                                  f"not found in the coordinates for RDC restraint {rest_key}.\n")
                             atom_present = False
@@ -2614,8 +2614,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__rdcRestViolDict = self.__rdcRestUnmapped = None
 
@@ -2863,7 +2863,7 @@ class NmrVrptUtility:
 
                             if seq_key not in (seq_key_1, seq_key_2):
                                 if self.__verbose and comb_key[0] is None and comb_key[1] is None:
-                                    self.__lfh.write(f"Nothing matches with sequence, {seq_key_1}, {seq_key_2}, {seq_key}\n")
+                                    self.__log.write(f"Nothing matches with sequence, {seq_key_1}, {seq_key_2}, {seq_key}\n")
                                 continue
 
                             if seq_key_1 == seq_key_2:
@@ -2892,8 +2892,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -2928,7 +2928,7 @@ class NmrVrptUtility:
                         angle_type_set.add(r['angle_type'])
                 angle_type = list(angle_type_set) + [any_type]
             except IndexError:
-                self.__lfh.write(f"Dihedral angle analysis failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
+                self.__log.write(f"Dihedral angle analysis failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
                 self.__results['error_message_angle'] = 'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
                 self.__results['angle'] = False
                 return True
@@ -3135,8 +3135,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -3168,7 +3168,7 @@ class NmrVrptUtility:
                         rdc_type_set.add(r['rdc_type'])
                 rdc_type = list(rdc_type_set) + [any_type]
             except IndexError:
-                self.__lfh.write(f"RDC analysis failed due to data error in the RDC restraints. {self.__rdcRestDict.values()}\n")
+                self.__log.write(f"RDC analysis failed due to data error in the RDC restraints. {self.__rdcRestDict.values()}\n")
                 self.__results['error_message_rdc'] = 'RDC analysis failed due to data error in the RDC angle restraints'
                 self.__results['rdc'] = False
                 return True
@@ -3363,8 +3363,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+{self.__class_name__}.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 

@@ -1,6 +1,6 @@
 ##
 # File: NmrUtilConstant.py
-# Date: 06-Jan-2026
+# Date: 07-Jan-2026
 #
 # Updates:
 ##
@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.8.1"
+__version__ = "5.0.0"
 
 
 try:
@@ -62,36 +62,92 @@ except ImportError:
                                            REPRESENTATIVE_ASYM_ID)
 
 
+# defined workflow operations
+WORKFLOW_OPS = ('nmr-nef-consistency-check',
+                'nmr-str-consistency-check',
+                'nmr-nef2str-deposit',
+                'nmr-nef2cif-deposit',
+                'nmr-str2str-deposit',
+                'nmr-str2cif-deposit',
+                'nmr-str2nef-release',
+                'nmr-cs-nef-consistency-check',
+                'nmr-cs-str-consistency-check',
+                'nmr-cs-mr-merge',
+                'nmr-str2cif-annotate',
+                'nmr-if-merge-deposit',
+                'nmr-str-replace-cs'
+                )
+
+
 # NMR content types
-NMR_CONTENT_SUBTYPES = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
-                        'dist_restraint', 'dihed_restraint', 'rdc_restraint',
-                        'spectral_peak', 'spectral_peak_alt',
-                        'noepk_restraint', 'jcoup_restraint', 'rdc_raw_data',
-                        'csa_restraint', 'ddc_restraint',
-                        'hvycs_restraint', 'procs_restraint',
-                        'csp_restraint', 'auto_relax_restraint',
-                        'heteronucl_noe_data', 'heteronucl_t1_data',
-                        'heteronucl_t2_data', 'heteronucl_t1r_data',
-                        'order_param_data', 'ph_titr_data', 'ph_param_data',
+NMR_CONTENT_SUBTYPES = ('entry_info',
+                        'poly_seq',
+                        'entity',
+                        'chem_shift',
+                        'chem_shift_ref',
+                        'dist_restraint',
+                        'dihed_restraint',
+                        'rdc_restraint',
+                        'spectral_peak',
+                        'spectral_peak_alt',
+                        'noepk_restraint',
+                        'jcoup_restraint',
+                        'rdc_raw_data',
+                        'csa_restraint',
+                        'ddc_restraint',
+                        'hvycs_restraint',
+                        'procs_restraint',
+                        'csp_restraint',
+                        'auto_relax_restraint',
+                        'heteronucl_noe_data',
+                        'heteronucl_t1_data',
+                        'heteronucl_t2_data',
+                        'heteronucl_t1r_data',
+                        'order_param_data',
+                        'ph_titr_data',
+                        'ph_param_data',
                         'coupling_const_data',
-                        'ccr_d_csa_restraint', 'ccr_dd_restraint',
-                        'fchiral_restraint', 'saxs_restraint', 'other_restraint')
+                        'ccr_d_csa_restraint',
+                        'ccr_dd_restraint',
+                        'fchiral_restraint',
+                        'saxs_restraint',
+                        'other_restraint'
+                        )
 
-MR_CONTENT_SUBTYPES = ['dist_restraint', 'dihed_restraint', 'rdc_restraint',
-                       'noepk_restraint', 'jcoup_restraint', 'rdc_raw_data',
-                       'csa_restraint', 'ddc_restraint',
-                       'hvycs_restraint', 'procs_restraint',
-                       'csp_restraint', 'auto_relax_restraint',
-                       'heteronucl_noe_data', 'heteronucl_t1_data',
-                       'heteronucl_t2_data', 'heteronucl_t1r_data',
-                       'order_param_data', 'ph_titr_data', 'ph_param_data',
+MR_CONTENT_SUBTYPES = ['dist_restraint',
+                       'dihed_restraint',
+                       'rdc_restraint',
+                       'noepk_restraint',
+                       'jcoup_restraint',
+                       'rdc_raw_data',
+                       'csa_restraint',
+                       'ddc_restraint',
+                       'hvycs_restraint',
+                       'procs_restraint',
+                       'csp_restraint',
+                       'auto_relax_restraint',
+                       'heteronucl_noe_data',
+                       'heteronucl_t1_data',
+                       'heteronucl_t2_data',
+                       'heteronucl_t1r_data',
+                       'order_param_data',
+                       'ph_titr_data',
+                       'ph_param_data',
                        'coupling_const_data',
-                       'ccr_d_csa_restraint', 'ccr_dd_restraint',
-                       'fchiral_restraint', 'saxs_restraint', 'other_restraint']
+                       'ccr_d_csa_restraint',
+                       'ccr_dd_restraint',
+                       'fchiral_restraint',
+                       'saxs_restraint',
+                       'other_restraint'
+                       ]
 
-PK_CONTENT_SUBTYPES = ('spectral_peak', 'spectral_peak_alt')
+PK_CONTENT_SUBTYPES = ('spectral_peak',
+                       'spectral_peak_alt')
 
-CIF_CONTENT_SUBTYPES = ('poly_seq', 'non_poly', 'branched', 'coordinate')
+CIF_CONTENT_SUBTYPES = ('poly_seq',
+                        'non_poly',
+                        'branched',
+                        'coordinate')
 
 # readable file type
 READABLE_FILE_TYPE = {'nef': 'NEF (NMR Exchange Format)',
@@ -2984,7 +3040,8 @@ PK_DATA_ITEMS = {'nef': [{'name': 'position_uncertainty_%s', 'type': 'range-floa
                  }
 
 # number of dimension of spectral peak
-NUM_DIM_ITEMS = {'nef': 'num_dimensions', 'nmr-star': 'Number_of_spectral_dimensions'}
+NUM_DIM_ITEMS = {'nef': 'num_dimensions',
+                 'nmr-star': 'Number_of_spectral_dimensions'}
 
 # allowed loop tags
 ALLOWED_TAGS = {'nef': {'entry_info': ['program_name', 'script_name', 'script'],

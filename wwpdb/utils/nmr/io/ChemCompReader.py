@@ -54,7 +54,7 @@ class ChemCompReader:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
-                 '__lfh',
+                 '__log',
                  '__debug',
                  '__dBlock',
                  '__topCachePath',
@@ -68,7 +68,7 @@ class ChemCompReader:
         self.__version__ = __version__
 
         self.__verbose = verbose
-        self.__lfh = log
+        self.__log = log
         self.__debug = False
 
         # the primary datablock
@@ -187,7 +187,7 @@ class ChemCompReader:
 
         if not os.access(self.__filePath, os.R_OK):
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.setCompId() ++ Error  - Missing file {self.__filePath}\n")
+                self.__log.write(f"+{self.__class_name__}.setCompId() ++ Error  - Missing file {self.__filePath}\n")
             return False
 
         return True
@@ -210,14 +210,14 @@ class ChemCompReader:
 
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Missing file {self.__filePath}\n")
+                    self.__log.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Missing file {self.__filePath}\n")
                 return False
 
             return True
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Set {self.__filePath} failed {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Set {self.__filePath} failed {str(e)}\n")
             return False
 
     def getAtomList(self) -> List[list]:
@@ -267,7 +267,7 @@ class ChemCompReader:
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__updateDataBlock() ++ Error  - {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__}.__updateDataBlock() ++ Error  - {str(e)}\n")
             return False
 
     def __getDataBlock(self, blockId: Optional[str] = None) -> Optional[DataContainer]:
@@ -287,7 +287,7 @@ class ChemCompReader:
                 for block in myBlockList:
                     if (block.getType() == 'data' and block.getName() == blockId):
                         if self.__verbose and self.__debug:
-                            block.printIt(self.__lfh)
+                            block.printIt(self.__log)
                         return block
 
             else:
@@ -295,12 +295,12 @@ class ChemCompReader:
                 for block in myBlockList:
                     if block.getType() == 'data':
                         if self.__verbose and self.__debug:
-                            block.printIt(self.__lfh)
+                            block.printIt(self.__log)
                         return block
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__getDataBlock() ++ Error  - {str(e)}\n")
+                self.__log.write(f"+{self.__class_name__}.__getDataBlock() ++ Error  - {str(e)}\n")
 
         return None
 

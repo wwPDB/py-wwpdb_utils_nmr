@@ -1961,16 +1961,7 @@ class NmrDpUtility:
         """ Detect content subtype of NMR data file in any STAR format.
         """
 
-        if len(self.__reg.star_data) != self.__reg.file_path_list_len:
-            return False
-
-        for fileListId in range(self.__reg.file_path_list_len):
-
-            input_source = self.__reg.report.input_sources[fileListId]
-
-            self.__reg.dpV.detectContentSubType(fileListId, input_source, self.__reg.dirPath)
-
-        return not self.__reg.report.isError()
+        return self.__reg.dpV.detectContentSubType()
 
     def __detectContentSubTypeOfLegacyMr(self) -> bool:
         """ Detect content subtype of legacy restraint files.

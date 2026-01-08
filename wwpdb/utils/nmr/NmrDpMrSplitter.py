@@ -1545,7 +1545,7 @@ class NmrDpMrSplitter:
                                     self.__reg.dpA.rescueImmatureStr(insert_index)
 
                                 if _is_done:
-                                    self.__detectContentSubType__(insert_index, input_source, dir_path)
+                                    self.__reg.dpV.detectContentSubType__(insert_index, input_source, dir_path)
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
@@ -1731,7 +1731,7 @@ class NmrDpMrSplitter:
                                     self.__reg.dpA.rescueImmatureStr(insert_index)
 
                                 if _is_done:
-                                    self.__detectContentSubType__(insert_index, input_source, dir_path)
+                                    self.__reg.dpV.detectContentSubType__(insert_index, input_source, dir_path)
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
@@ -1886,7 +1886,7 @@ class NmrDpMrSplitter:
                             self.__reg.dpA.rescueImmatureStr(insert_index)
 
                         if _is_done:
-                            self.__detectContentSubType__(insert_index, input_source, dir_path)
+                            self.__reg.dpV.detectContentSubType__(insert_index, input_source, dir_path)
                             input_source_dic = input_source.get()
                             if 'content_subtype' in input_source_dic:
                                 content_subtype = input_source_dic['content_subtype']
@@ -2678,7 +2678,7 @@ class NmrDpMrSplitter:
                                         self.__reg.dpA.rescueImmatureStr(insert_index)
 
                                     if _is_done:
-                                        self.__detectContentSubType__(insert_index, input_source, dir_path)
+                                        self.__reg.dpV.detectContentSubType__(insert_index, input_source, dir_path)
                                         input_source_dic = input_source.get()
                                         if 'content_subtype' in input_source_dic:
                                             content_subtype = input_source_dic['content_subtype']
@@ -2816,7 +2816,7 @@ class NmrDpMrSplitter:
                                         self.__reg.dpA.rescueImmatureStr(insert_index)
 
                                     if _is_done:
-                                        self.__detectContentSubType()
+                                        self.__reg.dpV.detectContentSubType()
                                         input_source_dic = input_source.get()
                                         if 'content_subtype' in input_source_dic:
                                             content_subtype = input_source_dic['content_subtype']

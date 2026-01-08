@@ -1665,7 +1665,22 @@ class NmrDpValidation:
 
         return src_data
 
-    def detectContentSubType(self, file_list_id: int, input_source: NmrDpReportInputSource, dir_path: Optional[str] = None):
+    def detectContentSubType(self) -> bool:
+        """ Detect content subtype of NMR data file in any STAR format.
+        """
+
+        if len(self.__reg.star_data) != self.__reg.file_path_list_len:
+            return False
+
+        for fileListId in range(self.__reg.file_path_list_len):
+
+            input_source = self.__reg.report.input_sources[fileListId]
+
+            self.detectContentSubType__(fileListId, input_source, self.__reg.dirPath)
+
+        return not self.__reg.report.isError()
+
+    def detectContentSubType__(self, file_list_id: int, input_source: NmrDpReportInputSource, dir_path: Optional[str] = None):
         """ Detect content subtype of NMR data file in any STAR format.
         """
 

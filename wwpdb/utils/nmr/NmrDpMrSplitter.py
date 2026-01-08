@@ -33,7 +33,6 @@ try:
                                                        startsWithPdbRecord,
                                                        getRestraintName,
                                                        CS_RESTRAINT_ERROR,
-                                                       CS_RESTRAINT_RANGE,
                                                        CYANA_MR_FILE_EXTS)
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
@@ -80,7 +79,6 @@ except ImportError:
                                            startsWithPdbRecord,
                                            getRestraintName,
                                            CS_RESTRAINT_ERROR,
-                                           CS_RESTRAINT_RANGE,
                                            CYANA_MR_FILE_EXTS)
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.AmberPTReader import AmberPTReader
@@ -120,9 +118,6 @@ except ImportError:
 
 CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
 CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
-
-CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
-CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
 
 mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
 
@@ -1043,7 +1038,13 @@ class NmrDpMrSplitter:
         """ Extract/split public PDB-MR file into legacy restraint files for NMR restraint remediation.
         """
 
+        if self.__reg.combined_mode or not self.__reg.remediation_mode:
+            return True
+
         ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__reg.inputParamDict:
+            return True
 
         fileListId = self.__reg.file_path_list_len
 

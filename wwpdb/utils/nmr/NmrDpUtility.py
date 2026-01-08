@@ -250,7 +250,6 @@ import time
 import hashlib
 import pynmrstar
 
-from packaging import version
 from munkres import Munkres
 from operator import itemgetter
 from typing import Any, IO, List, Union, Optional
@@ -293,7 +292,8 @@ try:
                                                ITEM_NAMES_IN_DIHED_LOOP,
                                                ITEM_NAMES_IN_RDC_LOOP,
                                                CS_LIST_SF_TAG_NAME)
-    from wwpdb.utils.nmr.NmrDpRegistory import NmrDpRegistory
+    from wwpdb.utils.nmr.NmrDpRegistory import (NmrDpRegistory,
+                                                default_coord_properties)
     from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
     from wwpdb.utils.nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                                  datablock_pattern,
@@ -394,15 +394,11 @@ try:
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        HALF_SPIN_NUCLEUS,
                                                        KNOWN_ANGLE_NAMES,
-                                                       CS_RESTRAINT_ERROR,
                                                        CS_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_RANGE,
                                                        CS_UNCERTAINTY_RANGE,
-                                                       DIST_UNCERTAINTY_RANGE,
-                                                       ANGLE_UNCERTAINTY_RANGE,
-                                                       RDC_UNCERTAINTY_RANGE,
                                                        WEIGHT_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ASYM_ID,
@@ -445,7 +441,8 @@ except ImportError:
                                    ITEM_NAMES_IN_DIHED_LOOP,
                                    ITEM_NAMES_IN_RDC_LOOP,
                                    CS_LIST_SF_TAG_NAME)
-    from nmr.NmrDpRegistory import NmrDpRegistory
+    from nmr.NmrDpRegistory import (NmrDpRegistory,
+                                    default_coord_properties)
     from nmr.NmrDpFirstAid import NmrDpFirstAid
     from nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                      datablock_pattern,
@@ -546,15 +543,11 @@ except ImportError:
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            HALF_SPIN_NUCLEUS,
                                            KNOWN_ANGLE_NAMES,
-                                           CS_RESTRAINT_ERROR,
                                            CS_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_RANGE,
                                            CS_UNCERTAINTY_RANGE,
-                                           DIST_UNCERTAINTY_RANGE,
-                                           ANGLE_UNCERTAINTY_RANGE,
-                                           RDC_UNCERTAINTY_RANGE,
                                            WEIGHT_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ASYM_ID,
@@ -564,12 +557,6 @@ except ImportError:
     from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
-
-__pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
-
-
-CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
-CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
 
 CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
 CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
@@ -587,15 +574,6 @@ WEIGHT_RANGE_MIN = WEIGHT_RANGE['min_inclusive']
 WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
 
 CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
-
-DIST_UNCERT_MAX = DIST_UNCERTAINTY_RANGE['max_inclusive']
-
-ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
-
-RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
-
-default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
-                            'tautomer_per_model': []}
 
 
 def is_half_spin_nuclei(atom_id: str) -> bool:
@@ -1978,81 +1956,6 @@ class NmrDpUtility:
         """
 
         return self.__reg.dpV.validateInputSource(srcPath)
-
-    def __convertCsToEntry(self, src_data: Optional[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]] = None, list_id: int = 1
-                           ) -> Optional[pynmrstar.Entry]:
-        """ Convert NMR-STAR CS loop/saveframe to pynmrstar Entry object.
-        """
-
-        if src_data is None:
-            return None
-
-        file_type = 'nmr-star'
-
-        def update_entry_info_saveframe(master_entry):
-            content_subtype = 'entry_info'
-
-            sf_category = SF_CATEGORIES[file_type][content_subtype]
-
-            orig_ent_sf = next((sf for sf in master_entry.frame_list if sf_category in (sf.category, sf.name)), None)
-
-            if orig_ent_sf is not None:
-
-                tagNames = [t[0] for t in orig_ent_sf.tags]
-
-                if 'Sf_category' not in tagNames:
-                    orig_ent_sf.add_tag('Sf_category', sf_category)
-                if 'Sf_framecode' not in tagNames:
-                    orig_ent_sf.add_tag('Sf_framecode', orig_ent_sf.name)
-                set_sf_tag(orig_ent_sf, 'ID', self.__reg.entry_id)
-
-            else:
-
-                ent_sf = pynmrstar.Saveframe.from_scratch(sf_category, SF_TAG_PREFIXES[file_type][content_subtype])
-                ent_sf.add_tag('Sf_category', sf_category)
-                ent_sf.add_tag('Sf_framecode', sf_category)
-                ent_sf.add_tag('ID', self.__reg.entry_id)
-
-                master_entry.add_saveframe(ent_sf)
-
-            return master_entry
-
-        if isinstance(src_data, pynmrstar.Entry):
-            return update_entry_info_saveframe(src_data)
-
-        content_subtype = 'chem_shift'
-
-        master_entry = pynmrstar.Entry.from_scratch(self.__reg.entry_id)
-
-        if isinstance(src_data, (pynmrstar.Saveframe, pynmrstar.Loop)):
-
-            if isinstance(src_data, pynmrstar.Saveframe):
-                set_sf_tag(src_data, 'Sf_category', SF_CATEGORIES[file_type][content_subtype])
-                set_sf_tag(src_data, 'Entry_ID', self.__reg.entry_id)
-                set_sf_tag(src_data, 'ID', list_id)
-                set_sf_tag(src_data, 'Data_file_name', self.__reg.srcName)
-
-                master_entry.add_saveframe(src_data)
-
-            else:
-                sf_framecode = f'assigned_chemical_shifts_{list_id}'
-                sf_tag_prefix = SF_TAG_PREFIXES[file_type][content_subtype]
-
-                acs_sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
-
-                acs_sf.add_tag('Sf_category', SF_CATEGORIES[file_type][content_subtype])
-                acs_sf.add_tag('Sf_framecode', sf_framecode)
-                acs_sf.add_tag('Entry_ID', self.__reg.entry_id)
-                acs_sf.add_tag('ID', list_id)
-                acs_sf.add_tag('Data_file_name', self.__reg.srcName)
-
-                acs_sf.add_loop(src_data)
-
-                master_entry.add_saveframe(acs_sf)
-
-            src_data = update_entry_info_saveframe(master_entry)
-
-        return src_data
 
     def __detectContentSubType(self) -> bool:
         """ Detect content subtype of NMR data file in any STAR format.
@@ -4005,14 +3908,6 @@ class NmrDpUtility:
     def __extractPublicMrFileIntoLegacyMr(self) -> bool:
         """ Extract/split public MR file into legacy restraint files for NMR restraint remediation.
         """
-
-        if self.__reg.combined_mode or not self.__reg.remediation_mode:
-            return True
-
-        ar_file_path_list = 'atypical_restraint_file_path_list'
-
-        if ar_file_path_list not in self.__reg.inputParamDict:
-            return True
 
         return self.__reg.dpS.extractPublicMrFileIntoLegacyMr()
 

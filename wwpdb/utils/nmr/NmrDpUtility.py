@@ -250,7 +250,6 @@ import time
 import hashlib
 import pynmrstar
 
-from packaging import version
 from munkres import Munkres
 from operator import itemgetter
 from typing import Any, IO, List, Union, Optional
@@ -293,7 +292,8 @@ try:
                                                ITEM_NAMES_IN_DIHED_LOOP,
                                                ITEM_NAMES_IN_RDC_LOOP,
                                                CS_LIST_SF_TAG_NAME)
-    from wwpdb.utils.nmr.NmrDpRegistory import NmrDpRegistory
+    from wwpdb.utils.nmr.NmrDpRegistory import (NmrDpRegistory,
+                                                default_coord_properties)
     from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
     from wwpdb.utils.nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                                  datablock_pattern,
@@ -394,15 +394,11 @@ try:
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        HALF_SPIN_NUCLEUS,
                                                        KNOWN_ANGLE_NAMES,
-                                                       CS_RESTRAINT_ERROR,
                                                        CS_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_RANGE,
                                                        RDC_RESTRAINT_RANGE,
                                                        CS_UNCERTAINTY_RANGE,
-                                                       DIST_UNCERTAINTY_RANGE,
-                                                       ANGLE_UNCERTAINTY_RANGE,
-                                                       RDC_UNCERTAINTY_RANGE,
                                                        WEIGHT_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ASYM_ID,
@@ -445,7 +441,8 @@ except ImportError:
                                    ITEM_NAMES_IN_DIHED_LOOP,
                                    ITEM_NAMES_IN_RDC_LOOP,
                                    CS_LIST_SF_TAG_NAME)
-    from nmr.NmrDpRegistory import NmrDpRegistory
+    from nmr.NmrDpRegistory import (NmrDpRegistory,
+                                    default_coord_properties)
     from nmr.NmrDpFirstAid import NmrDpFirstAid
     from nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                      datablock_pattern,
@@ -546,15 +543,11 @@ except ImportError:
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            HALF_SPIN_NUCLEUS,
                                            KNOWN_ANGLE_NAMES,
-                                           CS_RESTRAINT_ERROR,
                                            CS_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_RANGE,
                                            RDC_RESTRAINT_RANGE,
                                            CS_UNCERTAINTY_RANGE,
-                                           DIST_UNCERTAINTY_RANGE,
-                                           ANGLE_UNCERTAINTY_RANGE,
-                                           RDC_UNCERTAINTY_RANGE,
                                            WEIGHT_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ASYM_ID,
@@ -564,12 +557,6 @@ except ImportError:
     from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
-
-__pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
-
-
-CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
-CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
 
 CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
 CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
@@ -587,15 +574,6 @@ WEIGHT_RANGE_MIN = WEIGHT_RANGE['min_inclusive']
 WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
 
 CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
-
-DIST_UNCERT_MAX = DIST_UNCERTAINTY_RANGE['max_inclusive']
-
-ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
-
-RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
-
-default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
-                            'tautomer_per_model': []}
 
 
 def is_half_spin_nuclei(atom_id: str) -> bool:

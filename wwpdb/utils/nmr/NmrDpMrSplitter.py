@@ -1032,7 +1032,7 @@ class NmrDpMrSplitter:
 
         self.__reg = registry
 
-        self.__cur_original_ar_file_name = None
+        self.__cur_original_ar_file_name: str = None
 
     def extractPublicMrFileIntoLegacyMr(self) -> bool:
         """ Extract/split public PDB-MR file into legacy restraint files for NMR restraint remediation.
@@ -3145,11 +3145,8 @@ class NmrDpMrSplitter:
                 if content_subtype is None:
                     continue
 
-                if 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype or 'rdc_restraint' in content_subtype:
-                    has_restraint = True
-
-                if 'spectral_peak' in content_subtype or 'spectral_peak_alt' in content_subtype:
-                    has_spectral_peak = True
+                has_restraint = 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype or 'rdc_restraint' in content_subtype
+                has_spectral_peak = 'spectral_peak' in content_subtype or 'spectral_peak_alt' in content_subtype
 
             if not has_restraint:
 

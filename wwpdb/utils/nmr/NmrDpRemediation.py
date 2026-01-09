@@ -33,6 +33,7 @@ try:
                                                LP_CATEGORIES,
                                                MR_MAX_SPACER_LINES,
                                                DATA_ITEMS,
+                                               POTENTIAL_ITEMS,
                                                NUM_DIM_ITEMS,
                                                ALLOWED_TAGS,
                                                SF_TAG_PREFIXES,
@@ -151,6 +152,7 @@ except ImportError:
                                    LP_CATEGORIES,
                                    MR_MAX_SPACER_LINES,
                                    DATA_ITEMS,
+                                   POTENTIAL_ITEMS,
                                    NUM_DIM_ITEMS,
                                    ALLOWED_TAGS,
                                    SF_TAG_PREFIXES,
@@ -356,7 +358,6 @@ class NmrDpRemediation:
                     pass
 
                 elif self.__reg.star_data_type[fileListId] == 'Saveframe':
-
                     sf = self.__reg.star_data[fileListId]
 
                     self.__cleanUpSf(file_type, content_subtype, sf)
@@ -409,11 +410,10 @@ class NmrDpRemediation:
             dat = loop.get_tag(tags)
 
             for row in dat:
-                if row is not None:
-                    if len(row) > 0:
-                        for col in row:
-                            if col is not None and col not in emptyValue:
-                                return False
+                if row is not None and len(row) > 0:
+                    for col in row:
+                        if col is not None and col not in emptyValue:
+                            return False
 
             loop.remove_tag(tags)
 
@@ -440,7 +440,6 @@ class NmrDpRemediation:
             lp_category = '_Assigned_peak_chem_shift'
 
         if self.__reg.star_data_type[file_list_id] == 'Loop':
-
             sf = self.__reg.star_data[file_list_id]
 
             if sf_framecode == '':
@@ -557,7 +556,6 @@ class NmrDpRemediation:
             lp_category = '_Assigned_peak_chem_shift'
 
         if self.__reg.star_data_type[file_list_id] == 'Loop':
-
             sf = self.__reg.star_data[file_list_id]
 
             if sf_framecode == '':
@@ -692,7 +690,6 @@ class NmrDpRemediation:
             lp_category = '_Assigned_peak_chem_shift'
 
         if self.__reg.star_data_type[file_list_id] == 'Loop':
-
             sf = self.__reg.star_data[file_list_id]
 
             if sf_framecode == '':
@@ -1011,19 +1008,19 @@ class NmrDpRemediation:
 
                                                 if mandatory_tag:
                                                     sf.tags[itCol][1] = 'undefined'
-                                                elif self.__reg.dpV.testRestraintPotentialSWP(content_subtype, lp_data):
+                                                elif self.__testRestraintPotentialSWP(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'square-well-parabolic'
-                                                elif self.__reg.dpV.testRestraintPotentialSWPL(content_subtype, lp_data):
+                                                elif self.__testRestraintPotentialSWPL(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'square-well-parabolic-linear'
-                                                elif self.__reg.dpV.testRestraintPotentialUBP(content_subtype, lp_data):
+                                                elif self.__testRestraintPotentialUBP(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'upper-bound-parabolic'
-                                                elif self.__reg.dpV.testRestraintPotentialLBP(content_subtype, lp_data):
+                                                elif self.__testRestraintPotentialLBP(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'lower-bound-parabolic'
-                                                elif self.__reg.dpV.testRestraintPotentialUBPL(content_subtype, lp_data):
+                                                elif self.__testRestraintPotentialUBPL(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'upper-bound-parabolic-linear'
-                                                elif self.__reg.dpV.testRestraintPotentialLBPL(content_subtype, lp_data):
+                                                elif self.__testRestraintPotentialLBPL(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'lower-bound-parabolic-linear'
-                                                elif self.__reg.dpV.testRestraintPonentialLHorP(content_subtype, lp_data):
+                                                elif self.__testRestraintPonentialLHorP(content_subtype, lp_data):
                                                     if content_subtype == 'dist_restraint':
                                                         sf.tags[itCol][1] = 'log-harmonic'
                                                     else:
@@ -1585,6 +1582,311 @@ class NmrDpRemediation:
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - {str(e)}\n")
+
+            return False
+
+        return True
+
+    def __testRestraintPotentialSWP(self, content_subtype: str, lp_data: List[dict]) -> bool:
+        """ Detect square-well-parabolic potential.
+        """
+
+        if not self.__reg.combined_mode:
+            return True
+
+        if lp_data is None:
+            return False
+
+        input_source = self.__reg.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        try:
+
+            item_names = POTENTIAL_ITEMS[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
+
+            for row in lp_data:
+                if has_key_value(row, lower_limit_name)\
+                   and has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
+                    continue
+
+                return False
+
+        except Exception as e:
+
+            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - " + str(e))
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - {str(e)}\n")
+
+            return False
+
+        return True
+
+    def __testRestraintPotentialSWPL(self, content_subtype: str, lp_data: List[str]) -> bool:
+        """ Detect square-well-parabolic-linear potential.
+        """
+
+        if not self.__reg.combined_mode:
+            return True
+
+        if lp_data is None:
+            return False
+
+        input_source = self.__reg.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        try:
+
+            item_names = POTENTIAL_ITEMS[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
+
+            for row in lp_data:
+                if has_key_value(row, lower_limit_name)\
+                   and has_key_value(row, upper_limit_name)\
+                   and has_key_value(row, lower_linear_limit_name)\
+                   and has_key_value(row, upper_linear_limit_name):
+                    continue
+
+                return False
+
+        except Exception as e:
+
+            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - " + str(e))
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - {str(e)}\n")
+
+            return False
+
+        return True
+
+    def __testRestraintPotentialUBP(self, content_subtype: str, lp_data: List[dict]) -> bool:
+        """ Detect upper-bound-parabolic potential.
+        """
+
+        if not self.__reg.combined_mode:
+            return True
+
+        if lp_data is None:
+            return False
+
+        input_source = self.__reg.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        try:
+
+            item_names = POTENTIAL_ITEMS[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
+
+            for row in lp_data:
+                if not has_key_value(row, lower_limit_name)\
+                   and has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
+                    continue
+
+                return False
+
+        except Exception as e:
+
+            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - " + str(e))
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - {str(e)}\n")
+
+            return False
+
+        return True
+
+    def __testRestraintPotentialLBP(self, content_subtype: str, lp_data: List[str]) -> bool:
+        """ Detect lower-bound-parabolic potential.
+        """
+
+        if not self.__reg.combined_mode:
+            return True
+
+        if lp_data is None:
+            return False
+
+        input_source = self.__reg.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        try:
+
+            item_names = POTENTIAL_ITEMS[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
+
+            for row in lp_data:
+                if has_key_value(row, lower_limit_name)\
+                   and not has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
+                    continue
+
+                return False
+
+        except Exception as e:
+
+            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - " + str(e))
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - {str(e)}\n")
+
+            return False
+
+        return True
+
+    def __testRestraintPotentialUBPL(self, content_subtype: str, lp_data: List[dict]) -> bool:
+        """ Detect upper-bound-parabolic-linear potential.
+        """
+
+        if not self.__reg.combined_mode:
+            return True
+
+        if lp_data is None:
+            return False
+
+        input_source = self.__reg.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        try:
+
+            item_names = POTENTIAL_ITEMS[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
+
+            for row in lp_data:
+                if not has_key_value(row, lower_limit_name)\
+                   and has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and has_key_value(row, upper_linear_limit_name):
+                    continue
+
+                return False
+
+        except Exception as e:
+
+            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - " + str(e))
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - {str(e)}\n")
+
+            return False
+
+        return True
+
+    def __testRestraintPotentialLBPL(self, content_subtype: str, lp_data: List[dict]) -> bool:
+        """ Detect lower-bound-parabolic-linear potential.
+        """
+
+        if not self.__reg.combined_mode:
+            return True
+
+        if lp_data is None:
+            return False
+
+        input_source = self.__reg.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        try:
+
+            item_names = POTENTIAL_ITEMS[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
+
+            for row in lp_data:
+                if has_key_value(row, lower_limit_name)\
+                   and not has_key_value(row, upper_limit_name)\
+                   and has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
+                    continue
+
+                return False
+
+        except Exception as e:
+
+            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - " + str(e))
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - {str(e)}\n")
+
+            return False
+
+        return True
+
+    def __testRestraintPonentialLHorP(self, content_subtype: str, lp_data: List[dict]) -> bool:
+        """ Detect log-harmonic or parabolic potential.
+        """
+
+        if not self.__reg.combined_mode:
+            return True
+
+        if lp_data is None or len(lp_data) == 0:
+            return False
+
+        input_source = self.__reg.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        try:
+
+            item_names = POTENTIAL_ITEMS[file_type][content_subtype]
+            target_value_name = item_names['target_value']
+            if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
+                target_value_name = item_names['target_value_alt']
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
+
+            for row in lp_data:
+                if has_key_value(row, target_value_name)\
+                   and not has_key_value(row, lower_limit_name)\
+                   and not has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
+                    continue
+
+                return False
+
+        except Exception as e:
+
+            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - " + str(e))
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - {str(e)}\n")
 
             return False
 

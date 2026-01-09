@@ -228,9 +228,9 @@
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints (DAOTHER-7829, 9785, NMR data remediation)
 # 19-Nov-2025  M. Yokochi - add 'nmr-str-replace-cs' workflow operation (DATAQUALITY-2178, NMR data remediation)
 # 03-Dec-2025  M. Yokochi - split concatenation of auth_seq_id and ins_code in CS/MR loops (DAOTHER-10418, NMR data remediation)
-# 07-Jan-2026  M. Yokochi - code refactorin (NmrDpConstant, NmrDpRegistry, NmrDpMrSplitter, NmrDpFirstAid, NmrDpValidation, and NmrDpRemediation classes, v5.0.0)
+# 07-Jan-2026  M. Yokochi - code refactoring (NmrDpConstant, NmrDpRegistry, NmrDpMrSplitter, NmrDpFirstAid, NmrDpValidation, and NmrDpRemediation classes, v5.0.0)
 ##
-""" Wrapper class for NMR data processing.
+""" Main class for NMR data processing.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -576,12 +576,12 @@ WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
 CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
 
 
-def is_half_spin_nuclei(atom_id: str) -> bool:
-    """ Return whether nuclei of a given atom_id has a spin 1/2.
+def is_half_spin_nuclei(atom_type: str) -> bool:
+    """ Return whether nuclei of a given atom_type has a spin 1/2.
         @return: True for spin 1/2 nuclei, False otherwise
     """
 
-    return any(True for nucl in HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
+    return any(True for nucl in HALF_SPIN_NUCLEUS if atom_type.startswith(nucl))
 
 
 def get_prompt_file_format(line: str) -> Optional[str]:
@@ -598,7 +598,7 @@ def get_prompt_file_format(line: str) -> Optional[str]:
 
 
 class NmrDpUtility:
-    """ Wrapper class for NMR data processing.
+    """ Main class for NMR data processing.
     """
     __slots__ = ('__class_name__',
                  '__version__',

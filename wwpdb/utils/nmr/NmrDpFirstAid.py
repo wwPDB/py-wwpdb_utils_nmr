@@ -31,7 +31,7 @@ try:
                                                ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG,
                                                SF_TAG_PREFIXES,
                                                AUX_LP_CATEGORIES)
-    from wwpdb.utils.nmr.NmrDpRegistory import NmrDpRegistory
+    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpMrSplitter import (datablock_pattern,
                                                  sf_anonymous_pattern,
                                                  save_pattern,
@@ -61,7 +61,7 @@ except ImportError:
                                    ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG,
                                    SF_TAG_PREFIXES,
                                    AUX_LP_CATEGORIES)
-    from nmr.NmrDpRegistory import NmrDpRegistory
+    from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpMrSplitter import (datablock_pattern,
                                      sf_anonymous_pattern,
                                      save_pattern,
@@ -93,11 +93,11 @@ class NmrDpFirstAid:
                  '__version__',
                  '__reg')
 
-    def __init__(self, registory: NmrDpRegistory):
+    def __init__(self, registry: NmrDpRegistry):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__reg = registory
+        self.__reg = registry
 
     def fixFormatIssueOfInputSource(self, file_list_id: int, file_name: str, file_type: str,
                                     srcPath: Optional[str] = None, fileSubType: str = 'S',

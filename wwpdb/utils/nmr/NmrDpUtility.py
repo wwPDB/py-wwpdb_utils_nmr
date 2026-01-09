@@ -228,9 +228,9 @@
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints (DAOTHER-7829, 9785, NMR data remediation)
 # 19-Nov-2025  M. Yokochi - add 'nmr-str-replace-cs' workflow operation (DATAQUALITY-2178, NMR data remediation)
 # 03-Dec-2025  M. Yokochi - split concatenation of auth_seq_id and ins_code in CS/MR loops (DAOTHER-10418, NMR data remediation)
-# 07-Jan-2026  M. Yokochi - code refactoring (NmrDpConstant, NmrDpRegistory, NmrDpMrSplitter, NmrDpFirstAid, NmrDpValidation, and NmrDpRemediation classes, v5.0.0)
+# 07-Jan-2026  M. Yokochi - code refactoring (NmrDpConstant, NmrDpRegistry, NmrDpMrSplitter, NmrDpFirstAid, NmrDpValidation, and NmrDpRemediation classes, v5.0.0)
 ##
-""" Wrapper class for NMR data processing.
+""" Main class for NMR data processing.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -292,8 +292,8 @@ try:
                                                ITEM_NAMES_IN_DIHED_LOOP,
                                                ITEM_NAMES_IN_RDC_LOOP,
                                                CS_LIST_SF_TAG_NAME)
-    from wwpdb.utils.nmr.NmrDpRegistory import (NmrDpRegistory,
-                                                default_coord_properties)
+    from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
+                                               default_coord_properties)
     from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
     from wwpdb.utils.nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                                  datablock_pattern,
@@ -441,8 +441,8 @@ except ImportError:
                                    ITEM_NAMES_IN_DIHED_LOOP,
                                    ITEM_NAMES_IN_RDC_LOOP,
                                    CS_LIST_SF_TAG_NAME)
-    from nmr.NmrDpRegistory import (NmrDpRegistory,
-                                    default_coord_properties)
+    from nmr.NmrDpRegistry import (NmrDpRegistry,
+                                   default_coord_properties)
     from nmr.NmrDpFirstAid import NmrDpFirstAid
     from nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                      datablock_pattern,
@@ -576,12 +576,12 @@ WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
 CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
 
 
-def is_half_spin_nuclei(atom_id: str) -> bool:
-    """ Return whether nuclei of a given atom_id has a spin 1/2.
+def is_half_spin_nuclei(atom_type: str) -> bool:
+    """ Return whether nuclei of a given atom_type has a spin 1/2.
         @return: True for spin 1/2 nuclei, False otherwise
     """
 
-    return any(True for nucl in HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
+    return any(True for nucl in HALF_SPIN_NUCLEUS if atom_type.startswith(nucl))
 
 
 def get_prompt_file_format(line: str) -> Optional[str]:
@@ -598,19 +598,23 @@ def get_prompt_file_format(line: str) -> Optional[str]:
 
 
 class NmrDpUtility:
-    """ Wrapper class for NMR data processing.
+    """ Main class for NMR data processing.
     """
     __slots__ = ('__class_name__',
                  '__version__',
                  '__reg',
                  '__procTasksDict',
+                 '__alt_chain',
+                 '__valid_seq',
+                 '__remediation_loop_count',
+                 '__authSeqMap',
                  '__nmrIfR')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__reg = NmrDpRegistory()
+        self.__reg = NmrDpRegistry()
 
         self.__reg.verbose = verbose
         self.__reg.log = log
@@ -842,6 +846,16 @@ class NmrDpUtility:
                                 'nmr-str-replace-cs': __replaceCsTasks
                                 }
 
+        # internal statuses
+        self.__alt_chain: bool = False
+        self.__valid_seq: bool = False
+
+        # loop count of remediation
+        self.__remediation_loop_count: int = 0
+
+        # temporary dictionaries used in mapping auth sequence scheme
+        self.__authSeqMap = {}
+
         # NMRIF reader
         self.__nmrIfR = None
 
@@ -1054,7 +1068,7 @@ class NmrDpUtility:
         elif self.__reg.combined_mode and not self.__reg.remediation_mode:
             self.__reg.native_combined = True
 
-        self.__reg.remediation_loop_count = 0
+        self.__remediation_loop_count = 0
 
         self.__reg.sll_pred_holder.clear()
         self.__reg.sll_pred_forced.clear()
@@ -3088,7 +3102,7 @@ class NmrDpUtility:
                         self.__reg.report.error.appendDescription('format_issue',
                                                                   {'file_name': file_name, 'description': err})
 
-                        if not self.__reg.remediation_mode or self.__reg.remediation_loop_count > 0:
+                        if not self.__reg.remediation_mode or self.__remediation_loop_count > 0:
                             self.__reg.log.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - "
                                                  f"{file_type} {file_name} {err}\n")
 
@@ -3117,7 +3131,7 @@ class NmrDpUtility:
                                 self.__reg.report.error.appendDescription('format_issue',
                                                                           {'file_name': file_name, 'description': err})
 
-                                if not self.__reg.remediation_mode or self.__reg.remediation_loop_count > 0:
+                                if not self.__reg.remediation_mode or self.__remediation_loop_count > 0:
                                     self.__reg.log.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - "
                                                          f"{file_type} {file_name} {err}\n")
 
@@ -3538,12 +3552,12 @@ class NmrDpUtility:
             self.__detectContentSubTypeOfLegacyPk()
             self.__detectContentSubTypeOfLegacyMr()
 
-            self.__reg.remediation_loop_count += 1
+            self.__remediation_loop_count += 1
 
             self.__reg.sll_pred_holder.clear()
 
             if self.__reg.mr_debug:
-                if self.__reg.remediation_loop_count > 5:
+                if self.__remediation_loop_count > 5:
                     self.__reg.log.write(f'repetiation of remediation: {self.__reg.inputParamDictCopy}\n')
 
         return not self.__reg.report.isError()
@@ -4410,7 +4424,7 @@ class NmrDpUtility:
         """ Perform sequence consistency test among extracted polymer sequences.
         """
 
-        if self.__reg.valid_seq:
+        if self.__valid_seq:
             return True
 
         update_poly_seq = False
@@ -4638,7 +4652,7 @@ class NmrDpUtility:
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
 
                                                 if (self.__reg.tolerant_seq_align and self.__reg.dpV.equalsToRepCompId(comp_id, _comp_id))\
-                                                   or (self.__reg.remediation_mode and (self.__reg.valid_seq or comp_id not in monDict3 or has_gap_in_auth_seq)):
+                                                   or (self.__reg.remediation_mode and (self.__valid_seq or comp_id not in monDict3 or has_gap_in_auth_seq)):
                                                     self.__reg.report.warning.appendDescription('sequence_mismatch',
                                                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                                  'description': err})
@@ -4991,7 +5005,7 @@ class NmrDpUtility:
                             ps['alt_comp_id'][pos] = ext_seq_key[3 if cs_has_alt_comp_id else 2]
 
         if self.__reg.op == 'nmr-str-replace-cs':
-            self.__reg.valid_seq = False
+            self.__valid_seq = False
             self.__testSequenceConsistency()
 
         return True
@@ -5422,13 +5436,13 @@ class NmrDpUtility:
         is_done = True
         update_poly_seq = False
 
-        self.__reg.alt_chain = False
-        self.__reg.valid_seq = False
+        self.__alt_chain = False
+        self.__valid_seq = False
 
         if not self.__reg.tolerant_seq_align:
-            self.__reg.valid_seq = self.__reg.dpV.isConsistentSequence()
+            self.__valid_seq = self.__reg.dpV.isConsistentSequence()
 
-            if not self.__reg.valid_seq:
+            if not self.__valid_seq:
                 self.__reg.tolerant_seq_align = True
 
         for fileListId in range(self.__reg.file_path_list_len):
@@ -5575,7 +5589,7 @@ class NmrDpUtility:
 
                                 update_poly_seq = True
 
-                            if conflict == 0 and self.__reg.alt_chain and not alt_chain and chain_id != ps2['chain_id']\
+                            if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != ps2['chain_id']\
                                and (sf_framecode2 not in dst_chain_ids or chain_id not in dst_chain_ids[sf_framecode2])\
                                and (sf_framecode2 not in map_chain_ids or ps2['chain_id'] not in map_chain_ids[sf_framecode2])\
                                and unmapped != offset_1 + 1 and unmapped != offset_2 + 1\
@@ -5636,7 +5650,7 @@ class NmrDpUtility:
                             ref_gauge_code = getGaugeCode(_ps1['seq_id'])
                             test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
-                            self.__reg.alt_chain |= alt_chain
+                            self.__alt_chain |= alt_chain
 
                             if self.__reg.tolerant_seq_align and (seq_mismatch or comp_mismatch):  # and not alt_chain:
                                 if sf_framecode2 not in map_seq_ids:
@@ -5929,7 +5943,7 @@ class NmrDpUtility:
                             ref_gauge_code = getGaugeCode(_ps1['seq_id'])
                             test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
-                            self.__reg.alt_chain |= not alt_chain
+                            self.__alt_chain |= not alt_chain
 
                             matched = mid_code.count('|')
 
@@ -5996,7 +6010,7 @@ class NmrDpUtility:
                 if len(seq_align_set) > 0:
                     self.__reg.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + content_subtype, seq_align_set)
 
-                if self.__reg.alt_chain:
+                if self.__alt_chain:
 
                     for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
                         poly_seq2 = _poly_seq_in_lp['polymer_sequence']
@@ -16655,7 +16669,7 @@ class NmrDpUtility:
 
         tags = ['Entity_assembly_ID', 'Comp_index_ID', 'Auth_asym_ID', 'Auth_seq_ID']
 
-        self.__reg.authSeqMap.clear()
+        self.__authSeqMap.clear()
 
         content_subtype = 'poly_seq'
 
@@ -16684,11 +16698,11 @@ class NmrDpUtility:
 
                     try:
                         auth_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
-                        self.__reg.authSeqMap[(star_chain, star_seq)] = (seq_align['test_chain_id'], auth_seq)
+                        self.__authSeqMap[(star_chain, star_seq)] = (seq_align['test_chain_id'], auth_seq)
                     except (IndexError, ValueError):
                         pass
 
-        if len(self.__reg.authSeqMap) == 0:
+        if len(self.__authSeqMap) == 0:
             return False
 
         for content_subtype in input_source_dic['content_subtype']:
@@ -16742,8 +16756,8 @@ class NmrDpUtility:
 
             seq_key = (star_chain, star_seq)
 
-            if seq_key in self.__reg.authSeqMap:
-                row[auth_chain_index], row[auth_seq_index] = self.__reg.authSeqMap[seq_key]
+            if seq_key in self.__authSeqMap:
+                row[auth_chain_index], row[auth_seq_index] = self.__authSeqMap[seq_key]
 
     def __testTautomerOfHistidinePerModel(self) -> bool:
         """ Check tautomeric state of a given histidine per model. (DAOTHER-9252)
@@ -19174,7 +19188,7 @@ class NmrDpUtility:
 
             is_valid, message = self.__reg.nefT.nef_to_nmrstar(self.__reg.dstPath, fPath,
                                                                report=self.__reg.report,
-                                                               leave_unmatched=self.__reg.leave_intl_note)  # (None if self.__reg.alt_chain else self.__reg.report))
+                                                               leave_unmatched=self.__reg.leave_intl_note)  # (None if self.__alt_chain else self.__reg.report))
 
             if self.__reg.release_mode and self.__reg.tmpPath is not None:
                 os.remove(self.__reg.tmpPath)
@@ -19300,7 +19314,7 @@ class NmrDpUtility:
         try:
 
             is_valid, message = self.__reg.nefT.nmrstar_to_nef(self.__reg.dstPath, fPath,
-                                                               report=self.__reg.report)  # (None if self.__reg.alt_chain else self.__reg.report))
+                                                               report=self.__reg.report)  # (None if self.__alt_chain else self.__reg.report))
 
             if self.__reg.release_mode and self.__reg.tmpPath is not None:
                 os.remove(self.__reg.tmpPath)

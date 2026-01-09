@@ -62,7 +62,7 @@ try:
                                                ITEM_NAMES_IN_DIST_LOOP,
                                                ITEM_NAMES_IN_DIHED_LOOP,
                                                ITEM_NAMES_IN_RDC_LOOP)
-    from wwpdb.utils.nmr.NmrDpRegistory import NmrDpRegistory
+    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpMrSplitter import (mr_file_name_pattern,
                                                  ws_pattern,
                                                  concat_seq_id_ins_code_pattern,
@@ -167,7 +167,7 @@ except ImportError:
                                    ITEM_NAMES_IN_DIST_LOOP,
                                    ITEM_NAMES_IN_DIHED_LOOP,
                                    ITEM_NAMES_IN_RDC_LOOP)
-    from nmr.NmrDpRegistory import NmrDpRegistory
+    from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpMrSplitter import (mr_file_name_pattern,
                                      ws_pattern,
                                      concat_seq_id_ins_code_pattern,
@@ -632,11 +632,11 @@ class NmrDpValidation:
                  '__reg',
                  '__rci')
 
-    def __init__(self, registory: NmrDpRegistory):
+    def __init__(self, registry: NmrDpRegistry):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__reg = registory
+        self.__reg = registry
 
         # RCI
         self.__rci = RCI(False, self.__reg.log)

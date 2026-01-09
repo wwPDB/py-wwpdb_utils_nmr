@@ -42,7 +42,7 @@ try:
                                                ITEM_NAMES_IN_DIST_LOOP,
                                                ITEM_NAMES_IN_DIHED_LOOP,
                                                ITEM_NAMES_IN_RDC_LOOP)
-    from wwpdb.utils.nmr.NmrDpRegistory import NmrDpRegistory
+    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpMrSplitter import (comment_pattern,
                                                  onedep_model_file_pattern,
                                                  seq_mismatch_warning_pattern,
@@ -160,7 +160,7 @@ except ImportError:
                                    ITEM_NAMES_IN_DIST_LOOP,
                                    ITEM_NAMES_IN_DIHED_LOOP,
                                    ITEM_NAMES_IN_RDC_LOOP)
-    from nmr.NmrDpRegistory import NmrDpRegistory
+    from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpMrSplitter import (comment_pattern,
                                      onedep_model_file_pattern,
                                      seq_mismatch_warning_pattern,
@@ -315,11 +315,11 @@ class NmrDpRemediation:
                  '__version__',
                  '__reg')
 
-    def __init__(self, registory: NmrDpRegistory):
+    def __init__(self, registry: NmrDpRegistry):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__reg = registory
+        self.__reg = registry
 
     def cleanUpSf(self) -> bool:
         """ Clean-up third-party saveframes.
@@ -5324,7 +5324,7 @@ class NmrDpRemediation:
         return True
 
     def syncMrLoop(self) -> bool:
-        """ Synchonize sequence scheme of restraint loop based on coordinates.
+        """ Synchronize sequence scheme of restraint loop based on coordinates.
         """
 
         __errors = self.__reg.report.getTotalErrors()
@@ -6886,7 +6886,7 @@ class NmrDpRemediation:
                     pass
 
     def remediateRdcLoop(self, file_type: str, loop: pynmrstar.Loop) -> bool:  # pylint: disable=no-self-use
-        """ Remediate rdc target value due to the known OneDep bug, if required.
+        """ Remediate RDC target value due to the known OneDep bug, if required.
         """
 
         modified = False
@@ -13708,7 +13708,7 @@ class NmrDpRemediation:
         return True
 
     def mergeLegacyData(self) -> bool:
-        """ Merge CS+MR+PK into next NMR unifed data files.
+        """ Merge CS+MR+PK into next NMR combined data files.
         """
 
         if self.__reg.combined_mode or not self.__reg.remediation_mode or self.__reg.dstPath is None:

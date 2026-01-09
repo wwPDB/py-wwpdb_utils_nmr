@@ -1,10 +1,10 @@
 ##
-# File: NmrDpRegistory.py
+# File: NmrDpRegistry.py
 # Date: 07-Jan-2025
 #
 # Updates:
 ##
-""" Registory class for NMR data processing.
+""" Registry class for NMR data processing.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -100,8 +100,8 @@ default_coord_properties = {'tautomer': {},
 
 
 @dataclass
-class NmrDpRegistory:
-    """ Registory aclass for NMR data processing.
+class NmrDpRegistry:
+    """ Registry class for NMR data processing.
     """
     verbose: bool = False
     log: IO = sys.stderr
@@ -109,7 +109,7 @@ class NmrDpRegistory:
     debug: bool = False
     mr_debug: bool = False
 
-    # current workflow operation
+    # current workflow operation name
     op: str = None
 
     # whether to enable rescue routine
@@ -174,7 +174,7 @@ class NmrDpRegistory:
     entry_id: str = 'EXTRACT_FROM_COORD'
     # bmrb id (internal use only)
     bmrb_id: str = None
-    # assembly name
+    # current assembly name
     assembly_name: str = '?'
 
     # whether to retain original content if possible
@@ -254,6 +254,7 @@ class NmrDpRegistory:
     report: NmrDpReport = None
     report_prev: NmrDpReport = None
 
+    # statistics of output file
     output_statistics: NmrDpReportOutputStatistics = None
 
     # CCD accessing utility
@@ -280,14 +281,14 @@ class NmrDpRegistory:
     # placeholder for NmrDpRemediation
     dpR = None
 
-    # PyNMRSTAR data
+    # current size of file path list for star formatted data files
     file_path_list_len: int = 1
+    # current size of file path list for star formatted cs files
     cs_file_path_list_len: int = 1
 
-    # list of pynmrstar data types
+    # pynmrstar data types: 'Entry', 'Saveframe', 'Loop'
     star_data_type: List[str] = field(default_factory=list)
-
-    # list of pynmrstar data
+    # pynmrstar data
     star_data: List[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]] = field(default_factory=list)
 
     # history of saveframe name corrections
@@ -297,23 +298,23 @@ class NmrDpRegistory:
     divide_mr_error_message: List[dict] = field(default_factory=list)
     strip_mr_error_message: List[dict] = field(default_factory=list)
 
+    # current inventory of each NMR data file
     sf_category_list: List[str] = field(default_factory=list)
     lp_category_list: List[str] = field(default_factory=list)
 
-    alt_chain: bool = False
-    valid_seq: bool = False
-
-    remediation_loop_count: int = 0
-
+    # ANTLR4's SLL prediction modes
     sll_pred_holder: dict = field(default_factory=dict)
     sll_pred_forced: List[str] = field(default_factory=list)
 
+    # temporary dictionaries used to merge legacy restraints and spectral peak lists
     list_id_counter: dict = None
     mr_sf_dict_holder: dict = None
     pk_sf_holder: dict = None
 
+    # extended sequence by NMR data in reference to the coordinates
     nmr_ext_poly_seq: List[dict] = None
 
+    # rows of _Chem_comp_assembly loop
     cca_dat: List[list] = None
 
     # combined nmr cif file path (used only for BMRB internal annotation)
@@ -321,13 +322,13 @@ class NmrDpRegistory:
     # saveframe category list of combined nmr cif file (used only for BMRB internal annotation)
     nmr_cif_sf_category_list: List[str] = None
 
+    # defined content subtypes for restraints
     mr_content_subtypes: List[str] = None
-
+    # defined content subtypes for NMR data
     nmr_rep_content_subtypes: List[str] = None
 
     # criterion for detection of not superimposed models
     rmsd_not_superimposed: float = RMSD_NOT_SUPERIMPOSED
-
     # criterion for detection of exactly overlaid models
     rmsd_overlaid_exactly: float = RMSD_OVERLAID_EXACTLY
 
@@ -340,42 +341,31 @@ class NmrDpRegistory:
 
     # key items of loop
     key_items: dict = field(default_factory=lambda: KEY_ITEMS)
-
     # key items of loop to check consistency
     consist_key_items: dict = field(default_factory=lambda: CONSIST_KEY_ITEMS)
-
     # loop data items for spectral peak
     pk_data_items: dict = field(default_factory=lambda: PK_DATA_ITEMS)
-
     # auxiliary loop key items
     aux_key_items: dict = field(default_factory=lambda: AUX_KEY_ITEMS)
-
     # auxiliary loop data items
     aux_data_items: dict = field(default_factory=lambda: AUX_DATA_ITEMS)
 
     # main contents of loops
     lp_data: dict = field(default_factory=lambda: copy.deepcopy(default_subtype_data_dict))
-
     # auxiliary contents of loops
     aux_data: dict = field(default_factory=lambda: copy.deepcopy(default_subtype_data_dict))
-
     # contents of savefram tags
     sf_tag_data: dict = field(default_factory=lambda: copy.deepcopy(default_subtype_data_dict))
-
-    authSeqMap: dict = field(default_factory=dict)
 
     # Pairwise align
     pA = None
 
     # experimental method
     exptl_method: str = ''
-
     # whether solid-state NMR is applied to symmetric samples such as fibrils
     symmetric: str = None
-
     # whether nmr chain is cyclic polymer or not
     is_cyclic_polymer: dict = field(default_factory=dict)
-
     # extracted conformational annotation of coordinate file
     nmr_struct_conf: dict = field(default_factory=dict)
 
@@ -401,7 +391,6 @@ class NmrDpRegistory:
 
     # coordinate properties cache
     cpC: dict = field(default_factory=lambda: copy.deepcopy(default_coord_properties))
-
     # hash value of coordinate properties cache
     cpC_hash: str = None
 
@@ -409,7 +398,7 @@ class NmrDpRegistory:
     ent_asym_id_with_exptl_data: set = field(default_factory=set)
     # set of label_aysm_id having experimental data
     label_asym_id_with_exptl_data: set = field(default_factory=set)
-    # set of auth_asym_id indicating occurence of chemical exchange (eNOE)
+    # set of auth_asym_id indicating occurrence of chemical exchange (eNOE)
     auth_asym_ids_with_chem_exch: dict = field(default_factory=dict)
     # set of residue numbering scheme indicating occurrence of chemical exchange (eNOE)
     auth_seq_ids_with_chem_exch: dict = field(default_factory=dict)
@@ -426,9 +415,7 @@ class NmrDpRegistory:
 
     # atom name mapping of public MR file between the coordinates and submitted file
     mr_atom_name_mapping: List[dict] = None
-
     # atom name mapping derived from revision history and PDB Versioned Archive
     versioned_atom_name_mapping: List[dict] = None
-
     # atom name mapping derived from the original uploaded coordinate file
     internal_atom_name_mapping: dict = field(default_factory=dict)

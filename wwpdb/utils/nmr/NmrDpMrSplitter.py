@@ -3,7 +3,7 @@
 #
 # Updates:
 ##
-""" Wrapper class for public PDB-MR format file splitter.
+""" File splitter for public PDB-MR formatted restraint file.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -24,7 +24,7 @@ from typing import Any, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import MR_MAX_SPACER_LINES
-    from wwpdb.utils.nmr.NmrDpRegistory import NmrDpRegistory
+    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            getRestraintFormatName)
     from wwpdb.utils.nmr.NmrVrptUtility import uncompress_gzip_file
@@ -70,7 +70,7 @@ try:
     from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 except ImportError:
     from nmr.NmrDpConstant import MR_MAX_SPACER_LINES
-    from nmr.NmrDpRegistory import NmrDpRegistory
+    from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.AlignUtil import (monDict3,
                                getRestraintFormatName)
     from nmr.NmrVrptUtility import uncompress_gzip_file
@@ -1019,18 +1019,18 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
 
 
 class NmrDpMrSplitter:
-    """ Wrapper class for public PDB-MR format file splitter.
+    """ File splitter for public PDB-MR formatted restraint file.
     """
     __slots__ = ('__class_name__',
                  '__version__',
                  '__reg',
                  '__cur_original_ar_file_name')
 
-    def __init__(self, registory: NmrDpRegistory):
+    def __init__(self, registry: NmrDpRegistry):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__reg = registory
+        self.__reg = registry
 
         self.__cur_original_ar_file_name = None
 
@@ -3525,7 +3525,7 @@ class NmrDpMrSplitter:
         return None
 
     def divideLegacyMrIfNecessary(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
-        """ Divive legacy restraint file if necessary.
+        """ Divide legacy restraint file if necessary.
         """
 
         src_basename = os.path.splitext(file_path)[0]
@@ -4866,7 +4866,7 @@ class NmrDpMrSplitter:
         return True
 
     def __divideLegacyMr(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
-        """ Divive legacy restraint file.
+        """ Divide legacy restraint file.
         """
 
         src_basename = os.path.splitext(file_path)[0]

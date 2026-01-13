@@ -1931,39 +1931,29 @@ class NmrDpUtility:
 
         self.__reg.original_error_message.clear()
 
-        self.__testDiamagnetism()
+        if self.__parseCoordFilePath():
+
+            try:
+
+                chem_comp = self.__reg.cR.getDictList('chem_comp')
+
+                nstd_comp_ids = [item['id'] for item in chem_comp if item['mon_nstd_flag'] != 'y']
+
+                for comp_id in nstd_comp_ids:
+
+                    if self.__reg.ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
+
+                        ref_elems = set(a[self.__reg.ccU.ccaTypeSymbol] for a in self.__reg.ccU.lastAtomList if a[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y')
+
+                        for elem in ref_elems:
+                            if elem in PARAMAGNETIC_ELEMENTS or elem in FERROMAGNETIC_ELEMENTS:
+                                self.__reg.report.setDiamagnetic(False)
+                                break
+
+            except Exception:
+                pass
 
         return input_source is not None
-
-    def __testDiamagnetism(self):
-        """ Test diamagnetism of molecular assembly.
-        """
-
-        if not self.__parseCoordFilePath():
-            return
-
-        try:
-
-            chem_comp = self.__reg.cR.getDictList('chem_comp')
-
-            nstd_comp_ids = [item['id'] for item in chem_comp if item['mon_nstd_flag'] != 'y']
-
-            if len(nstd_comp_ids) == 0:
-                return
-
-            for comp_id in nstd_comp_ids:
-
-                if self.__reg.ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
-
-                    ref_elems = set(a[self.__reg.ccU.ccaTypeSymbol] for a in self.__reg.ccU.lastAtomList if a[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y')
-
-                    for elem in ref_elems:
-                        if elem in PARAMAGNETIC_ELEMENTS or elem in FERROMAGNETIC_ELEMENTS:
-                            self.__reg.report.setDiamagnetic(False)
-                            break
-
-        except Exception:
-            pass
 
     def __validateInputSource(self, srcPath: str = None) -> bool:
         """ Validate NMR data as primary input source.
@@ -3078,7 +3068,11 @@ class NmrDpUtility:
                                 corrected |= self.__reg.dpS.divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
                                 div_test = True
 
-                            _err = self.__retrieveErroneousPreviousInput(description)
+                            _err = next((_description.get('previous_input') for _description in self.__reg.divide_mr_error_message
+                                         if _description['file_path'] == description['file_path']
+                                         and _description['line_number'] == description['line_number']
+                                         and _description['message'] == description['message']), None)
+
                             if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 s = '. ' if _err.startswith('Do you') else ':\n'
                                 err = err[:len_err] +\
@@ -3897,27 +3891,14 @@ class NmrDpUtility:
 
         return not self.__reg.report.isError()
 
-    def __retrieveErroneousPreviousInput(self, err_desc: dict) -> Optional[str]:
-        """ Retrieve erroneous previous input if possible.
-        """
-
-        try:
-            _err_desc = next(_err_desc for _err_desc in self.__reg.divide_mr_error_message
-                             if _err_desc['file_path'] == err_desc['file_path']
-                             and _err_desc['line_number'] == err_desc['line_number']
-                             and _err_desc['message'] == err_desc['message'])
-            return _err_desc.get('previous_input')
-        except StopIteration:
-            return None
-
     def __extractPublicMrFileIntoLegacyMr(self) -> bool:
         """ Extract/split public MR file into legacy restraint files for NMR restraint remediation.
         """
 
         return self.__reg.dpS.extractPublicMrFileIntoLegacyMr()
 
-    def __getPolymerSequence(self, file_list_id: int, sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], content_subtype: str
-                             ) -> List[List[dict]]:
+    def __getPolymerSequence__(self, file_list_id: int, sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], content_subtype: str
+                               ) -> List[List[dict]]:
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
         """
 
@@ -3942,7 +3923,7 @@ class NmrDpUtility:
 
         if not self.__reg.bmrb_only or not self.__reg.internal_mode:
             if self.__reg.caC is None:
-                self.__retrieveCoordAssemblyChecker()
+                self.__retrieveCoordAssemblyChecker__()
 
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__reg.nefT.get_star_seq(sf, lp_category=LP_CATEGORIES[file_type][content_subtype],
@@ -3984,7 +3965,7 @@ class NmrDpUtility:
 
                 try:
 
-                    poly_seq = self.__getPolymerSequence(fileListId, sf, content_subtype)[0]
+                    poly_seq = self.__getPolymerSequence__(fileListId, sf, content_subtype)[0]
 
                     input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -4238,7 +4219,7 @@ class NmrDpUtility:
 
         try:
 
-            poly_seq = self.__getPolymerSequence(file_list_id, sf, content_subtype)[0]
+            poly_seq = self.__getPolymerSequence__(file_list_id, sf, content_subtype)[0]
 
             if len(poly_seq) > 0:
 
@@ -4797,11 +4778,11 @@ class NmrDpUtility:
                 if not has_poly_seq or not has_poly_seq_in_lp:
                     continue
 
-                self.__mergePolymerSequenceInCsLoop(fileListId)
+                self.__mergePolymerSequenceInCsLoop__(fileListId)
 
                 continue
 
-            if self.__extractPolymerSequenceInEntityAssembly(fileListId):
+            if self.__extractPolymerSequenceInEntityAssembly__(fileListId):
                 continue
 
             poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
@@ -4877,7 +4858,7 @@ class NmrDpUtility:
                             alt_comp_ids.append(next(alt_comp_id for alt_comp_id in _alt_comp_ids if alt_comp_id not in emptyValue))
 
                 if self.__reg.combined_mode and self.__reg.has_star_entity:
-                    ent = self.__extractPolymerSequenceInEntityLoopOfChain(fileListId, chain_id)
+                    ent = self.__extractPolymerSequenceInEntityLoopOfChain__(fileListId, chain_id)
 
                     if ent is not None:
                         asm.append(ent)
@@ -4903,14 +4884,14 @@ class NmrDpUtility:
                 if has_poly_seq or (not has_poly_seq_in_lp):
                     continue
 
-                if self.__extractPolymerSequenceInEntityAssembly(fileListId):
+                if self.__extractPolymerSequenceInEntityAssembly__(fileListId):
                     continue
 
                 input_source.setItemValue('polymer_sequence', asm)
 
         return True
 
-    def __mergePolymerSequenceInCsLoop(self, file_list_id: int) -> bool:
+    def __mergePolymerSequenceInCsLoop__(self, file_list_id: int) -> bool:
         """ Merge polymer sequence in CS loops.
         """
 
@@ -5010,7 +4991,7 @@ class NmrDpUtility:
 
         return True
 
-    def __extractPolymerSequenceInEntityAssembly(self, file_list_id: int) -> bool:
+    def __extractPolymerSequenceInEntityAssembly__(self, file_list_id: int) -> bool:
         """ Extract polymer sequence in entity loops. (NMR combined deposition)
         """
 
@@ -5023,7 +5004,7 @@ class NmrDpUtility:
             return False
 
         if not self.__reg.combined_mode:
-            return self.__extractPolymerSequenceInEntityLoop(file_list_id)
+            return self.__extractPolymerSequenceInEntityLoop__(file_list_id)
 
         for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category('assembly'):
 
@@ -5129,7 +5110,7 @@ class NmrDpUtility:
 
         return False
 
-    def __extractPolymerSequenceInEntityLoop(self, file_list_id: int) -> bool:
+    def __extractPolymerSequenceInEntityLoop__(self, file_list_id: int) -> bool:
         """ Extract polymer sequence in entity loops. (NMR conventional deposition)
         """
 
@@ -5142,7 +5123,7 @@ class NmrDpUtility:
             return False
 
         if self.__reg.combined_mode:
-            return self.__extractPolymerSequenceInEntityAssembly(file_list_id)
+            return self.__extractPolymerSequenceInEntityAssembly__(file_list_id)
 
         star_data = self.__reg.star_data[file_list_id]
 
@@ -5243,7 +5224,7 @@ class NmrDpUtility:
 
         return False
 
-    def __extractPolymerSequenceInEntityLoopOfChain(self, file_list_id: int, chain_id: str) -> Optional[dict]:
+    def __extractPolymerSequenceInEntityLoopOfChain__(self, file_list_id: int, chain_id: str) -> Optional[dict]:
         """ Extract polymer sequence in entity loops of a given chain id.
         """
 
@@ -5660,10 +5641,10 @@ class NmrDpUtility:
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2
                                                         in zip(_ps1['seq_id'], _ps2['seq_id']) if __s2 != '.'}
                                     if comp_mismatch:
-                                        _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _ps1, _ps2, myAlign,
-                                                                            map_chain_ids.get(sf_framecode2),
-                                                                            ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
+                                        _seq_align = self.__getSeqAlignCode__(fileListId, file_type, content_subtype, sf_framecode2,
+                                                                              chain_id, _ps1, _ps2, myAlign,
+                                                                              map_chain_ids.get(sf_framecode2),
+                                                                              ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _ps2['seq_id'] = _seq_align['test_seq_id']
                                         if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                             continue
@@ -5695,10 +5676,10 @@ class NmrDpUtility:
                                         test_gauge_code = ref_gauge_code
                                 else:
                                     if seq_mismatch:
-                                        _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _ps1, _ps2, myAlign,
-                                                                            map_chain_ids.get(sf_framecode2),
-                                                                            ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
+                                        _seq_align = self.__getSeqAlignCode__(fileListId, file_type, content_subtype, sf_framecode2,
+                                                                              chain_id, _ps1, _ps2, myAlign,
+                                                                              map_chain_ids.get(sf_framecode2),
+                                                                              ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _ps2['seq_id'] = _seq_align['test_seq_id']
                                         if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                             continue
@@ -6145,9 +6126,9 @@ class NmrDpUtility:
                                             seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2
                                                                 in zip(_ps1['seq_id'], _ps2['seq_id']) if __s2 != '.'}
                                             if comp_mismatch:
-                                                _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                                    chain_id, _ps1, _ps2, myAlign, mapping,
-                                                                                    ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
+                                                _seq_align = self.__getSeqAlignCode__(fileListId, file_type, content_subtype, sf_framecode2,
+                                                                                      chain_id, _ps1, _ps2, myAlign, mapping,
+                                                                                      ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                                 _ps2['seq_id'] = _seq_align['test_seq_id']
                                                 if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                                     continue
@@ -6179,9 +6160,9 @@ class NmrDpUtility:
                                                 test_gauge_code = ref_gauge_code
                                         else:
                                             if seq_mismatch:
-                                                _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                                    chain_id, _ps1, _ps2, myAlign, mapping,
-                                                                                    ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
+                                                _seq_align = self.__getSeqAlignCode__(fileListId, file_type, content_subtype, sf_framecode2,
+                                                                                      chain_id, _ps1, _ps2, myAlign, mapping,
+                                                                                      ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                                 _ps2['seq_id'] = _seq_align['test_seq_id']
                                                 if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                                     continue
@@ -6267,11 +6248,11 @@ class NmrDpUtility:
 
         return is_done
 
-    def __getSeqAlignCode(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
-                          chain_id: str, ps1: dict, ps2: dict, myAlign: list, mapping: dict,
-                          ref_gauge_code: str, ref_code: str, mid_code: str, test_code: str, test_gauge_code: str
-                          ) -> dict:
-        """ Return human-readable seq align codes.
+    def __getSeqAlignCode__(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
+                            chain_id: str, ps1: dict, ps2: dict, myAlign: list, mapping: dict,
+                            ref_gauge_code: str, ref_code: str, mid_code: str, test_code: str, test_gauge_code: str
+                            ) -> dict:
+        """ Return human-readable sequence alignment codes.
         """
 
         len_ps1 = len(ps1['seq_id'])
@@ -7965,7 +7946,7 @@ class NmrDpUtility:
 
         return self.__reg.report.getTotalErrors() == __errors
 
-    def __extractToNmrIf(self) -> bool:
+    def __extractToNmrIf__(self) -> bool:
         """ Extract NMR metadata of NMR-STAR file (as primary source) and model file (as secondary source) to NMRIF file, if possible.
         """
 
@@ -7976,7 +7957,7 @@ class NmrDpUtility:
             return False
 
         if len(self.__reg.star_data) == 0 or not isinstance(self.__reg.star_data[0], pynmrstar.Entry):
-            return self.__extractToNmrIfFromModel()
+            return self.__extractToNmrIfFromModel__()
 
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -7984,7 +7965,7 @@ class NmrDpUtility:
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star':
-            return self.__extractToNmrIfFromModel()
+            return self.__extractToNmrIfFromModel__()
 
         master_entry = self.__reg.star_data[0]
 
@@ -8021,7 +8002,7 @@ class NmrDpUtility:
 
         return ann.extract(master_entry, self.__reg.cR, self.__reg.outputParamDict['nmrif_file_path'])
 
-    def __extractToNmrIfFromModel(self) -> bool:
+    def __extractToNmrIfFromModel__(self) -> bool:
         """ Extract NMR metadata of the model file to NMRIF file, if possible.
         """
 
@@ -8041,7 +8022,7 @@ class NmrDpUtility:
 
         return ann.extract(None, self.__reg.cR, self.__reg.outputParamDict['nmrif_file_path'])
 
-    def __remediateCsLoop(self) -> bool:
+    def __remediateCsLoop__(self) -> bool:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
@@ -9711,7 +9692,7 @@ class NmrDpUtility:
 
         return self.__reg.report.getTotalErrors() == __errors
 
-    def __retrieveCoordAssemblyChecker(self):
+    def __retrieveCoordAssemblyChecker__(self):
         """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
         """
 
@@ -10997,7 +10978,7 @@ class NmrDpUtility:
             self.__reg.cifChecked = True
 
             if self.__reg.caC is None:
-                self.__retrieveCoordAssemblyChecker()
+                self.__retrieveCoordAssemblyChecker__()
 
             return True
 
@@ -11831,22 +11812,10 @@ class NmrDpUtility:
                             _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
                             _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                            ref_length = len(ps1['seq_id'])
-
-                            ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
-                            test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
-                            mid_code = getMiddleCode(ref_code, test_code)
-                            ref_gauge_code = getGaugeCode(_ps1['seq_id'])
-                            test_gauge_code = getGaugeCode(_ps2['seq_id'])
-
-                            matched = mid_code.count('|')
-
-                            seq_align = {'list_id': _poly_seq_in_lp['list_id'], 'chain_id': chain_id, 'length': ref_length,
-                                         'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                                         'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                                         'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
-                                         'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
-                                         'test_code': test_code, 'test_gauge_code': test_gauge_code}
+                            seq_align = self.__getSeqAlignCodeWithBlankFill__(len(ps1['seq_id']), _matched, conflict, unmapped,
+                                                                              offset_1, offset_2, _ps1, _ps2, myAlign)
+                            seq_align['list_id'] = _poly_seq_in_lp['list_id']
+                            seq_align['chain_id'] = chain_id
 
                             seq_align_set.append(seq_align)
 
@@ -11919,7 +11888,7 @@ class NmrDpUtility:
                 _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
                 if conflict > 0 and (hasLargeSeqGap(_ps1, _ps2) or (not hasLargeInnerSeqGap(ps1) and hasLargeInnerSeqGap(ps2))):  # DAOTHER-7465
-                    _ps2 = self.__compensateLadderHistidinTag2(chain_id, _ps1, _ps2)
+                    _ps2 = self.__compensateLadderHistidinTag2__(chain_id, _ps1, _ps2)
                     __ps1, __ps2 = beautifyPolySeq(_ps1, _ps2)
                     _ps1_ = __ps1
                     _ps2_ = __ps2
@@ -11945,72 +11914,10 @@ class NmrDpUtility:
                 if _matched <= conflict + (1 if length > 1 else 0):
                     continue
 
-                ref_length = len(ps1['seq_id'])
-
-                ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
-                test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
-                mid_code = getMiddleCode(ref_code, test_code)
-                ref_gauge_code = getGaugeCode(_ps1['seq_id'])
-                test_gauge_code = getGaugeCode(_ps2['seq_id'])
-
-                if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                       in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
-                       if __c1 != '.' and __c2 != '.' and __c1 != __c2):
-                    len_ps1 = len(_ps1['seq_id'])
-                    len_ps2 = len(_ps2['seq_id'])
-
-                    seq_id1, seq_id2, comp_id1, comp_id2 = [], [], [], []
-
-                    idx1 = idx2 = 0
-                    for i in range(length):
-                        myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
-
-                        if myPr0 != '.':
-                            while idx1 < len_ps1:
-                                if _ps1['comp_id'][idx1] == myPr0:
-                                    seq_id1.append(_ps1['seq_id'][idx1])
-                                    comp_id1.append(myPr0)
-                                    idx1 += 1
-                                    break
-                                idx1 += 1
-                        else:
-                            seq_id1.append(None)
-                            comp_id1.append('.')
-
-                        if myPr1 != '.':
-                            while idx2 < len_ps2:
-                                if _ps2['comp_id'][idx2] == myPr1:
-                                    seq_id2.append(_ps2['seq_id'][idx2])
-                                    comp_id2.append(myPr1)
-                                    idx2 += 1
-                                    break
-                                idx2 += 1
-                        else:
-                            seq_id2.append(None)
-                            comp_id2.append('.')
-
-                    ref_code = getOneLetterCodeCanSequence(comp_id1)
-                    test_code = getOneLetterCodeCanSequence(comp_id2)
-                    mid_code = getMiddleCode(ref_code, test_code)
-                    ref_gauge_code = getGaugeCode(seq_id1, offset_1)
-                    test_gauge_code = getGaugeCode(seq_id2, offset_2)
-                    if ' ' in ref_gauge_code:
-                        for p, g in enumerate(ref_gauge_code):
-                            if g == ' ':
-                                ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
-                    if ' ' in test_gauge_code:
-                        for p, g in enumerate(test_gauge_code):
-                            if g == ' ':
-                                test_code = test_code[0:p] + '-' + test_code[p + 1:]
-
-                matched = mid_code.count('|')
-
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
-                             'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                             'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                             'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
-                             'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
-                             'test_code': test_code, 'test_gauge_code': test_gauge_code}
+                seq_align = self.__getSeqAlignCodeWithBlankFill__(len(ps1['seq_id']), _matched, conflict, unmapped, offset_1, offset_2,
+                                                                  _ps1, _ps2, myAlign)
+                seq_align['ref_chain_id'] = chain_id
+                seq_align['test_chain_id'] = chain_id2
 
                 if 'auth_seq_id' in _ps1:
                     seq_align['ref_auth_seq_id'] = _ps1['auth_seq_id']
@@ -12074,7 +11981,7 @@ class NmrDpUtility:
                 _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
                 if conflict > 0 and (hasLargeSeqGap(_ps1, _ps2) or (hasLargeInnerSeqGap(ps1) and not hasLargeInnerSeqGap(ps2))):  # DAOTHER-7465
-                    _ps1 = self.__compensateLadderHistidinTag2(chain_id, _ps2, _ps1)
+                    _ps1 = self.__compensateLadderHistidinTag2__(chain_id, _ps2, _ps1)
                     __ps1, __ps2 = beautifyPolySeq(_ps1, _ps2)
                     _ps1_ = __ps1
                     _ps2_ = __ps2
@@ -12100,72 +12007,10 @@ class NmrDpUtility:
                 if _matched <= conflict + (1 if length > 1 else 0):
                     continue
 
-                ref_length = len(ps1['seq_id'])
-
-                ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
-                test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
-                mid_code = getMiddleCode(ref_code, test_code)
-                ref_gauge_code = getGaugeCode(_ps1['seq_id'])
-                test_gauge_code = getGaugeCode(_ps2['seq_id'])
-
-                if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                       in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
-                       if __c1 != '.' and __c2 != '.' and __c1 != __c2):
-                    len_ps1 = len(_ps1['seq_id'])
-                    len_ps2 = len(_ps2['seq_id'])
-
-                    seq_id1, seq_id2, comp_id1, comp_id2 = [], [], [], []
-
-                    idx1 = idx2 = 0
-                    for i in range(length):
-                        myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
-
-                        if myPr0 != '.':
-                            while idx1 < len_ps1:
-                                if _ps1['comp_id'][idx1] == myPr0:
-                                    seq_id1.append(_ps1['seq_id'][idx1])
-                                    comp_id1.append(myPr0)
-                                    idx1 += 1
-                                    break
-                                idx1 += 1
-                        else:
-                            seq_id1.append(None)
-                            comp_id1.append('.')
-
-                        if myPr1 != '.':
-                            while idx2 < len_ps2:
-                                if _ps2['comp_id'][idx2] == myPr1:
-                                    seq_id2.append(_ps2['seq_id'][idx2])
-                                    comp_id2.append(myPr1)
-                                    idx2 += 1
-                                    break
-                                idx2 += 1
-                        else:
-                            seq_id2.append(None)
-                            comp_id2.append('.')
-
-                    ref_code = getOneLetterCodeCanSequence(comp_id1)
-                    test_code = getOneLetterCodeCanSequence(comp_id2)
-                    mid_code = getMiddleCode(ref_code, test_code)
-                    ref_gauge_code = getGaugeCode(seq_id1, offset_1)
-                    test_gauge_code = getGaugeCode(seq_id2, offset_2)
-                    if ' ' in ref_gauge_code:
-                        for p, g in enumerate(ref_gauge_code):
-                            if g == ' ':
-                                ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
-                    if ' ' in test_gauge_code:
-                        for p, g in enumerate(test_gauge_code):
-                            if g == ' ':
-                                test_code = test_code[0:p] + '-' + test_code[p + 1:]
-
-                matched = mid_code.count('|')
-
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
-                             'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                             'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                             'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
-                             'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
-                             'test_code': test_code, 'test_gauge_code': test_gauge_code}
+                seq_align = self.__getSeqAlignCodeWithBlankFill__(len(ps1['seq_id']), _matched, conflict, unmapped, offset_1, offset_2,
+                                                                  _ps1, _ps2, myAlign)
+                seq_align['ref_chain_id'] = chain_id
+                seq_align['test_chain_id'] = chain_id2
 
                 if 'auth_seq_id' in _ps2:
                     seq_align['test_auth_seq_id'] = _ps2['auth_seq_id']
@@ -12177,7 +12022,7 @@ class NmrDpUtility:
 
         return True
 
-    def __compensateLadderHistidinTag2(self, chain_id: str, ps1: dict, ps2: dict) -> dict:
+    def __compensateLadderHistidinTag2__(self, chain_id: str, ps1: dict, ps2: dict) -> dict:
         """ Compensate ladder-like Histidin tag in polymer sequence 2.
         """
 
@@ -12217,6 +12062,76 @@ class NmrDpUtility:
                     idx2 += 1
 
         return _ps2
+
+    def __getSeqAlignCodeWithBlankFill__(self, length: int, matched: int, conflict: int, unmapped: int,  # pylint: disable=no-self-use
+                                         offset_1: int, offset_2: int,
+                                         ps1: dict, ps2: dict, myAlign: list) -> dict:
+        """ Return human-readable sequence alignment codes with blank filling.
+        """
+
+        ref_code = getOneLetterCodeCanSequence(ps1['comp_id'])
+        test_code = getOneLetterCodeCanSequence(ps2['comp_id'])
+        mid_code = getMiddleCode(ref_code, test_code)
+        ref_gauge_code = getGaugeCode(ps1['seq_id'])
+        test_gauge_code = getGaugeCode(ps2['seq_id'])
+
+        if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
+               in zip(ps1['seq_id'], ps2['seq_id'], ps1['comp_id'], ps2['comp_id'])
+               if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+            len_ps1 = len(ps1['seq_id'])
+            len_ps2 = len(ps2['seq_id'])
+
+            seq_id1, seq_id2, comp_id1, comp_id2 = [], [], [], []
+
+            idx1 = idx2 = 0
+            for i in range(length):
+                myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
+
+                if myPr0 != '.':
+                    while idx1 < len_ps1:
+                        if ps1['comp_id'][idx1] == myPr0:
+                            seq_id1.append(ps1['seq_id'][idx1])
+                            comp_id1.append(myPr0)
+                            idx1 += 1
+                            break
+                        idx1 += 1
+                else:
+                    seq_id1.append(None)
+                    comp_id1.append('.')
+
+                if myPr1 != '.':
+                    while idx2 < len_ps2:
+                        if ps2['comp_id'][idx2] == myPr1:
+                            seq_id2.append(ps2['seq_id'][idx2])
+                            comp_id2.append(myPr1)
+                            idx2 += 1
+                            break
+                        idx2 += 1
+                else:
+                    seq_id2.append(None)
+                    comp_id2.append('.')
+
+            ref_code = getOneLetterCodeCanSequence(comp_id1)
+            test_code = getOneLetterCodeCanSequence(comp_id2)
+            mid_code = getMiddleCode(ref_code, test_code)
+            ref_gauge_code = getGaugeCode(seq_id1, offset_1)
+            test_gauge_code = getGaugeCode(seq_id2, offset_2)
+            if ' ' in ref_gauge_code:
+                for p, g in enumerate(ref_gauge_code):
+                    if g == ' ':
+                        ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+            if ' ' in test_gauge_code:
+                for p, g in enumerate(test_gauge_code):
+                    if g == ' ':
+                        test_code = test_code[0:p] + '-' + test_code[p + 1:]
+
+        matched = mid_code.count('|')
+
+        return {'length': length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
+                'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / length:.3f}"),
+                'ref_seq_id': ps1['seq_id'], 'test_seq_id': ps2['seq_id'],
+                'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
+                'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
     def __assignCoordPolymerSequence(self) -> bool:
         """ Assign polymer sequences of coordinate file.
@@ -14342,7 +14257,7 @@ class NmrDpUtility:
             return False
 
         if not self.__reg.submission_mode and not self.__reg.annotation_mode and not self.__reg.release_mode:
-            self.__extractToNmrIf()
+            self.__extractToNmrIf__()
             self.__reg.dpR.cleanUpSf()
 
         master_entry = self.__reg.star_data[0]
@@ -14374,7 +14289,7 @@ class NmrDpUtility:
                     pass
 
         if self.__reg.caC is None:
-            return self.__remediateCsLoop()
+            return self.__remediateCsLoop__()
 
         orig_poly_seq = input_source_dic['polymer_sequence']
 
@@ -14456,7 +14371,7 @@ class NmrDpUtility:
             pass
 
         if self.__reg.caC is None:
-            self.__retrieveCoordAssemblyChecker()
+            self.__retrieveCoordAssemblyChecker__()
 
         entity_assembly = self.__reg.caC['entity_assembly']
 
@@ -15703,7 +15618,7 @@ class NmrDpUtility:
         master_entry.add_saveframe(asm_sf)
 
         try:
-            poly_seq = self.__getPolymerSequence(0, asm_sf, content_subtype)[0]
+            poly_seq = self.__getPolymerSequence__(0, asm_sf, content_subtype)[0]
         except KeyError:
             return False
         except UserWarning:
@@ -15757,9 +15672,9 @@ class NmrDpUtility:
                             except IndexError:
                                 pass
 
-        self.__mergePolymerSequenceInCsLoop(0)
+        self.__mergePolymerSequenceInCsLoop__(0)
 
-        self.__remediateCsLoop()
+        self.__remediateCsLoop__()
 
         if not identical:
             self.__reg.dpR.syncMrLoop()

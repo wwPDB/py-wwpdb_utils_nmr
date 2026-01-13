@@ -56,7 +56,6 @@ class ChemCompUtil:
     """
     __slots__ = ('__cacheFile',
                  '__ccR',
-                 '__ccR',
                  'lastCompId',
                  'lastStatus',
                  'lastChemCompDict',

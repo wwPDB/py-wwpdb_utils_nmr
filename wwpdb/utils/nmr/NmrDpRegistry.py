@@ -186,10 +186,8 @@ class NmrDpRegistry:
 
     # whether entity category exists (nmr-star specific)
     has_star_entity: bool = False
-
     # whether a CS loop is in the primary NMR-STAR file (used only for NMR data remediation)
     has_star_chem_shift: bool = True
-
     # whether public MR file contains valid NMR-STAR restraints (used only for NMR data remediation)
     mr_has_valid_star_restraint: bool = False
 
@@ -225,10 +223,8 @@ class NmrDpRegistry:
 
     # directory for cache files
     cacheDirPath: str = None
-
     # hash code of the coordinate file
     cifHashCode = None
-
     # whether coordinate file is already examined
     cifChecked: bool = False
 
@@ -240,10 +236,8 @@ class NmrDpRegistry:
 
     # auxiliary input resource
     inputParamDict: dict = field(default_factory=dict)
-
     # copy of inputParamDict to restart remediation
     inputParamDictCopy: dict = None
-
     # auxiliary output resource
     outputParamDict: dict = field(default_factory=dict)
 

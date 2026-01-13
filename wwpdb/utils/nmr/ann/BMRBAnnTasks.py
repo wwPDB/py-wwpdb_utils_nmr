@@ -292,6 +292,32 @@ class BMRBAnnTasks:
                     # ent_sf.add_loop(lp)
                     pass
 
+        # strip citation author names
+
+        sf_category = 'citations'
+
+        if sf_category in self.__sfCategoryList:
+
+            for sf in master_entry.get_saveframes_by_category(sf_category):
+
+                lp_category = '_Citation_author'
+
+                try:
+
+                    lp = sf.get_loop(lp_category)
+
+                    tags = ['Given_name', 'Family_name', 'First_initial', 'Middle_initials', 'Family_title']
+
+                    dat = lp.get_tag(tags)
+
+                    for idx, row in enumerate(dat):
+                        for col in range(5):
+                            if row[col].startswith(' ') or row[col].endswith(' '):
+                                lp.data[idx][lp.tags.index(tags[col])] = row[col].strip()
+
+                except KeyError:
+                    pass
+
         sf_category = 'experiment_list'
 
         if sf_category in self.__sfCategoryList:

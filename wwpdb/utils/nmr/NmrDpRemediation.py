@@ -2780,7 +2780,8 @@ class NmrDpRemediation:
                     if 'touch' in d:
                         del d['touch']
 
-            self.__reg.cca_dat = loop.get_tag(['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
+            self.__reg.chem_comp_asm_dat =\
+                loop.get_tag(['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
 
             # refresh _Bond loop
 
@@ -5893,7 +5894,7 @@ class NmrDpRemediation:
                                          and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                         _row[18] = comp_id
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                        cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                        cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
@@ -5915,7 +5916,7 @@ class NmrDpRemediation:
                                                 comp_id = _comp_id
                                                 _row[18] = comp_id
                                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
@@ -5926,7 +5927,7 @@ class NmrDpRemediation:
                                                 comp_id = _comp_id
                                                 _row[18] = comp_id
                                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
@@ -6171,7 +6172,7 @@ class NmrDpRemediation:
                                      and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                     _row[18] = comp_id
                                     # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                    cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                    cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                     if cca_row is not None:
                                         _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
@@ -6193,7 +6194,7 @@ class NmrDpRemediation:
                                             comp_id = _comp_id
                                             _row[18] = comp_id
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                            cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
@@ -6204,7 +6205,7 @@ class NmrDpRemediation:
                                             comp_id = _comp_id
                                             _row[18] = comp_id
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                            cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]

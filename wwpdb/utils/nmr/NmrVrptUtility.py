@@ -36,6 +36,13 @@ from typing import Any, IO, List, Tuple, Optional
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import SUB_DIR_NAME_FOR_CACHE
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
+                                           emptyValue,
+                                           monDict3,
+                                           protonBeginCode)
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
                                               LEN_MAJOR_ASYM_ID,
                                               calculate_uninstanced_coord,
@@ -47,13 +54,14 @@ try:
                                                        RDC_RESTRAINT_ERROR,
                                                        coordAssemblyChecker,
                                                        getDistConstraintType)
-    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
-                                           emptyValue,
-                                           monDict3,
-                                           protonBeginCode)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 except ImportError:
+    from nmr.NmrDpConstant import SUB_DIR_NAME_FOR_CACHE
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.AlignUtil import (LARGE_ASYM_ID,
+                               emptyValue,
+                               monDict3,
+                               protonBeginCode)
     from nmr.io.CifReader import (CifReader,
                                   LEN_MAJOR_ASYM_ID,
                                   calculate_uninstanced_coord,
@@ -65,12 +73,6 @@ except ImportError:
                                            RDC_RESTRAINT_ERROR,
                                            coordAssemblyChecker,
                                            getDistConstraintType)
-    from nmr.AlignUtil import (LARGE_ASYM_ID,
-                               emptyValue,
-                               monDict3,
-                               protonBeginCode)
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 
 NMR_VTF_DIST_VIOL_CUTOFF = 0.1
@@ -538,7 +540,6 @@ class NmrVrptUtility:
                  '__use_cache',
                  '__inputParamDict',
                  '__outputParamDict',
-                 '__sub_dir_name_for_cache',
                  '__cifPath',
                  '__nmrDataPath',
                  '__dirPath',
@@ -598,9 +599,6 @@ class NmrVrptUtility:
 
         # auxiliary output resource
         self.__outputParamDict = {}
-
-        # sub-directory name for cache file
-        self.__sub_dir_name_for_cache = 'utils_nmr'
 
         # CIF file path
         self.__cifPath = None
@@ -831,9 +829,7 @@ class NmrVrptUtility:
                 if self.__dirPath is None:
                     self.__dirPath = os.path.dirname(self.__cifPath)
 
-                self.__sub_dir_name_for_cache = self.__cR.__sub_dir_name_for_cache  # pylint: disable=protected-access
-
-                self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+                self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
 
                 if not os.path.isdir(self.__cacheDirPath):
                     os.makedirs(self.__cacheDirPath)
@@ -997,14 +993,14 @@ class NmrVrptUtility:
                     if self.__dirPath is None:
                         self.__dirPath = os.path.dirname(fPath)
 
-                    self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+                    self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
 
                     if not os.path.isdir(self.__cacheDirPath):
                         os.makedirs(self.__cacheDirPath)
 
                 self.__cR = CifReader(self.__verbose, self.__log,
                                       use_cache=self.__use_cache,
-                                      sub_dir_name_for_cache=self.__sub_dir_name_for_cache)
+                                      sub_dir_name_for_cache=SUB_DIR_NAME_FOR_CACHE)
 
                 if self.__cR.parse(fPath):
                     self.__cifPath = fPath
@@ -1026,9 +1022,7 @@ class NmrVrptUtility:
                 if self.__dirPath is None:
                     self.__dirPath = os.path.dirname(self.__cifPath)
 
-                self.__sub_dir_name_for_cache = self.__cR.__sub_dir_name_for_cache  # pylint: disable=protected-access
-
-                self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+                self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
 
                 if not os.path.isdir(self.__cacheDirPath):
                     os.makedirs(self.__cacheDirPath)

@@ -36,7 +36,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        # 'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
     #
@@ -52,7 +52,8 @@ setup(
                       # "antlr4-python2-runtime; python_version == '2.7'",
                       "antlr4-python3-runtime ~= 4.13.0; python_version >= '3'",
                       "striprtf",
-                      "datetime"],
+                      "datetime",
+                      "dataclasses; python_version == '3.6'"],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'wwpdb.utils.tests-nmr-tox', 'mock-data']),
     # Enables Manifest to be used
     include_package_data=True,

@@ -648,7 +648,6 @@ class NEFTranslator:
                  'star2NefChainMapping',
                  'star2CifChainMapping',
                  '__pA',
-                 '__pA',
                  '__ccU',
                  '__csStat',
                  '__c2S',

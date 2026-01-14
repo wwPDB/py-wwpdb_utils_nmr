@@ -22,7 +22,9 @@ from packaging import version
 from typing import List, Union, Optional
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (NMR_CONTENT_SUBTYPES,
+    from wwpdb.utils.nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
+                                               MR_FILE_PATH_LIST_KEY,
+                                               NMR_CONTENT_SUBTYPES,
                                                READABLE_FILE_TYPE,
                                                SF_CATEGORIES,
                                                LP_CATEGORIES,
@@ -52,7 +54,9 @@ try:
                                                    MAX_DIM_NUM_OF_SPECTRA)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS
 except ImportError:
-    from nmr.NmrDpConstant import (NMR_CONTENT_SUBTYPES,
+    from nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
+                                   MR_FILE_PATH_LIST_KEY,
+                                   NMR_CONTENT_SUBTYPES,
                                    READABLE_FILE_TYPE,
                                    SF_CATEGORIES,
                                    LP_CATEGORIES,
@@ -947,22 +951,18 @@ class NmrDpFirstAid:
 
             if file_list_id < self.__reg.cs_file_path_list_len:
 
-                cs_file_path_list = 'chem_shift_file_path_list'
-
-                if cs_file_path_list in self.__reg.outputParamDict:
-                    if file_list_id < len(self.__reg.outputParamDict[cs_file_path_list]):
-                        dstPath = self.__reg.outputParamDict[cs_file_path_list][file_list_id]
-                        if dstPath is not None and dstPath not in self.__reg.inputParamDict[cs_file_path_list]:
+                if CS_FILE_PATH_LIST_KEY in self.__reg.outputParamDict:
+                    if file_list_id < len(self.__reg.outputParamDict[CS_FILE_PATH_LIST_KEY]):
+                        dstPath = self.__reg.outputParamDict[CS_FILE_PATH_LIST_KEY][file_list_id]
+                        if dstPath is not None and dstPath not in self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]:
                             shutil.copyfile(_srcPath, dstPath)
 
             else:
 
-                mr_file_path_list = 'restraint_file_path_list'
-
-                if mr_file_path_list in self.__reg.outputParamDict:
-                    if file_list_id - self.__reg.cs_file_path_list_len < len(self.__reg.outputParamDict[mr_file_path_list]):
-                        dstPath = self.__reg.outputParamDict[mr_file_path_list][file_list_id - self.__reg.cs_file_path_list_len]
-                        if dstPath is not None and dstPath not in self.__reg.inputParamDict[mr_file_path_list]:
+                if MR_FILE_PATH_LIST_KEY in self.__reg.outputParamDict:
+                    if file_list_id - self.__reg.cs_file_path_list_len < len(self.__reg.outputParamDict[MR_FILE_PATH_LIST_KEY]):
+                        dstPath = self.__reg.outputParamDict[MR_FILE_PATH_LIST_KEY][file_list_id - self.__reg.cs_file_path_list_len]
+                        if dstPath is not None and dstPath not in self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY]:
                             shutil.copyfile(_srcPath, dstPath)
 
         if is_valid:

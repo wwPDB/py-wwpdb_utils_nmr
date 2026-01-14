@@ -28,7 +28,11 @@ from operator import itemgetter
 from typing import List, Union, Set, Tuple, Optional
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (NMR_CONTENT_SUBTYPES,
+    from wwpdb.utils.nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
+                                               MR_FILE_PATH_LIST_KEY,
+                                               AR_FILE_PATH_LIST_KEY,
+                                               AC_FILE_PATH_LIST_KEY,
+                                               NMR_CONTENT_SUBTYPES,
                                                READABLE_FILE_TYPE,
                                                SF_CATEGORIES,
                                                LP_CATEGORIES,
@@ -133,7 +137,11 @@ try:
                                                          C_METHYL_CENTER_MAX, C_METHYL_CENTER_MIN)
     from wwpdb.utils.nmr.rci.RCI import RCI
 except ImportError:
-    from nmr.NmrDpConstant import (NMR_CONTENT_SUBTYPES,
+    from nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
+                                   MR_FILE_PATH_LIST_KEY,
+                                   AR_FILE_PATH_LIST_KEY,
+                                   AC_FILE_PATH_LIST_KEY,
+                                   NMR_CONTENT_SUBTYPES,
                                    READABLE_FILE_TYPE,
                                    SF_CATEGORIES,
                                    LP_CATEGORIES,
@@ -869,9 +877,8 @@ class NmrDpValidation:
                     break
 
             if self.__reg.op == 'nmr-str-replace-cs':
-                cs_file_path_list = 'chem_shift_file_path_list'
 
-                for csListId, cs in enumerate(self.__reg.inputParamDict[cs_file_path_list], start=1):
+                for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY], start=1):
 
                     if isinstance(cs, str):
                         csPath = cs
@@ -923,7 +930,7 @@ class NmrDpValidation:
 
                     allow_empty = self.__reg.bmrb_only and self.__reg.internal_mode\
                         and ('nmr_cif_file_path' in self.__reg.inputParamDict
-                             or (csListId == 1 and len(self.__reg.inputParamDict[cs_file_path_list]) > 1))
+                             or (csListId == 1 and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1))
 
                     is_valid, message = self.__reg.nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts
 
@@ -1064,9 +1071,7 @@ class NmrDpValidation:
 
         else:
 
-            cs_file_path_list = 'chem_shift_file_path_list'
-
-            for csListId, cs in enumerate(self.__reg.inputParamDict[cs_file_path_list]):
+            for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]):
 
                 if isinstance(cs, str):
                     csPath = cs
@@ -1152,7 +1157,7 @@ class NmrDpValidation:
 
                 allow_empty = self.__reg.bmrb_only and self.__reg.internal_mode\
                     and ('nmr_cif_file_path' in self.__reg.inputParamDict
-                         or (csListId == 0 and len(self.__reg.inputParamDict[cs_file_path_list]) > 1))
+                         or (csListId == 0 and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1))
 
                 is_valid, message = self.__reg.nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts
 
@@ -1166,10 +1171,10 @@ class NmrDpValidation:
                 file_name = input_source_dic['file_name']
                 file_type = input_source_dic['file_type']
 
-                if cs_file_path_list in self.__reg.outputParamDict:
-                    if csListId < len(self.__reg.outputParamDict[cs_file_path_list]):
-                        dstPath = self.__reg.outputParamDict[cs_file_path_list][csListId]
-                        if dstPath is not None and dstPath not in self.__reg.inputParamDict[cs_file_path_list]:
+                if CS_FILE_PATH_LIST_KEY in self.__reg.outputParamDict:
+                    if csListId < len(self.__reg.outputParamDict[CS_FILE_PATH_LIST_KEY]):
+                        dstPath = self.__reg.outputParamDict[CS_FILE_PATH_LIST_KEY][csListId]
+                        if dstPath is not None and dstPath not in self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]:
                             shutil.copyfile(csPath, dstPath)
 
                 if is_valid:
@@ -1300,14 +1305,11 @@ class NmrDpValidation:
                     except OSError:
                         pass
 
-            mr_file_path_list = 'restraint_file_path_list'
-            ar_file_path_list = 'atypical_restraint_file_path_list'
-
             self.__reg.legacy_dist_restraint_uploaded = False
 
-            if mr_file_path_list in self.__reg.inputParamDict:
+            if MR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
-                for mr in self.__reg.inputParamDict[mr_file_path_list]:
+                for mr in self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY]:
 
                     if isinstance(mr, str):
                         mrPath = mr
@@ -1341,9 +1343,9 @@ class NmrDpValidation:
 
                 has_atypical_restraint = False
 
-                if ar_file_path_list in self.__reg.inputParamDict:
+                if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
-                    for ar in self.__reg.inputParamDict[ar_file_path_list]:
+                    for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
                         arPath = ar['file_name']
 
                         if os.path.exists(arPath):
@@ -1355,7 +1357,7 @@ class NmrDpValidation:
 
                 file_path_list_len = self.__reg.cs_file_path_list_len
 
-                for mr in self.__reg.inputParamDict[mr_file_path_list]:
+                for mr in self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY]:
 
                     if isinstance(mr, str):
                         mrPath = mr
@@ -1397,10 +1399,10 @@ class NmrDpValidation:
                     file_name = input_source_dic['file_name']
                     file_type = input_source_dic['file_type']
 
-                    if mr_file_path_list in self.__reg.outputParamDict:
-                        if file_path_list_len - self.__reg.cs_file_path_list_len < len(self.__reg.outputParamDict[mr_file_path_list]):
-                            dstPath = self.__reg.outputParamDict[mr_file_path_list][file_path_list_len - self.__reg.cs_file_path_list_len]
-                            if dstPath is not None and dstPath not in self.__reg.inputParamDict[mr_file_path_list]:
+                    if MR_FILE_PATH_LIST_KEY in self.__reg.outputParamDict:
+                        if file_path_list_len - self.__reg.cs_file_path_list_len < len(self.__reg.outputParamDict[MR_FILE_PATH_LIST_KEY]):
+                            dstPath = self.__reg.outputParamDict[MR_FILE_PATH_LIST_KEY][file_path_list_len - self.__reg.cs_file_path_list_len]
+                            if dstPath is not None and dstPath not in self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY]:
                                 shutil.copyfile(mrPath, dstPath)
 
                     if is_valid:
@@ -1469,9 +1471,9 @@ class NmrDpValidation:
                         except OSError:
                             pass
 
-            if ar_file_path_list in self.__reg.inputParamDict:
+            if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
-                for ar in self.__reg.inputParamDict[ar_file_path_list]:
+                for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
                     arPath = ar['file_name']
 
                     if arPath.endswith('.gz'):
@@ -1509,11 +1511,9 @@ class NmrDpValidation:
 
                     ar['file_name'] = arPath
 
-            acs_file_path_list = 'atypical_chem_shift_file_path_list'
+            if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.bmrb_only and self.__reg.conversion_server:
 
-            if acs_file_path_list in self.__reg.inputParamDict and self.__reg.bmrb_only and self.__reg.conversion_server:
-
-                for acs in self.__reg.inputParamDict[acs_file_path_list]:
+                for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
                     acsPath = acs['file_name']
 
                     codec = detect_bom(acsPath, 'utf-8')
@@ -1530,8 +1530,8 @@ class NmrDpValidation:
 
                     acs['file_name'] = acsPath
 
-            if self.__reg.bmrb_only and self.__reg.internal_mode and len(self.__reg.inputParamDict[cs_file_path_list]) > 1:
-                for csListId, cs in enumerate(self.__reg.inputParamDict[cs_file_path_list]):
+            if self.__reg.bmrb_only and self.__reg.internal_mode and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1:
+                for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]):
                     if csListId == 0:
                         dst_sf_category_list, _ = self.__reg.nefT.get_inventory_list(self.__reg.star_data[0])
                         if 'assigned_chemical_shifts' in dst_sf_category_list:
@@ -1866,9 +1866,7 @@ class NmrDpValidation:
                                             del self.__reg.suspended_errors_for_lazy_eval[idx]
                                             break
 
-                            cs_file_path_list = 'chem_shift_file_path_list'
-
-                            cs = self.__reg.inputParamDict[cs_file_path_list][0]
+                            cs = self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY][0]
 
                             if isinstance(cs, str):
                                 cs_path = cs
@@ -3143,9 +3141,9 @@ class NmrDpValidation:
 
         if self.__reg.coordPropCachePath is not None:
             hash_value = hash(str(self.__reg.cpC))
-            if hash_value != self.__reg.cpC_hash:
+            if hash_value != self.__reg.cpcHashCode:
                 write_as_pickle(self.__reg.cpC, self.__reg.coordPropCachePath)
-                self.__reg.cpC_hash = hash_value
+                self.__reg.cpcHashCode = hash_value
 
         return True
 
@@ -11246,7 +11244,7 @@ class NmrDpValidation:
                                      and _atom_id in _coord_atom_site['alt_atom_id']\
                                      and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                     # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                    cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                    cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                     if cca_row is not None:
                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11267,7 +11265,7 @@ class NmrDpValidation:
                                            and _atom_id in __coord_atom_site['alt_atom_id']:
                                             comp_id = _comp_id
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                            cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11276,7 +11274,7 @@ class NmrDpValidation:
                                         if _atom_id in __coord_atom_site['atom_id']:
                                             comp_id = _comp_id
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                            cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11360,7 +11358,7 @@ class NmrDpValidation:
                                              and _atom_id in _coord_atom_site['alt_atom_id']\
                                              and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                            cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11381,7 +11379,7 @@ class NmrDpValidation:
                                                    and _atom_id in __coord_atom_site['alt_atom_id']:
                                                     comp_id = _comp_id
                                                     # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                    cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                    cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                     if cca_row is not None:
                                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11390,7 +11388,7 @@ class NmrDpValidation:
                                                 if _atom_id in __coord_atom_site['atom_id']:
                                                     comp_id = _comp_id
                                                     # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                    cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                    cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                     if cca_row is not None:
                                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11490,7 +11488,7 @@ class NmrDpValidation:
                                  and _atom_id in _coord_atom_site['alt_atom_id']\
                                  and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                 if cca_row is not None:
                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11511,7 +11509,7 @@ class NmrDpValidation:
                                        and _atom_id in __coord_atom_site['alt_atom_id']:
                                         comp_id = _comp_id
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                        cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                        cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11520,7 +11518,7 @@ class NmrDpValidation:
                                     if _atom_id in __coord_atom_site['atom_id']:
                                         comp_id = _comp_id
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                        cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                        cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11596,7 +11594,7 @@ class NmrDpValidation:
                                          and _atom_id in _coord_atom_site['alt_atom_id']\
                                          and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                        cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                        cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11617,7 +11615,7 @@ class NmrDpValidation:
                                                and _atom_id in __coord_atom_site['alt_atom_id']:
                                                 comp_id = _comp_id
                                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11626,7 +11624,7 @@ class NmrDpValidation:
                                             if _atom_id in __coord_atom_site['atom_id']:
                                                 comp_id = _comp_id
                                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]

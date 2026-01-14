@@ -67,6 +67,14 @@ MR_FILE_PATH_LIST_KEY = 'restraint_file_path_list'
 AR_FILE_PATH_LIST_KEY = 'atypical_restraint_file_path_list'
 AC_FILE_PATH_LIST_KEY = 'atypical_chem_shift_file_path_list'
 
+# sub-directory name for cache files
+SUB_DIR_NAME_FOR_CACHE = 'utils_nmr'
+
+# default entry ID
+DEF_ENTRY_ID = 'UNNAMED'
+# initial placeholder for entry ID
+INI_ENTRY_ID = 'EXTRACT_FROM_COORD'
+
 # defined workflow operations
 WORKFLOW_OPS = ('nmr-nef-consistency-check',
                 'nmr-str-consistency-check',

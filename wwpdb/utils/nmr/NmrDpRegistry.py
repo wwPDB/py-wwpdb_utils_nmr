@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from typing import IO, List, Union
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (WORKFLOW_OPS,
+    from wwpdb.utils.nmr.NmrDpConstant import (INI_ENTRY_ID,
                                                RMSD_NOT_SUPERIMPOSED,
                                                RMSD_OVERLAID_EXACTLY,
                                                CS_ANOMALOUS_ERROR_SCALED_BY_SIGMA,
@@ -33,12 +33,11 @@ try:
                                                PK_DATA_ITEMS,
                                                AUX_KEY_ITEMS,
                                                AUX_DATA_ITEMS)
-    from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,
-                                             NmrDpReportOutputStatistics)
+    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
 except ImportError:
-    from nmr.NmrDpConstant import (WORKFLOW_OPS,
+    from nmr.NmrDpConstant import (INI_ENTRY_ID,
                                    RMSD_NOT_SUPERIMPOSED,
                                    RMSD_OVERLAID_EXACTLY,
                                    CS_ANOMALOUS_ERROR_SCALED_BY_SIGMA,
@@ -49,8 +48,7 @@ except ImportError:
                                    PK_DATA_ITEMS,
                                    AUX_KEY_ITEMS,
                                    AUX_DATA_ITEMS)
-    from nmr.NmrDpReport import (NmrDpReport,
-                                 NmrDpReportOutputStatistics)
+    from nmr.NmrDpReport import NmrDpReport
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
 
@@ -168,10 +166,8 @@ class NmrDpRegistry:
     # whether sf_framecode has to be fixed
     has_legacy_sf_issue: bool = False
 
-    # default entry_id
-    entry_id__: str = 'UNNAMED'
     # current entry_id, to be replaced
-    entry_id: str = 'EXTRACT_FROM_COORD'
+    entry_id: str = INI_ENTRY_ID
     # bmrb id (internal use only)
     bmrb_id: str = None
     # current assembly name
@@ -211,20 +207,11 @@ class NmrDpRegistry:
 
     srcPath: str = None
     dstPath: str = None
-    logPath: str = None
-    dstPath__: str = None
     cifPath: str = None
-
-    # temporary file path to be removed (release mode)
-    tmpPath: str = None
 
     # current working directory
     dirPath: str = None
 
-    # directory for cache files
-    cacheDirPath: str = None
-    # hash code of the coordinate file
-    cifHashCode = None
     # whether coordinate file is already examined
     cifChecked: bool = False
 
@@ -236,20 +223,11 @@ class NmrDpRegistry:
 
     # auxiliary input resource
     inputParamDict: dict = field(default_factory=dict)
-    # copy of inputParamDict to restart remediation
-    inputParamDictCopy: dict = None
     # auxiliary output resource
     outputParamDict: dict = field(default_factory=dict)
 
-    # defined workflow operations
-    workFlowOps: tuple = field(default_factory=lambda: WORKFLOW_OPS)
-
     # data processing report
     report: NmrDpReport = None
-    report_prev: NmrDpReport = None
-
-    # statistics of output file
-    output_statistics: NmrDpReportOutputStatistics = None
 
     # CCD accessing utility
     ccU = None
@@ -309,7 +287,7 @@ class NmrDpRegistry:
     nmr_ext_poly_seq: List[dict] = None
 
     # rows of _Chem_comp_assembly loop
-    cca_dat: List[list] = None
+    chem_comp_asm_dat: List[list] = None
 
     # combined nmr cif file path (used only for BMRB internal annotation)
     srcNmrCifPath: str = None
@@ -374,9 +352,6 @@ class NmrDpRegistry:
     # item tag names of 'atom_site' category of the coordinates
     coord_atom_site_tags: List[str] = None
 
-    # sub-directory name for cache file
-    sub_dir_name_for_cache: str = 'utils_nmr'
-
     # CIF reader
     cR = None
 
@@ -385,8 +360,8 @@ class NmrDpRegistry:
 
     # coordinate properties cache
     cpC: dict = field(default_factory=lambda: copy.deepcopy(default_coord_properties))
-    # hash value of coordinate properties cache
-    cpC_hash: str = None
+    # hash code of coordinate properties cache
+    cpcHashCode: str = None
 
     # set of entity_assembly_id having experimental data
     ent_asym_id_with_exptl_data: set = field(default_factory=set)

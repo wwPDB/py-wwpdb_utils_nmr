@@ -3141,9 +3141,9 @@ class NmrDpValidation:
 
         if self.__reg.coordPropCachePath is not None:
             hash_value = hash(str(self.__reg.cpC))
-            if hash_value != self.__reg.cpC_hash:
+            if hash_value != self.__reg.cpcHashCode:
                 write_as_pickle(self.__reg.cpC, self.__reg.coordPropCachePath)
-                self.__reg.cpC_hash = hash_value
+                self.__reg.cpcHashCode = hash_value
 
         return True
 
@@ -11244,7 +11244,7 @@ class NmrDpValidation:
                                      and _atom_id in _coord_atom_site['alt_atom_id']\
                                      and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                     # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                    cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                    cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                     if cca_row is not None:
                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11265,7 +11265,7 @@ class NmrDpValidation:
                                            and _atom_id in __coord_atom_site['alt_atom_id']:
                                             comp_id = _comp_id
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                            cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11274,7 +11274,7 @@ class NmrDpValidation:
                                         if _atom_id in __coord_atom_site['atom_id']:
                                             comp_id = _comp_id
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                            cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11358,7 +11358,7 @@ class NmrDpValidation:
                                              and _atom_id in _coord_atom_site['alt_atom_id']\
                                              and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                            cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11379,7 +11379,7 @@ class NmrDpValidation:
                                                    and _atom_id in __coord_atom_site['alt_atom_id']:
                                                     comp_id = _comp_id
                                                     # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                    cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                    cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                     if cca_row is not None:
                                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11388,7 +11388,7 @@ class NmrDpValidation:
                                                 if _atom_id in __coord_atom_site['atom_id']:
                                                     comp_id = _comp_id
                                                     # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                    cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                    cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                     if cca_row is not None:
                                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11488,7 +11488,7 @@ class NmrDpValidation:
                                  and _atom_id in _coord_atom_site['alt_atom_id']\
                                  and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                 if cca_row is not None:
                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11509,7 +11509,7 @@ class NmrDpValidation:
                                        and _atom_id in __coord_atom_site['alt_atom_id']:
                                         comp_id = _comp_id
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                        cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                        cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11518,7 +11518,7 @@ class NmrDpValidation:
                                     if _atom_id in __coord_atom_site['atom_id']:
                                         comp_id = _comp_id
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                        cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                        cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11594,7 +11594,7 @@ class NmrDpValidation:
                                          and _atom_id in _coord_atom_site['alt_atom_id']\
                                          and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                        cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                        cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11615,7 +11615,7 @@ class NmrDpValidation:
                                                and _atom_id in __coord_atom_site['alt_atom_id']:
                                                 comp_id = _comp_id
                                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
@@ -11624,7 +11624,7 @@ class NmrDpValidation:
                                             if _atom_id in __coord_atom_site['atom_id']:
                                                 comp_id = _comp_id
                                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
-                                                cca_row = next((cca_row for cca_row in self.__reg.cca_dat
+                                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]

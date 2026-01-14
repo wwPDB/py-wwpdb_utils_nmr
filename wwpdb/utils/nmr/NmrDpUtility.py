@@ -263,6 +263,10 @@ try:
                                                MR_FILE_PATH_LIST_KEY,
                                                AR_FILE_PATH_LIST_KEY,
                                                AC_FILE_PATH_LIST_KEY,
+                                               SUB_DIR_NAME_FOR_CACHE,
+                                               DEF_ENTRY_ID,
+                                               INI_ENTRY_ID,
+                                               WORKFLOW_OPS,
                                                NMR_CONTENT_SUBTYPES,
                                                MR_CONTENT_SUBTYPES,
                                                PK_CONTENT_SUBTYPES,
@@ -382,6 +386,10 @@ except ImportError:
                                    MR_FILE_PATH_LIST_KEY,
                                    AR_FILE_PATH_LIST_KEY,
                                    AC_FILE_PATH_LIST_KEY,
+                                   SUB_DIR_NAME_FOR_CACHE,
+                                   DEF_ENTRY_ID,
+                                   INI_ENTRY_ID,
+                                   WORKFLOW_OPS,
                                    NMR_CONTENT_SUBTYPES,
                                    MR_CONTENT_SUBTYPES,
                                    PK_CONTENT_SUBTYPES,
@@ -514,6 +522,13 @@ class NmrDpUtility:
                  '__alt_chain',
                  '__valid_seq',
                  '__remediation_loop_count',
+                 '__report_prev',
+                 '__output_statistics',
+                 '__dstPath__',
+                 '__logPath',
+                 '__tmpPath',
+                 '__cifHashCode',
+                 '__inputParamDict__',
                  '__authSeqMap',
                  '__nmrIfR')
 
@@ -538,7 +553,7 @@ class NmrDpUtility:
         self.__reg.pA = PairwiseAlign()
         self.__reg.pA.setVerbose(verbose)
 
-        self.__reg.cR = CifReader(verbose, log, use_cache=True, sub_dir_name_for_cache=self.__reg.sub_dir_name_for_cache)
+        self.__reg.cR = CifReader(verbose, log, use_cache=True, sub_dir_name_for_cache=SUB_DIR_NAME_FOR_CACHE)
 
         mr_content_subtypes = MR_CONTENT_SUBTYPES
         nmr_rep_content_subtypes = ['chem_shift', 'spectral_peak']
@@ -759,6 +774,27 @@ class NmrDpUtility:
         # loop count of remediation
         self.__remediation_loop_count: int = 0
 
+        # previous data processing report
+        self.__report_prev: NmrDpReport = None
+
+        # statistics of output file
+        self.__output_statistics: NmrDpReportOutputStatistics = None
+
+        # copy of dstPath
+        self.__dstPath__: str = None
+
+        # log file path
+        self.__logPath: str = None
+
+        # temporary file path to be removed (release mode)
+        self.__tmpPath: str = None
+
+        # hash code of the coordinate file
+        self.__cifHashCode = None
+
+        # copy of inputParamDict to restart remediation
+        self.__inputParamDict__: dict = None
+
         # temporary dictionaries used in mapping auth sequence scheme
         self.__authSeqMap = {}
 
@@ -798,14 +834,14 @@ class NmrDpUtility:
 
         if fPath is not None:
             self.__reg.dstPath = os.path.abspath(fPath)
-            self.__reg.dstPath__ = copy.copy(self.__reg.dstPath)
+            self.__dstPath__ = copy.copy(self.__reg.dstPath)
 
     def setLog(self, fPath: str):
         """ Set a log file path for the primary input source.
         """
 
         if fPath is not None:
-            self.__reg.logPath = os.path.abspath(fPath)
+            self.__logPath = os.path.abspath(fPath)
 
     def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of input parameters.
@@ -886,7 +922,7 @@ class NmrDpUtility:
             if MR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
                 self.__reg.file_path_list_len += len(self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY])
 
-        self.__reg.cifPath = self.__reg.cifHashCode = None
+        self.__reg.cifPath = self.__cifHashCode = None
         self.__reg.cifChecked = False
 
         # incomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
@@ -911,8 +947,8 @@ class NmrDpUtility:
             self.__reg.remediation_mode = True
             self.__reg.has_star_chem_shift = True
 
-            if self.__reg.inputParamDictCopy is None:
-                self.__reg.inputParamDictCopy = deepcopy(self.__reg.inputParamDict)
+            if self.__inputParamDict__ is None:
+                self.__inputParamDict__ = deepcopy(self.__reg.inputParamDict)
 
             for v in self.__reg.key_items['nmr-star'].values():
                 if v is None:
@@ -990,7 +1026,7 @@ class NmrDpUtility:
         if self.__reg.verbose:
             self.__reg.log.write(f"+{self.__class_name__}.op() starting op {op}\n")
 
-        if op not in self.__reg.workFlowOps:
+        if op not in WORKFLOW_OPS:
             raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Unknown workflow operation {op}.")
 
         if 'cif' in op:
@@ -998,13 +1034,13 @@ class NmrDpUtility:
                 raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
             if self.__reg.dstPath is None:
                 self.__reg.dstPath = self.__reg.outputParamDict['nmr_cif_file_path'] + '.tmp'
-                self.__reg.dstPath__ = copy.copy(self.__reg.dstPath)
-                self.__reg.tmpPath = self.__reg.dstPath__
+                self.__dstPath__ = copy.copy(self.__reg.dstPath)
+                self.__tmpPath = self.__dstPath__
 
         if self.__reg.release_mode and self.__reg.dstPath is None:
             self.__reg.dstPath = self.__reg.srcPath + '.tmp'
-            self.__reg.dstPath__ = copy.copy(self.__reg.dstPath)
-            self.__reg.tmpPath = self.__reg.dstPath__
+            self.__dstPath__ = copy.copy(self.__reg.dstPath)
+            self.__tmpPath = self.__dstPath__
 
         if has_key_value(self.__reg.inputParamDict, 'bmrb_only'):
             if isinstance(self.__reg.inputParamDict['bmrb_only'], bool):
@@ -1274,9 +1310,9 @@ class NmrDpUtility:
 
                     os.removedirs(pk_dir)
 
-            if (self.__reg.submission_mode or self.__reg.annotation_mode or self.__reg.release_mode) and self.__reg.tmpPath is not None:
-                os.remove(self.__reg.tmpPath)
-                self.__reg.tmpPath = None
+            if (self.__reg.submission_mode or self.__reg.annotation_mode or self.__reg.release_mode) and self.__tmpPath is not None:
+                os.remove(self.__tmpPath)
+                self.__tmpPath = None
 
             return not self.__reg.report.isError()
 
@@ -1285,10 +1321,10 @@ class NmrDpUtility:
 
         finally:
             self.__reg.report = None
-            self.__reg.report_prev = None
+            self.__report_prev = None
 
             self.__reg.inputParamDict.clear()
-            self.__reg.inputParamDictCopy = None
+            self.__inputParamDict__ = None
             self.__reg.outputParamDict.clear()
 
             self.__reg.star_data_type.clear()
@@ -1318,19 +1354,19 @@ class NmrDpUtility:
         """ Dump current NMR data processing report.
         """
 
-        if self.__reg.report_prev is not None:
-            self.__reg.report.inheritFormatIssueErrors(self.__reg.report_prev)
-            self.__reg.report.inheritCorrectedFormatIssueWarnings(self.__reg.report_prev)
-            self.__reg.report.inheritCorrectedSaveframeNameWarnings(self.__reg.report_prev)
+        if self.__report_prev is not None:
+            self.__reg.report.inheritFormatIssueErrors(self.__report_prev)
+            self.__reg.report.inheritCorrectedFormatIssueWarnings(self.__report_prev)
+            self.__reg.report.inheritCorrectedSaveframeNameWarnings(self.__report_prev)
 
-            if self.__reg.report_prev.error.get() is not None:
-                self.__reg.report.setCorrectedError(self.__reg.report_prev)
+            if self.__report_prev.error.get() is not None:
+                self.__reg.report.setCorrectedError(self.__report_prev)
 
-            if self.__reg.report_prev.warning.get() is not None:
-                self.__reg.report.setCorrectedWarning(self.__reg.report_prev)
+            if self.__report_prev.warning.get() is not None:
+                self.__reg.report.setCorrectedWarning(self.__report_prev)
 
-        if self.__reg.output_statistics is not None:
-            self.__reg.report.setOutputStatistics(self.__reg.output_statistics)
+        if self.__output_statistics is not None:
+            self.__reg.report.setOutputStatistics(self.__output_statistics)
 
         self.__reg.report.error.sortFormatIssueError()
         self.__reg.report.warning.sortChemicalShiftValidation()
@@ -1339,10 +1375,10 @@ class NmrDpUtility:
 
         self.__reg.report.clean()
 
-        if self.__reg.logPath is None:
+        if self.__logPath is None:
             return False
 
-        return self.__reg.report.writeFile(self.__reg.logPath)
+        return self.__reg.report.writeFile(self.__logPath)
 
     def __initializeDpReport(self, srcPath: str = None, calcOutputStats: bool = False) -> bool:
         """ Initialize NMR data processing report.
@@ -1360,11 +1396,11 @@ class NmrDpUtility:
             fPath = self.__reg.inputParamDict['report_file_path']
 
             if os.access(fPath, os.F_OK) and os.path.getsize(fPath) > 0:
-                self.__reg.report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
-                self.__reg.report_prev.loadFile(fPath)
-                self.__reg.report.inheritFormatIssueErrors(self.__reg.report_prev)
-                self.__reg.report.inheritPreviousErrors(self.__reg.report_prev)
-                self.__reg.report.inheritPreviousWarnings(self.__reg.report_prev)
+                self.__report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
+                self.__report_prev.loadFile(fPath)
+                self.__reg.report.inheritFormatIssueErrors(self.__report_prev)
+                self.__reg.report.inheritPreviousErrors(self.__report_prev)
+                self.__reg.report.inheritPreviousWarnings(self.__report_prev)
 
                 if calcOutputStats and self.__reg.combined_mode and self.__reg.dstPath is not None:
 
@@ -1875,7 +1911,7 @@ class NmrDpUtility:
         if self.__reg.remediation_mode and corrected:
 
             self.__reg.report = None
-            self.__reg.report_prev = None
+            self.__report_prev = None
 
             self.__reg.star_data_type.clear()
             self.__reg.star_data.clear()
@@ -1898,7 +1934,7 @@ class NmrDpUtility:
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
 
-            self.__reg.inputParamDict = deepcopy(self.__reg.inputParamDictCopy)
+            self.__reg.inputParamDict = deepcopy(self.__inputParamDict__)
 
             self.__initializeDpReport()
             self.__validateInputSource()
@@ -1913,7 +1949,7 @@ class NmrDpUtility:
 
             if self.__reg.mr_debug:
                 if self.__remediation_loop_count > 5:
-                    self.__reg.log.write(f'repetiation of remediation: {self.__reg.inputParamDictCopy}\n')
+                    self.__reg.log.write(f'repetiation of remediation: {self.__inputParamDict__}\n')
 
         return not self.__reg.report.isError()
 
@@ -7745,14 +7781,14 @@ class NmrDpUtility:
 
         self.__reg.asmChkCachePath = None
 
-        if self.__reg.cifHashCode is not None:
+        if self.__cifHashCode is not None:
 
-            self.__reg.asmChkCachePath = os.path.join(self.__reg.cahceDirPath, f"{self.__reg.cifHashCode}{hash_code_ext}_asm_chk.pkl")
-            self.__reg.coordPropCachePath = os.path.join(self.__reg.cahceDirPath, f"{self.__reg.cifHashCode}{hash_code_ext}_coord_prop.pkl")
+            self.__reg.asmChkCachePath = os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}{hash_code_ext}_asm_chk.pkl")
+            self.__reg.coordPropCachePath = os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}{hash_code_ext}_coord_prop.pkl")
 
             self.__reg.caC = load_from_pickle(self.__reg.asmChkCachePath)
             self.__reg.cpC = load_from_pickle(self.__reg.coordPropCachePath, default=copy.copy(default_coord_properties))
-            self.__reg.cpC_hash = hash(str(self.__reg.cpC))
+            self.__reg.cpcHashCode = hash(str(self.__reg.cpC))
 
             # DAOTHER-8817
             if self.__reg.caC is not None and 'chem_comp_atom' in self.__reg.caC\
@@ -8141,8 +8177,8 @@ class NmrDpUtility:
                 if content_subtype in ('entry_info', 'entity', 'ph_param_data'):
                     continue
 
-                if self.__reg.report_prev is not None and content_subtype != 'chem_shift':
-                    prev_stats = self.__reg.report_prev.getNmrLegacyStatsOfExptlData(fileListId, content_subtype)
+                if self.__report_prev is not None and content_subtype != 'chem_shift':
+                    prev_stats = self.__report_prev.getNmrLegacyStatsOfExptlData(fileListId, content_subtype)
                     if prev_stats is not None:
                         stats[content_subtype] = prev_stats
                         continue
@@ -8371,8 +8407,8 @@ class NmrDpUtility:
 
             return True
 
-        if self.__reg.entry_id == 'EXTRACT_FROM_COORD':
-            self.__reg.entry_id = self.__reg.entry_id__
+        if self.__reg.entry_id == INI_ENTRY_ID:
+            self.__reg.entry_id = DEF_ENTRY_ID
 
         return False
 
@@ -8422,11 +8458,11 @@ class NmrDpUtility:
 
                 return False
 
-            if self.__reg.entry_id == 'EXTRACT_FROM_COORD':
+            if self.__reg.entry_id == INI_ENTRY_ID:
                 entry = self.__reg.cR.getDictList('entry')
 
                 if len(entry) == 0 or ('id' not in entry[0]):
-                    self.__reg.entry_id = self.__reg.entry_id__
+                    self.__reg.entry_id = DEF_ENTRY_ID
                 else:
                     self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
@@ -9027,7 +9063,7 @@ class NmrDpUtility:
         if self.__reg.cifPath is not None:
             return True
 
-        self.__reg.cifHashCode = None
+        self.__cifHashCode = None
 
         if 'coordinate_file_path' in self.__reg.inputParamDict:
 
@@ -9059,11 +9095,11 @@ class NmrDpUtility:
                 if self.__reg.dirPath is None:
                     self.__reg.dirPath = os.path.dirname(fPath)
 
-                if self.__reg.sub_dir_name_for_cache != 'nmr_dp_util' and os.path.isdir(os.path.join(self.__reg.dirPath, 'nmr_dp_util')):
-                    os.rename(os.path.join(self.__reg.dirPath, 'nmr_dp_util'),
-                              os.path.join(self.__reg.dirPath, self.__reg.sub_dir_name_for_cache))
+                # if self.__sub_dir_name_for_cache != 'nmr_dp_util' and os.path.isdir(os.path.join(self.__reg.dirPath, 'nmr_dp_util')):
+                #     os.rename(os.path.join(self.__reg.dirPath, 'nmr_dp_util'),
+                #               os.path.join(self.__reg.dirPath, self.__sub_dir_name_for_cache))
 
-                self.__reg.cahceDirPath = os.path.join(self.__reg.dirPath, self.__reg.sub_dir_name_for_cache)
+                self.__reg.cahceDirPath = os.path.join(self.__reg.dirPath, SUB_DIR_NAME_FOR_CACHE)
 
                 if not os.path.isdir(self.__reg.cahceDirPath):
                     os.makedirs(self.__reg.cahceDirPath)
@@ -9100,7 +9136,7 @@ class NmrDpUtility:
                 self.__reg.chain_id_map_for_remediation.clear()
                 self.__reg.seq_id_map_for_remediation.clear()
 
-                self.__reg.cifHashCode = self.__reg.cR.getHashCode()
+                self.__cifHashCode = self.__reg.cR.getHashCode()
 
                 self.__reg.coord_atom_site_tags = self.__reg.cR.getAttributeList('atom_site')
 
@@ -9221,8 +9257,8 @@ class NmrDpUtility:
 
             poly_seq = poly_seq_cache_path = None
 
-            if self.__reg.cifHashCode is not None:
-                poly_seq_cache_path = os.path.join(self.__reg.cahceDirPath, f"{self.__reg.cifHashCode}_poly_seq_full.pkl")
+            if self.__cifHashCode is not None:
+                poly_seq_cache_path = os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
                 poly_seq = load_from_pickle(poly_seq_cache_path)
 
             if poly_seq is None:
@@ -9565,8 +9601,8 @@ class NmrDpUtility:
 
                 poly_seq = poly_seq_cache_path = None
 
-                if self.__reg.cifHashCode is not None:
-                    poly_seq_cache_path = os.path.join(self.__reg.cahceDirPath, f"{self.__reg.cifHashCode}_poly_seq.pkl")
+                if self.__cifHashCode is not None:
+                    poly_seq_cache_path = os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}_poly_seq.pkl")
                     poly_seq = load_from_pickle(poly_seq_cache_path)
 
                 if poly_seq is None:
@@ -11783,7 +11819,7 @@ class NmrDpUtility:
 
         if 'report_file_path' not in self.__reg.inputParamDict or self.__reg.annotation_mode:
             self.__initializeDpReport()
-            self.__reg.dstPath = self.__reg.dstPath__ if self.__reg.cifPath is None else self.__reg.srcPath
+            self.__reg.dstPath = self.__dstPath__ if self.__reg.cifPath is None else self.__reg.srcPath
 
             return False
 
@@ -11798,8 +11834,8 @@ class NmrDpUtility:
         self.__reg.report = NmrDpReport(self.__reg.verbose, self.__reg.log)
         self.__reg.report.loadFile(fPath)
 
-        self.__reg.report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
-        self.__reg.report_prev.loadFile(fPath)
+        self.__report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
+        self.__report_prev.loadFile(fPath)
 
         return True
 
@@ -12974,9 +13010,9 @@ class NmrDpUtility:
 
         if self.__reg.coordPropCachePath is not None:
             hash_value = hash(str(self.__reg.cpC))
-            if hash_value != self.__reg.cpC_hash:
+            if hash_value != self.__reg.cpcHashCode:
                 write_as_pickle(self.__reg.cpC, self.__reg.coordPropCachePath)
-                self.__reg.cpC_hash = hash_value
+                self.__reg.cpcHashCode = hash_value
 
         return True
 
@@ -14557,19 +14593,19 @@ class NmrDpUtility:
 
             if self.__reg.cifPath is None or self.__reg.submission_mode:
 
-                if self.__reg.dstPath__ is None:
-                    self.__reg.dstPath__ = self.__reg.outputParamDict['nmr_cif_file_path']
+                if self.__dstPath__ is None:
+                    self.__dstPath__ = self.__reg.outputParamDict['nmr_cif_file_path']
 
                 self.__reg.dpR.remediateSpectralPeakListSaveframe(master_entry)
 
-                master_entry.write_to_file(self.__reg.dstPath__,
+                master_entry.write_to_file(self.__dstPath__,
                                            show_comments=(self.__reg.bmrb_only and self.__reg.internal_mode),
                                            skip_empty_loops=True, skip_empty_tags=False)
 
             try:
 
                 myIo = IoAdapterPy(False, sys.stderr)
-                containerList = myIo.readFile(self.__reg.dstPath__)
+                containerList = myIo.readFile(self.__dstPath__)
 
                 if containerList is not None and len(containerList) > 1:
 
@@ -14598,17 +14634,17 @@ class NmrDpUtility:
 
         file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
 
-        self.__reg.output_statistics = NmrDpReportOutputStatistics(self.__reg.verbose, self.__reg.log)
+        self.__output_statistics = NmrDpReportOutputStatistics(self.__reg.verbose, self.__reg.log)
 
-        self.__reg.output_statistics.setItemValue('file_name', os.path.basename(self.__reg.dstPath))
-        self.__reg.output_statistics.setItemValue('file_type', file_type)
-        self.__reg.output_statistics.setItemValue('entry_id', self.__reg.entry_id)
-        self.__reg.output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
-        self.__reg.output_statistics.setItemValue('processed_site', os.uname()[1])
+        self.__output_statistics.setItemValue('file_name', os.path.basename(self.__reg.dstPath))
+        self.__output_statistics.setItemValue('file_type', file_type)
+        self.__output_statistics.setItemValue('entry_id', self.__reg.entry_id)
+        self.__output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
+        self.__output_statistics.setItemValue('processed_site', os.uname()[1])
 
-        self.__reg.output_statistics.setItemValue('file_size', os.path.getsize(self.__reg.dstPath))
+        self.__output_statistics.setItemValue('file_size', os.path.getsize(self.__reg.dstPath))
         with open(self.__reg.dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
-            self.__reg.output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
+            self.__output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
 
         entry_title = entry_authors = submission_date = assembly_name = None
 
@@ -14622,11 +14658,11 @@ class NmrDpUtility:
 
                 entry_title = get_first_sf_tag(sf, 'Title', None)
                 if entry_title is not None:
-                    self.__reg.output_statistics.setItemValue('entry_title', entry_title)
+                    self.__output_statistics.setItemValue('entry_title', entry_title)
 
                 submission_date = get_first_sf_tag(sf, 'Submission_date', None)
                 if submission_date is not None:
-                    self.__reg.output_statistics.setItemValue('submission_date', submission_date)
+                    self.__output_statistics.setItemValue('submission_date', submission_date)
 
                 lp_category = '_Entry_author'
 
@@ -14654,7 +14690,7 @@ class NmrDpUtility:
 
                         if len(author_list) > 0:
                             entry_authors = ', '.join(author_list)
-                            self.__reg.output_statistics.setItemValue('entry_authors', entry_authors)
+                            self.__output_statistics.setItemValue('entry_authors', entry_authors)
 
                 except KeyError:
                     pass
@@ -14670,7 +14706,7 @@ class NmrDpUtility:
 
                 assembly_name = get_first_sf_tag(sf, 'Name', None)
                 if assembly_name is not None:
-                    self.__reg.output_statistics.setItemValue('assembly_name', assembly_name)
+                    self.__output_statistics.setItemValue('assembly_name', assembly_name)
 
             except IndexError:
                 pass
@@ -14690,7 +14726,7 @@ class NmrDpUtility:
                     if struct_title not in emptyValue:
                         model_info['struct_title'] = struct_title
                         if entry_title is None:
-                            self.__reg.output_statistics.setItemValue('entry_title', struct_title)
+                            self.__output_statistics.setItemValue('entry_title', struct_title)
 
                 audit = self.__reg.cR.getDictList('audit')
                 if len(audit) > 0 and 'name' in audit[0]:
@@ -14703,9 +14739,9 @@ class NmrDpUtility:
                         audit_authors = ', '.join(author_list)
                         model_info['audit_authors'] = audit_authors
                         if entry_authors is None:
-                            self.__reg.output_statistics.setItemValue('entry_authors', audit_authors)
+                            self.__output_statistics.setItemValue('entry_authors', audit_authors)
 
-                self.__reg.output_statistics.setItemValue('model', model_info)
+                self.__output_statistics.setItemValue('model', model_info)
 
             for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 
@@ -14942,7 +14978,7 @@ class NmrDpUtility:
 
                     sf_info_list.append(sf_info)
 
-                self.__reg.output_statistics.setItemValue(content_subtype, sf_info_list)
+                self.__output_statistics.setItemValue(content_subtype, sf_info_list)
 
         return self.__reg.report.getTotalErrors() == __errors
 
@@ -15217,9 +15253,9 @@ class NmrDpUtility:
                                                                report=self.__reg.report,
                                                                leave_unmatched=self.__reg.leave_intl_note)  # (None if self.__alt_chain else self.__reg.report))
 
-            if self.__reg.release_mode and self.__reg.tmpPath is not None:
-                os.remove(self.__reg.tmpPath)
-                self.__reg.tmpPath = None
+            if self.__reg.release_mode and self.__tmpPath is not None:
+                os.remove(self.__tmpPath)
+                self.__tmpPath = None
 
         except Exception as e:
 
@@ -15288,15 +15324,15 @@ class NmrDpUtility:
 
         self.__reg.rescue_mode = False
 
-        self.__reg.report_prev = None
+        self.__report_prev = None
 
         try:
 
             self.__reg.srcPath = self.__reg.outputParamDict['nmr-star_file_path']
             self.__reg.dstPath = self.__reg.srcPath
-            self.__reg.logPath = self.__reg.outputParamDict.get('report_file_path')
-            if self.__reg.logPath is not None:
-                self.addInput('report_file_path', self.__reg.logPath, type='file')
+            self.__logPath = self.__reg.outputParamDict.get('report_file_path')
+            if self.__logPath is not None:
+                self.addInput('report_file_path', self.__logPath, type='file')
             self.__reg.op = 'nmr-str-consistency-check'
 
             # reset cache dictionaries
@@ -15343,9 +15379,9 @@ class NmrDpUtility:
             is_valid, message = self.__reg.nefT.nmrstar_to_nef(self.__reg.dstPath, fPath,
                                                                report=self.__reg.report)  # (None if self.__alt_chain else self.__reg.report))
 
-            if self.__reg.release_mode and self.__reg.tmpPath is not None:
-                os.remove(self.__reg.tmpPath)
-                self.__reg.tmpPath = None
+            if self.__reg.release_mode and self.__tmpPath is not None:
+                os.remove(self.__tmpPath)
+                self.__tmpPath = None
 
         except Exception as e:
 
@@ -15394,15 +15430,15 @@ class NmrDpUtility:
 
         self.__reg.rescue_mode = False
 
-        self.__reg.report_prev = None
+        self.__report_prev = None
 
         try:
 
             self.__reg.srcPath = self.__reg.outputParamDict['nef_file_path']
             self.__reg.dstPath = self.__reg.srcPath
-            self.__reg.logPath = self.__reg.outputParamDict.get('report_file_path')
-            if self.__reg.logPath is not None:
-                self.addInput('report_file_path', self.__reg.logPath, type='file')
+            self.__logPath = self.__reg.outputParamDict.get('report_file_path')
+            if self.__logPath is not None:
+                self.addInput('report_file_path', self.__logPath, type='file')
             self.__reg.op = 'nmr-nef-consistency-check'
 
             # reset cache dictionaries

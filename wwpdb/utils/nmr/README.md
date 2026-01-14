@@ -259,7 +259,7 @@ For example,
 
 ### Requirements
 
-- python 3.7 or later
+- python 3.6 or later
 
 - pip packages:
 	- antlr4-python3-runtime
@@ -277,10 +277,11 @@ For example,
 	- scikit-learn
 	- striprtf
 	- wwpdb.utils.align
+	- dataclasses ; python_version == '3.6'  # Only for Python 3.6
 
 - If your Python version is less than 3.10, downgrade urllib3 from v2 to v1. Otherwise, [the urllib3 v2 requires OpenSSL 1.1.1+](https://github.com/urllib3/urllib3/issues/2168).
 ```bash
-    pip install urllib3==1.26.18  # Only for Python 3.7, 3.8, and 3.9 users.
+    pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9.
 ```
 
 ### Set up standalone mode

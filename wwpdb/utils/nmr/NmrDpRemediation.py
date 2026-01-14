@@ -26,7 +26,10 @@ from typing import List, Tuple, Union, Optional
 from datetime import (datetime, timedelta)
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (NMR_CONTENT_SUBTYPES,
+    from wwpdb.utils.nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,
+                                               AR_FILE_PATH_LIST_KEY,
+                                               AC_FILE_PATH_LIST_KEY,
+                                               NMR_CONTENT_SUBTYPES,
                                                PK_CONTENT_SUBTYPES,
                                                READABLE_FILE_TYPE,
                                                SF_CATEGORIES,
@@ -150,7 +153,10 @@ try:
     from wwpdb.utils.nmr.cs.NmrStar2CSReader import NmrStar2CSReader
     from wwpdb.utils.nmr.cs.XeasyCSReader import XeasyCSReader
 except ImportError:
-    from nmr.NmrDpConstant import (NMR_CONTENT_SUBTYPES,
+    from nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,
+                                   AR_FILE_PATH_LIST_KEY,
+                                   AC_FILE_PATH_LIST_KEY,
+                                   NMR_CONTENT_SUBTYPES,
                                    PK_CONTENT_SUBTYPES,
                                    READABLE_FILE_TYPE,
                                    SF_CATEGORIES,
@@ -9159,9 +9165,7 @@ class NmrDpRemediation:
         if self.__reg.combined_mode:
             return True
 
-        mr_file_path_list = 'restraint_file_path_list'
-
-        if mr_file_path_list not in self.__reg.inputParamDict:
+        if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 
         src_id = self.__reg.report.getInputSourceIdOfCoord()
@@ -9238,9 +9242,7 @@ class NmrDpRemediation:
         if self.__reg.combined_mode:
             return True
 
-        ar_file_path_list = 'atypical_restraint_file_path_list'
-
-        if ar_file_path_list not in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 
         if self.__reg.pk_sf_holder is None:
@@ -9252,7 +9254,7 @@ class NmrDpRemediation:
 
         master_entry = self.__reg.star_data[0]
 
-        for ar in self.__reg.inputParamDict[ar_file_path_list]:
+        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
@@ -9413,9 +9415,7 @@ class NmrDpRemediation:
         if self.__reg.combined_mode or not self.__reg.conversion_server:
             return True
 
-        acs_file_path_list = 'atypical_chem_shift_file_path_list'
-
-        if acs_file_path_list not in self.__reg.inputParamDict:
+        if AC_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 
         input_source = self.__reg.report.input_sources[0]
@@ -9676,7 +9676,7 @@ class NmrDpRemediation:
 
         fileListId = self.__reg.file_path_list_len
 
-        for acs in self.__reg.inputParamDict[acs_file_path_list]:
+        for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
             file_path = acs['file_name']
 
             input_source = self.__reg.report.input_sources[fileListId]
@@ -10279,9 +10279,7 @@ class NmrDpRemediation:
         if self.__reg.combined_mode and not self.__reg.bmrb_only:
             return True
 
-        ar_file_path_list = 'atypical_restraint_file_path_list'
-
-        if ar_file_path_list not in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 
         src_id = self.__reg.report.getInputSourceIdOfCoord()
@@ -10382,7 +10380,7 @@ class NmrDpRemediation:
 
         fileListId = self.__reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[ar_file_path_list]:
+        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
             input_source = self.__reg.report.input_sources[fileListId]
@@ -10415,7 +10413,7 @@ class NmrDpRemediation:
 
         fileListId = self.__reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[ar_file_path_list]:
+        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
             input_source = self.__reg.report.input_sources[fileListId]
@@ -10687,7 +10685,7 @@ class NmrDpRemediation:
         hint_for_noe_dist = ['noe', 'roe', 'dist']
         hint_for_any_dist = ['bond', 'disul', 'not', 'seen', 'pre', 'paramag', 'cidnp', 'csp', 'perturb', 'mutat', 'protect', 'symm']
 
-        for ar in self.__reg.inputParamDict[ar_file_path_list]:
+        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
             file_size = os.path.getsize(file_path)
 
@@ -12602,9 +12600,7 @@ class NmrDpRemediation:
         if self.__reg.combined_mode and not self.__reg.bmrb_only:
             return True
 
-        ar_file_path_list = 'atypical_restraint_file_path_list'
-
-        if ar_file_path_list not in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 
         src_id = self.__reg.report.getInputSourceIdOfCoord()
@@ -12639,7 +12635,7 @@ class NmrDpRemediation:
 
         fileListId = self.__reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[ar_file_path_list]:
+        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
             input_source = self.__reg.report.input_sources[fileListId]
@@ -12758,7 +12754,7 @@ class NmrDpRemediation:
 
             fileListId = self.__reg.file_path_list_len
 
-            for ar in self.__reg.inputParamDict[ar_file_path_list]:
+            for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
                 file_path = ar['file_name']
 
                 if os.path.exists(file_path + '-corrected'):
@@ -13099,7 +13095,7 @@ class NmrDpRemediation:
 
         fileListId = self.__reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[ar_file_path_list]:
+        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
             input_source = self.__reg.report.input_sources[fileListId]
@@ -14434,9 +14430,7 @@ class NmrDpRemediation:
         if self.__reg.combined_mode:
             return True
 
-        ar_file_path_list = 'atypical_restraint_file_path_list'
-
-        if ar_file_path_list not in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 
         content_subtype = 'saxs_restraint'
@@ -14451,7 +14445,7 @@ class NmrDpRemediation:
 
         fileListId = self.__reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[ar_file_path_list]:
+        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
             input_source = self.__reg.report.input_sources[fileListId]
@@ -15983,12 +15977,10 @@ class NmrDpRemediation:
         # """
         # if self.__reg.remediation_mode and self.__reg.internal_mode:
         #
-        #     cs_file_path_list = 'chem_shift_file_path_list'
-        #
-        #     if isinstance(self.__reg.inputParamDict[cs_file_path_list][0], str):
-        #         dir_path = os.path.dirname(self.__reg.inputParamDict[cs_file_path_list][0])
+        #     if isinstance(self.__reg.inputParamDict[CS_FILE_PATH_LIST][0], str):
+        #         dir_path = os.path.dirname(self.__reg.inputParamDict[CS_FILE_PATH_LIST][0])
         #     else:
-        #         dir_path = os.path.dirname(self.__reg.inputParamDict[cs_file_path_list][0]['file_name'])
+        #         dir_path = os.path.dirname(self.__reg.inputParamDict[CS_FILE_PATH_LIST][0]['file_name'])
         #
         #     dst_cs_path = os.path.join(dir_path, input_source_dic['file_name'])
         #
@@ -16148,15 +16140,13 @@ class NmrDpRemediation:
 
         if self.__reg.remediation_mode:
 
-            ar_file_path_list = 'atypical_restraint_file_path_list'
-
-            if ar_file_path_list in self.__reg.inputParamDict:
+            if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
                 fileListId = self.__reg.file_path_list_len
 
                 file_names = []
 
-                for ar in self.__reg.inputParamDict[ar_file_path_list]:
+                for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
                     input_source = self.__reg.report.input_sources[fileListId]
                     input_source_dic = input_source.get()
@@ -17371,13 +17361,11 @@ class NmrDpRemediation:
 
         ext_mr_sf_holder = []
 
-        ar_file_path_list = 'atypical_restraint_file_path_list'
-
-        if ar_file_path_list in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
             fileListId = self.__reg.file_path_list_len
 
-            for ar in self.__reg.inputParamDict[ar_file_path_list]:
+            for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
                 file_path = ar['file_name']
 
                 input_source = self.__reg.report.input_sources[fileListId]
@@ -17561,7 +17549,7 @@ class NmrDpRemediation:
 
                                     fileListId = self.__reg.file_path_list_len
 
-                                    for ar in self.__reg.inputParamDict[ar_file_path_list]:
+                                    for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
                                         input_source = self.__reg.report.input_sources[fileListId]
                                         input_source_dic = input_source.get()
@@ -17656,7 +17644,7 @@ class NmrDpRemediation:
 
                                     fileListId = self.__reg.file_path_list_len
 
-                                    for ar in self.__reg.inputParamDict[ar_file_path_list]:
+                                    for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
                                         input_source = self.__reg.report.input_sources[fileListId]
                                         input_source_dic = input_source.get()
@@ -17715,7 +17703,7 @@ class NmrDpRemediation:
 
             file_names = []
 
-            for ar in self.__reg.inputParamDict[ar_file_path_list]:
+            for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
                 input_source = self.__reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
@@ -17878,13 +17866,11 @@ class NmrDpRemediation:
 
                     mr_file_names.append(input_source_dic['file_name'])
 
-                ar_file_path_list = 'atypical_restraint_file_path_list'
-
-                if ar_file_path_list in self.__reg.inputParamDict:
+                if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
                     fileListId = self.__reg.file_path_list_len
 
-                    for ar in self.__reg.inputParamDict[ar_file_path_list]:
+                    for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
                         input_source = self.__reg.report.input_sources[fileListId]
                         input_source_dic = input_source.get()

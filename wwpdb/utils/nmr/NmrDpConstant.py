@@ -61,6 +61,11 @@ except ImportError:
                                            SCALE_RANGE,
                                            REPRESENTATIVE_ASYM_ID)
 
+# parameter key for each input path list
+CS_FILE_PATH_LIST_KEY = 'chem_shift_file_path_list'
+MR_FILE_PATH_LIST_KEY = 'restraint_file_path_list'
+AR_FILE_PATH_LIST_KEY = 'atypical_restraint_file_path_list'
+AC_FILE_PATH_LIST_KEY = 'atypical_chem_shift_file_path_list'
 
 # defined workflow operations
 WORKFLOW_OPS = ('nmr-nef-consistency-check',
@@ -77,7 +82,6 @@ WORKFLOW_OPS = ('nmr-nef-consistency-check',
                 'nmr-if-merge-deposit',
                 'nmr-str-replace-cs'
                 )
-
 
 # NMR content types
 NMR_CONTENT_SUBTYPES = ('entry_info',
@@ -319,7 +323,6 @@ VICINITY_PARAMAGNETIC = 8.0
 
 # criterion for detection of not superimposed models
 RMSD_NOT_SUPERIMPOSED = 2.0
-
 # criterion for detection of exactly overlaid models
 RMSD_OVERLAID_EXACTLY = 0.01
 
@@ -3041,7 +3044,8 @@ PK_DATA_ITEMS = {'nef': [{'name': 'position_uncertainty_%s', 'type': 'range-floa
 
 # number of dimension of spectral peak
 NUM_DIM_ITEMS = {'nef': 'num_dimensions',
-                 'nmr-star': 'Number_of_spectral_dimensions'}
+                 'nmr-star': 'Number_of_spectral_dimensions'
+                 }
 
 # allowed loop tags
 ALLOWED_TAGS = {'nef': {'entry_info': ['program_name', 'script_name', 'script'],

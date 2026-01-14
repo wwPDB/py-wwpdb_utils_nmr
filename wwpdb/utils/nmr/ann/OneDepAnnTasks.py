@@ -1321,6 +1321,10 @@ class OneDepAnnTasks:
                 if page == 'chem_shift_ref' and bmrb_annotation:
                     new_flag = False
 
+                if page == 'software' and bmrb_annotation:
+                    if len(master_entry.get_saveframes_by_category(sf_category)) > 0:
+                        continue
+
                 if new_flag:
                     if sf_category in self.__sfCategoryList:
                         if sf_category in ('sample', 'sample_conditions'):

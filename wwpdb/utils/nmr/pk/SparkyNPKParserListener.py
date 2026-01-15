@@ -26,7 +26,7 @@ try:
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
 except ImportError:
     from nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
-                                               REPRESENTATIVE_ALT_ID)
+                                   REPRESENTATIVE_ALT_ID)
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.SparkyNPKParser import SparkyNPKParser

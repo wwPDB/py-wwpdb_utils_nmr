@@ -33,8 +33,8 @@ try:
     from wwpdb.utils.nmr.pk.NmrPipePKParserListener import NmrPipePKParserListener
 except ImportError:
     from nmr.NmrDpConstant import (MAX_ERROR_REPORT,
-                                               REPRESENTATIVE_MODEL_ID,
-                                               REPRESENTATIVE_ALT_ID)
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator

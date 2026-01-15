@@ -312,6 +312,16 @@ try:
                                                FERROMAGNETIC_ELEMENTS,
                                                MAX_DIM_NUM_OF_SPECTRA,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               PDB_ID_PAT,
+                                               BMRB_ID_PAT,
+                                               ONEDEP_MODEL_FILE_PAT,
+                                               INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT,
+                                               CHK_DESC_PAT,
+                                               CHK_DESC_ONE_PAT,
+                                               CHK_DESC_MAND_PAT,
+                                               CHK_DESC_MAND_ONE_PAT,
+                                               ARCHIVAL_MR_FILE_TYPES,
+                                               PARSABLE_PK_FILE_TYPES,
                                                CS_RANGE_MIN,
                                                CS_RANGE_MAX,
                                                CS_UNCERT_MAX,
@@ -323,25 +333,15 @@ try:
                                                default_coord_properties)
     from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
     from wwpdb.utils.nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
-                                                 onedep_model_file_pattern,
-                                                 inconsistent_restraint_warning_wo_sf_pattern,
-                                                 archival_mr_file_types,
-                                                 parsable_pk_file_types,
                                                  detect_bom,
                                                  convert_codec,
                                                  is_binary_file,
                                                  get_type_of_star_file,
                                                  get_peak_list_format)
     from wwpdb.utils.nmr.NmrDpValidation import (NmrDpValidation,
-                                                 pdb_id_pattern,
-                                                 bmrb_id_pattern,
                                                  predict_redox_state_of_cystein,
                                                  is_like_planality_boundary)
     from wwpdb.utils.nmr.NmrDpRemediation import (NmrDpRemediation,
-                                                  chk_desc_pattern,
-                                                  chk_desc_pattern_one,
-                                                  chk_desc_pattern_mand,
-                                                  chk_desc_pattern_mand_one,
                                                   get_chem_shift_format_from_string)
     from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,
                                              NmrDpReportInputSource,
@@ -436,6 +436,16 @@ except ImportError:
                                    FERROMAGNETIC_ELEMENTS,
                                    MAX_DIM_NUM_OF_SPECTRA,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   PDB_ID_PAT,
+                                   BMRB_ID_PAT,
+                                   ONEDEP_MODEL_FILE_PAT,
+                                   INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT,
+                                   CHK_DESC_PAT,
+                                   CHK_DESC_ONE_PAT,
+                                   CHK_DESC_MAND_PAT,
+                                   CHK_DESC_MAND_ONE_PAT,
+                                   ARCHIVAL_MR_FILE_TYPES,
+                                   PARSABLE_PK_FILE_TYPES,
                                    CS_RANGE_MIN,
                                    CS_RANGE_MAX,
                                    CS_UNCERT_MAX,
@@ -447,25 +457,15 @@ except ImportError:
                                    default_coord_properties)
     from nmr.NmrDpFirstAid import NmrDpFirstAid
     from nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
-                                     onedep_model_file_pattern,
-                                     inconsistent_restraint_warning_wo_sf_pattern,
-                                     archival_mr_file_types,
-                                     parsable_pk_file_types,
                                      detect_bom,
                                      convert_codec,
                                      is_binary_file,
                                      get_type_of_star_file,
                                      get_peak_list_format)
     from nmr.NmrDpValidation import (NmrDpValidation,
-                                     pdb_id_pattern,
-                                     bmrb_id_pattern,
                                      predict_redox_state_of_cystein,
                                      is_like_planality_boundary)
     from nmr.NmrDpRemediation import (NmrDpRemediation,
-                                      chk_desc_pattern,
-                                      chk_desc_pattern_one,
-                                      chk_desc_pattern_mand,
-                                      chk_desc_pattern_mand_one,
                                       get_chem_shift_format_from_string)
     from nmr.NmrDpReport import (NmrDpReport,
                                  NmrDpReportInputSource,
@@ -1056,7 +1056,7 @@ class NmrDpUtility:
                 elif isinstance(self.__reg.inputParamDict['bmrb_id'], str):
                     self.__reg.bmrb_id = self.__reg.inputParamDict['bmrb_id']
                 if self.__reg.bmrb_id is not None:
-                    if bmrb_id_pattern.match(self.__reg.bmrb_id):
+                    if BMRB_ID_PAT.match(self.__reg.bmrb_id):
                         if self.__reg.bmrb_id.startswith('bmr'):
                             self.__reg.bmrb_id = self.__reg.bmrb_id[3:]
                     else:
@@ -1787,7 +1787,7 @@ class NmrDpUtility:
 
                     if ar['file_type'] == 'nm-pea-any':
 
-                        for test_file_type in archival_mr_file_types:
+                        for test_file_type in ARCHIVAL_MR_FILE_TYPES:
                             if test_file_type == 'nmr-star':
                                 continue
                             if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
@@ -1800,7 +1800,7 @@ class NmrDpUtility:
                             if file_type is not None:
                                 ar['file_type'] = file_type
 
-                            for test_file_type in parsable_pk_file_types:
+                            for test_file_type in PARSABLE_PK_FILE_TYPES:
                                 if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
                                     ar['file_type'] = test_file_type
                                     break
@@ -5900,14 +5900,14 @@ class NmrDpUtility:
 
                                     if warn.startswith('The mandatory type'):
                                         try:
-                                            g = chk_desc_pattern_mand.search(warn).groups()
+                                            g = CHK_DESC_MAND_PAT.search(warn).groups()
                                         except AttributeError:
-                                            g = chk_desc_pattern_mand_one.search(warn).groups()
+                                            g = CHK_DESC_MAND_ONE_PAT.search(warn).groups()
                                     else:
                                         try:
-                                            g = chk_desc_pattern.search(warn).groups()
+                                            g = CHK_DESC_PAT.search(warn).groups()
                                         except AttributeError:
-                                            g = chk_desc_pattern_one.search(warn).groups()
+                                            g = CHK_DESC_ONE_PAT.search(warn).groups()
 
                                     if has_key_value(MANDATORY_SF_TAG_ITEMS[file_type], content_subtype):
 
@@ -8632,14 +8632,14 @@ class NmrDpUtility:
                                                                      [{'name': 'database_id', 'type': 'str', 'value': 'PDB'}])
                     if len(database_2) > 0:
                         extended_pdb_id = database_2[0]['pdbx_database_accession']
-                        if extended_pdb_id is not None and not pdb_id_pattern.match(extended_pdb_id):
+                        if extended_pdb_id is not None and not PDB_ID_PAT.match(extended_pdb_id):
                             extended_pdb_id = None
                 if extended_pdb_id is None:
                     if self.__reg.cR.hasCategory('entry'):
                         entry = self.__reg.cR.getDictList('entry')
                         if len(entry) > 0 and 'id' in entry[0]:
                             entry_id = entry[0]['id']
-                            if len(entry_id) == 4 and pdb_id_pattern.match(entry_id):
+                            if len(entry_id) == 4 and PDB_ID_PAT.match(entry_id):
                                 extended_pdb_id = f"pdb_0000{entry[0]['id'].lower()}"
 
                 revision_history = {}
@@ -8923,14 +8923,14 @@ class NmrDpUtility:
             if len(self.__reg.internal_atom_name_mapping) == 0:
                 cif_file_name = os.path.basename(self.__reg.cifPath)
 
-                if onedep_model_file_pattern.match(cif_file_name):
+                if ONEDEP_MODEL_FILE_PAT.match(cif_file_name):
 
                     try:
 
                         import subprocess  # pylint: disable=import-outside-toplevel
 
                         cur_dir_path = self.__reg.cR.getDirPath()
-                        dep_id = onedep_model_file_pattern.search(cif_file_name).groups()[0]
+                        dep_id = ONEDEP_MODEL_FILE_PAT.search(cif_file_name).groups()[0]
                         internal_cif_file = os.path.join(cur_dir_path, self.__reg.cahceDirPath, f'{dep_id}_model-upload_P1.cif.V1')
 
                         if not os.path.exists(internal_cif_file):
@@ -12573,7 +12573,7 @@ class NmrDpUtility:
                 file_type = 'nm-pea-xwi'
             else:
 
-                for _file_type in parsable_pk_file_types:
+                for _file_type in PARSABLE_PK_FILE_TYPES:
 
                     if _file_type.startswith('nm-aux'):
                         continue
@@ -12658,7 +12658,7 @@ class NmrDpUtility:
                     file_type = 'nm-pea-xwi'
                 else:
 
-                    for _file_type in parsable_pk_file_types:
+                    for _file_type in PARSABLE_PK_FILE_TYPES:
 
                         if _file_type.startswith('nm-aux'):
                             continue
@@ -14920,8 +14920,8 @@ class NmrDpUtility:
                             for k, v in errors.items():
                                 for item in v:
                                     for msg in item['description'].split('\n'):
-                                        if inconsistent_restraint_warning_wo_sf_pattern.match(msg):
-                                            g = inconsistent_restraint_warning_wo_sf_pattern.search(msg).groups()
+                                        if INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.match(msg):
+                                            g = INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.search(msg).groups()
                                             if g not in EMPTY_VALUE:
                                                 err_ordinals.add(g[0])
                                                 if len(err_data_type) == 0:
@@ -14941,8 +14941,8 @@ class NmrDpUtility:
                                 is_err = 'restraint' in content_subtype and k in self.__reg.report.warning.mr_err_items
                                 for item in v:
                                     for msg in item['description'].split('\n'):
-                                        if inconsistent_restraint_warning_wo_sf_pattern.match(msg):
-                                            g = inconsistent_restraint_warning_wo_sf_pattern.search(msg).groups()
+                                        if INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.match(msg):
+                                            g = INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.search(msg).groups()
                                             if g not in EMPTY_VALUE:
                                                 if is_err:
                                                     err_ordinals.add(g[0])

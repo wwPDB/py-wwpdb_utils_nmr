@@ -23,7 +23,6 @@ __version__ = "1.0.1"
 
 import sys
 import os
-import re
 import pynmrstar
 import pickle
 import logging
@@ -37,12 +36,18 @@ from typing import Any, IO, Union, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               TRUE_VALUE)
+                                               TRUE_VALUE,
+                                               DATABLOCK_PAT,
+                                               SF_ANONYMOUS_PAT,
+                                               SAVE_PAT)
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
     from wwpdb.utils.nmr.AlignUtil import getPrettyJson
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   TRUE_VALUE)
+                                   TRUE_VALUE,
+                                   DATABLOCK_PAT,
+                                   SF_ANONYMOUS_PAT,
+                                   SAVE_PAT)
     from nmr.io.mmCIFUtil import mmCIFUtil
     from nmr.AlignUtil import getPrettyJson
 
@@ -320,16 +325,13 @@ class CifToNmrStar:
                 if maxRepeat != 1:
                     return False
 
-                datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
-                sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
-
                 has_datablock = has_anonymous_saveframe = False
 
                 with open(cifPath, 'r', encoding='utf-8') as ifh:
                     for line in ifh:
-                        if datablock_pattern.match(line):
+                        if DATABLOCK_PAT.match(line):
                             has_datablock = True
-                        elif sf_anonymous_pattern.match(line):
+                        elif SF_ANONYMOUS_PAT.match(line):
                             has_anonymous_saveframe = True
                             break
 
@@ -661,9 +663,6 @@ class CifToNmrStar:
 
         except ValueError as e:
 
-            sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
-            save_pattern = re.compile(r'\s*save_\s*')
-
             split_ext = os.path.splitext(cifPath)
             _cifPath = split_ext[0] + '-corrected' + ('' if len(split_ext) == 1 else split_ext[1])
 
@@ -672,7 +671,7 @@ class CifToNmrStar:
             with open(cifPath, 'r') as ifh, \
                     open(_cifPath, 'w') as ofh:
                 for line in ifh:
-                    if sf_anonymous_pattern.match(line) or save_pattern.match(line):
+                    if SF_ANONYMOUS_PAT.match(line) or SAVE_PAT.match(line):
                         ofh.write('#' + line)
                         changed = True
                     else:

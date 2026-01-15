@@ -60,18 +60,22 @@ try:
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                ALLOWED_AMBIGUITY_CODES,
                                                MAX_OFFSET_ATTEMPT,
+                                               ONEDEP_MODEL_FILE_PAT,
+                                               COMMENT_PAT,
+                                               SEQ_MISMATCH_WARNING_PAT,
+                                               INCONSISTENT_RESTRAINT_WARNING_PAT,
+                                               CONCAT_SEQ_ID_INS_CODE_PAT,
+                                               CHK_DESC_PAT,
+                                               CHK_DESC_ONE_PAT,
+                                               CHK_DESC_MAND_PAT,
+                                               CHK_DESC_MAND_ONE_PAT,
+                                               MISMATCHED_INPUT_ERR_MSG,
+                                               EXTRANEOUS_INPUT_ERR_MSG,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP,
                                                REPRESENTATIVE_ASYM_ID)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
-    from wwpdb.utils.nmr.NmrDpMrSplitter import (comment_pattern,
-                                                 onedep_model_file_pattern,
-                                                 seq_mismatch_warning_pattern,
-                                                 inconsistent_restraint_warning_pattern,
-                                                 mismatched_input_err_msg,
-                                                 extraneous_input_err_msg,
-                                                 concat_seq_id_ins_code_pattern,
-                                                 detect_encoding,
+    from wwpdb.utils.nmr.NmrDpMrSplitter import (detect_encoding,
                                                  get_peak_list_format,
                                                  get_number_of_dimensions_of_peak_list)
     from wwpdb.utils.nmr.NmrDpValidation import is_like_planality_boundary
@@ -187,18 +191,22 @@ except ImportError:
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    ALLOWED_AMBIGUITY_CODES,
                                    MAX_OFFSET_ATTEMPT,
+                                   ONEDEP_MODEL_FILE_PAT,
+                                   COMMENT_PAT,
+                                   SEQ_MISMATCH_WARNING_PAT,
+                                   INCONSISTENT_RESTRAINT_WARNING_PAT,
+                                   CONCAT_SEQ_ID_INS_CODE_PAT,
+                                   CHK_DESC_PAT,
+                                   CHK_DESC_ONE_PAT,
+                                   CHK_DESC_MAND_PAT,
+                                   CHK_DESC_MAND_ONE_PAT,
+                                   MISMATCHED_INPUT_ERR_MSG,
+                                   EXTRANEOUS_INPUT_ERR_MSG,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP,
                                    REPRESENTATIVE_ASYM_ID)
     from nmr.NmrDpRegistry import NmrDpRegistry
-    from nmr.NmrDpMrSplitter import (comment_pattern,
-                                     onedep_model_file_pattern,
-                                     seq_mismatch_warning_pattern,
-                                     inconsistent_restraint_warning_pattern,
-                                     mismatched_input_err_msg,
-                                     extraneous_input_err_msg,
-                                     concat_seq_id_ins_code_pattern,
-                                     detect_encoding,
+    from nmr.NmrDpMrSplitter import (detect_encoding,
                                      get_peak_list_format,
                                      get_number_of_dimensions_of_peak_list)
     from nmr.NmrDpValidation import is_like_planality_boundary
@@ -281,13 +289,6 @@ except ImportError:
     from nmr.cs.XeasyCSReader import XeasyCSReader
 
 
-# patterns for enum failure message
-chk_desc_pattern = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.(.*)$')
-chk_desc_pattern_one = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.(.*)$')
-chk_desc_pattern_mand = re.compile(r'^The mandatory type _.*\.(.*) \'(.*)\' is missing and the type must be one of \((.*)\)\.(.*)$')
-chk_desc_pattern_mand_one = re.compile(r'^The mandatory type _.*\.(.*) \'(.*)\' is missing and the type must be one of (.*)\.(.*)$')
-
-
 def get_chem_shift_format(fPath: str) -> Optional[str]:
     """ Return chemical shift format for a input file.
     """
@@ -296,7 +297,7 @@ def get_chem_shift_format(fPath: str) -> Optional[str]:
 
         for idx, line in enumerate(ifh):
 
-            if line.isspace() or comment_pattern.match(line):
+            if line.isspace() or COMMENT_PAT.match(line):
                 continue
 
             file_type = get_chem_shift_format_from_string(line)
@@ -847,15 +848,15 @@ class NmrDpRemediation:
 
             if w['description'].startswith('The mandatory type'):
                 try:
-                    g = chk_desc_pattern_mand.search(w['description']).groups()
+                    g = CHK_DESC_MAND_PAT.search(w['description']).groups()
                 except AttributeError:
-                    g = chk_desc_pattern_mand_one.search(w['description']).groups()
+                    g = CHK_DESC_MAND_ONE_PAT.search(w['description']).groups()
                 mandatory_tag = True
             else:
                 try:
-                    g = chk_desc_pattern.search(w['description']).groups()
+                    g = CHK_DESC_PAT.search(w['description']).groups()
                 except AttributeError:
-                    g = chk_desc_pattern_one.search(w['description']).groups()
+                    g = CHK_DESC_ONE_PAT.search(w['description']).groups()
                 mandatory_tag = False
 
             itName = g[0]
@@ -4686,8 +4687,8 @@ class NmrDpRemediation:
                         loop.add_tag('PDB_ins_code', update_data=True)
 
                     for idx, row in enumerate(auth_dat):
-                        if isinstance(row, str) and concat_seq_id_ins_code_pattern.match(row):
-                            g = concat_seq_id_ins_code_pattern.search(row).groups()
+                        if isinstance(row, str) and CONCAT_SEQ_ID_INS_CODE_PAT.match(row):
+                            g = CONCAT_SEQ_ID_INS_CODE_PAT.search(row).groups()
                             loop.data[idx][auth_seq_id_col] = g[0]
                             if g[1] not in EMPTY_VALUE:
                                 loop.data[idx][ins_code_col] = g[1]
@@ -7979,8 +7980,8 @@ class NmrDpRemediation:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
-                        if seq_mismatch_warning_pattern.match(warn):
-                            g = seq_mismatch_warning_pattern.search(warn).groups()
+                        if SEQ_MISMATCH_WARNING_PAT.match(warn):
+                            g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
@@ -9547,8 +9548,8 @@ class NmrDpRemediation:
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         if g not in EMPTY_VALUE:
                             msg_dict['sf_framecode'] = g[1]
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
@@ -9595,8 +9596,8 @@ class NmrDpRemediation:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
 
-                        if seq_mismatch_warning_pattern.match(warn):
-                            g = seq_mismatch_warning_pattern.search(warn).groups()
+                        if SEQ_MISMATCH_WARNING_PAT.match(warn):
+                            g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
@@ -9636,8 +9637,8 @@ class NmrDpRemediation:
                 def_sf_framecode = ''
                 for warn in listener.warningMessage:
 
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         if g[1] not in EMPTY_VALUE:
                             def_sf_framecode = g[1]
                             break
@@ -9645,8 +9646,8 @@ class NmrDpRemediation:
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         msg_dict['sf_framecode'] = g[1] if g[1] not in EMPTY_VALUE else def_sf_framecode
                         msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
@@ -10651,8 +10652,8 @@ class NmrDpRemediation:
         if has_res_sch and pdbAtomNumberDict is None and not self.__reg.internal_mode:
             cif_file_name = os.path.basename(self.__reg.cifPath)
 
-            if onedep_model_file_pattern.match(cif_file_name):
-                dep_id = onedep_model_file_pattern.search(cif_file_name).groups()[0]
+            if ONEDEP_MODEL_FILE_PAT.match(cif_file_name):
+                dep_id = ONEDEP_MODEL_FILE_PAT.search(cif_file_name).groups()[0]
 
                 file_path = os.path.join(self.__reg.cR.getDirPath(), f'{dep_id}_model-upload_P1.pdb.V1')
 
@@ -10852,8 +10853,8 @@ class NmrDpRemediation:
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         if g not in EMPTY_VALUE:
                             msg_dict['sf_framecode'] = g[1]
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
@@ -10943,8 +10944,8 @@ class NmrDpRemediation:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
-                        if seq_mismatch_warning_pattern.match(warn):
-                            g = seq_mismatch_warning_pattern.search(warn).groups()
+                        if SEQ_MISMATCH_WARNING_PAT.match(warn):
+                            g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
@@ -11054,8 +11055,8 @@ class NmrDpRemediation:
                 def_sf_framecode = ''
                 for warn in listener.warningMessage:
 
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         if g[1] not in EMPTY_VALUE:
                             def_sf_framecode = g[1]
                             break
@@ -11063,8 +11064,8 @@ class NmrDpRemediation:
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         msg_dict['sf_framecode'] = g[1] if g[1] not in EMPTY_VALUE else def_sf_framecode
                         msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
@@ -12678,18 +12679,18 @@ class NmrDpRemediation:
                 if messageList is not None:
                     for description in messageList:
                         if 'SPARKY' in a_pk_format_name\
-                           and (mismatched_input_err_msg in description['message']
-                                or extraneous_input_err_msg in description['message'])\
+                           and (MISMATCHED_INPUT_ERR_MSG in description['message']
+                                or EXTRANEOUS_INPUT_ERR_MSG in description['message'])\
                            and "expecting {Lw1_Hz_LA, Lw2_Hz_LA, Lw3_Hz_LA, Lw4_Hz_LA" in description['message']\
                            and ('Height' in description['message']
                                 or 'Data' in description['message']):
                             _type = 'reverse'
                         elif 'SPARKY' in a_pk_format_name\
-                                and mismatched_input_err_msg in description['message']\
+                                and MISMATCHED_INPUT_ERR_MSG in description['message']\
                                 and "'\\n' expecting {Integer, Float, Real, Real_vol}" in description['message']:
                             _type = 'no'
                         elif 'NMRVIEW' in a_pk_format_name\
-                                and mismatched_input_err_msg in description['message']\
+                                and MISMATCHED_INPUT_ERR_MSG in description['message']\
                                 and "' expecting L_brace" in description['message']:
                             _type = 'no_brace'
                         else:
@@ -12922,8 +12923,8 @@ class NmrDpRemediation:
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         if g not in EMPTY_VALUE:
                             msg_dict['sf_framecode'] = g[1]
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
@@ -12999,8 +13000,8 @@ class NmrDpRemediation:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
-                        if seq_mismatch_warning_pattern.match(warn):
-                            g = seq_mismatch_warning_pattern.search(warn).groups()
+                        if SEQ_MISMATCH_WARNING_PAT.match(warn):
+                            g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
@@ -13055,8 +13056,8 @@ class NmrDpRemediation:
                 def_sf_framecode = ''
                 for warn in listener.warningMessage:
 
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         if g[1] not in EMPTY_VALUE:
                             def_sf_framecode = g[1]
                             break
@@ -13064,8 +13065,8 @@ class NmrDpRemediation:
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
-                    if inconsistent_restraint_warning_pattern.match(warn):
-                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
                         msg_dict['sf_framecode'] = g[1] if g[1] not in EMPTY_VALUE else def_sf_framecode
                         msg_dict['description'] = warn.replace(f', {g[1]}', '')
 

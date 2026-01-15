@@ -442,7 +442,82 @@ RESERVED_LIG_CODE = ('LIG', 'DRG', 'INH')
 DNR_PARENT_CODE = ('DC', 'CYT', 'DC5', 'DC3')
 CH_PARENT_CODE = ('C', 'RCYT', 'C5', 'C3')
 
+PDB_ID_PAT = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
+
+BMRB_ID_PAT = re.compile(r'^(bmr)?([0-9]+)$')
+
+DEP_ID_PAT = re.compile(r'^D_[0-9]{6,10}$')
+
 CCD_ID_PAT = re.compile(r'(\w{1,3}|\w{5})')
+
+BMRB_NMR_STAR_FILE_NAME_PAT = re.compile(r'^bmr[0-9]{1,5}_3.str$')
+PROC_MR_FILE_NAME_PAT = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
+                                   r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
+
+ONEDEP_MODEL_FILE_PAT = re.compile(r'^(D_[0-9]{6,10})_model_P1.cif.V\d+$')
+ONEDEP_UPLOAD_FILE_PAT = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
+ONEDEP_FILE_PAT = re.compile(r'(.*)\.V(.*)$')
+MR_FILE_NAME_PAT = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
+MR_FILE_HEADER_PAT = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
+
+DATABLOCK_PAT = re.compile(r'\s*data_(\S+)\s*')
+SF_ANONYMOUS_PAT = re.compile(r'\s*save_\S+\s*')
+SAVE_PAT = re.compile(r'\s*save_\s*')
+LOOP_PAT = re.compile(r'\s*loop_\s*')
+STOP_PAT = re.compile(r'\s*stop_\s*')
+CIF_STOP_PAT = re.compile(r'#\s*')
+WS_PAT = re.compile(r'\s+')
+COMMENT_PAT = re.compile(r'\s*[#!]+(.*)')
+
+CATEGORY_PAT = re.compile(r'\s*_(\S*)\..*\s*')
+TAGVALUE_PAT = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
+SF_CATEGORY_PAT = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
+SF_FRAMECODE_PAT = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
+
+SEQ_MISMATCH_WARNING_PAT = re.compile(r"\[Sequence mismatch warning\] \[.*\] The residue '(\d+):([0-9A-Z]+)' is not present "
+                                      r"in polymer sequence of chain (\S+) of the coordinates. Please update the sequence in the Macromolecules page.")
+INCONSISTENT_RESTRAINT_WARNING_PAT = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s ?.*, (\S+)\] .*$")
+INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of ([^,]+)s.*\] .*$")
+
+CONCAT_SEQ_ID_INS_CODE_PAT = re.compile(r'(\d+)([A-Za-z\.\?]+)')
+
+# patterns for enum failure message
+CHK_DESC_PAT = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.(.*)$')
+CHK_DESC_ONE_PAT = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.(.*)$')
+CHK_DESC_MAND_PAT = re.compile(r'^The mandatory type _.*\.(.*) \'(.*)\' is missing and the type must be one of \((.*)\)\.(.*)$')
+CHK_DESC_MAND_ONE_PAT = re.compile(r'^The mandatory type _.*\.(.*) \'(.*)\' is missing and the type must be one of (.*)\.(.*)$')
+
+MISMATCHED_INPUT_ERR_MSG = "mismatched input"  # NOTICE: depends on ANTLR v4
+EXTRANEOUS_INPUT_ERR_MSG = "extraneous input"  # NOTICE: depends on ANTLR v4
+NO_VIABLE_ALT_ERR_MSG = "no viable alternative at input"  # NOTICE: depends on ANTLR v4
+EXPECTING_L_PAREN = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+
+LINEAR_MR_FILE_TYPES = ('nm-res-bio', 'nm-res-cya', 'nm-res-ros', 'nm-res-syb')
+
+RETRIAL_MR_FILE_TYPES = ('nm-res-ari', 'nm-res-arx', 'nm-res-bio', 'nm-res-cns',
+                         'nm-res-cha', 'nm-res-cya', 'nm-res-dyn', 'nm-res-isd',
+                         'nm-res-noa', 'nm-res-ros', 'nm-res-sch', 'nm-res-syb',
+                         'nm-res-xpl')
+
+PARSABLE_MR_FILE_TYPES = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
+                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar',
+                          'nm-res-bio', 'nm-res-cha', 'nm-res-cns', 'nm-res-cya',
+                          'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-noa',
+                          'nm-res-sch', 'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
+
+ARCHIVAL_MR_FILE_TYPES = ('nmr-star',
+                          'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
+                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar',
+                          'nm-res-bio', 'nm-res-cha', 'nm-res-cns', 'nm-res-cya',
+                          'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-noa',
+                          'nm-res-oth', 'nm-res-sax', 'nm-res-sch', 'nm-res-syb',
+                          'nm-res-ros', 'nm-res-xpl')
+
+PARSABLE_PK_FILE_TYPES = ('nm-aux-xea',
+                          'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
+                          'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps',
+                          'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea',
+                          'nm-pea-xwi')
 
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
@@ -7976,3 +8051,5 @@ RNA_RELATED_WORDS = ('rna', 'ribonucleotide', 'nucleotide', "5'-", "3'-")
 
 ALLOWED_THIOL_STATES = ('all disulfide bound', 'all other bound', 'all free', 'not present', 'not available', 'unknown', 'not reported',
                         'free and disulfide bound', 'free and other bound', 'free disulfide and other bound', 'disulfide and other bound')
+
+UNIDENTIFIED_TAX_ID = (32644, 1780429)

@@ -82,6 +82,13 @@ try:
                                                MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                ALLOWED_AMBIGUITY_CODES,
+                                               PDB_ID_PAT,
+                                               DEP_ID_PAT,
+                                               BMRB_NMR_STAR_FILE_NAME_PAT,
+                                               PROC_MR_FILE_NAME_PAT,
+                                               MR_FILE_NAME_PAT,
+                                               WS_PAT,
+                                               CONCAT_SEQ_ID_INS_CODE_PAT,
                                                CS_UNCERT_MAX,
                                                DIST_UNCERT_MAX,
                                                ANGLE_UNCERT_MAX,
@@ -104,10 +111,7 @@ try:
                                                C_METHYL_CENTER_MAX,
                                                C_METHYL_CENTER_MIN)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
-    from wwpdb.utils.nmr.NmrDpMrSplitter import (mr_file_name_pattern,
-                                                 ws_pattern,
-                                                 concat_seq_id_ins_code_pattern,
-                                                 detect_bom,
+    from wwpdb.utils.nmr.NmrDpMrSplitter import (detect_bom,
                                                  convert_codec,
                                                  convert_rtf_to_ascii,
                                                  is_rtf_file)
@@ -195,6 +199,13 @@ except ImportError:
                                    MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    ALLOWED_AMBIGUITY_CODES,
+                                   PDB_ID_PAT,
+                                   DEP_ID_PAT,
+                                   BMRB_NMR_STAR_FILE_NAME_PAT,
+                                   PROC_MR_FILE_NAME_PAT,
+                                   MR_FILE_NAME_PAT,
+                                   WS_PAT,
+                                   CONCAT_SEQ_ID_INS_CODE_PAT,
                                    CS_UNCERT_MAX,
                                    DIST_UNCERT_MAX,
                                    ANGLE_UNCERT_MAX,
@@ -217,10 +228,7 @@ except ImportError:
                                    C_METHYL_CENTER_MAX,
                                    C_METHYL_CENTER_MIN)
     from nmr.NmrDpRegistry import NmrDpRegistry
-    from nmr.NmrDpMrSplitter import (mr_file_name_pattern,
-                                     ws_pattern,
-                                     concat_seq_id_ins_code_pattern,
-                                     detect_bom,
+    from nmr.NmrDpMrSplitter import (detect_bom,
                                      convert_codec,
                                      convert_rtf_to_ascii,
                                      is_rtf_file)
@@ -253,15 +261,6 @@ except ImportError:
                                            selectCoordAtoms,
                                            getPotentialType)
     from nmr.rci.RCI import RCI
-
-
-pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
-bmrb_id_pattern = re.compile(r'^(bmr)?([0-9]+)$')
-dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
-
-bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr[0-9]{1,5}_3.str$')
-proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
-                                       r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
 
 
 def is_non_metal_element(comp_id: str, atom_id: str) -> bool:
@@ -872,7 +871,7 @@ class NmrDpValidation:
                 for sf in self.__reg.star_data[0].get_saveframes_by_category('assembly'):
                     self.__reg.assembly_name = get_first_sf_tag(sf, 'Name', '?')
                     details = get_first_sf_tag(sf, 'Details')
-                    if details not in EMPTY_VALUE and ws_pattern.match(details):
+                    if details not in EMPTY_VALUE and WS_PAT.match(details):
                         set_sf_tag(sf, 'Details', None)
                     break
 
@@ -1700,9 +1699,9 @@ class NmrDpValidation:
            and '_Constraint_file' in self.__reg.lp_category_list:
             _sf = self.__reg.star_data[file_list_id].get_saveframes_by_category('constraint_statistics')[0]
             data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
-            if mr_file_name_pattern.match(data_file_name) or proc_mr_file_name_pattern.match(data_file_name):
+            if MR_FILE_NAME_PAT.match(data_file_name) or PROC_MR_FILE_NAME_PAT.match(data_file_name):
                 entry_id = get_first_sf_tag(_sf, 'Entry_ID')
-                if pdb_id_pattern.match(entry_id) or dep_id_pattern.match(entry_id):
+                if PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id):
                     self.__reg.remediation_mode = True
                     self.__reg.nefT.set_remediation_mode(True)
 
@@ -1917,7 +1916,7 @@ class NmrDpValidation:
 
                     lp_counts[content_subtype] = 0
 
-            elif content_type == 'nmr-chemical-shifts' and bmrb_nmr_star_file_name_pattern.match(file_name):
+            elif content_type == 'nmr-chemical-shifts' and BMRB_NMR_STAR_FILE_NAME_PAT.match(file_name):
 
                 for content_subtype in NMR_CONTENT_SUBTYPES:
 
@@ -8919,8 +8918,8 @@ class NmrDpValidation:
 
                         for idx, row in enumerate(auth_dat):
                             for col, val in enumerate(row):
-                                if isinstance(val, str) and concat_seq_id_ins_code_pattern.match(val):
-                                    g = concat_seq_id_ins_code_pattern.search(val).groups()
+                                if isinstance(val, str) and CONCAT_SEQ_ID_INS_CODE_PAT.match(val):
+                                    g = CONCAT_SEQ_ID_INS_CODE_PAT.search(val).groups()
                                     loop.data[idx][auth_seq_id_cols[col]] = g[0]
                                     if g[1] not in EMPTY_VALUE:
                                         loop.data[idx][ins_code_cols[col]] = g[1]

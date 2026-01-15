@@ -24,77 +24,85 @@ import random
 from typing import IO, List, Tuple, Optional
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import (CifReader,
-                                              SYMBOLS_ELEMENT)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
-                                                       toNefEx,
-                                                       coordAssemblyChecker,
-                                                       extendCoordChainsForExactNoes,
-                                                       translateToStdResName,
-                                                       translateToStdAtomName,
-                                                       translateToStdAtomNameNoRef,
-                                                       translateToStdAtomNameWithRef,
-                                                       backTranslateFromStdResName,
-                                                       isCyclicPolymer,
-                                                       getStructConnPtnr,
-                                                       getWatsonCrickPtnr,
-                                                       getRestraintName,
-                                                       contentSubtypeOf,
-                                                       guessCompIdFromAtomId,
-                                                       guessCompIdFromAtomIdWoLimit,
-                                                       incListIdCounter,
-                                                       decListIdCounter,
-                                                       getSaveframe,
-                                                       getLoop,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       MAX_PREF_LABEL_SCHEME_COUNT,
-                                                       THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                                       MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
-                                                       PLANE_LIKE_LOWER_LIMIT,
-                                                       PLANE_LIKE_UPPER_LIMIT,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_ERROR,
-                                                       ANGLE_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_ERROR,
-                                                       RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR,
-                                                       CSA_RESTRAINT_RANGE,
-                                                       CSA_RESTRAINT_ERROR,
-                                                       PCS_RESTRAINT_RANGE,
-                                                       PCS_RESTRAINT_ERROR,
-                                                       CCR_RESTRAINT_RANGE,
-                                                       CCR_RESTRAINT_ERROR,
-                                                       PRE_RESTRAINT_RANGE,
-                                                       PRE_RESTRAINT_ERROR,
-                                                       CS_RESTRAINT_RANGE,
-                                                       CS_RESTRAINT_ERROR,
-                                                       T1T2_RESTRAINT_RANGE,
-                                                       T1T2_RESTRAINT_ERROR,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       DIST_AMBIG_MED,
-                                                       DIST_AMBIG_UNCERT,
-                                                       XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
-                                                       XPLOR_NITROXIDE_NAMES,
-                                                       NITROOXIDE_ANCHOR_RES_NAMES,
-                                                       CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
-                                                   PARAMAGNETIC_ELEMENTS,
-                                                   FERROMAGNETIC_ELEMENTS,
-                                                   LANTHANOID_ELEMENTS)
-    from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
-                                           LARGE_ASYM_ID,
-                                           monDict3,
-                                           emptyValue,
-                                           protonBeginCode,
-                                           pseProBeginCode,
-                                           aminoProtonCode,
-                                           carboxylCode,
-                                           jcoupBbPairCode,
-                                           zincIonCode,
-                                           calciumIonCode,
-                                           deepcopy,
+    from wwpdb.utils.nmr.NmrDpConstant import (LEN_LARGE_ASYM_ID,
+                                               LARGE_ASYM_ID,
+                                               EMPTY_VALUE,
+                                               ELEMENT_SYMBOLS,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               PSE_PRO_BEGIN_CODE,
+                                               AMINO_PROTON_CODE,
+                                               CARBOXYL_CODE,
+                                               JCOUP_BB_PAIR_CODE,
+                                               ZINC_ION_CODE,
+                                               CALCIUM_ION_CODE,
+                                               PARAMAGNETIC_ELEMENTS,
+                                               FERROMAGNETIC_ELEMENTS,
+                                               LANTHANOID_ELEMENTS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               MAX_PREF_LABEL_SCHEME_COUNT,
+                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                               MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
+                                               PLANE_LIKE_LOWER_LIMIT,
+                                               PLANE_LIKE_UPPER_LIMIT,
+                                               DIST_RESTRAINT_RANGE,
+                                               DIST_RESTRAINT_ERROR,
+                                               ANGLE_RESTRAINT_RANGE,
+                                               ANGLE_RESTRAINT_ERROR,
+                                               RDC_RESTRAINT_RANGE,
+                                               RDC_RESTRAINT_ERROR,
+                                               CSA_RESTRAINT_RANGE,
+                                               CSA_RESTRAINT_ERROR,
+                                               PCS_RESTRAINT_RANGE,
+                                               PCS_RESTRAINT_ERROR,
+                                               CCR_RESTRAINT_RANGE,
+                                               CCR_RESTRAINT_ERROR,
+                                               PRE_RESTRAINT_RANGE,
+                                               PRE_RESTRAINT_ERROR,
+                                               T1T2_RESTRAINT_RANGE,
+                                               T1T2_RESTRAINT_ERROR,
+                                               DIST_RANGE_MIN,
+                                               DIST_RANGE_MAX,
+                                               DIST_ERROR_MIN,
+                                               DIST_ERROR_MAX,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               DIST_AMBIG_MED,
+                                               DIST_AMBIG_UNCERT,
+                                               ANGLE_RANGE_MIN,
+                                               ANGLE_RANGE_MAX,
+                                               ANGLE_ERROR_MIN,
+                                               ANGLE_ERROR_MAX,
+                                               RDC_RANGE_MIN,
+                                               RDC_RANGE_MAX,
+                                               RDC_ERROR_MIN,
+                                               RDC_ERROR_MAX,
+                                               CSA_RANGE_MIN,
+                                               CSA_RANGE_MAX,
+                                               CSA_ERROR_MIN,
+                                               CSA_ERROR_MAX,
+                                               PCS_RANGE_MIN,
+                                               PCS_RANGE_MAX,
+                                               PCS_ERROR_MIN,
+                                               PCS_ERROR_MAX,
+                                               CCR_RANGE_MIN,
+                                               CCR_RANGE_MAX,
+                                               CCR_ERROR_MIN,
+                                               CCR_ERROR_MAX,
+                                               PRE_RANGE_MIN,
+                                               PRE_RANGE_MAX,
+                                               PRE_ERROR_MIN,
+                                               PRE_ERROR_MAX,
+                                               T1T2_RANGE_MIN,
+                                               T1T2_RANGE_MAX,
+                                               T1T2_ERROR_MIN,
+                                               T1T2_ERROR_MAX,
+                                               XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                               XPLOR_NITROXIDE_NAMES,
+                                               NITROOXIDE_ANCHOR_RES_NAMES,
+                                               CARTN_DATA_ITEMS)
+    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            indexToLetter,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -122,78 +130,108 @@ try:
                                                 angle_target_values,
                                                 dihedral_angle,
                                                 angle_error)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
+                                                       toNefEx,
+                                                       coordAssemblyChecker,
+                                                       extendCoordChainsForExactNoes,
+                                                       translateToStdResName,
+                                                       translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
+                                                       backTranslateFromStdResName,
+                                                       isCyclicPolymer,
+                                                       getStructConnPtnr,
+                                                       getWatsonCrickPtnr,
+                                                       getRestraintName,
+                                                       contentSubtypeOf,
+                                                       guessCompIdFromAtomId,
+                                                       guessCompIdFromAtomIdWoLimit,
+                                                       incListIdCounter,
+                                                       decListIdCounter,
+                                                       getSaveframe,
+                                                       getLoop)
 except ImportError:
-    from nmr.io.CifReader import (CifReader,
-                                  SYMBOLS_ELEMENT)
-    from nmr.mr.ParserListenerUtil import (toRegEx,
-                                           toNefEx,
-                                           coordAssemblyChecker,
-                                           extendCoordChainsForExactNoes,
-                                           translateToStdResName,
-                                           translateToStdAtomName,
-                                           translateToStdAtomNameNoRef,
-                                           translateToStdAtomNameWithRef,
-                                           backTranslateFromStdResName,
-                                           isCyclicPolymer,
-                                           getStructConnPtnr,
-                                           getRestraintName,
-                                           getWatsonCrickPtnr,
-                                           contentSubtypeOf,
-                                           guessCompIdFromAtomId,
-                                           guessCompIdFromAtomIdWoLimit,
-                                           incListIdCounter,
-                                           decListIdCounter,
-                                           getSaveframe,
-                                           getLoop,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           MAX_PREF_LABEL_SCHEME_COUNT,
-                                           THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                           MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
-                                           PLANE_LIKE_LOWER_LIMIT,
-                                           PLANE_LIKE_UPPER_LIMIT,
-                                           DIST_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_ERROR,
-                                           ANGLE_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_ERROR,
-                                           RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR,
-                                           CSA_RESTRAINT_RANGE,
-                                           CSA_RESTRAINT_ERROR,
-                                           PCS_RESTRAINT_RANGE,
-                                           PCS_RESTRAINT_ERROR,
-                                           CCR_RESTRAINT_RANGE,
-                                           CCR_RESTRAINT_ERROR,
-                                           PRE_RESTRAINT_RANGE,
-                                           PRE_RESTRAINT_ERROR,
-                                           CS_RESTRAINT_RANGE,
-                                           CS_RESTRAINT_ERROR,
-                                           T1T2_RESTRAINT_RANGE,
-                                           T1T2_RESTRAINT_ERROR,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           DIST_AMBIG_MED,
-                                           DIST_AMBIG_UNCERT,
-                                           XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
-                                           XPLOR_NITROXIDE_NAMES,
-                                           NITROOXIDE_ANCHOR_RES_NAMES,
-                                           CARTN_DATA_ITEMS)
-    from nmr.nef.NEFTranslator import (NEFTranslator,
-                                       PARAMAGNETIC_ELEMENTS,
-                                       FERROMAGNETIC_ELEMENTS,
-                                       LANTHANOID_ELEMENTS)
-    from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
-                               LARGE_ASYM_ID,
-                               monDict3,
-                               emptyValue,
-                               protonBeginCode,
-                               pseProBeginCode,
-                               aminoProtonCode,
-                               carboxylCode,
-                               jcoupBbPairCode,
-                               zincIonCode,
-                               calciumIonCode,
-                               deepcopy,
+    from nmr.NmrDpConstant import (LEN_LARGE_ASYM_ID,
+                                   LARGE_ASYM_ID,
+                                   EMPTY_VALUE,
+                                   ELEMENT_SYMBOLS,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   PSE_PRO_BEGIN_CODE,
+                                   AMINO_PROTON_CODE,
+                                   CARBOXYL_CODE,
+                                   JCOUP_BB_PAIR_CODE,
+                                   ZINC_ION_CODE,
+                                   CALCIUM_ION_CODE,
+                                   PARAMAGNETIC_ELEMENTS,
+                                   FERROMAGNETIC_ELEMENTS,
+                                   LANTHANOID_ELEMENTS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   MAX_PREF_LABEL_SCHEME_COUNT,
+                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                   MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
+                                   PLANE_LIKE_LOWER_LIMIT,
+                                   PLANE_LIKE_UPPER_LIMIT,
+                                   DIST_RESTRAINT_RANGE,
+                                   DIST_RESTRAINT_ERROR,
+                                   ANGLE_RESTRAINT_RANGE,
+                                   ANGLE_RESTRAINT_ERROR,
+                                   RDC_RESTRAINT_RANGE,
+                                   RDC_RESTRAINT_ERROR,
+                                   CSA_RESTRAINT_RANGE,
+                                   CSA_RESTRAINT_ERROR,
+                                   PCS_RESTRAINT_RANGE,
+                                   PCS_RESTRAINT_ERROR,
+                                   CCR_RESTRAINT_RANGE,
+                                   CCR_RESTRAINT_ERROR,
+                                   PRE_RESTRAINT_RANGE,
+                                   PRE_RESTRAINT_ERROR,
+                                   T1T2_RESTRAINT_RANGE,
+                                   T1T2_RESTRAINT_ERROR,
+                                   DIST_RANGE_MIN,
+                                   DIST_RANGE_MAX,
+                                   DIST_ERROR_MIN,
+                                   DIST_ERROR_MAX,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   DIST_AMBIG_MED,
+                                   DIST_AMBIG_UNCERT,
+                                   ANGLE_RANGE_MIN,
+                                   ANGLE_RANGE_MAX,
+                                   ANGLE_ERROR_MIN,
+                                   ANGLE_ERROR_MAX,
+                                   RDC_RANGE_MIN,
+                                   RDC_RANGE_MAX,
+                                   RDC_ERROR_MIN,
+                                   RDC_ERROR_MAX,
+                                   CSA_RANGE_MIN,
+                                   CSA_RANGE_MAX,
+                                   CSA_ERROR_MIN,
+                                   CSA_ERROR_MAX,
+                                   PCS_RANGE_MIN,
+                                   PCS_RANGE_MAX,
+                                   PCS_ERROR_MIN,
+                                   PCS_ERROR_MAX,
+                                   CCR_RANGE_MIN,
+                                   CCR_RANGE_MAX,
+                                   CCR_ERROR_MIN,
+                                   CCR_ERROR_MAX,
+                                   PRE_RANGE_MIN,
+                                   PRE_RANGE_MAX,
+                                   PRE_ERROR_MIN,
+                                   PRE_ERROR_MAX,
+                                   T1T2_RANGE_MIN,
+                                   T1T2_RANGE_MAX,
+                                   T1T2_ERROR_MIN,
+                                   T1T2_ERROR_MAX,
+                                   XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                   XPLOR_NITROXIDE_NAMES,
+                                   NITROOXIDE_ANCHOR_RES_NAMES,
+                                   CARTN_DATA_ITEMS)
+    from nmr.AlignUtil import (deepcopy,
                                indexToLetter,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
@@ -221,69 +259,28 @@ except ImportError:
                                     angle_target_values,
                                     dihedral_angle,
                                     angle_error)
-
-
-DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
-DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
-
-DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
-DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
-
-
-ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
-ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
-
-ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
-ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
-
-
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
-
-RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
-RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
-
-
-CSA_RANGE_MIN = CSA_RESTRAINT_RANGE['min_inclusive']
-CSA_RANGE_MAX = CSA_RESTRAINT_RANGE['max_inclusive']
-
-CSA_ERROR_MIN = CSA_RESTRAINT_ERROR['min_exclusive']
-CSA_ERROR_MAX = CSA_RESTRAINT_ERROR['max_exclusive']
-
-
-PCS_RANGE_MIN = PCS_RESTRAINT_RANGE['min_inclusive']
-PCS_RANGE_MAX = PCS_RESTRAINT_RANGE['max_inclusive']
-
-PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
-PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
-
-
-CCR_RANGE_MIN = CCR_RESTRAINT_RANGE['min_inclusive']
-CCR_RANGE_MAX = CCR_RESTRAINT_RANGE['max_inclusive']
-
-CCR_ERROR_MIN = CCR_RESTRAINT_ERROR['min_exclusive']
-CCR_ERROR_MAX = CCR_RESTRAINT_ERROR['max_exclusive']
-
-
-PRE_RANGE_MIN = PRE_RESTRAINT_RANGE['min_inclusive']
-PRE_RANGE_MAX = PRE_RESTRAINT_RANGE['max_inclusive']
-
-PRE_ERROR_MIN = PRE_RESTRAINT_ERROR['min_exclusive']
-PRE_ERROR_MAX = PRE_RESTRAINT_ERROR['max_exclusive']
-
-
-CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
-CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
-
-CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
-CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
-
-
-T1T2_RANGE_MIN = T1T2_RESTRAINT_RANGE['min_inclusive']
-T1T2_RANGE_MAX = T1T2_RESTRAINT_RANGE['max_inclusive']
-
-T1T2_ERROR_MIN = T1T2_RESTRAINT_ERROR['min_exclusive']
-T1T2_ERROR_MAX = T1T2_RESTRAINT_ERROR['max_exclusive']
+    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.io.CifReader import CifReader
+    from nmr.mr.ParserListenerUtil import (toRegEx,
+                                           toNefEx,
+                                           coordAssemblyChecker,
+                                           extendCoordChainsForExactNoes,
+                                           translateToStdResName,
+                                           translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
+                                           backTranslateFromStdResName,
+                                           isCyclicPolymer,
+                                           getStructConnPtnr,
+                                           getRestraintName,
+                                           getWatsonCrickPtnr,
+                                           contentSubtypeOf,
+                                           guessCompIdFromAtomId,
+                                           guessCompIdFromAtomIdWoLimit,
+                                           incListIdCounter,
+                                           decListIdCounter,
+                                           getSaveframe,
+                                           getLoop)
 
 
 class BaseStackedMRParserListener():
@@ -820,7 +817,7 @@ class BaseStackedMRParserListener():
             self.altCompIdSet = set()
 
             def is_data(array: list) -> bool:
-                return not any(d in emptyValue for d in array)
+                return not any(d in EMPTY_VALUE for d in array)
 
             for ps in self.polySeq:
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
@@ -840,7 +837,7 @@ class BaseStackedMRParserListener():
         else:
             self.gapInAuthSeq = False
             self.__complexSeqScheme = False
-            self.compIdSet = self.altCompIdSet = set(monDict3.keys())
+            self.compIdSet = self.altCompIdSet = set(MONDICT3.keys())
 
         self.cyanaCompIdSet = set()
         for compId in self.compIdSet:
@@ -1113,7 +1110,7 @@ class BaseStackedMRParserListener():
 
                     if has_gap_in_auth_seq:
                         for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
-                            if auth_seq_id in emptyValue:
+                            if auth_seq_id in EMPTY_VALUE:
                                 continue
                             if auth_seq_id in rev_seq_id_mapping:
                                 test_seq_id = rev_seq_id_mapping[auth_seq_id]
@@ -1122,7 +1119,7 @@ class BaseStackedMRParserListener():
                                 chainIdRemap[seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
                     else:
                         for auth_seq_id in ps['auth_seq_id']:
-                            if auth_seq_id in emptyValue:
+                            if auth_seq_id in EMPTY_VALUE:
                                 continue
                             if auth_seq_id in rev_seq_id_mapping:
                                 test_seq_id = rev_seq_id_mapping[auth_seq_id]
@@ -1201,7 +1198,7 @@ class BaseStackedMRParserListener():
                                 compId = ps['comp_id'][ps[seq_id_name].index(_seqId + offset)]
                                 if compId in _compIds:
                                     matched += 1
-                                elif compId not in monDict3 or len(_compIds) == 0:  # 6f0y
+                                elif compId not in MONDICT3 or len(_compIds) == 0:  # 6f0y
                                     continue
                                 else:
                                     valid = False
@@ -1238,7 +1235,7 @@ class BaseStackedMRParserListener():
                                         matched += 100
                                         if all(abs(offset_) > 950 for offset_ in _offsets):  # 6e5n
                                             matched -= abs((offset % 100) - 100) % 100
-                                        elif ps['auth_seq_id'][idx] not in emptyValue:
+                                        elif ps['auth_seq_id'][idx] not in EMPTY_VALUE:
                                             matched -= abs(offset - (ps['auth_seq_id'][idx] - ps['seq_id'][idx]))
                                 else:
                                     matched -= 100
@@ -1256,7 +1253,7 @@ class BaseStackedMRParserListener():
                         continue
 
                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
-                        if auth_seq_id in emptyValue:
+                        if auth_seq_id in EMPTY_VALUE:
                             continue
                         if seq_id - _offset in chainIdRemap:
                             _chainId = chainIdRemap[seq_id - _offset]['chain_id']
@@ -1265,7 +1262,7 @@ class BaseStackedMRParserListener():
                         chainIdRemap[seq_id - _offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                 else:
                     for auth_seq_id in ps['auth_seq_id']:
-                        if auth_seq_id in emptyValue:
+                        if auth_seq_id in EMPTY_VALUE:
                             continue
                         if auth_seq_id - _offset in chainIdRemap:
                             _chainId = chainIdRemap[auth_seq_id - _offset]['chain_id']
@@ -1337,12 +1334,12 @@ class BaseStackedMRParserListener():
 
                 if has_gap_in_auth_seq:
                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
-                        if auth_seq_id in emptyValue:
+                        if auth_seq_id in EMPTY_VALUE:
                             continue
                         chainIdRemap[seq_id - _offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                 else:
                     for auth_seq_id in ps['auth_seq_id']:
-                        if auth_seq_id in emptyValue:
+                        if auth_seq_id in EMPTY_VALUE:
                             continue
                         chainIdRemap[auth_seq_id - _offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
 
@@ -1394,7 +1391,7 @@ class BaseStackedMRParserListener():
 
                 if has_gap_in_auth_seq:
                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
-                        if auth_seq_id in emptyValue:
+                        if auth_seq_id in EMPTY_VALUE:
                             continue
                         if auth_seq_id in rev_seq_id_mapping:
                             test_seq_id = rev_seq_id_mapping[auth_seq_id]
@@ -1403,7 +1400,7 @@ class BaseStackedMRParserListener():
                             chainIdRemap[seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
                 else:
                     for auth_seq_id in ps['auth_seq_id']:
-                        if auth_seq_id in emptyValue:
+                        if auth_seq_id in EMPTY_VALUE:
                             continue
                         if auth_seq_id in rev_seq_id_mapping:
                             test_seq_id = rev_seq_id_mapping[auth_seq_id]
@@ -1430,12 +1427,12 @@ class BaseStackedMRParserListener():
 
                 if has_gap_in_auth_seq:
                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
-                        if auth_seq_id in emptyValue:
+                        if auth_seq_id in EMPTY_VALUE:
                             continue
                         chainIdRemap[seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                 else:
                     for auth_seq_id in ps['auth_seq_id']:
-                        if auth_seq_id in emptyValue:
+                        if auth_seq_id in EMPTY_VALUE:
                             continue
                         chainIdRemap[auth_seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
 
@@ -1830,7 +1827,7 @@ class BaseStackedMRParserListener():
                                             for test_seq_id, test_comp_id in zip(_ps['seq_id'], _ps['comp_id']):
                                                 if test_seq_id not in ps['seq_id']:
                                                     valid_label_seq = False
-                                                elif test_comp_id not in emptyValue and test_comp_id != ps['comp_id'][ps['seq_id'].index(test_seq_id)]:
+                                                elif test_comp_id not in EMPTY_VALUE and test_comp_id != ps['comp_id'][ps['seq_id'].index(test_seq_id)]:
                                                     valid_label_seq = False
                                                 if test_seq_id not in ps['auth_seq_id']:
                                                     valid_auth_seq = False
@@ -2214,7 +2211,7 @@ class BaseStackedMRParserListener():
                                     seqIdRemapForRemaining.append({'chain_id': chainId, 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                                 _ps = next((_ps for _ps in self.__polySeqRstFailed if _ps['chain_id'] == chainId), None)
-                                if _ps is None or not all(_seq_id in ps['seq_id'] for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id']) if _comp_id not in emptyValue):
+                                if _ps is None or not all(_seq_id in ps['seq_id'] for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id']) if _comp_id not in EMPTY_VALUE):
                                     del self.reasonsForReParsing['global_auth_sequence_offset'][chainId]
                                     if len(self.reasonsForReParsing['global_auth_sequence_offset']) == 0:
                                         del self.reasonsForReParsing['global_auth_sequence_offset']
@@ -2253,7 +2250,7 @@ class BaseStackedMRParserListener():
                                     seqIdRemapForRemaining.append({'chain_id': chainId, 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                         elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             _ps = next((_ps for _ps in self.__polySeqRstFailed if _ps['chain_id'] == chainId), None)
-                            if _ps is None or not all(_seq_id in ps['seq_id'] for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id']) if _comp_id not in emptyValue):
+                            if _ps is None or not all(_seq_id in ps['seq_id'] for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id']) if _comp_id not in EMPTY_VALUE):
                                 del self.reasonsForReParsing['global_auth_sequence_offset'][chainId]
                                 if len(self.reasonsForReParsing['global_auth_sequence_offset']) == 0:
                                     del self.reasonsForReParsing['global_auth_sequence_offset']
@@ -2335,7 +2332,7 @@ class BaseStackedMRParserListener():
                         ps = next((ps for ps in self.__polySeqRstValid if ps['chain_id'] == _ps['chain_id']), None)
                         if ps is None:
                             break
-                        if len([compId for compId in ps['comp_id'] if compId not in emptyValue]) > len(_ps['comp_id']) * 2:
+                        if len([compId for compId in ps['comp_id'] if compId not in EMPTY_VALUE]) > len(_ps['comp_id']) * 2:
                             valid = False
                             break
                 if len(self.__polySeqRstFailed) > 0:
@@ -4884,7 +4881,7 @@ class BaseStackedMRParserListener():
                         if details is not None and atomId[-1] in ('%', '*', '#'):
                             _atomIds, _, _details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                             if _details is None and len(_atomIds) > 0:  # 5z4f: GLU:HG1# -> GLU:HG3
-                                if nucleotide and atomId[0] in protonBeginCode and len(atomId) > 1 and len(_atomIds[0]) > 1\
+                                if nucleotide and atomId[0] in PROTON_BEGIN_CODE and len(atomId) > 1 and len(_atomIds[0]) > 1\
                                    and atomId[1].isdigit() and _atomIds[0][1].isdigit() and atomId[1] != _atomIds[0][0]:
                                     pass  # 2lzv
                                 else:
@@ -4988,7 +4985,7 @@ class BaseStackedMRParserListener():
                                         continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
-                            if realCompId not in monDict3 and realCompId in _compIdSelect:
+                            if realCompId not in MONDICT3 and realCompId in _compIdSelect:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                 atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping, realSeqId, realCompId, tmpAtomId, coordAtomSite, ignoreSeqId=True)
                                 atomIds, _, details = self.nefT.get_valid_star_atom(realCompId, atomId, leave_unmatched=True)
@@ -5143,7 +5140,7 @@ class BaseStackedMRParserListener():
                     if self.__lenAtomSelectionSet > 0:
                         self.setLocalSeqScheme()
                 else:
-                    if not self.__internal or all(compId in monDict3 for compId in _compIdSelect):
+                    if not self.__internal or all(compId in MONDICT3 for compId in _compIdSelect):
                         _factor['atom_id'] = [None]
                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
             # del _factor['atom_ids']
@@ -5176,7 +5173,7 @@ class BaseStackedMRParserListener():
                                 _factor['alt_comp_id'] = _factor['comp_id']
                                 _factor['comp_id'] = _compIdList
                         _compIdSelect.add(realCompId)
-                        if realCompId not in monDict3:
+                        if realCompId not in MONDICT3:
                             _repNstdResidueInstance[realCompId] = (chainId, realSeqId)
             if self.hasNonPolySeq:
                 for chainId in _factor['chain_id']:
@@ -5285,7 +5282,7 @@ class BaseStackedMRParserListener():
                                     _factor['alt_comp_id'] = _factor['comp_id']
                                     _factor['comp_id'] = _compIdList
                             _compIdSelect.add(realCompId)
-                            if realCompId not in monDict3:
+                            if realCompId not in MONDICT3:
                                 _repNstdResidueInstance[realCompId] = (chainId, realSeqId)
                 if self.hasNonPolySeq:
                     for chainId in _factor['chain_id']:
@@ -5629,12 +5626,12 @@ class BaseStackedMRParserListener():
 
                                     elif ligands > 1 and len(_factor['atom_id']) == 1\
                                             and _atomId is not None\
-                                            and (_atomId in SYMBOLS_ELEMENT  # 2n3r
+                                            and (_atomId in ELEMENT_SYMBOLS  # 2n3r
                                                  or (len(_atomId) == 4 and ((_atomId[-2] == '+' and _atomId[-1].isdigit())
                                                                             or (_atomId[-1] == '+' and _atomId[-2].isdigit()))
-                                                     and _atomId[:2] in SYMBOLS_ELEMENT)  # 6kg9, 2ma7
+                                                     and _atomId[:2] in ELEMENT_SYMBOLS)  # 6kg9, 2ma7
                                                  or (len(_atomId) == 3 and (_atomId[-1].isdigit() or _atomId[-1] in ('+', '-'))
-                                                     and _atomId[:2] in SYMBOLS_ELEMENT)  # 2m28, 2mco
+                                                     and _atomId[:2] in ELEMENT_SYMBOLS)  # 2m28, 2mco
                                                  or _atomId == 'X'):  # 2mjq, 2mjr, 2mjs, 2mjt
                                         if _atomId != 'X':
                                             elemName = _atomId[:2]
@@ -5724,13 +5721,13 @@ class BaseStackedMRParserListener():
                                 if ligands == 0 and not self.has_nx and not self.has_gd and not self.has_la\
                                    and (self.monoPolymer or all('identical_chain_id' in ps for ps in self.polySeq) or not chain_not_specified):
                                     if _atomId is not None and _atomId.startswith('X')\
-                                       and _atomId not in SYMBOLS_ELEMENT:
+                                       and _atomId not in ELEMENT_SYMBOLS:
                                         pass  # 8bxj
                                     elif self.reasons is not None and 'segment_id_mismatch' in self.reasons:
                                         pass  # 6f0y
                                     # 2knf, 2ma9
                                     elif _atomId is None\
-                                            or (_atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode)\
+                                            or (_atomId not in AMINO_PROTON_CODE and _atomId not in CARBOXYL_CODE and _atomId not in JCOUP_BB_PAIR_CODE)\
                                             or self.gapInAuthSeq:  # 2kyg
                                         if not self.cur_subtype_altered or not self.in_noe:  # 2ljc
                                             if self.reasons is None:
@@ -5758,7 +5755,7 @@ class BaseStackedMRParserListener():
 
                             if not atom_not_found_error:
                                 if _atomId is not None and _atomId.startswith('X')\
-                                   and _atomId not in SYMBOLS_ELEMENT:  # 8bxj
+                                   and _atomId not in ELEMENT_SYMBOLS:  # 8bxj
                                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                                   f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
                                 else:
@@ -6110,7 +6107,7 @@ class BaseStackedMRParserListener():
 
                     if self.hasNonPoly:
                         if isPolySeq and len(atomId) == 4\
-                           and atomId[:2] in SYMBOLS_ELEMENT\
+                           and atomId[:2] in ELEMENT_SYMBOLS\
                            and atomId[2:] in ('+1', '+2', '+3', '1+', '2+', '3+'):
                             elemName = atomId[:2]
                             elemCount = 0
@@ -6121,8 +6118,8 @@ class BaseStackedMRParserListener():
                                 continue
 
                         elif not isPolySeq and len(atomId) >= 2\
-                                and (atomId in SYMBOLS_ELEMENT
-                                     or (len(atomId) == 4 and atomId[:2] in SYMBOLS_ELEMENT
+                                and (atomId in ELEMENT_SYMBOLS
+                                     or (len(atomId) == 4 and atomId[:2] in ELEMENT_SYMBOLS
                                          and atomId[2:] in ('+1', '+2', '+3', '1+', '2+', '3+'))):
                             elemName = atomId[:2]
                             elemCount = 0
@@ -6173,7 +6170,7 @@ class BaseStackedMRParserListener():
                                         if _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                             continue
                                     atomId = atomId.upper()
-                                    if __compId not in monDict3 and self.mrAtomNameMapping is not None:
+                                    if __compId not in MONDICT3 and self.mrAtomNameMapping is not None:
                                         authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(__seqId)]
                                         atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping, __seqId, authCompId, atomId, __coordAtomSite)
                                     __atomIds = self.getAtomIdList(_factor, __compId, atomId)
@@ -6256,7 +6253,7 @@ class BaseStackedMRParserListener():
 
                     if self.hasNonPoly and compId == 'CYS':
 
-                        if atomId in zincIonCode:
+                        if atomId in ZINC_ION_CODE:
                             znCount = 0
                             znSeqId = None
                             for np in self.__nonPoly:
@@ -6273,7 +6270,7 @@ class BaseStackedMRParserListener():
                                         coordAtomSite = _coordAtomSite
                                         atomSiteAtomId = _coordAtomSite['atom_id']
 
-                        if atomId in calciumIonCode:
+                        if atomId in CALCIUM_ION_CODE:
                             caCount = 0
                             caSeqId = None
                             for np in self.__nonPoly:
@@ -6319,13 +6316,13 @@ class BaseStackedMRParserListener():
 
                         if self.mrAtomNameMapping is not None:
                             # 6u24: split during annotation
-                            if isPolySeq and compId in monDict3 and 'alt_comp_id' in ps and self.hasNonPolySeq:
+                            if isPolySeq and compId in MONDICT3 and 'alt_comp_id' in ps and self.hasNonPolySeq:
                                 try:
                                     if _seqId in ps['auth_seq_id']:
                                         authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId)]
                                     else:
                                         authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId_)]
-                                    if authCompId not in monDict3:
+                                    if authCompId not in MONDICT3:
                                         __seqId__, __compId__, __atomId__ = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId,
                                                                                                        authCompId, atomId, ignoreSeqId=True)
                                         split = 0
@@ -6342,7 +6339,7 @@ class BaseStackedMRParserListener():
                                 except IndexError:
                                     pass
 
-                            if compId not in monDict3\
+                            if compId not in MONDICT3\
                                and ((_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id'])
                                     or ('alt_auth_seq_id' in ps
                                         and (_seqId in ps['alt_auth_seq_id'] or _seqId_ in ps['alt_auth_seq_id']))):
@@ -6368,7 +6365,7 @@ class BaseStackedMRParserListener():
                         if atomSiteAtomId is not None:
                             if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
                                 atomId = translateToStdAtomName(atomId, compId, atomSiteAtomId, self.ccU, False)
-                            elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                            elif atomId[0] not in PSE_PRO_BEGIN_CODE and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
                                 atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
 
                         # @see: https://bmrb.io/ref_info/atom_nom.tbl
@@ -6795,10 +6792,10 @@ class BaseStackedMRParserListener():
                                             if self.cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
                                                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
+                                                    if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
                                                                                       or _atomId == 'P' or _atomId.startswith('HOP')):
                                                         checked = True
-                                                if _atomId[0] in protonBeginCode:
+                                                if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId:
@@ -6815,7 +6812,7 @@ class BaseStackedMRParserListener():
                                                         elif bondedTo[0][0] == 'O':
                                                             checked = True
                                                 if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes and self.csStat.peptideLike(compId):
-                                                    if coordAtomSite is not None and _atomId in carboxylCode\
+                                                    if coordAtomSite is not None and _atomId in CARBOXYL_CODE\
                                                        and not isCyclicPolymer(self.cR, self.polySeq, chainId, self.representativeModelId,
                                                                                self.representativeAltId, self.modelNumName):
                                                         self.f.append(f"[Coordinate issue] {self.getCurrentRestraint()}"
@@ -6828,7 +6825,7 @@ class BaseStackedMRParserListener():
                                                         if isPolySeq and not self.preferAuthSeq\
                                                            and ('label_seq_offset' not in self.reasonsForReParsing
                                                                 or chainId not in self.reasonsForReParsing['label_seq_offset']):
-                                                            if self.csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode\
+                                                            if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE\
                                                                and (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
                                                                 pass
                                                             else:
@@ -6885,11 +6882,11 @@ class BaseStackedMRParserListener():
                                                                                 break
                                                                 self.preferAuthSeq = __preferAuthSeq
                                                             if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
-                                                               and _factor['chain_id'][0] != chainId and compId in monDict3:
+                                                               and _factor['chain_id'][0] != chainId and compId in MONDICT3:
                                                                 continue
                                                             if self.with_para and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
                                                                 continue
-                                                            if self.csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
+                                                            if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
                                                                 if (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
                                                                     _atomSelection.remove(selection)
                                                                     continue
@@ -6897,12 +6894,12 @@ class BaseStackedMRParserListener():
                                                                     continue
                                                             if self.cur_subtype == 'dihed' and _atomId == 'P' and self.csStat.getTypeOfCompId(compId)[1]:
                                                                 continue
-                                                            warn_title = 'Anomalous data' if self.preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
+                                                            warn_title = 'Anomalous data' if self.preferAuthSeq and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
                                                                 and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                                 else 'Atom not found'
                                                             if seqKey in self.__coordUnobsAtom\
                                                                and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                    or (_atomId[0] in protonBeginCode
+                                                                    or (_atomId[0] in PROTON_BEGIN_CODE
                                                                         and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                                 warn_title = 'Coordinate issue'
@@ -6917,7 +6914,7 @@ class BaseStackedMRParserListener():
                                                                 self.__failure_chain_ids.append(chainId)
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                            if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
+                                            if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
                                                                               or _atomId == 'P' or _atomId.startswith('HOP')):
                                                 continue
                                         if cifCheck and self.cur_subtype != 'plane'\
@@ -6974,7 +6971,7 @@ class BaseStackedMRParserListener():
                                                                         break
                                                         self.preferAuthSeq = __preferAuthSeq
                                                     if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
-                                                       and _factor['chain_id'][0] != chainId and compId in monDict3:
+                                                       and _factor['chain_id'][0] != chainId and compId in MONDICT3:
                                                         continue
                                                     # 2mgt
                                                     if self.hasNonPoly and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
@@ -7057,17 +7054,17 @@ class BaseStackedMRParserListener():
                                                         continue
                                                     if self.with_para and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
                                                         continue
-                                                    if self.csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
+                                                    if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
                                                         if self.has_nx or origAtomId0.startswith('HT'):
                                                             continue
                                                     if self.cur_subtype == 'dihed' and _atomId == 'P' and self.csStat.getTypeOfCompId(compId)[1]:
                                                         continue
-                                                    warn_title = 'Anomalous data' if self.preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
+                                                    warn_title = 'Anomalous data' if self.preferAuthSeq and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                         else 'Atom not found'
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode
+                                                            or (_atomId[0] in PROTON_BEGIN_CODE
                                                                 and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         warn_title = 'Coordinate issue'
@@ -7077,7 +7074,7 @@ class BaseStackedMRParserListener():
                                                                   f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
                                                     if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
                                                         continue
-                                                    if self.cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.csStat.peptideLike(compId):
+                                                    if self.cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in MONDICT3 and self.csStat.peptideLike(compId):
                                                         self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
                                                     if 'alt_chain_id' in _factor:
                                                         self.__failure_chain_ids.append(chainId)
@@ -7089,7 +7086,7 @@ class BaseStackedMRParserListener():
         if self.ccU.updateChemCompDict(compId, False):
             if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.ccU.lastChemCompDict:
                 replacedBy = self.ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
-                if replacedBy not in emptyValue and self.ccU.updateChemCompDict(replacedBy):
+                if replacedBy not in EMPTY_VALUE and self.ccU.updateChemCompDict(replacedBy):
                     return replacedBy
         return compId
 
@@ -7291,7 +7288,7 @@ class BaseStackedMRParserListener():
             return
         if 'atom_id' in factor and len(factor['atom_id']) == 1 and self.__polyPeptide:  # 7lgi
             atomId = factor['atom_id'][0]
-            if atomId in aminoProtonCode or atomId in carboxylCode or atomId in jcoupBbPairCode:
+            if atomId in AMINO_PROTON_CODE or atomId in CARBOXYL_CODE or atomId in JCOUP_BB_PAIR_CODE:
                 if self.__polyDeoxyribonucleotide or self.__polyRibonucleotide or self.hasBranched:  # 2n8a, 4b1q (branched)
                     return
                 if (self.cur_subtype == 'dist' or self.in_noe) and not valid:
@@ -7877,7 +7874,7 @@ class BaseStackedMRParserListener():
 
             v = _factor[k]
 
-            if v in emptyValue or (isinstance(v, list) and (len(v) == 0 or v[0] in emptyValue)):
+            if v in EMPTY_VALUE or (isinstance(v, list) and (len(v) == 0 or v[0] in EMPTY_VALUE)):
                 continue
 
             if k == 'atom_id' and 'alt_atom_id' in _factor:
@@ -7919,7 +7916,7 @@ class BaseStackedMRParserListener():
 
             v = _factor[k]
 
-            if v in emptyValue or (isinstance(v, list) and (len(v) == 0 or v[0] in emptyValue)):
+            if v in EMPTY_VALUE or (isinstance(v, list) and (len(v) == 0 or v[0] in EMPTY_VALUE)):
                 continue
 
             if k == 'atom_id' and 'alt_atom_id' in _factor:
@@ -8210,15 +8207,15 @@ class BaseStackedMRParserListener():
 
         sf = self.sfDict[key][-1]
 
-        if (self.classification not in emptyValue or self.with_para) and 'classification' not in sf:
-            if get_first_sf_tag(sf['saveframe'], 'Details') in emptyValue:
+        if (self.classification not in EMPTY_VALUE or self.with_para) and 'classification' not in sf:
+            if get_first_sf_tag(sf['saveframe'], 'Details') in EMPTY_VALUE:
                 desc = ''
-                if self.classification not in emptyValue:
+                if self.classification not in EMPTY_VALUE:
                     desc = f'{self.classification},'
                 if self.with_para and self.spinLabeling is not None:
                     desc += f' {self.spinLabeling[1:-1]}: {self.getReadableParamagCenter()}'
                 desc = desc.strip()
-                if desc not in emptyValue:
+                if desc not in EMPTY_VALUE:
                     set_sf_tag(sf['saveframe'], 'Details', desc)
                 sf['classification'] = desc
 

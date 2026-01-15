@@ -18,33 +18,33 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from typing import IO, List, Tuple, Optional
 
 try:
-    from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
-    from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.pk.SparkyPKLexer import SparkyPKLexer
-    from wwpdb.utils.nmr.pk.SparkyNPKParser import SparkyNPKParser
-    from wwpdb.utils.nmr.pk.SparkyNPKParserListener import SparkyNPKParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
-                                                       MAX_ERROR_REPORT,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
+    from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import coordAssemblyChecker
+    from wwpdb.utils.nmr.pk.SparkyPKLexer import SparkyPKLexer
+    from wwpdb.utils.nmr.pk.SparkyNPKParser import SparkyNPKParser
+    from wwpdb.utils.nmr.pk.SparkyNPKParserListener import SparkyNPKParserListener
 except ImportError:
-    from nmr.mr.LexerErrorListener import LexerErrorListener
-    from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.pk.SparkyPKLexer import SparkyPKLexer
-    from nmr.pk.SparkyNPKParser import SparkyNPKParser
-    from nmr.pk.SparkyNPKParserListener import SparkyNPKParserListener
-    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
-                                           MAX_ERROR_REPORT,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
-    from nmr.io.CifReader import CifReader
+    from nmr.NmrDpConstant import (MAX_ERROR_REPORT,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.io.CifReader import CifReader
+    from nmr.mr.LexerErrorListener import LexerErrorListener
+    from nmr.mr.ParserErrorListener import ParserErrorListener
+    from nmr.mr.ParserListenerUtil import coordAssemblyChecker
+    from nmr.pk.SparkyPKLexer import SparkyPKLexer
+    from nmr.pk.SparkyNPKParser import SparkyNPKParser
+    from nmr.pk.SparkyNPKParserListener import SparkyNPKParserListener
 
 
 class SparkyNPKReader:

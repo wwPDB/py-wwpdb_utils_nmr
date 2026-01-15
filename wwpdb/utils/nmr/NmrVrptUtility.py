@@ -36,42 +36,42 @@ from typing import Any, IO, List, Tuple, Optional
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import SUB_DIR_NAME_FOR_CACHE
+    from wwpdb.utils.nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
+                                               LARGE_ASYM_ID,
+                                               LEN_MAJOR_ASYM_ID,
+                                               EMPTY_VALUE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_ERROR_MAX,
+                                               ANGLE_ERROR_MAX,
+                                               RDC_ERROR_MAX)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
-                                           emptyValue,
-                                           monDict3,
-                                           protonBeginCode)
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
-                                              LEN_MAJOR_ASYM_ID,
                                               calculate_uninstanced_coord,
                                               to_np_array)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_RESTRAINT_ERROR,
-                                                       ANGLE_RESTRAINT_ERROR,
-                                                       RDC_RESTRAINT_ERROR,
-                                                       coordAssemblyChecker,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        getDistConstraintType)
 except ImportError:
-    from nmr.NmrDpConstant import SUB_DIR_NAME_FOR_CACHE
+    from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
+                                   LARGE_ASYM_ID,
+                                   LEN_MAJOR_ASYM_ID,
+                                   EMPTY_VALUE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_ERROR_MAX,
+                                   ANGLE_ERROR_MAX,
+                                   RDC_ERROR_MAX)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.AlignUtil import (LARGE_ASYM_ID,
-                               emptyValue,
-                               monDict3,
-                               protonBeginCode)
     from nmr.io.CifReader import (CifReader,
-                                  LEN_MAJOR_ASYM_ID,
                                   calculate_uninstanced_coord,
                                   to_np_array)
-    from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_RESTRAINT_ERROR,
-                                           ANGLE_RESTRAINT_ERROR,
-                                           RDC_RESTRAINT_ERROR,
-                                           coordAssemblyChecker,
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            getDistConstraintType)
 
 
@@ -82,10 +82,6 @@ NMR_VTF_RDC_VIOL_CUTOFF = 1.0  # to be decided
 NMR_VTF_DIST_ERR_BINS = (0.1, 0.2, 0.5)
 NMR_VTF_DIHED_ERR_BINS = (1.0, 10.0, 20.0)
 NMR_VTF_RDC_ERR_BINS = (1.0, 2.0, 5.0)  # to be decided
-
-DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
-ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
-RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
 
 
 def uncompress_gzip_file(inPath: str, outPath: str):
@@ -947,7 +943,7 @@ class NmrVrptUtility:
 
                 if len(alt_ids) > 0:
                     for a in alt_ids:
-                        if a['label_alt_id'] not in emptyValue:
+                        if a['label_alt_id'] not in EMPTY_VALUE:
                             self.__representative_alt_id = a['label_alt_id']
                             break
 
@@ -1334,7 +1330,7 @@ class NmrVrptUtility:
                     comp_name_unchecked = False
                     if _auth_atom_id == 'pdbx_auth_atom_name':
                         for c in coord:
-                            if c['auth_comp_id'] is not None and c['auth_comp_id'] not in monDict3\
+                            if c['auth_comp_id'] is not None and c['auth_comp_id'] not in MONDICT3\
                                and c['alt_auth_comp_id'] is not None and c['auth_comp_id'] != c['alt_auth_comp_id']:
                                 _auth_atom_id_ = 'alt_auth_atom_id'
                                 break
@@ -2010,7 +2006,7 @@ class NmrVrptUtility:
 
                 auth_asym_id, auth_seq_id, comp_id, atom_id, ins_code = atom_key
 
-                if atom_id[0] not in protonBeginCode:
+                if atom_id[0] not in PROTON_BEGIN_CODE:
                     return None
 
                 if not self.__ccU.updateChemCompDict(comp_id):

@@ -23,7 +23,6 @@ __version__ = "1.0.1"
 
 import sys
 import os
-import re
 import pynmrstar
 import pickle
 import logging
@@ -36,15 +35,21 @@ from operator import itemgetter
 from typing import Any, IO, Union, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               TRUE_VALUE,
+                                               DATABLOCK_PAT,
+                                               SF_ANONYMOUS_PAT,
+                                               SAVE_PAT)
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           trueValue,
-                                           getPrettyJson)
+    from wwpdb.utils.nmr.AlignUtil import getPrettyJson
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   TRUE_VALUE,
+                                   DATABLOCK_PAT,
+                                   SF_ANONYMOUS_PAT,
+                                   SAVE_PAT)
     from nmr.io.mmCIFUtil import mmCIFUtil
-    from nmr.AlignUtil import (emptyValue,
-                               trueValue,
-                               getPrettyJson)
+    from nmr.AlignUtil import getPrettyJson
 
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
@@ -172,13 +177,13 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
     for sf in strData.frame_list:
         for idx, tag in enumerate(sf.tags):
             if tag[0].endswith('_label'):
-                if tag[1] not in emptyValue:
+                if tag[1] not in EMPTY_VALUE:
                     if not tag[1].startswith('$'):
                         sf.tags[idx][1] = '$' + tag[1]
                 else:
                     id_tag = tag[0][:-6] + '_ID'
                     id_val = get_first_sf_tag(sf, id_tag)
-                    if id_val not in emptyValue:
+                    if id_val not in EMPTY_VALUE:
                         parent_sf_framecode = get_parent_sf_framecode(f'_{tag[0][:-6]}', id_val)
                         if len(parent_sf_framecode) > 0 and id_tag in sf.tags:
                             set_sf_tag(sf, id_tag, f'${parent_sf_framecode}')
@@ -195,12 +200,12 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
             for idx, row in enumerate(lp.data):
                 for col, val in enumerate(row):
                     if col in label_cols:
-                        if val not in emptyValue:
+                        if val not in EMPTY_VALUE:
                             if not val.startswith('$'):
                                 lp.data[idx][col] = '$' + val
                         else:
                             id_col = next((id_col for label_col, id_col in zip(label_cols, id_cols) if col == label_col), -1)
-                            if id_col == -1 or row[id_col] in emptyValue:
+                            if id_col == -1 or row[id_col] in EMPTY_VALUE:
                                 continue
                             parent_sf_framecode = get_parent_sf_framecode(f'_{lp.tags[col][:-6]}', row[id_col])
                             if len(parent_sf_framecode) > 0:
@@ -320,16 +325,13 @@ class CifToNmrStar:
                 if maxRepeat != 1:
                     return False
 
-                datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
-                sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
-
                 has_datablock = has_anonymous_saveframe = False
 
                 with open(cifPath, 'r', encoding='utf-8') as ifh:
                     for line in ifh:
-                        if datablock_pattern.match(line):
+                        if DATABLOCK_PAT.match(line):
                             has_datablock = True
-                        elif sf_anonymous_pattern.match(line):
+                        elif SF_ANONYMOUS_PAT.match(line):
                             has_anonymous_saveframe = True
                             break
 
@@ -403,25 +405,25 @@ class CifToNmrStar:
                         tag = '_' + category + '.' + _item
                         tag = tag.lower()
                         if tag in self.schema:
-                            sdict = {k: v for k, v in self.schema[tag].items() if v not in emptyValue}
+                            sdict = {k: v for k, v in self.schema[tag].items() if v not in EMPTY_VALUE}
                             if 'sf_category' not in item:
                                 item['sf_category'] = sdict['SFCategory']
                             if 'super_category' not in item:
                                 item['super_category'] = sdict['ADIT super category']
-                            if 'Sf category flag' in sdict and sdict['Sf category flag'].lower() in trueValue:
+                            if 'Sf category flag' in sdict and sdict['Sf category flag'].lower() in TRUE_VALUE:
                                 item['sf_category_flag'] = True
-                            if _item == 'Entry_ID' and entry_id in emptyValue:
+                            if _item == 'Entry_ID' and entry_id in EMPTY_VALUE:
                                 entry_id = _value
 
                     if 'Sf_category' not in itVals['Items']:
                         _tag = '_' + category.lower() + '.sf_category'
                         if _tag in self.schema:
-                            sdict = {k: v for k, v in self.schema[_tag].items() if v not in emptyValue}
+                            sdict = {k: v for k, v in self.schema[_tag].items() if v not in EMPTY_VALUE}
                             if 'sf_category' not in item:
                                 item['sf_category'] = sdict['SFCategory']
                             if 'super_category' not in item:
                                 item['super_category'] = sdict['ADIT super category']
-                            if 'Sf category flag' in sdict and sdict['Sf category flag'].lower() in trueValue:
+                            if 'Sf category flag' in sdict and sdict['Sf category flag'].lower() in TRUE_VALUE:
                                 item['sf_category_flag'] = True
 
                     if len(sf_category) == 0:
@@ -438,7 +440,7 @@ class CifToNmrStar:
                     if item['sf_category_flag']:
                         previous_order = current_order
 
-            if entry_id in emptyValue:
+            if entry_id in EMPTY_VALUE:
                 entry_id = block_name_list[0].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
             _entry_id = entry_id.upper()
@@ -614,7 +616,7 @@ class CifToNmrStar:
                             tag = '_' + category + '.' + _item
                             tag = tag.lower()
                             if tag in self.schema:
-                                sdict = {k: v for k, v in self.schema[tag].items() if v not in emptyValue}
+                                sdict = {k: v for k, v in self.schema[tag].items() if v not in EMPTY_VALUE}
                                 if 'Parent tag' in sdict and sdict['Parent tag'] == '_' + sf_tag_prefix + '.ID':
                                     list_id_idx = idx
                         if _item == 'Entry_ID':
@@ -661,9 +663,6 @@ class CifToNmrStar:
 
         except ValueError as e:
 
-            sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
-            save_pattern = re.compile(r'\s*save_\s*')
-
             split_ext = os.path.splitext(cifPath)
             _cifPath = split_ext[0] + '-corrected' + ('' if len(split_ext) == 1 else split_ext[1])
 
@@ -672,7 +671,7 @@ class CifToNmrStar:
             with open(cifPath, 'r') as ifh, \
                     open(_cifPath, 'w') as ofh:
                 for line in ifh:
-                    if sf_anonymous_pattern.match(line) or save_pattern.match(line):
+                    if SF_ANONYMOUS_PAT.match(line) or SAVE_PAT.match(line):
                         ofh.write('#' + line)
                         changed = True
                     else:
@@ -1039,16 +1038,16 @@ class CifToNmrStar:
             if has_list_id and sf.category != 'entry_information':
                 list_id_tag = 'ID' if sf.category != 'chem_comp' else 'PDB_code'
                 list_id = next((tag[1] for tag in sf.tags if tag[0] == list_id_tag), None)
-                if list_id not in emptyValue:
+                if list_id not in EMPTY_VALUE:
                     self.set_local_sf_id(sf, list_id_dict[sf.category]
                                          if isinstance(list_id, int) or list_id.isdigit() else list_id)
 
             has_eff_sf_tag = any(True for tag in sf.tags
                                  if tag[0] not in ('Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID')
-                                 and tag[1] not in emptyValue)
+                                 and tag[1] not in EMPTY_VALUE)
 
             if sf.category == 'NMR_spectrometer_expt':
-                if get_first_sf_tag(sf, 'Name') in emptyValue:
+                if get_first_sf_tag(sf, 'Name') in EMPTY_VALUE:
                     has_eff_sf_tag = False
 
             if len(get_first_sf_tag(sf, 'Sf_framecode')) == 0:
@@ -1100,7 +1099,7 @@ class CifToNmrStar:
                 for idx, row in enumerate(lp):
 
                     if 'Name' in lp.tags:
-                        if row[lp.tags.index('Name')] in emptyValue:
+                        if row[lp.tags.index('Name')] in EMPTY_VALUE:
                             if lp.category != '_NMR_spectrometer_view':
                                 empty_row_idx.append(idx)
                                 continue
@@ -1109,9 +1108,9 @@ class CifToNmrStar:
                                 vendor = row[lp.tags.index('Manufacturer')]
                                 model = row[lp.tags.index('Model')]
                                 field = row[lp.tags.index('Field_strength')]
-                                if vendor in emptyValue\
-                                   or model in emptyValue\
-                                   or field in emptyValue:
+                                if vendor in EMPTY_VALUE\
+                                   or model in EMPTY_VALUE\
+                                   or field in EMPTY_VALUE:
                                     empty_row_idx.append(idx)
                                     continue
                             except ValueError:
@@ -1125,18 +1124,18 @@ class CifToNmrStar:
                                     break
 
                     if lp.category == '_Assembly_db_link':
-                        if 'Accession_code' in lp.tags and row[lp.tags.index('Accession_code')] in emptyValue:
+                        if 'Accession_code' in lp.tags and row[lp.tags.index('Accession_code')] in EMPTY_VALUE:
                             empty_row_idx.append(idx)
                             continue
 
                     if lp.category == '_Entity_purity':
-                        if 'Val' in lp.tags and row[lp.tags.index('Val')] in emptyValue:
+                        if 'Val' in lp.tags and row[lp.tags.index('Val')] in EMPTY_VALUE:
                             empty_row_idx.append(idx)
                             continue
 
                     if any(True for col in range(len(row))
                            if col not in (entry_id_col, sf_id_col, list_id_col, id_col)
-                           and row[col] not in emptyValue):
+                           and row[col] not in EMPTY_VALUE):
                         continue
 
                     empty_row_idx.append(idx)
@@ -1151,7 +1150,7 @@ class CifToNmrStar:
 
                 if id_col != -1:
                     for idx, row in enumerate(lp, start=1):
-                        if row[id_col] in emptyValue:
+                        if row[id_col] in EMPTY_VALUE:
                             row[id_col] = idx
 
             if len(empty_loops) > 0:
@@ -1179,7 +1178,7 @@ class CifToNmrStar:
 
             has_eff_sf_tag = any(True for tag in sf.tags
                                  if tag[0] not in ('sf_category', 'sf_framecode')
-                                 and tag[1] not in emptyValue)
+                                 and tag[1] not in EMPTY_VALUE)
 
             if len(get_first_sf_tag(sf, 'sf_framecode')) == 0:
                 has_eff_sf_tag = False
@@ -1199,7 +1198,7 @@ class CifToNmrStar:
 
                 for idx, row in enumerate(lp):
 
-                    if any(True for col in range(len(row)) if col != id_col and row[col] not in emptyValue):
+                    if any(True for col in range(len(row)) if col != id_col and row[col] not in EMPTY_VALUE):
                         continue
 
                     empty_row_idx.append(idx)
@@ -1214,7 +1213,7 @@ class CifToNmrStar:
 
                 if id_col != -1:
                     for idx, row in enumerate(lp, start=1):
-                        if row[id_col] in emptyValue:
+                        if row[id_col] in EMPTY_VALUE:
                             row[id_col] = idx
 
             if len(empty_loops) > 0:

@@ -20,6 +20,12 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.BiosymMRParser import BiosymMRParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -37,14 +43,14 @@ try:
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        getDstFuncForHBond,
-                                                       getDstFuncForSsBond,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
+                                                       getDstFuncForSsBond)
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.BiosymMRParser import BiosymMRParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -62,13 +68,7 @@ except ImportError:
                                            getDistConstraintType,
                                            getPotentialType,
                                            getDstFuncForHBond,
-                                           getDstFuncForSsBond,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import emptyValue
+                                           getDstFuncForSsBond)
 
 
 # This class defines a complete listener for a parse tree produced by BiosymMRParser.
@@ -535,7 +535,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                            self.getCurrentRestraint())
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -564,7 +564,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint())
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):
@@ -737,7 +737,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                            self.getCurrentRestraint())
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -766,7 +766,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint())
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):

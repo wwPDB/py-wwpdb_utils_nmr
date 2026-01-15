@@ -18,25 +18,25 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from typing import IO, List, Tuple, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.cs.PippCSLexer import PippCSLexer
     from wwpdb.utils.nmr.cs.PippCSParser import PippCSParser
     from wwpdb.utils.nmr.cs.PippCSParserListener import PippCSParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
+    from nmr.NmrDpConstant import MAX_ERROR_REPORT
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.cs.PippCSLexer import PippCSLexer
     from nmr.cs.PippCSParser import PippCSParser
     from nmr.cs.PippCSParserListener import PippCSParserListener
-    from nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 class PippCSReader:

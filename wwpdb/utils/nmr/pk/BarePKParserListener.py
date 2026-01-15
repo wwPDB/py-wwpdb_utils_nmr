@@ -13,26 +13,28 @@ __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
 import sys
+import re
 
 from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.BarePKParser import BarePKParser
-    from wwpdb.utils.nmr.pk.BasePKParserListener import (BasePKParserListener,
-                                                         POSITION_SEPARATOR_PAT)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
 except ImportError:
+    from nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.BarePKParser import BarePKParser
-    from nmr.pk.BasePKParserListener import (BasePKParserListener,
-                                             POSITION_SEPARATOR_PAT)
-    from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.pk.BasePKParserListener import BasePKParserListener
+
+
+POSITION_SEPARATOR_PAT = re.compile(r'[,;\|/]+')
 
 
 # This class defines a complete listener for a parse tree produced by BarePKParser.

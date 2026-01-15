@@ -18,11 +18,11 @@ from antlr4.error.ErrorListener import ErrorListener
 from typing import List, Optional
 
 try:
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (MAX_ERROR_REPORT,
-                                                       MAX_ERR_LINENUM_REPORT)
+    from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
+                                               MAX_ERR_LINE_NUM)
 except ImportError:
-    from nmr.mr.ParserListenerUtil import (MAX_ERROR_REPORT,
-                                           MAX_ERR_LINENUM_REPORT)
+    from nmr.NmrDpConstant import (MAX_ERROR_REPORT,
+                                   MAX_ERR_LINE_NUM)
 
 
 expecting_multiple_pattern = re.compile(r"(.*) expecting \{(.*)\}")
@@ -68,7 +68,7 @@ class ParserErrorListener(ErrorListener):
             return
 
         if line not in self.__errorLineNumber:
-            if len(self.__errorLineNumber) > MAX_ERR_LINENUM_REPORT:
+            if len(self.__errorLineNumber) > MAX_ERR_LINE_NUM:
                 self.__errLineNumOverflowed = True
                 return
             self.__errorLineNumber.append(line)

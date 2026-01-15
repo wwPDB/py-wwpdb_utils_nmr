@@ -24,13 +24,43 @@ from operator import itemgetter
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
+                                               EMPTY_VALUE,
+                                               PROTON_BEGIN_CODE,
+                                               JCOUP_BB_PAIR_CODE,
+                                               RDC_BB_PAIR_CODE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_RESTRAINT_ERROR,
+                                               CS_RESTRAINT_ERROR,
+                                               PROBABILITY_RANGE,
+                                               DIST_ERROR_MIN,
+                                               DIST_ERROR_MAX,
+                                               CS_ERROR_MIN,
+                                               CS_ERROR_MAX,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               DIST_AMBIG_MED,
+                                               XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                               XPLOR_NITROXIDE_NAMES,
+                                               XPLOR_ORIGIN_AXIS_COLS,
+                                               CARTN_DATA_ITEMS,
+                                               AUTH_ATOM_DATA_ITEMS,
+                                               ATOM_NAME_DATA_ITEMS,
+                                               AUTH_ATOM_CARTN_DATA_ITEMS,
+                                               PTNR1_AUTH_ATOM_DATA_ITEMS,
+                                               PTNR2_AUTH_ATOM_DATA_ITEMS,
+                                               PARAMAGNETIC_ELEMENTS,
+                                               FERROMAGNETIC_ELEMENTS,
+                                               LANTHANOID_ELEMENTS)
+    from wwpdb.utils.nmr.AlignUtil import deepcopy
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
-    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
-                                                                DIST_ERROR_MIN,
-                                                                DIST_ERROR_MAX,
-                                                                CS_ERROR_MIN,
-                                                                CS_ERROR_MAX)
+    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        translateToStdAtomName,
                                                        hasInterChainRestraint,
@@ -53,45 +83,45 @@ try:
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        getDstFuncForHBond,
-                                                       getDstFuncAsNoe,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_RESTRAINT_ERROR,
-                                                       CS_RESTRAINT_ERROR,
-                                                       PROBABILITY_RANGE,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       DIST_AMBIG_MED,
-                                                       XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
-                                                       XPLOR_NITROXIDE_NAMES,
-                                                       XPLOR_ORIGIN_AXIS_COLS,
-                                                       CARTN_DATA_ITEMS,
-                                                       AUTH_ATOM_DATA_ITEMS,
-                                                       ATOM_NAME_DATA_ITEMS,
-                                                       AUTH_ATOM_CARTN_DATA_ITEMS,
-                                                       PTNR1_AUTH_ATOM_DATA_ITEMS,
-                                                       PTNR2_AUTH_ATOM_DATA_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
-                                                   PARAMAGNETIC_ELEMENTS,
-                                                   FERROMAGNETIC_ELEMENTS,
-                                                   LANTHANOID_ELEMENTS)
-    from wwpdb.utils.nmr.AlignUtil import (MAX_MAG_IDENT_ASYM_ID,
-                                           emptyValue,
-                                           protonBeginCode,
-                                           jcoupBbPairCode,
-                                           rdcBbPairCode,
-                                           deepcopy)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
-                                                distance)
+                                                       getDstFuncAsNoe)
 except ImportError:
+    from nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
+                                   EMPTY_VALUE,
+                                   PROTON_BEGIN_CODE,
+                                   JCOUP_BB_PAIR_CODE,
+                                   RDC_BB_PAIR_CODE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_RESTRAINT_ERROR,
+                                   CS_RESTRAINT_ERROR,
+                                   PROBABILITY_RANGE,
+                                   DIST_ERROR_MIN,
+                                   DIST_ERROR_MAX,
+                                   CS_ERROR_MIN,
+                                   CS_ERROR_MAX,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   DIST_AMBIG_MED,
+                                   XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                   XPLOR_NITROXIDE_NAMES,
+                                   XPLOR_ORIGIN_AXIS_COLS,
+                                   CARTN_DATA_ITEMS,
+                                   AUTH_ATOM_DATA_ITEMS,
+                                   ATOM_NAME_DATA_ITEMS,
+                                   AUTH_ATOM_CARTN_DATA_ITEMS,
+                                   PTNR1_AUTH_ATOM_DATA_ITEMS,
+                                   PTNR2_AUTH_ATOM_DATA_ITEMS,
+                                   PARAMAGNETIC_ELEMENTS,
+                                   FERROMAGNETIC_ELEMENTS,
+                                   LANTHANOID_ELEMENTS)
+    from nmr.AlignUtil import deepcopy
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.XplorMRParser import XplorMRParser
-    from nmr.mr.BaseStackedMRParserListener import (BaseStackedMRParserListener,
-                                                    DIST_ERROR_MIN,
-                                                    DIST_ERROR_MAX,
-                                                    CS_ERROR_MIN,
-                                                    CS_ERROR_MAX)
+    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
@@ -113,37 +143,7 @@ except ImportError:
                                            getDistConstraintType,
                                            getPotentialType,
                                            getDstFuncForHBond,
-                                           getDstFuncAsNoe,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_RESTRAINT_ERROR,
-                                           CS_RESTRAINT_ERROR,
-                                           PROBABILITY_RANGE,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           DIST_AMBIG_MED,
-                                           XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
-                                           XPLOR_NITROXIDE_NAMES,
-                                           XPLOR_ORIGIN_AXIS_COLS,
-                                           CARTN_DATA_ITEMS,
-                                           AUTH_ATOM_DATA_ITEMS,
-                                           ATOM_NAME_DATA_ITEMS,
-                                           AUTH_ATOM_CARTN_DATA_ITEMS,
-                                           PTNR1_AUTH_ATOM_DATA_ITEMS,
-                                           PTNR2_AUTH_ATOM_DATA_ITEMS)
-    from nmr.nef.NEFTranslator import (NEFTranslator,
-                                       PARAMAGNETIC_ELEMENTS,
-                                       FERROMAGNETIC_ELEMENTS,
-                                       LANTHANOID_ELEMENTS)
-    from nmr.AlignUtil import (MAX_MAG_IDENT_ASYM_ID,
-                               emptyValue,
-                               protonBeginCode,
-                               jcoupBbPairCode,
-                               rdcBbPairCode,
-                               deepcopy)
-    from nmr.NmrVrptUtility import (to_np_array,
-                                    distance)
+                                           getDstFuncAsNoe)
 
 
 # This class defines a complete listener for a parse tree produced by XplorMRParser.
@@ -985,7 +985,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     try:
                         atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
-                        if atom_id_2[0] in protonBeginCode:
+                        if atom_id_2[0] in PROTON_BEGIN_CODE:
                             self.distRestraints -= 1
                             self.preRestraints += 1
                             if self.cur_subtype_altered:
@@ -1025,8 +1025,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 return
 
                         elif abs(seq_id_1 - seq_id_2) == 1 and self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')):
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')):
                             self.distRestraints -= 1
                             self.rdcRestraints += 1
                             if self.cur_subtype_altered:
@@ -1412,7 +1412,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                                            self.getCurrentRestraint())
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4 and not in_loop:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4 and not in_loop:
                         continue
 
                     fixedAngleName = angleName
@@ -1446,7 +1446,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                                        self.getCurrentRestraint())
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4 and not in_loop:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4 and not in_loop:
                     continue
 
                 if isinstance(combinationId, int):
@@ -1693,8 +1693,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -1718,7 +1718,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if not self.ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        if atom_id_1[0] in protonBeginCode and atom_id_2[0] in protonBeginCode:
+                        if atom_id_1[0] in PROTON_BEGIN_CODE and atom_id_2[0] in PROTON_BEGIN_CODE:
                             self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                           "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
                                           f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "
@@ -1962,8 +1962,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -1982,7 +1982,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             else:
-                if atom_id_1[0] not in protonBeginCode or atom_id_2[0] not in protonBeginCode:
+                if atom_id_1[0] not in PROTON_BEGIN_CODE or atom_id_2[0] not in PROTON_BEGIN_CODE:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, which usually accepts 1H-1H dipolar coupling; "
                                   f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -2132,8 +2132,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                              or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                         pass
@@ -2323,8 +2323,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -2507,8 +2507,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                              or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                         pass
@@ -2994,8 +2994,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in jcoupBbPairCode)
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in jcoupBbPairCode and atom_id_2 == 'C')
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in JCOUP_BB_PAIR_CODE)
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in JCOUP_BB_PAIR_CODE and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                              or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
                              or {atom_id_1, atom_id_2} == {'H', 'N'}):
@@ -3412,7 +3412,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             for atom1 in self.atomSelectionSet[0]:
-                if atom1['atom_id'][0] not in protonBeginCode:
+                if atom1['atom_id'][0] not in PROTON_BEGIN_CODE:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   f"Not a proton; {atom1}.")
                     return
@@ -3476,7 +3476,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             dstFunc = {'rcoil': rcoil}
 
             for atom1 in self.atomSelectionSet[0]:
-                if atom1['atom_id'][0] not in protonBeginCode:
+                if atom1['atom_id'][0] not in PROTON_BEGIN_CODE:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   f"Not a proton; {atom1}.")
                     return
@@ -3841,8 +3841,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -4130,8 +4130,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -4579,8 +4579,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                              or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                         pass
@@ -4596,8 +4596,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 elif abs(seq_id_3 - seq_id_1) == 1:
 
                     if self.csStat.peptideLike(comp_id_3) and self.csStat.peptideLike(comp_id_1) and\
-                            ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in rdcBbPairCode)
-                             or (seq_id_3 > seq_id_1 and atom_id_3 in rdcBbPairCode and atom_id_1 == 'C')
+                            ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in RDC_BB_PAIR_CODE)
+                             or (seq_id_3 > seq_id_1 and atom_id_3 in RDC_BB_PAIR_CODE and atom_id_1 == 'C')
                              or (seq_id_3 < seq_id_1 and atom_id_3.startswith('HA') and atom_id_1 == 'H')
                              or (seq_id_3 > seq_id_1 and atom_id_3 == 'H' and atom_id_1.startswith('HA'))):
                         pass
@@ -4613,8 +4613,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 elif abs(seq_id_2 - seq_id_3) == 1:
 
                     if self.csStat.peptideLike(comp_id_2) and self.csStat.peptideLike(comp_id_3) and\
-                            ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in rdcBbPairCode)
-                             or (seq_id_2 > seq_id_3 and atom_id_2 in rdcBbPairCode and atom_id_3 == 'C')
+                            ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in RDC_BB_PAIR_CODE)
+                             or (seq_id_2 > seq_id_3 and atom_id_2 in RDC_BB_PAIR_CODE and atom_id_3 == 'C')
                              or (seq_id_2 < seq_id_3 and atom_id_2.startswith('HA') and atom_id_3 == 'H')
                              or (seq_id_2 > seq_id_3 and atom_id_2 == 'H' and atom_id_3.startswith('HA'))):
                         pass
@@ -4891,7 +4891,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             comp_id = self.atomSelectionSet[1][0]['comp_id']
             atom_id = self.atomSelectionSet[1][0]['atom_id']
 
-            if atom_id[0] not in protonBeginCode:
+            if atom_id[0] not in PROTON_BEGIN_CODE:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               f"Not a proton; {chain_id}:{seq_id}:{comp_id}:{atom_id}.")
                 return
@@ -5152,8 +5152,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -5315,8 +5315,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -5476,8 +5476,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -5581,7 +5581,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return
 
-        if hydrogen['atom_id'][0] not in protonBeginCode:
+        if hydrogen['atom_id'][0] not in PROTON_BEGIN_CODE:
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                           "Not a hydrogen; "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "
@@ -5941,7 +5941,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
             # https://nmr.cit.nih.gov/xplor-nih/xplorMan/node454.html - allow reverse expression since example is wrong
-            if acceptor['atom_id'][0] in protonBeginCode and donor['atom_id'][0] in ('N', 'O', 'F'):
+            if acceptor['atom_id'][0] in PROTON_BEGIN_CODE and donor['atom_id'][0] in ('N', 'O', 'F'):
                 pass
 
             else:
@@ -5950,9 +5950,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                               f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.")
                 return
 
-        if donor['atom_id'][0] not in protonBeginCode:
+        if donor['atom_id'][0] not in PROTON_BEGIN_CODE:
             # https://nmr.cit.nih.gov/xplor-nih/xplorMan/node454.html - allow reverse expression since example is wrong
-            if acceptor['atom_id'][0] in protonBeginCode and donor['atom_id'][0] in ('N', 'O', 'F'):
+            if acceptor['atom_id'][0] in PROTON_BEGIN_CODE and donor['atom_id'][0] in ('N', 'O', 'F'):
                 pass
 
             else:
@@ -6123,7 +6123,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 sf['tags'].append(['weight', self.ncsWeight])
 
         for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'][0] in protonBeginCode:
+            if atom1['atom_id'][0] in PROTON_BEGIN_CODE:
                 continue
             if self.debug:
                 print(f"subtype={self.cur_subtype} (NCS/GROUP) id={self.geoRestraints} "

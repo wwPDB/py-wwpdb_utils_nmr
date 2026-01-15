@@ -20,25 +20,25 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               SPECTRAL_DIM_TEMPLATE)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.NmrViewPKParser import NmrViewPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       SPECTRAL_DIM_TEMPLATE)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   SPECTRAL_DIM_TEMPLATE)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.NmrViewPKParser import NmrViewPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
-    from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           SPECTRAL_DIM_TEMPLATE)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by NmrViewPKParser.
@@ -89,7 +89,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             dataset_name = []
             for col in range(20):
                 if ctx.Simple_name_LA(col):
-                    if str(ctx.Simple_name_LA(col)) in emptyValue:
+                    if str(ctx.Simple_name_LA(col)) in EMPTY_VALUE:
                         break
                     dataset_name.append(str(ctx.Simple_name_LA(col)))
                 else:
@@ -158,7 +158,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         elif self.__cur_label_type == 'sw':
 
             for _dim_id, _spectral_width in enumerate(labels, start=1):
-                if _spectral_width not in emptyValue:
+                if _spectral_width not in EMPTY_VALUE:
                     if _dim_id not in self.cur_spectral_dim:
                         self.cur_spectral_dim[_dim_id] = copy.copy(SPECTRAL_DIM_TEMPLATE)
                     self.cur_spectral_dim[_dim_id]['sweep_width'] = float(_spectral_width)
@@ -244,7 +244,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 #     stat = None
                 if len(self.__enclose_data) > 4 + j_eclose_data__offset:
                     comment = self.__enclose_data[4 + j_eclose_data__offset]
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
                 else:
                     comment = None
@@ -254,9 +254,9 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
@@ -407,7 +407,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 #     stat = None
                 if len(self.__enclose_data) > 6 + j_eclose_data__offset:
                     comment = self.__enclose_data[6 + j_eclose_data__offset]
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
                 else:
                     comment = None
@@ -417,11 +417,11 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
-            if L3 in emptyValue:
+            if L3 in EMPTY_VALUE:
                 L3 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
@@ -597,7 +597,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 #     stat = None
                 if len(self.__enclose_data) > 8 + j_eclose_data__offset:
                     comment = self.__enclose_data[8 + j_eclose_data__offset]
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
                 else:
                     comment = None
@@ -607,13 +607,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
-            if L3 in emptyValue:
+            if L3 in EMPTY_VALUE:
                 L3 = None
-            if L4 in emptyValue:
+            if L4 in EMPTY_VALUE:
                 L4 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
@@ -748,7 +748,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 #     stat = None
                 if len(self.__enclose_data) > 2:
                     comment = self.__enclose_data[2]
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
                 else:
                     comment = None
@@ -758,9 +758,9 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
@@ -874,7 +874,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 #     stat = None
                 if len(self.__enclose_data) > 3:
                     comment = self.__enclose_data[3]
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
                 else:
                     comment = None
@@ -884,11 +884,11 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
-            if L3 in emptyValue:
+            if L3 in EMPTY_VALUE:
                 L3 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
@@ -1020,7 +1020,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 #     stat = None
                 if len(self.__enclose_data) > 4:
                     comment = self.__enclose_data[4]
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
                 else:
                     comment = None
@@ -1030,13 +1030,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
-            if L3 in emptyValue:
+            if L3 in EMPTY_VALUE:
                 L3 = None
-            if L4 in emptyValue:
+            if L4 in EMPTY_VALUE:
                 L4 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:

@@ -20,25 +20,25 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               SPECTRAL_DIM_TEMPLATE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.VnmrPKParser import VnmrPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       SPECTRAL_DIM_TEMPLATE,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   SPECTRAL_DIM_TEMPLATE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.VnmrPKParser import VnmrPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
-    from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           SPECTRAL_DIM_TEMPLATE,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by VnmrPKParser.
@@ -192,13 +192,13 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 ass = comment = None
                 if self.__has_assign and ctx.Double_quote_string(0):
                     ass = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if ass in emptyValue:
+                    if ass in EMPTY_VALUE:
                         ass = None
                     offset += 1
 
                 if self.__has_comment and ctx.Double_quote_string(offset):
                     comment = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
 
                 x_ppm = float(str(ctx.Float(0)))
@@ -311,13 +311,13 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 ass = comment = None
                 if self.__has_assign and ctx.Double_quote_string(0):
                     ass = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if ass in emptyValue:
+                    if ass in EMPTY_VALUE:
                         ass = None
                     offset += 1
 
                 if self.__has_comment and ctx.Double_quote_string(offset):
                     comment = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
 
                 x_ppm = float(str(ctx.Float(0)))
@@ -430,13 +430,13 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 ass = comment = None
                 if self.__has_assign and ctx.Double_quote_string(0):
                     ass = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if ass in emptyValue:
+                    if ass in EMPTY_VALUE:
                         ass = None
                     offset += 1
 
                 if self.__has_comment and ctx.Double_quote_string(offset):
                     comment = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if comment in emptyValue:
+                    if comment in EMPTY_VALUE:
                         comment = None
 
                 x_ppm = float(str(ctx.Float(0)))

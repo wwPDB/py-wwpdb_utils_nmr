@@ -18,13 +18,13 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.cs.PippCSParser import PippCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.cs.PippCSParser import PippCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by PippCSParser.

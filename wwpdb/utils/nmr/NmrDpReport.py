@@ -131,16 +131,16 @@ from operator import itemgetter
 from typing import Any, IO, List, Tuple, Optional
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           monDict3,
-                                           unknownResidue,
-                                           getPrettyJson)
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3,
+                                               UNKNOWN_RESIDUE)
+    from wwpdb.utils.nmr.AlignUtil import getPrettyJson
     from wwpdb.utils.nmr.CifToNmrStar import get_value_safe
 except ImportError:
-    from nmr.AlignUtil import (emptyValue,
-                               monDict3,
-                               unknownResidue,
-                               getPrettyJson)
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3,
+                                   UNKNOWN_RESIDUE)
+    from nmr.AlignUtil import getPrettyJson
     from nmr.CifToNmrStar import get_value_safe
 
 
@@ -1077,11 +1077,11 @@ class NmrDpReport:
             if not fullSequence and unmappedSeqId is not None and seq_id in unmappedSeqId:
                 continue
 
-            if comp_id in monDict3:
-                f.append(monDict3[comp_id])
-            elif comp_id in emptyValue:
+            if comp_id in MONDICT3:
+                f.append(MONDICT3[comp_id])
+            elif comp_id in EMPTY_VALUE:
                 f.append('.')
-            elif comp_id in unknownResidue:
+            elif comp_id in UNKNOWN_RESIDUE:
                 f.append('UNK')
             else:
                 f.append(f'({comp_id})')
@@ -1107,11 +1107,11 @@ class NmrDpReport:
         f = []
 
         for comp_id in ps['comp_id']:
-            if comp_id in monDict3:
-                f.append(monDict3[comp_id])
-            elif comp_id in emptyValue:
+            if comp_id in MONDICT3:
+                f.append(MONDICT3[comp_id])
+            elif comp_id in EMPTY_VALUE:
                 f.append('.')
-            elif comp_id in unknownResidue:
+            elif comp_id in UNKNOWN_RESIDUE:
                 f.append('UNK')
             else:
                 f.append(f'({comp_id})')
@@ -2313,7 +2313,7 @@ class NmrDpReportError:
                 continue
 
             if any(True for c in self.__contents[item]
-                   if (c['file_name'] == file_name or file_name in emptyValue) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
+                   if (c['file_name'] == file_name or file_name in EMPTY_VALUE) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
 
         return False
@@ -2350,7 +2350,7 @@ class NmrDpReportError:
         """ Return dictionary of list of error values with inheritable flag for a given sf_framecode.
         """
 
-        if sf_framecode in emptyValue or self.__contents is None:
+        if sf_framecode in EMPTY_VALUE or self.__contents is None:
             return None
 
         d = {}
@@ -2434,7 +2434,7 @@ class NmrDpReportError:
 
             for c in self.__contents[item]:
 
-                if (c['file_name'] == file_name or original_file_name not in emptyValue)\
+                if (c['file_name'] == file_name or original_file_name not in EMPTY_VALUE)\
                    and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
                     d.append(item + ': ' + c['description'])
 
@@ -2662,7 +2662,7 @@ class NmrDpReportWarning:
                 continue
 
             if any(True for c in self.__contents[item]
-                   if (c['file_name'] == file_name or file_name in emptyValue) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
+                   if (c['file_name'] == file_name or file_name in EMPTY_VALUE) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
 
         return False
@@ -2699,7 +2699,7 @@ class NmrDpReportWarning:
         """ Return dictionary of list of warning values with inheritable flag for a given sf_framecode.
         """
 
-        if sf_framecode in emptyValue or self.__contents is None:
+        if sf_framecode in EMPTY_VALUE or self.__contents is None:
             return None
 
         d = {}
@@ -2783,7 +2783,7 @@ class NmrDpReportWarning:
 
             for c in self.__contents[item]:
 
-                if (c['file_name'] == file_name or original_file_name not in emptyValue)\
+                if (c['file_name'] == file_name or original_file_name not in EMPTY_VALUE)\
                    and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
                     d.append(item + ': ' + c['description'])
 

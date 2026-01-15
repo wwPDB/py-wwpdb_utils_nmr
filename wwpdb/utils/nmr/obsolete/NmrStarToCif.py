@@ -16,11 +16,11 @@ import sys
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import EMPTY_VALUE
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
+    from nmr.NmrDpConstant import EMPTY_VALUE
     from nmr.io.mmCIFUtil import mmCIFUtil
-    from nmr.AlignUtil import emptyValue
 
 
 class NmrStarToCif:
@@ -129,12 +129,12 @@ class NmrStarToCif:
                             dList = cifObj.getDictList(k, lp_tags[content_subtype])
 
                             try:
-                                entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in emptyValue)
+                                entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in EMPTY_VALUE)
                             except (StopIteration, KeyError):
                                 entry_id = '?'
 
                             try:
-                                list_id = next(row[list_id_tags[content_subtype]] for row in dList if row[list_id_tags[content_subtype]] not in emptyValue)
+                                list_id = next(row[list_id_tags[content_subtype]] for row in dList if row[list_id_tags[content_subtype]] not in EMPTY_VALUE)
                             except (StopIteration, KeyError):
                                 list_id = '?'
 
@@ -147,11 +147,11 @@ class NmrStarToCif:
 
                             try:
                                 info = next(info for info in cs_list_cif_info if info['sf_framecode'] == k)
-                                if 'entry_id' in info and info['entry_id'] not in emptyValue:
+                                if 'entry_id' in info and info['entry_id'] not in EMPTY_VALUE:
                                     entry_id = info['entry_id']
-                                if 'id' in info and info['id'] not in emptyValue:
+                                if 'id' in info and info['id'] not in EMPTY_VALUE:
                                     list_id = info['id']
-                                if 'data_file_name' in info and info['data_file_name'] not in emptyValue:
+                                if 'data_file_name' in info and info['data_file_name'] not in EMPTY_VALUE:
                                     originalFileName = info['data_file_name']
                             except StopIteration:
                                 pass
@@ -247,12 +247,12 @@ class NmrStarToCif:
                             dList = cifObj.getDictList(k, cs_loop_str)
 
                             try:
-                                entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in emptyValue)
+                                entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in EMPTY_VALUE)
                             except (StopIteration, KeyError):
                                 entry_id = '?'
 
                             try:
-                                list_id = next(row[list_id_tag] for row in dList if row[list_id_tag] not in emptyValue)
+                                list_id = next(row[list_id_tag] for row in dList if row[list_id_tag] not in EMPTY_VALUE)
                             except (StopIteration, KeyError):
                                 list_id = '?'
 
@@ -470,7 +470,7 @@ class NmrStarToCif:
                 #                     dst = []
                 #                     for auth_item in auth_items:
                 #                         dst.append(src[auth_item])
-                #                         if src[auth_item] not in emptyValue:
+                #                         if src[auth_item] not in EMPTY_VALUE:
                 #                             has_auth_value = True
                 #                     extended_data_list.append(dst)
 

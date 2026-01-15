@@ -21,23 +21,14 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 from typing import IO, List, Optional
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import CifReader
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
-                                                       translateToStdAtomName,
-                                                       translateToStdAtomNameNoRef,
-                                                       translateToStdAtomNameWithRef,
-                                                       translateToStdAtomNameOfDmpc,
-                                                       translateToStdResName,
-                                                       translateToLigandName,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
-                                                   NON_METAL_ELEMENTS)
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
-                                           protonBeginCode,
-                                           pseProBeginCode,
-                                           aminoProtonCode,
-                                           letterToDigit,
+    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               PSE_PRO_BEGIN_CODE,
+                                               AMINO_PROTON_CODE,
+                                               NON_METAL_ELEMENTS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID)
+    from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -46,24 +37,24 @@ try:
                                            alignPolymerSequenceWithConflicts,
                                            getRestraintFormatName,
                                            getOneLetterCodeCanSequence)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       translateToStdAtomName,
+                                                       translateToStdAtomNameNoRef,
+                                                       translateToStdAtomNameWithRef,
+                                                       translateToStdAtomNameOfDmpc,
+                                                       translateToStdResName,
+                                                       translateToLigandName)
 except ImportError:
-    from nmr.io.CifReader import CifReader
-    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
-                                           translateToStdAtomName,
-                                           translateToStdAtomNameNoRef,
-                                           translateToStdAtomNameWithRef,
-                                           translateToStdAtomNameOfDmpc,
-                                           translateToStdResName,
-                                           translateToLigandName,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
-    from nmr.nef.NEFTranslator import (NEFTranslator,
-                                       NON_METAL_ELEMENTS)
-    from nmr.AlignUtil import (monDict3,
-                               protonBeginCode,
-                               pseProBeginCode,
-                               aminoProtonCode,
-                               letterToDigit,
+    from nmr.NmrDpConstant import (MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   PSE_PRO_BEGIN_CODE,
+                                   AMINO_PROTON_CODE,
+                                   NON_METAL_ELEMENTS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
+    from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -72,6 +63,15 @@ except ImportError:
                                alignPolymerSequenceWithConflicts,
                                getRestraintFormatName,
                                getOneLetterCodeCanSequence)
+    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.io.CifReader import CifReader
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           translateToStdAtomName,
+                                           translateToStdAtomNameNoRef,
+                                           translateToStdAtomNameWithRef,
+                                           translateToStdAtomNameOfDmpc,
+                                           translateToStdResName,
+                                           translateToLigandName)
 
 
 class BaseTopologyParserListener():
@@ -179,7 +179,7 @@ class BaseTopologyParserListener():
                                    for atomNum in self.atomNumberDict.values()
                                    if atomNum['chain_id'] == chainId
                                    and atomNum['seq_id'] == seqId
-                                   and atomNum['auth_atom_id'][0] not in protonBeginCode]
+                                   and atomNum['auth_atom_id'][0] not in PROTON_BEGIN_CODE]
                     authCompId = translateToStdResName(authCompId, ccU=self.ccU)
                     if self.ccU.updateChemCompDict(authCompId):
                         chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
@@ -201,7 +201,7 @@ class BaseTopologyParserListener():
                                     atomNum['comp_id'] = authCompId
 
                                     if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
-                                       and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                       and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                                         _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
@@ -212,7 +212,7 @@ class BaseTopologyParserListener():
 
                                     atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
 
-                                    if atomId[0] not in protonBeginCode or atomId in chemCompAtomIds:
+                                    if atomId[0] not in PROTON_BEGIN_CODE or atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
                                         if 'atom_type' in atomNum:
                                             del atomNum['atom_type']
@@ -264,7 +264,7 @@ class BaseTopologyParserListener():
                                         atomNum['comp_id'] = compId
 
                                         if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
-                                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                           and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                                             _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
                                         else:
                                             atomId = atomNum['auth_atom_id']
@@ -328,7 +328,7 @@ class BaseTopologyParserListener():
                                     atomNum['comp_id'] = compId
 
                                     if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
-                                       and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                       and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                                         _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
@@ -367,7 +367,7 @@ class BaseTopologyParserListener():
                         chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
 
                         if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
-                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                           and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
@@ -388,7 +388,7 @@ class BaseTopologyParserListener():
                                 chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
 
                                 if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
-                                   and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                   and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                                     _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                 else:
                                     atomId = atomNum['auth_atom_id']
@@ -408,7 +408,7 @@ class BaseTopologyParserListener():
                     if self.ccU.updateChemCompDict(authCompId):
 
                         if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
-                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                           and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
@@ -520,7 +520,7 @@ class BaseTopologyParserListener():
                                     chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
 
                                     if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
-                                       and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                       and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                                         _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'],
                                                                                   atomNum['comp_id'], None, True)
                                     else:
@@ -541,7 +541,7 @@ class BaseTopologyParserListener():
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], ccU=self.ccU)
 
                         if self.mrAtomNameMapping is not None\
-                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                           and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
@@ -588,7 +588,7 @@ class BaseTopologyParserListener():
                     else:
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], ccU=self.ccU)
                         if self.mrAtomNameMapping is not None\
-                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                           and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'],
                                                                       atomNum['comp_id'], None, True)
                         else:
@@ -832,13 +832,13 @@ class BaseTopologyParserListener():
                     del self.atomNumberDict[atom_num]
 
             for atomNum in self.atomNumberDict.values():
-                if 'atom_id' in atomNum and atomNum['atom_id'] in aminoProtonCode:
+                if 'atom_id' in atomNum and atomNum['atom_id'] in AMINO_PROTON_CODE:
                     _seqKey = (atomNum['chain_id'], atomNum['seq_id'] - 1)
                     seqKey = (atomNum['chain_id'], atomNum['seq_id'])
                     if _seqKey in self.__coordUnobsRes and seqKey in self.__coordAtomSite:
                         coordAtomSite = self.__coordAtomSite[seqKey]
                         if atomNum['atom_id'] not in coordAtomSite['atom_id']:
-                            for atomId in aminoProtonCode:
+                            for atomId in AMINO_PROTON_CODE:
                                 if atomId in coordAtomSite['atom_id']:
                                     atomNum['atom_id'] = atomId
                                     break
@@ -953,7 +953,7 @@ class BaseTopologyParserListener():
             if self.mrAtomNameMapping is not None:
                 for v in self.atomNumberDict.values():
                     authCompId = v['auth_comp_id']
-                    if translateToStdResName(authCompId, ccU=self.ccU) in monDict3:
+                    if translateToStdResName(authCompId, ccU=self.ccU) in MONDICT3:
                         continue
                     seqId = v['seq_id']
                     authAtomId = v['auth_atom_id']
@@ -1046,7 +1046,7 @@ class BaseTopologyParserListener():
         if len(prev_atom_name) == 0:
             return False
         return prev_seq_id != seq_id and prev_atom_name[0] not in NON_METAL_ELEMENTS\
-            and (self.unambig or prev_atom_name[0] not in pseProBeginCode)
+            and (self.unambig or prev_atom_name[0] not in PSE_PRO_BEGIN_CODE)
 
     def assignMetalIon(self):
 

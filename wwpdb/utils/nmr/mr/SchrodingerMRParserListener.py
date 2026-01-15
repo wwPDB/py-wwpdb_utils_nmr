@@ -24,6 +24,23 @@ from operator import itemgetter
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                               CARTN_DATA_ITEMS,
+                                               AUTH_ATOM_DATA_ITEMS,
+                                               AUTH_ATOM_CARTN_DATA_ITEMS)
+    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
+                                           getOneLetterCode,
+                                           updatePolySeqRstFromAtomSelectionSet)
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.SchrodingerMRParser import SchrodingerMRParser
     from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
@@ -42,25 +59,25 @@ try:
                                                        resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
-                                                       getDstFuncForHBond,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
-                                                       CARTN_DATA_ITEMS,
-                                                       AUTH_ATOM_DATA_ITEMS,
-                                                       AUTH_ATOM_CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           monDict3,
-                                           deepcopy,
-                                           getOneLetterCode,
-                                           protonBeginCode,
-                                           updatePolySeqRstFromAtomSelectionSet)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
-                                                distance)
+                                                       getDstFuncForHBond)
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
+                                   CARTN_DATA_ITEMS,
+                                   AUTH_ATOM_DATA_ITEMS,
+                                   AUTH_ATOM_CARTN_DATA_ITEMS)
+    from nmr.AlignUtil import (deepcopy,
+                               getOneLetterCode,
+                               updatePolySeqRstFromAtomSelectionSet)
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.SchrodingerMRParser import SchrodingerMRParser
     from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
@@ -79,24 +96,7 @@ except ImportError:
                                            resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
-                                           getDstFuncForHBond,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
-                                           CARTN_DATA_ITEMS,
-                                           AUTH_ATOM_DATA_ITEMS,
-                                           AUTH_ATOM_CARTN_DATA_ITEMS)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (emptyValue,
-                               monDict3,
-                               deepcopy,
-                               getOneLetterCode,
-                               protonBeginCode,
-                               updatePolySeqRstFromAtomSelectionSet)
-    from nmr.NmrVrptUtility import (to_np_array,
-                                    distance)
+                                           getDstFuncForHBond)
 
 
 # This class defines a complete listener for a parse tree produced by SchrodingerMRParser.
@@ -486,7 +486,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                                                                            self.getCurrentRestraint())
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -515,7 +515,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                                                                        self.getCurrentRestraint())
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):
@@ -1031,7 +1031,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                                                                            self.getCurrentRestraint())
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -1063,7 +1063,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                                                                        self.getCurrentRestraint())
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):
@@ -1188,7 +1188,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return
 
-        if hydrogen['atom_id'][0] not in protonBeginCode:
+        if hydrogen['atom_id'][0] not in PROTON_BEGIN_CODE:
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                           "Not a hydrogen; "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "
@@ -2107,9 +2107,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
                 if len(self.factor['comp_id']) == 0:
                     if len(compIds) > 0:
-                        self.factor['comp_id'] = [next(k for k, v in monDict3.items() if v == compId)
+                        self.factor['comp_id'] = [next(k for k, v in MONDICT3.items() if v == compId)
                                                   for compId in compIds
-                                                  if any(True for _v in monDict3.values() if _v == compId)]
+                                                  if any(True for _v in MONDICT3.values() if _v == compId)]
                     else:
                         del self.factor['comp_id']
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -2356,7 +2356,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                 seqIds = set()
                 compIds = set()
 
-                if inscode not in emptyValue:
+                if inscode not in EMPTY_VALUE:
 
                     eval_factor = False
                     if 'comp_id' in self.factor:
@@ -3505,7 +3505,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
     def exitParameter_statement(self, ctx: SchrodingerMRParser.Parameter_statementContext):
         self.exitSelection(ctx)
 
-        if len(self.atomSelectionSet) == 1 and len(self.atomSelectionSet[0]) > 0 and self.__cur_store_name not in emptyValue:
+        if len(self.atomSelectionSet) == 1 and len(self.atomSelectionSet[0]) > 0 and self.__cur_store_name not in EMPTY_VALUE:
             self.storeSet[self.__cur_store_name] = copy.copy(self.atomSelectionSet[0])
 
         self.atomSelectionSet.clear()

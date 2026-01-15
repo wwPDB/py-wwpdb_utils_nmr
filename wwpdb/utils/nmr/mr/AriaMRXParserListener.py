@@ -20,6 +20,27 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
+                                               EMPTY_VALUE,
+                                               MONDICT3,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               KNOWN_ANGLE_NAMES,
+                                               KNOWN_ANGLE_ATOM_NAMES,
+                                               KNOWN_ANGLE_SEQ_OFFSET,
+                                               KNOWN_ANGLE_CARBO_ATOM_NAMES,
+                                               KNOWN_ANGLE_CARBO_SEQ_OFFSET,
+                                               CARTN_DATA_ITEMS)
+    from wwpdb.utils.nmr.AlignUtil import (indexToLetter,
+                                           updatePolySeqRst,
+                                           sortPolySeqRst,
+                                           alignPolymerSequence,
+                                           assignPolymerSequence)
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.XMLParser import XMLParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -39,29 +60,29 @@ try:
                                                        resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
-                                                       getPotentialType,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       KNOWN_ANGLE_NAMES,
-                                                       KNOWN_ANGLE_ATOM_NAMES,
-                                                       KNOWN_ANGLE_SEQ_OFFSET,
-                                                       KNOWN_ANGLE_CARBO_ATOM_NAMES,
-                                                       KNOWN_ANGLE_CARBO_SEQ_OFFSET,
-                                                       CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (MAX_MAG_IDENT_ASYM_ID,
-                                           monDict3,
-                                           emptyValue,
-                                           indexToLetter,
-                                           updatePolySeqRst,
-                                           sortPolySeqRst,
-                                           alignPolymerSequence,
-                                           assignPolymerSequence)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
-                                                distance)
+                                                       getPotentialType)
 except ImportError:
+    from nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
+                                   EMPTY_VALUE,
+                                   MONDICT3,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   KNOWN_ANGLE_NAMES,
+                                   KNOWN_ANGLE_ATOM_NAMES,
+                                   KNOWN_ANGLE_SEQ_OFFSET,
+                                   KNOWN_ANGLE_CARBO_ATOM_NAMES,
+                                   KNOWN_ANGLE_CARBO_SEQ_OFFSET,
+                                   CARTN_DATA_ITEMS)
+    from nmr.AlignUtil import (indexToLetter,
+                               updatePolySeqRst,
+                               sortPolySeqRst,
+                               alignPolymerSequence,
+                               assignPolymerSequence)
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.XMLParser import XMLParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -81,28 +102,7 @@ except ImportError:
                                            resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
-                                           getPotentialType,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           KNOWN_ANGLE_NAMES,
-                                           KNOWN_ANGLE_ATOM_NAMES,
-                                           KNOWN_ANGLE_SEQ_OFFSET,
-                                           KNOWN_ANGLE_CARBO_ATOM_NAMES,
-                                           KNOWN_ANGLE_CARBO_SEQ_OFFSET,
-                                           CARTN_DATA_ITEMS)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (MAX_MAG_IDENT_ASYM_ID,
-                               monDict3,
-                               emptyValue,
-                               indexToLetter,
-                               updatePolySeqRst,
-                               sortPolySeqRst,
-                               alignPolymerSequence,
-                               assignPolymerSequence)
-    from nmr.NmrVrptUtility import (to_np_array,
-                                    distance)
+                                           getPotentialType)
 
 
 # This class defines a complete listener for a parse tree produced by XMLParser.
@@ -386,7 +386,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     pass
                             elif mid_code == ' ' and test_seq_id in poly_seq_rst['seq_id']:
                                 idx = poly_seq_rst['seq_id'].index(test_seq_id)
-                                if poly_seq_rst['comp_id'][idx] == '.' and poly_seq_rst['auth_comp_id'][idx] not in emptyValue:
+                                if poly_seq_rst['comp_id'][idx] == '.' and poly_seq_rst['auth_comp_id'][idx] not in EMPTY_VALUE:
                                     seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                        in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
                                                                        if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
@@ -559,10 +559,10 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
             myPr0 = str(myPr[0])
             myPr1 = str(myPr[1])
             if myPr0 == myPr1:
-                if myPr0 not in emptyValue:
+                if myPr0 not in EMPTY_VALUE:
                     common_name.append(myPr0)
-            elif myPr0 in emptyValue:
-                if myPr1 not in emptyValue:
+            elif myPr0 in EMPTY_VALUE:
+                if myPr1 not in EMPTY_VALUE:
                     common_name.append(('#' if myPr1.isdigit() else '%') if len_min_str == len_max_str else '*')
 
         if len(common_name) == 0:
@@ -1074,7 +1074,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in monDict3:
+                                elif _compId in MONDICT3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -1128,7 +1128,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                     self.getCurrentRestraint())
                                 self.f.append(err)
 
-                            if _angleName in emptyValue and atomSelTotal != 4:
+                            if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                                 continue
 
                             fixedAngleName = _angleName
@@ -1154,7 +1154,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                 self.getCurrentRestraint())
                             self.f.append(err)
 
-                        if _angleName in emptyValue and atomSelTotal != 4:
+                        if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                             continue
 
                         if isinstance(combinationId, int):
@@ -1257,7 +1257,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in monDict3:
+                                elif _compId in MONDICT3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -1295,7 +1295,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     False)
 
-                            if _angleName in emptyValue:
+                            if _angleName in EMPTY_VALUE:
                                 continue
 
                             fixedAngleName = _angleName

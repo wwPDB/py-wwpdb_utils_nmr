@@ -32,27 +32,26 @@ try:
                                                NUM_DIM_ITEMS,
                                                ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG,
                                                SF_TAG_PREFIXES,
-                                               AUX_LP_CATEGORIES)
+                                               AUX_LP_CATEGORIES,
+                                               EMPTY_VALUE,
+                                               NEF_VERSION,
+                                               MAX_DIM_NUM_OF_SPECTRA,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               ONEDEP_UPLOAD_FILE_PAT,
+                                               ONEDEP_FILE_PAT,
+                                               DATABLOCK_PAT,
+                                               SF_ANONYMOUS_PAT,
+                                               SAVE_PAT,
+                                               LOOP_PAT,
+                                               STOP_PAT,
+                                               CIF_STOP_PAT,
+                                               CATEGORY_PAT,
+                                               TAGVALUE_PAT,
+                                               SF_CATEGORY_PAT,
+                                               SF_FRAMECODE_PAT)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
-    from wwpdb.utils.nmr.NmrDpMrSplitter import (datablock_pattern,
-                                                 sf_anonymous_pattern,
-                                                 save_pattern,
-                                                 loop_pattern,
-                                                 stop_pattern,
-                                                 cif_stop_pattern,
-                                                 category_pattern,
-                                                 tagvalue_pattern,
-                                                 sf_category_pattern,
-                                                 sf_framecode_pattern,
-                                                 pynmrstar_lp_obj_pattern,
-                                                 onedep_upload_file_pattern,
-                                                 onedep_file_pattern)
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
-    from wwpdb.utils.nmr.nef.NEFTranslator import (NEF_VERSION,
-                                                   MAX_DIM_NUM_OF_SPECTRA)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS
 except ImportError:
     from nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
                                    MR_FILE_PATH_LIST_KEY,
@@ -64,30 +63,32 @@ except ImportError:
                                    NUM_DIM_ITEMS,
                                    ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG,
                                    SF_TAG_PREFIXES,
-                                   AUX_LP_CATEGORIES)
+                                   AUX_LP_CATEGORIES,
+                                   EMPTY_VALUE,
+                                   NEF_VERSION,
+                                   MAX_DIM_NUM_OF_SPECTRA,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   ONEDEP_UPLOAD_FILE_PAT,
+                                   ONEDEP_FILE_PAT,
+                                   DATABLOCK_PAT,
+                                   SF_ANONYMOUS_PAT,
+                                   SAVE_PAT,
+                                   LOOP_PAT,
+                                   STOP_PAT,
+                                   CIF_STOP_PAT,
+                                   CATEGORY_PAT,
+                                   TAGVALUE_PAT,
+                                   SF_CATEGORY_PAT,
+                                   SF_FRAMECODE_PAT)
     from nmr.NmrDpRegistry import NmrDpRegistry
-    from nmr.NmrDpMrSplitter import (datablock_pattern,
-                                     sf_anonymous_pattern,
-                                     save_pattern,
-                                     loop_pattern,
-                                     stop_pattern,
-                                     cif_stop_pattern,
-                                     category_pattern,
-                                     tagvalue_pattern,
-                                     sf_category_pattern,
-                                     sf_framecode_pattern,
-                                     pynmrstar_lp_obj_pattern,
-                                     onedep_upload_file_pattern,
-                                     onedep_file_pattern)
-    from nmr.AlignUtil import emptyValue
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
-    from nmr.nef.NEFTranslator import (NEF_VERSION,
-                                       MAX_DIM_NUM_OF_SPECTRA)
-    from nmr.mr.ParserListenerUtil import ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
+
+
+PYNMRSTAR_LP_OBJ_PAT = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
 
 
 class NmrDpFirstAid:
@@ -225,7 +226,7 @@ class NmrDpFirstAid:
                 j = total - 1
 
                 while total - j < 10:
-                    if save_pattern.match(lines[j]) or stop_pattern.match(lines[j]):
+                    if SAVE_PAT.match(lines[j]) or STOP_PAT.match(lines[j]):
                         break
                     j -= 1
 
@@ -266,7 +267,7 @@ class NmrDpFirstAid:
                 for line in ifh:
                     if pass_datablock:
                         ofh.write(line)
-                    elif datablock_pattern.match(line):
+                    elif DATABLOCK_PAT.match(line):
                         pass_datablock = True
                     else:
                         ofh.write(line)
@@ -372,7 +373,7 @@ class NmrDpFirstAid:
 
                     with open(_srcPath, 'r', encoding='utf-8') as ifh:
                         for line in ifh:
-                            if save_pattern.match(line) or stop_pattern.match(line):
+                            if SAVE_PAT.match(line) or STOP_PAT.match(line):
                                 is_cs_cif = False
                                 break
 
@@ -383,11 +384,11 @@ class NmrDpFirstAid:
 
                         with open(_srcPath, 'r', encoding='utf-8') as ifh:
                             for line in ifh:
-                                if loop_pattern.match(line):
+                                if LOOP_PAT.match(line):
                                     loop_count += 1
-                                elif sf_category_pattern.match(line):
+                                elif SF_CATEGORY_PAT.match(line):
                                     has_sf_category = True
-                                elif sf_framecode_pattern.match(line):
+                                elif SF_FRAMECODE_PAT.match(line):
                                     has_sf_framecode = True
 
                         if not has_sf_category and not has_sf_framecode:
@@ -397,11 +398,11 @@ class NmrDpFirstAid:
                             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                                 for line in ifh:
-                                    if datablock_pattern.match(line):
-                                        g = datablock_pattern.search(line).groups()
+                                    if DATABLOCK_PAT.match(line):
+                                        g = DATABLOCK_PAT.search(line).groups()
                                         if loop_count < 2:
                                             ofh.write(f"save_{g[0]}\n")
-                                    elif cif_stop_pattern.match(line):
+                                    elif CIF_STOP_PAT.match(line):
                                         if in_lp:
                                             if loop_count < 2:
                                                 ofh.write('stop_\nsave_\n')
@@ -410,7 +411,7 @@ class NmrDpFirstAid:
                                         else:
                                             ofh.write(line)
                                         in_lp = False
-                                    elif loop_pattern.match(line):
+                                    elif LOOP_PAT.match(line):
                                         in_lp = True
                                         ofh.write(line)
                                     else:
@@ -551,14 +552,14 @@ class NmrDpFirstAid:
                         for line in ifh:
                             if pass_sf_framecode:
                                 if pass_sf_loop:
-                                    if category_pattern.match(line):
-                                        target['lp_category'] = '_' + category_pattern.search(line).groups()[0]
+                                    if CATEGORY_PAT.match(line):
+                                        target['lp_category'] = '_' + CATEGORY_PAT.search(line).groups()[0]
                                         content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == target['lp_category']), None)
                                         if content_subtype is not None:
                                             target['sf_category'] = SF_CATEGORIES[file_type][content_subtype]
                                             target['sf_tag_prefix'] = SF_TAG_PREFIXES[file_type][content_subtype]
                                         break
-                                elif loop_pattern.match(line):
+                                elif LOOP_PAT.match(line):
                                     pass_sf_loop = True
                             elif sf_named_pattern.match(line):
                                 pass_sf_framecode = True
@@ -582,7 +583,7 @@ class NmrDpFirstAid:
                         if pass_sf_loop:
                             ofh.write(line)
                         elif pass_sf_framecode:
-                            if loop_pattern.match(line):
+                            if LOOP_PAT.match(line):
                                 pass_sf_loop = True
                                 if 'sf_category' in target:
                                     ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
@@ -631,7 +632,7 @@ class NmrDpFirstAid:
 
                     for lp_obj in g[0].split(', '):
 
-                        lp_category = str(pynmrstar_lp_obj_pattern.search(lp_obj).groups()[0])
+                        lp_category = str(PYNMRSTAR_LP_OBJ_PAT.search(lp_obj).groups()[0])
 
                         if lp_category == 'None':
                             continue
@@ -646,8 +647,8 @@ class NmrDpFirstAid:
                         with open(_srcPath, 'r', encoding='utf-8') as ifh:
                             for line in ifh:
                                 if pass_loop:
-                                    if category_pattern.match(line):
-                                        _lp_category = '_' + category_pattern.search(line).groups()[0]
+                                    if CATEGORY_PAT.match(line):
+                                        _lp_category = '_' + CATEGORY_PAT.search(line).groups()[0]
                                         if lp_category == _lp_category:
                                             target['loop_location'] = lp_loc
                                             content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == target['lp_category']), None)
@@ -656,10 +657,10 @@ class NmrDpFirstAid:
                                                 target['sf_tag_prefix'] = SF_TAG_PREFIXES[file_type][content_subtype]
                                                 target['sf_framecode'] = target['sf_category'] + '_1'
                                         pass_loop = False
-                                elif loop_pattern.match(line):
+                                elif LOOP_PAT.match(line):
                                     pass_loop = True
                                     lp_loc = i
-                                elif stop_pattern.match(line):
+                                elif STOP_PAT.match(line):
                                     if 'loop_location' in target and 'stop_location' not in target:
                                         target['stop_location'] = i
                                         break
@@ -746,16 +747,16 @@ class NmrDpFirstAid:
                     with open(_srcPath, 'r', encoding='utf-8') as ifh:
                         for line in ifh:
                             if pass_sf_framecode:
-                                if save_pattern.match(line):
+                                if SAVE_PAT.match(line):
                                     if 'category_1_begin' in target and 'category_2_begin' in target:
                                         targets.append(target)
                                         break
                                     pass_sf_framecode = pass_category_1 = pass_category_2 = pass_sf_loop = False
-                                elif loop_pattern.match(line):
+                                elif LOOP_PAT.match(line):
                                     pass_sf_loop = True
                                 elif not pass_sf_loop:
-                                    if category_pattern.match(line):
-                                        category = '_' + category_pattern.search(line).groups()[0]
+                                    if CATEGORY_PAT.match(line):
+                                        category = '_' + CATEGORY_PAT.search(line).groups()[0]
                                         if category == category_1:
                                             if not pass_category_1:
                                                 target['category_1_begin'] = i
@@ -790,9 +791,9 @@ class NmrDpFirstAid:
                                                     target['content_subtype_2'] = content_subtype
                                             pass_category_2 = True
                                             target['category_2_end'] = i
-                                elif loop_pattern.match(line):
+                                elif LOOP_PAT.match(line):
                                     pass_sf_loop = True
-                            elif sf_anonymous_pattern.match(line):
+                            elif SF_ANONYMOUS_PAT.match(line):
                                 pass_sf_framecode = True
                                 pass_category_1 = pass_category_2 = pass_sf_loop = False
 
@@ -843,7 +844,7 @@ class NmrDpFirstAid:
                         if i not in loop_category_locations:
                             ofh.write(line)
                         else:
-                            g = tagvalue_pattern.search(line).groups()
+                            g = TAGVALUE_PAT.search(line).groups()
                             try:
                                 lp_tags += f"_{g[0]}.{g[1]}\n"
                                 lp_vals += f" {g[2].strip(' ')} "
@@ -905,7 +906,7 @@ class NmrDpFirstAid:
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i == line_num:
-                            if sf_framecode not in emptyValue:
+                            if sf_framecode not in EMPTY_VALUE:
                                 ofh.write(re.sub(r'["\']?' + sf_framecode + r'["\']?\s*$', saveframe_name + r'\n', line))
                             else:
                                 ofh.write(re.sub(rf'\{sf_framecode}\s*$', saveframe_name + r'\n', line))
@@ -1001,12 +1002,12 @@ class NmrDpFirstAid:
                 self.rescueImmatureStr(file_list_id)
 
                 if rescued:
-                    if onedep_upload_file_pattern.match(srcPath):
-                        g = onedep_upload_file_pattern.search(srcPath).groups()
+                    if ONEDEP_UPLOAD_FILE_PAT.match(srcPath):
+                        g = ONEDEP_UPLOAD_FILE_PAT.search(srcPath).groups()
                         srcPath = g[0] + '-upload-convert_' + g[1] + '.V' + g[2]
                     else:
-                        if onedep_file_pattern.match(srcPath):
-                            g = onedep_file_pattern.search(srcPath).groups()
+                        if ONEDEP_FILE_PAT.match(srcPath):
+                            g = ONEDEP_FILE_PAT.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
 
                     self.__reg.star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
@@ -1304,7 +1305,7 @@ class NmrDpFirstAid:
                     atom_name_col = loop.tags.index('atom_name')
 
                     for row in loop:
-                        if row[atom_type_col] in emptyValue:
+                        if row[atom_type_col] in EMPTY_VALUE:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -1345,7 +1346,7 @@ class NmrDpFirstAid:
                     atom_name_col = loop.tags.index('atom_name')
 
                     for row in loop:
-                        if row[iso_num_col] in emptyValue:
+                        if row[iso_num_col] in EMPTY_VALUE:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -1591,7 +1592,7 @@ class NmrDpFirstAid:
                     atom_name_col = loop.tags.index('Atom_ID')
 
                     for row in loop:
-                        if row[atom_type_col] in emptyValue:
+                        if row[atom_type_col] in EMPTY_VALUE:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -1632,7 +1633,7 @@ class NmrDpFirstAid:
                     atom_name_col = loop.tags.index('Atom_ID')
 
                     for row in loop:
-                        if row[iso_num_col] in emptyValue:
+                        if row[iso_num_col] in EMPTY_VALUE:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'

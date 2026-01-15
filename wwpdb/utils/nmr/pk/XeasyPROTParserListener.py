@@ -19,31 +19,31 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 from typing import IO, List, Optional
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import CifReader
-    from wwpdb.utils.nmr.pk.XeasyPROTParser import XeasyPROTParser
-    from wwpdb.utils.nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
-    from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
-                                           protonBeginCode,
-                                           letterToDigit,
+    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID)
+    from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            retrieveAtomIdentFromMRMap)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.pk.XeasyPROTParser import XeasyPROTParser
+    from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
+    from wwpdb.utils.nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
 except ImportError:
-    from nmr.io.CifReader import CifReader
-    from nmr.pk.XeasyPROTParser import XeasyPROTParser
-    from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
-    from nmr.pk.BasePKParserListener import BasePKParserListener
-    from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (monDict3,
-                               protonBeginCode,
-                               letterToDigit,
+    from nmr.NmrDpConstant import (MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
+    from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                retrieveAtomIdentFromMRMap)
+    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.io.CifReader import CifReader
+    from nmr.pk.XeasyPROTParser import XeasyPROTParser
+    from nmr.pk.BasePKParserListener import BasePKParserListener
+    from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
 
 
 # This class defines a complete listener for a parse tree produced by XeasyPROTParser.
@@ -119,7 +119,7 @@ class XeasyPROTParserListener(ParseTreeListener, BaseTopologyParserListener):
                 break
             if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                 hasSegCompId = True
-            if not hasSegCompId and compId not in monDict3 and self.mrAtomNameMapping is not None and atomName[0] in protonBeginCode:
+            if not hasSegCompId and compId not in MONDICT3 and self.mrAtomNameMapping is not None and atomName[0] in PROTON_BEGIN_CODE:
                 _, compId, _atomName = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId, compId, atomName)
                 if _atomName != atomName:
                     atomName = _atomName

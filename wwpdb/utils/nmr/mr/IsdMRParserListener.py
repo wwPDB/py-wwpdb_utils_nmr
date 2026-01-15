@@ -21,6 +21,11 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.IsdMRParser import IsdMRParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -33,13 +38,13 @@ try:
                                                        getStarAtom,
                                                        resetMemberId,
                                                        getDistConstraintType,
-                                                       getPotentialType,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+                                                       getPotentialType)
 except ImportError:
+    from nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.IsdMRParser import IsdMRParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -52,12 +57,7 @@ except ImportError:
                                            getStarAtom,
                                            resetMemberId,
                                            getDistConstraintType,
-                                           getPotentialType,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP)
-    from nmr.nef.NEFTranslator import NEFTranslator
+                                           getPotentialType)
 
 
 # This class defines a complete listener for a parse tree produced by IsdMRParser.

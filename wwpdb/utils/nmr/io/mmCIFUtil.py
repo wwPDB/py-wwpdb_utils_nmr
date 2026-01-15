@@ -29,7 +29,7 @@ from mmcif.io.PdbxReader import PdbxReader
 from mmcif.io.PdbxWriter import PdbxWriter
 
 
-label_symbol_pattern = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
+LABEL_SYMBOL_PAT = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
 
 
 def abandon_symbolic_labels(containerList: list):
@@ -47,7 +47,7 @@ def abandon_symbolic_labels(containerList: list):
                 continue
             for idx, row in enumerate(obj.getRowList()):
                 for col, val in enumerate(row):
-                    if col in labelCols and label_symbol_pattern.match(val):
+                    if col in labelCols and LABEL_SYMBOL_PAT.match(val):
                         obj.setValue(val[1:], attrs[col], idx)
 
 

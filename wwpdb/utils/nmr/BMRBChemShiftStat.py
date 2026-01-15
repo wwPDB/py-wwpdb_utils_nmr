@@ -43,17 +43,25 @@ from operator import itemgetter
 from typing import IO, List, Set, Tuple, Optional
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           protonBeginCode,
-                                           pseProBeginCode,
-                                           deepcopy)
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               PROTON_BEGIN_CODE,
+                                               PSE_PRO_BEGIN_CODE,
+                                               CS_STAT_IGNORED_LIG_CODE,
+                                               CS_STAT_AA_THRESHOLD,
+                                               CS_STAT_NA_THRESHOLD,
+                                               CS_STAT_MAX_COUNT_THRESHOLD)
+    from wwpdb.utils.nmr.AlignUtil import deepcopy
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.mr.ParserListenerUtil import translateToStdAtomName
 except ImportError:
-    from nmr.AlignUtil import (emptyValue,
-                               protonBeginCode,
-                               pseProBeginCode,
-                               deepcopy)
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   PROTON_BEGIN_CODE,
+                                   PSE_PRO_BEGIN_CODE,
+                                   CS_STAT_IGNORED_LIG_CODE,
+                                   CS_STAT_AA_THRESHOLD,
+                                   CS_STAT_NA_THRESHOLD,
+                                   CS_STAT_MAX_COUNT_THRESHOLD)
+    from nmr.AlignUtil import deepcopy
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.mr.ParserListenerUtil import translateToStdAtomName
 
@@ -86,10 +94,6 @@ class BMRBChemShiftStat:
                  '__std_comp_ids',
                  '__all_comp_ids',
                  '__not_comp_ids',
-                 '__ignored_comp_ids',
-                 'aa_threshold',
-                 'na_threshold',
-                 'max_count_th',
                  '__ccU',
                  '__cachedDictForPeptideLike',
                  '__cachedDictForTypeOfCompId',
@@ -148,13 +152,6 @@ class BMRBChemShiftStat:
         self.__all_comp_ids = set()
         self.__not_comp_ids = set()
 
-        self.__ignored_comp_ids = ('N9K',)
-
-        self.aa_threshold = 0.1
-        self.na_threshold = 0.25
-
-        self.max_count_th = 10
-
         # CCD accessing utility
         self.__ccU = ChemCompUtil(self.__verbose, self.__log) if ccU is None else ccU
 
@@ -174,7 +171,7 @@ class BMRBChemShiftStat:
         """ Return whether a given comp_id has BMRB chemical shift statistics.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return False
 
         if comp_id in self.__std_comp_ids:
@@ -188,7 +185,7 @@ class BMRBChemShiftStat:
         """ Return whether a given comp_id is peptide-like component.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return False
 
         if comp_id in self.__aa_comp_ids:
@@ -211,7 +208,7 @@ class BMRBChemShiftStat:
             @return: array of bool: peptide, nucleotide, carbohydrate
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return (False, False, False)
 
         if comp_id in self.__aa_comp_ids:
@@ -365,7 +362,7 @@ class BMRBChemShiftStat:
         """ Return whether a given comp_id has sufficient chemical shift statistics.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return False
 
         if comp_id in self.__std_comp_ids:
@@ -389,7 +386,7 @@ class BMRBChemShiftStat:
         """ Return BMRB chemical shift statistics for a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id in self.__aa_comp_ids:
@@ -424,7 +421,7 @@ class BMRBChemShiftStat:
         """ Return atom list for a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id in self.__aa_comp_ids:
@@ -467,7 +464,7 @@ class BMRBChemShiftStat:
             @return: one of (1, 2, 3), 0 for not found (by default)
         """
 
-        if comp_id in emptyValue or atom_id in emptyValue:
+        if comp_id in EMPTY_VALUE or atom_id in EMPTY_VALUE:
             return default
 
         if comp_id not in self.__std_comp_ids:
@@ -496,7 +493,7 @@ class BMRBChemShiftStat:
         """ Return geminal or aromatic opposite atom of a given atom.
         """
 
-        if comp_id in emptyValue or atom_id in emptyValue:
+        if comp_id in EMPTY_VALUE or atom_id in EMPTY_VALUE:
             return None
 
         if comp_id not in self.__std_comp_ids:
@@ -509,7 +506,7 @@ class BMRBChemShiftStat:
 
         try:
 
-            is_proton = atom_id[0] in protonBeginCode
+            is_proton = atom_id[0] in PROTON_BEGIN_CODE
 
             d = next(item['desc'] for item in cs_stat if item['atom_id'] == atom_id)
 
@@ -552,7 +549,7 @@ class BMRBChemShiftStat:
         """ Return all atoms of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id not in self.__std_comp_ids:
@@ -577,7 +574,7 @@ class BMRBChemShiftStat:
         """ Return backbone atoms of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id not in self.__std_comp_ids:
@@ -634,7 +631,7 @@ class BMRBChemShiftStat:
         """ Return aromatic atoms of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id not in self.__std_comp_ids:
@@ -656,7 +653,7 @@ class BMRBChemShiftStat:
         """ Return atoms in methyl group of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id in self.__cachedDictForMethylAtoms:
@@ -672,7 +669,7 @@ class BMRBChemShiftStat:
         """ Return all protons in methyl group of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id in self.__cachedDictForMethylProtons:
@@ -688,7 +685,7 @@ class BMRBChemShiftStat:
         """ Return representative protons in methyl group of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id in self.__cachedDictForRepMethylProtons:
@@ -704,7 +701,7 @@ class BMRBChemShiftStat:
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id in self.__cachedDictForNonRepMethylProtons:
@@ -720,7 +717,7 @@ class BMRBChemShiftStat:
         """ Return protons in the same group of a given comp_id and atom_id.
         """
 
-        if comp_id in emptyValue or atom_id in emptyValue:
+        if comp_id in EMPTY_VALUE or atom_id in EMPTY_VALUE:
             return []
 
         key = (comp_id, atom_id, excl_self)
@@ -739,7 +736,7 @@ class BMRBChemShiftStat:
         """ Return sidechain atoms of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id not in self.__std_comp_ids:
@@ -776,7 +773,7 @@ class BMRBChemShiftStat:
         """ Return ROSETTA 'CEN'troid atoms of a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id not in self.__std_comp_ids:
@@ -795,12 +792,12 @@ class BMRBChemShiftStat:
         if comp_id in self.__std_comp_ids or polypeptide_like:
             return [item['atom_id'] for item in cs_stat
                     if item['atom_id'] not in bb_atoms
-                    and item['atom_id'][0] not in protonBeginCode
+                    and item['atom_id'][0] not in PROTON_BEGIN_CODE
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         return [item['atom_id'] for item in cs_stat
                 if item['atom_id'] not in bb_atoms
-                and item['atom_id'][0] not in protonBeginCode
+                and item['atom_id'][0] not in PROTON_BEGIN_CODE
                 and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
     @functools.lru_cache(maxsize=128)
@@ -808,7 +805,7 @@ class BMRBChemShiftStat:
         """ Return all pseudo atoms of a give comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return []
 
         if comp_id not in self.__std_comp_ids:
@@ -821,11 +818,11 @@ class BMRBChemShiftStat:
 
         if comp_id in self.__std_comp_ids or primary:
             return [item['atom_id'] for item in cs_stat
-                    if (('methyl' in item['desc'] and item['atom_id'][0] in protonBeginCode) or 'geminal' in item['desc'] or item['desc'].sratswith('aroma-opposite'))
+                    if (('methyl' in item['desc'] and item['atom_id'][0] in PROTON_BEGIN_CODE) or 'geminal' in item['desc'] or item['desc'].sratswith('aroma-opposite'))
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         return [item['atom_id'] for item in cs_stat
-                if (('methyl' in item['desc'] and item['atom_id'][0] in protonBeginCode) or 'geminal' in item['desc'] or item['desc'].startswith('aroma-opposite'))
+                if (('methyl' in item['desc'] and item['atom_id'][0] in PROTON_BEGIN_CODE) or 'geminal' in item['desc'] or item['desc'].startswith('aroma-opposite'))
                 and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
     def loadStatFromCsvFiles(self) -> bool:
@@ -835,17 +832,17 @@ class BMRBChemShiftStat:
         if any(not os.path.exists(self.__work_dir + csv_file) for csv_file in self.csv_files):
             return False
 
-        self.aa_filt = self.loadStatFromCsvFile(self.__work_dir + 'aa_filt.csv', self.aa_threshold)
-        self.aa_full = self.loadStatFromCsvFile(self.__work_dir + 'aa_full.csv', self.aa_threshold)
+        self.aa_filt = self.loadStatFromCsvFile(self.__work_dir + 'aa_filt.csv', CS_STAT_AA_THRESHOLD)
+        self.aa_full = self.loadStatFromCsvFile(self.__work_dir + 'aa_full.csv', CS_STAT_AA_THRESHOLD)
 
-        self.dna_filt = self.loadStatFromCsvFile(self.__work_dir + 'dna_filt.csv', self.na_threshold)
-        self.dna_full = self.loadStatFromCsvFile(self.__work_dir + 'dna_full.csv', self.na_threshold)
+        self.dna_filt = self.loadStatFromCsvFile(self.__work_dir + 'dna_filt.csv', CS_STAT_NA_THRESHOLD)
+        self.dna_full = self.loadStatFromCsvFile(self.__work_dir + 'dna_full.csv', CS_STAT_NA_THRESHOLD)
 
-        self.rna_filt = self.loadStatFromCsvFile(self.__work_dir + 'rna_filt.csv', self.na_threshold)
-        self.rna_full = self.loadStatFromCsvFile(self.__work_dir + 'rna_full.csv', self.na_threshold)
+        self.rna_filt = self.loadStatFromCsvFile(self.__work_dir + 'rna_filt.csv', CS_STAT_NA_THRESHOLD)
+        self.rna_full = self.loadStatFromCsvFile(self.__work_dir + 'rna_full.csv', CS_STAT_NA_THRESHOLD)
 
         if not self.__lazy_others:
-            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', self.aa_threshold, self.na_threshold)
+            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD)
 
         self.__updateCompIdSet()
 
@@ -861,11 +858,11 @@ class BMRBChemShiftStat:
         self.__load_others = True
 
         if comp_id_interest is None:
-            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', self.aa_threshold, self.na_threshold)
+            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD)
             self.__updateCompIdSet()
 
         elif comp_id_interest not in self.__all_comp_ids and comp_id_interest not in self.__not_comp_ids:
-            stat = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', self.aa_threshold, self.na_threshold, comp_id_interest)
+            stat = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD, comp_id_interest)
             if len(stat) > 0:
                 self.others.extend(stat)
                 self.__updateCompIdSet()
@@ -1207,7 +1204,7 @@ class BMRBChemShiftStat:
 
                 if cc_rel_status == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
                     replaced_by = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
-                    if replaced_by in emptyValue or not self.__ccU.updateChemCompDict(replaced_by):
+                    if replaced_by in EMPTY_VALUE or not self.__ccU.updateChemCompDict(replaced_by):
                         continue
 
                     comp_id = replaced_by
@@ -1677,7 +1674,7 @@ class BMRBChemShiftStat:
         """ Append atom list as extra residue for a given comp_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE:
             return
 
         if comp_id in self.__all_comp_ids or comp_id in self.__ext_comp_ids or not self.__ccU.updateChemCompDict(comp_id):
@@ -1736,7 +1733,7 @@ class BMRBChemShiftStat:
 
         if cc_rel_status == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
             replaced_by = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
-            if replaced_by not in emptyValue and self.__ccU.updateChemCompDict(replaced_by):
+            if replaced_by not in EMPTY_VALUE and self.__ccU.updateChemCompDict(replaced_by):
                 if verbose:
                     self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id} is replaced by {replaced_by}\n")
 
@@ -1790,7 +1787,7 @@ class BMRBChemShiftStat:
             # print(f'case 1. {_comp_id}:{atom_id} -> {comp_id}:{_ref_atom_id}')
             return True, comp_id, _ref_atom_id
 
-        _ref_atom_ids = [a for a in ref_atom_ids if a[0] == atom_id[0] or a[0] == 'H' and atom_id[0] in pseProBeginCode]
+        _ref_atom_ids = [a for a in ref_atom_ids if a[0] == atom_id[0] or a[0] == 'H' and atom_id[0] in PSE_PRO_BEGIN_CODE]
 
         if len(_ref_atom_ids) == 0:
             if verbose:
@@ -1830,11 +1827,11 @@ class BMRBChemShiftStat:
         for comp_id in comp_ids:
             _list = [a for a in atm_list if a['comp_id'] == comp_id]
 
-            h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'isolated']
+            h_list = [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'isolated']
 
             if self.__ccU.updateChemCompDict(comp_id):
                 c_h_bonds = collections.Counter([b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                                 if b[self.__ccU.ccbAtomId1].startswith('C') and b[self.__ccU.ccbAtomId2][0] in protonBeginCode])
+                                                 if b[self.__ccU.ccbAtomId1].startswith('C') and b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE])
 
                 for k, v in c_h_bonds.items():
                     if v == 3:
@@ -1870,7 +1867,7 @@ class BMRBChemShiftStat:
         for comp_id in comp_ids:
             _list = [a for a in atm_list if a['comp_id'] == comp_id]
 
-            h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'isolated']
+            h_list = [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'isolated']
 
             if self.__ccU.updateChemCompDict(comp_id):
                 aro_list = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
@@ -1896,9 +1893,9 @@ class BMRBChemShiftStat:
                                                  and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'))]
 
                 cn_h_bonds = collections.Counter([b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                                  if b[self.__ccU.ccbAtomId2][0] in protonBeginCode and b[self.__ccU.ccbAtomId2] not in leaving_atom_list])
+                                                  if b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE and b[self.__ccU.ccbAtomId2] not in leaving_atom_list])
 
-                h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'isolated']
+                h_list = [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'isolated']
 
                 for k, v in cn_h_bonds.items():
                     if v == 2:
@@ -1908,7 +1905,7 @@ class BMRBChemShiftStat:
                                    if b[self.__ccU.ccbAtomId1] == k and b[self.__ccU.ccbAtomId2] == atom_id):
                                 a['desc'] = 'geminal'
 
-                h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'aroma']
+                h_list = [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'aroma']
 
                 hvy_c_list = []
 
@@ -2106,7 +2103,7 @@ class BMRBChemShiftStat:
                             if not any(True for n in n_list if n['atom_id'] == atom_id):
                                 a['desc'] = 'aroma' if h in cn_common and a['avg'] > 5.0 else 'geminal'
 
-                h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'isolated']
+                h_list = [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'isolated']
 
                 for h in h_list:
                     if h['avg'] > 5.0:
@@ -2114,7 +2111,7 @@ class BMRBChemShiftStat:
                         if any(True for c in c_list if c['atom_id'] == atom_id and c['avg'] > 95.0 and c['avg'] < 170.0):
                             h['desc'] = 'aroma'
 
-                h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'isolated']
+                h_list = [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'isolated']
 
                 h_c = [a['atom_id'][:-1] for a in h_list if a['atom_id'].endswith("'") and not a['atom_id'].endswith("''")]
                 h_cc = [a['atom_id'][:-2] for a in h_list if a['atom_id'].endswith("''")]
@@ -2132,7 +2129,7 @@ class BMRBChemShiftStat:
                             if not any(True for n in n_list if n['atom_id'] == atom_id):
                                 a['desc'] = 'geminal'
 
-                h_list = [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'aroma']
+                h_list = [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'aroma']
 
                 h_1 = [a['atom_id'][:-1] for a in h_list if a['atom_id'].endswith('1')]
                 h_2 = [a['atom_id'][:-1] for a in h_list if a['atom_id'].endswith('2')]
@@ -2170,13 +2167,13 @@ class BMRBChemShiftStat:
                     for methyl_c_2 in methyl_c_list:
                         if methyl_c_list.index(methyl_c_1) < methyl_c_list.index(methyl_c_2):
                             hvy_1_c = set(b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                          if b[self.__ccU.ccbAtomId1] == methyl_c_1 and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode) |\
+                                          if b[self.__ccU.ccbAtomId1] == methyl_c_1 and b[self.__ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE) |\
                                 set(b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                    if b[self.__ccU.ccbAtomId2] == methyl_c_1 and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
+                                    if b[self.__ccU.ccbAtomId2] == methyl_c_1 and b[self.__ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE)
                             hvy_2_c = set(b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                          if b[self.__ccU.ccbAtomId1] == methyl_c_2 and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode) |\
+                                          if b[self.__ccU.ccbAtomId1] == methyl_c_2 and b[self.__ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE) |\
                                 set(b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                    if b[self.__ccU.ccbAtomId2] == methyl_c_2 and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
+                                    if b[self.__ccU.ccbAtomId2] == methyl_c_2 and b[self.__ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE)
                             hvy_common = hvy_1_c & hvy_2_c
                             if len(hvy_common) > 0:
                                 for hvy_c in hvy_common:
@@ -2191,20 +2188,20 @@ class BMRBChemShiftStat:
                                                 a['desc'] = 'methyl-geminal'
 
                                                 for methyl_h in [b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                                                 if b[self.__ccU.ccbAtomId1] == methyl_c_1 and b[self.__ccU.ccbAtomId2][0] in protonBeginCode]:
+                                                                 if b[self.__ccU.ccbAtomId1] == methyl_c_1 and b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE]:
                                                     for b in _list:
                                                         if b['atom_id'] == methyl_h:
                                                             b['desc'] = 'methyl-geminal'
 
                                                 for methyl_h in [b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                                                 if b[self.__ccU.ccbAtomId1] == methyl_c_2 and b[self.__ccU.ccbAtomId2][0] in protonBeginCode]:
+                                                                 if b[self.__ccU.ccbAtomId1] == methyl_c_2 and b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE]:
                                                     for b in _list:
                                                         if b['atom_id'] == methyl_h:
                                                             b['desc'] = 'methyl-geminal'
 
             else:
                 methyl_list = ['C' + a['atom_id'][1:-1] for a in _list
-                               if a['atom_id'][0] in protonBeginCode and a['desc'] == 'methyl' and a['atom_id'].endswith('1')]
+                               if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'methyl' and a['atom_id'].endswith('1')]
 
                 methyl_1 = [a[:-1] for a in methyl_list if a.endswith('1')]
                 methyl_2 = [a[:-1] for a in methyl_list if a.endswith('2')]
@@ -2225,18 +2222,18 @@ class BMRBChemShiftStat:
                         atom_id = c['atom_id']
                         if atom_id in (m + '1', m + '2'):
                             c['desc'] = 'methyl-geminal'
-                            for h in [a for a in _list if a['atom_id'][0] in protonBeginCode and a['desc'] == 'methyl' and a['atom_id'].startswith('H' + atom_id[1:])]:
+                            for h in [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'methyl' and a['atom_id'].startswith('H' + atom_id[1:])]:
                                 h['desc'] = 'methyl-geminal'
 
                 aroma_list = ['C' + a['atom_id'][1:] for a in _list
-                              if a['atom_id'][0] in protonBeginCode and a['desc'] == 'aroma']
+                              if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'aroma']
 
                 for c in c_list:
                     if c['atom_id'] in aroma_list:
                         c['desc'] = 'aroma'
 
                 aroma_opposite_list = ['C' + a['atom_id'][1:] for a in _list
-                                       if a['atom_id'][0] in protonBeginCode and a['desc'] == 'aroma-opposite']
+                                       if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'aroma-opposite']
 
                 for c in c_list:
                     if c['atom_id'] in aroma_opposite_list:
@@ -2250,20 +2247,20 @@ class BMRBChemShiftStat:
             _list = [a for a in atm_list if a['comp_id'] == comp_id]
 
             geminal_n_list = ['N' + a['atom_id'][1:-1] for a in _list
-                              if a['atom_id'][0] in protonBeginCode and a['desc'] == 'geminal' and a['atom_id'].endswith('1')]
+                              if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'geminal' and a['atom_id'].endswith('1')]
 
             if self.__ccU.updateChemCompDict(comp_id):
                 for geminal_n_1 in geminal_n_list:
                     for geminal_n_2 in geminal_n_list:
                         if geminal_n_list.index(geminal_n_1) < geminal_n_list.index(geminal_n_2):
                             hvy_1_c = set(b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                          if b[self.__ccU.ccbAtomId1] == geminal_n_1 and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode) |\
+                                          if b[self.__ccU.ccbAtomId1] == geminal_n_1 and b[self.__ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE) |\
                                 set(b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                    if b[self.__ccU.ccbAtomId2] == geminal_n_1 and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
+                                    if b[self.__ccU.ccbAtomId2] == geminal_n_1 and b[self.__ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE)
                             hvy_2_c = set(b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                          if b[self.__ccU.ccbAtomId1] == geminal_n_2 and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode) |\
+                                          if b[self.__ccU.ccbAtomId1] == geminal_n_2 and b[self.__ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE) |\
                                 set(b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                    if b[self.__ccU.ccbAtomId2] == geminal_n_2 and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
+                                    if b[self.__ccU.ccbAtomId2] == geminal_n_2 and b[self.__ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE)
                             hvy_common = hvy_1_c & hvy_2_c
                             if len(hvy_common) > 0:
                                 for hvy_c in hvy_common:
@@ -2302,7 +2299,8 @@ class BMRBChemShiftStat:
                         if atom_id in (g + '1', g + '2'):
                             n['desc'] = 'geminal'
 
-    def __detectMajorResonance(self, comp_ids: List[str], atm_list: List[dict], primary_th: float, secondary_th: Optional[float] = None):
+    def __detectMajorResonance(self, comp_ids: List[str], atm_list: List[dict],  # pylint: disable=no-self-use
+                               primary_th: float, secondary_th: Optional[float] = None):
         """ Detect major resonance based on count of assignments.
         """
 
@@ -2313,7 +2311,7 @@ class BMRBChemShiftStat:
 
             for a in _list:
                 a['norm_freq'] = float(f"{float(a['count']) / max_count:.3f}")
-                if max_count >= self.max_count_th:
+                if max_count >= CS_STAT_MAX_COUNT_THRESHOLD:
                     if a['count'] > max_count * primary_th:
                         a['primary'] = True
                     if (secondary_th is not None) and a['count'] > max_count * secondary_th:
@@ -2485,7 +2483,7 @@ class BMRBChemShiftStat:
 
                 if cc_rel_status == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
                     replaced_by = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
-                    if replaced_by not in emptyValue and self.__ccU.updateChemCompDict(replaced_by):
+                    if replaced_by not in EMPTY_VALUE and self.__ccU.updateChemCompDict(replaced_by):
                         print(f'[Warning] {comp_id} is replaced by {replaced_by}.')
 
                         comp_id = replaced_by
@@ -2494,7 +2492,7 @@ class BMRBChemShiftStat:
                         cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
 
                 if len(ref_atom_ids) == 0 or cc_rel_status != 'REL':
-                    if comp_id in self.__ignored_comp_ids:
+                    if comp_id in CS_STAT_IGNORED_LIG_CODE:
                         print(f'[Warning] {comp_id} is not valid CCD ID, status code: {cc_rel_status}.')
                         ret['warning'] += 1
                     else:

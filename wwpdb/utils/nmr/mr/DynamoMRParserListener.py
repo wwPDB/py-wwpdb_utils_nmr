@@ -20,6 +20,17 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3,
+                                               RDC_BB_PAIR_CODE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               KNOWN_ANGLE_ATOM_NAMES,
+                                               KNOWN_ANGLE_SEQ_OFFSET)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -39,19 +50,19 @@ try:
                                                        resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
-                                                       getPotentialType,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       KNOWN_ANGLE_ATOM_NAMES,
-                                                       KNOWN_ANGLE_SEQ_OFFSET)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
-                                           emptyValue,
-                                           rdcBbPairCode)
+                                                       getPotentialType)
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3,
+                                   RDC_BB_PAIR_CODE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   KNOWN_ANGLE_ATOM_NAMES,
+                                   KNOWN_ANGLE_SEQ_OFFSET)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.DynamoMRParser import DynamoMRParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -71,18 +82,7 @@ except ImportError:
                                            resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
-                                           getPotentialType,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           KNOWN_ANGLE_ATOM_NAMES,
-                                           KNOWN_ANGLE_SEQ_OFFSET)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (monDict3,
-                               emptyValue,
-                               rdcBbPairCode)
+                                           getPotentialType)
 
 
 TALOS_PREDICTION_CLASSES = ('Strong', 'Good', 'Generous', 'Warn', 'Bad', 'Dyn', 'New', 'None')
@@ -793,7 +793,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                            self.getCurrentRestraint(n=index))
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -824,7 +824,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint(n=index))
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):
@@ -966,7 +966,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                            self.getCurrentRestraint(n=index))
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -997,7 +997,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint(n=index))
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):
@@ -1139,7 +1139,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                            self.getCurrentRestraint(n=index))
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -1170,7 +1170,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint(n=index))
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):
@@ -1323,8 +1323,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -1510,8 +1510,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -1697,8 +1697,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -1893,8 +1893,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -2066,7 +2066,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint(n=index))
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if angleName == 'PHI':
@@ -2226,7 +2226,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint(n=index))
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if angleName == 'PHI':
@@ -2386,7 +2386,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint(n=index))
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if angleName == 'PHI':
@@ -2459,7 +2459,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             seqId = int(str(ctx.Integer(0)))
             compId = str(ctx.Simple_name(0)).upper()
 
-            if compId not in monDict3.values() and compId not in monDict3:
+            if compId not in MONDICT3.values() and compId not in MONDICT3:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               f"Found unknown residue name {compId!r}.")
                 return
@@ -2467,7 +2467,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if len(compId) >= 3:
                 pass
             else:
-                compId = next(k for k, v in monDict3.items() if v == compId and len(k) == 3)
+                compId = next(k for k, v in MONDICT3.items() if v == compId and len(k) == 3)
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
@@ -2645,7 +2645,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                     self.getCurrentRestraint())
                                 self.f.append(err)
 
-                            if _angleName in emptyValue and atomSelTotal != 4:
+                            if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                                 continue
 
                             fixedAngleName = _angleName
@@ -2674,7 +2674,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                 self.getCurrentRestraint())
                             self.f.append(err)
 
-                        if _angleName in emptyValue and atomSelection != 4:
+                        if _angleName in EMPTY_VALUE and atomSelection != 4:
                             continue
 
                         if isinstance(combinationId, int):
@@ -2728,7 +2728,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             seqId = int(str(ctx.Integer(0)))
             compId = str(ctx.Simple_name(0)).upper()
 
-            if compId not in monDict3.values() and compId not in monDict3:
+            if compId not in MONDICT3.values() and compId not in MONDICT3:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               f"Found unknown residue name {compId!r}.")
                 return
@@ -2736,7 +2736,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if len(compId) >= 3:
                 pass
             else:
-                compId = next(k for k, v in monDict3.items() if v == compId and len(k) == 3)
+                compId = next(k for k, v in MONDICT3.items() if v == compId and len(k) == 3)
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
@@ -2901,7 +2901,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                     self.getCurrentRestraint())
                                 self.f.append(err)
 
-                            if _angleName in emptyValue and atomSelTotal != 4:
+                            if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                                 continue
 
                             fixedAngleName = _angleName
@@ -2930,7 +2930,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                 self.getCurrentRestraint())
                             self.f.append(err)
 
-                        if _angleName in emptyValue and atomSelTotal != 4:
+                        if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                             continue
 
                         if isinstance(combinationId, int):

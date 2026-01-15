@@ -20,29 +20,29 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               SPECTRAL_DIM_TEMPLATE)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.OliviaPKParser import OliviaPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       SPECTRAL_DIM_TEMPLATE,
-                                                       getMaxEffDigits,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                                        roundString)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   SPECTRAL_DIM_TEMPLATE)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.OliviaPKParser import OliviaPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
-    from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           SPECTRAL_DIM_TEMPLATE,
-                                           getMaxEffDigits,
+    from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                            roundString)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by OliviaPKParser.
@@ -894,7 +894,7 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.__memo = None
         else:
             self.__memo = str(ctx.Simple_name())
-            if self.__memo in emptyValue:
+            if self.__memo in EMPTY_VALUE:
                 self.__memo = None
 
     # Exit a parse tree produced by OliviaPKParser#memo.

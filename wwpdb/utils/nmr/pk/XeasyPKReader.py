@@ -18,35 +18,35 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from typing import IO, List, Tuple, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID)
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import coordAssemblyChecker
     from wwpdb.utils.nmr.pk.XeasyPKLexer import XeasyPKLexer
     from wwpdb.utils.nmr.pk.XeasyPKParser import XeasyPKParser
     from wwpdb.utils.nmr.pk.XeasyPKParserListener import XeasyPKParserListener
     from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
-                                                       MAX_ERROR_REPORT,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.io.CifReader import CifReader
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
+    from nmr.NmrDpConstant import (MAX_ERROR_REPORT,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.io.CifReader import CifReader
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
+    from nmr.mr.ParserListenerUtil import coordAssemblyChecker
     from nmr.pk.XeasyPKLexer import XeasyPKLexer
     from nmr.pk.XeasyPKParser import XeasyPKParser
     from nmr.pk.XeasyPKParserListener import XeasyPKParserListener
     from nmr.pk.XeasyPROTReader import XeasyPROTReader
-    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
-                                           MAX_ERROR_REPORT,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
-    from nmr.io.CifReader import CifReader
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 class XeasyPKReader:

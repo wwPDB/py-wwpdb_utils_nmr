@@ -18,21 +18,21 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.CcpnPKParser import CcpnPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.CcpnPKParser import CcpnPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
-    from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by CcpnPKParser.
@@ -155,9 +155,9 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             L1 = str(ctx.Simple_name(0))
             L2 = str(ctx.Simple_name(1))
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
 
             height = self.originalNumberSelection[0] if self.__has_height else None
@@ -166,7 +166,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             details = None
             if self.__has_details:
                 details = self.__noteSelection[0]
-                if details in emptyValue:
+                if details in EMPTY_VALUE:
                     details = None
 
             # fit_method = self.__noteSelection[1]
@@ -326,11 +326,11 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             L2 = str(ctx.Simple_name(1))
             L3 = str(ctx.Simple_name(2))
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
-            if L3 in emptyValue:
+            if L3 in EMPTY_VALUE:
                 L3 = None
 
             height = self.originalNumberSelection[0] if self.__has_height else None
@@ -339,7 +339,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             details = None
             if self.__has_details:
                 details = self.__noteSelection[0]
-                if details in emptyValue:
+                if details in EMPTY_VALUE:
                     details = None
 
             # fit_method = self.__noteSelection[1]
@@ -515,13 +515,13 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             L3 = str(ctx.Simple_name(2))
             L4 = str(ctx.Simple_name(3))
 
-            if L1 in emptyValue:
+            if L1 in EMPTY_VALUE:
                 L1 = None
-            if L2 in emptyValue:
+            if L2 in EMPTY_VALUE:
                 L2 = None
-            if L3 in emptyValue:
+            if L3 in EMPTY_VALUE:
                 L3 = None
-            if L4 in emptyValue:
+            if L4 in EMPTY_VALUE:
                 L4 = None
 
             height = self.originalNumberSelection[0] if self.__has_height else None
@@ -530,7 +530,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             details = None
             if self.__has_details:
                 details = self.__noteSelection[0]
-                if details in emptyValue:
+                if details in EMPTY_VALUE:
                     details = None
 
             # fit_method = self.__noteSelection[1]

@@ -25,6 +25,78 @@ from operator import itemgetter
 from typing import IO, List, Tuple, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
+                                               EMPTY_VALUE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               PSE_PRO_BEGIN_CODE,
+                                               AMINO_PROTON_CODE,
+                                               CARBOXYL_CODE,
+                                               RDC_BB_PAIR_CODE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               MAX_OFFSET_ATTEMPT,
+                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                               PLANE_LIKE_LOWER_LIMIT,
+                                               PLANE_LIKE_UPPER_LIMIT,
+                                               DIST_RESTRAINT_RANGE,
+                                               DIST_RESTRAINT_ERROR,
+                                               ANGLE_RESTRAINT_RANGE,
+                                               ANGLE_RESTRAINT_ERROR,
+                                               RDC_RESTRAINT_RANGE,
+                                               RDC_RESTRAINT_ERROR,
+                                               CSA_RESTRAINT_RANGE,
+                                               CSA_RESTRAINT_ERROR,
+                                               PCS_RESTRAINT_RANGE,
+                                               PCS_RESTRAINT_ERROR,
+                                               CS_RESTRAINT_RANGE,
+                                               CS_RESTRAINT_ERROR,
+                                               DIST_RANGE_MIN,
+                                               DIST_RANGE_MAX,
+                                               DIST_ERROR_MIN,
+                                               DIST_ERROR_MAX,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               ANGLE_RANGE_MIN,
+                                               ANGLE_RANGE_MAX,
+                                               ANGLE_ERROR_MIN,
+                                               ANGLE_ERROR_MAX,
+                                               RDC_RANGE_MIN,
+                                               RDC_RANGE_MAX,
+                                               RDC_ERROR_MIN,
+                                               RDC_ERROR_MAX,
+                                               CSA_RANGE_MIN,
+                                               CSA_RANGE_MAX,
+                                               CSA_ERROR_MIN,
+                                               CSA_ERROR_MAX,
+                                               PCS_RANGE_MIN,
+                                               PCS_RANGE_MAX,
+                                               PCS_ERROR_MIN,
+                                               PCS_ERROR_MAX,
+                                               CS_RANGE_MIN,
+                                               CS_RANGE_MAX,
+                                               CS_ERROR_MIN,
+                                               CS_ERROR_MAX,
+                                               NMR_STAR_LP_KEY_ITEMS,
+                                               CARTN_DATA_ITEMS,
+                                               AUTH_ATOM_CARTN_DATA_ITEMS)
+    from wwpdb.utils.nmr.AlignUtil import (getOneLetterCodeCan,
+                                           updatePolySeqRst,
+                                           updatePolySeqRstFromAtomSelectionSet,
+                                           sortPolySeqRst,
+                                           alignPolymerSequence,
+                                           assignPolymerSequence,
+                                           trimSequenceAlignment,
+                                           retrieveAtomIdentFromMRMap,
+                                           retrieveRemappedSeqId)
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance,
+                                                dist_error,
+                                                angle_target_values,
+                                                dihedral_angle,
+                                                angle_error)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (stripQuot,
@@ -54,56 +126,80 @@ try:
                                                        getStarAtom,
                                                        resetMemberId,
                                                        getDistConstraintType,
-                                                       getPotentialType,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       MAX_OFFSET_ATTEMPT,
-                                                       THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                                       PLANE_LIKE_LOWER_LIMIT,
-                                                       PLANE_LIKE_UPPER_LIMIT,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_ERROR,
-                                                       ANGLE_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_ERROR,
-                                                       RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR,
-                                                       CSA_RESTRAINT_RANGE,
-                                                       CSA_RESTRAINT_ERROR,
-                                                       PCS_RESTRAINT_RANGE,
-                                                       PCS_RESTRAINT_ERROR,
-                                                       CS_RESTRAINT_RANGE,
-                                                       CS_RESTRAINT_ERROR,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       NMR_STAR_LP_KEY_ITEMS,
-                                                       CARTN_DATA_ITEMS,
-                                                       AUTH_ATOM_CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
-                                           monDict3,
-                                           emptyValue,
-                                           protonBeginCode,
-                                           pseProBeginCode,
-                                           aminoProtonCode,
-                                           carboxylCode,
-                                           rdcBbPairCode,
-                                           getOneLetterCodeCan,
-                                           updatePolySeqRst,
-                                           updatePolySeqRstFromAtomSelectionSet,
-                                           sortPolySeqRst,
-                                           alignPolymerSequence,
-                                           assignPolymerSequence,
-                                           trimSequenceAlignment,
-                                           retrieveAtomIdentFromMRMap,
-                                           retrieveRemappedSeqId)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
-                                                distance,
-                                                dist_error,
-                                                angle_target_values,
-                                                dihedral_angle,
-                                                angle_error)
+                                                       getPotentialType)
 except ImportError:
+    from nmr.NmrDpConstant import (LARGE_ASYM_ID,
+                                   EMPTY_VALUE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   PSE_PRO_BEGIN_CODE,
+                                   AMINO_PROTON_CODE,
+                                   CARBOXYL_CODE,
+                                   RDC_BB_PAIR_CODE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   MAX_OFFSET_ATTEMPT,
+                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                   PLANE_LIKE_LOWER_LIMIT,
+                                   PLANE_LIKE_UPPER_LIMIT,
+                                   DIST_RESTRAINT_RANGE,
+                                   DIST_RESTRAINT_ERROR,
+                                   ANGLE_RESTRAINT_RANGE,
+                                   ANGLE_RESTRAINT_ERROR,
+                                   RDC_RESTRAINT_RANGE,
+                                   RDC_RESTRAINT_ERROR,
+                                   CSA_RESTRAINT_RANGE,
+                                   CSA_RESTRAINT_ERROR,
+                                   PCS_RESTRAINT_RANGE,
+                                   PCS_RESTRAINT_ERROR,
+                                   CS_RESTRAINT_RANGE,
+                                   CS_RESTRAINT_ERROR,
+                                   DIST_RANGE_MIN,
+                                   DIST_RANGE_MAX,
+                                   DIST_ERROR_MIN,
+                                   DIST_ERROR_MAX,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   ANGLE_RANGE_MIN,
+                                   ANGLE_RANGE_MAX,
+                                   ANGLE_ERROR_MIN,
+                                   ANGLE_ERROR_MAX,
+                                   RDC_RANGE_MIN,
+                                   RDC_RANGE_MAX,
+                                   RDC_ERROR_MIN,
+                                   RDC_ERROR_MAX,
+                                   CSA_RANGE_MIN,
+                                   CSA_RANGE_MAX,
+                                   CSA_ERROR_MIN,
+                                   CSA_ERROR_MAX,
+                                   PCS_RANGE_MIN,
+                                   PCS_RANGE_MAX,
+                                   PCS_ERROR_MIN,
+                                   PCS_ERROR_MAX,
+                                   CS_RANGE_MIN,
+                                   CS_RANGE_MAX,
+                                   CS_ERROR_MIN,
+                                   CS_ERROR_MAX,
+                                   NMR_STAR_LP_KEY_ITEMS,
+                                   CARTN_DATA_ITEMS,
+                                   AUTH_ATOM_CARTN_DATA_ITEMS)
+    from nmr.AlignUtil import (getOneLetterCodeCan,
+                               updatePolySeqRst,
+                               updatePolySeqRstFromAtomSelectionSet,
+                               sortPolySeqRst,
+                               alignPolymerSequence,
+                               assignPolymerSequence,
+                               trimSequenceAlignment,
+                               retrieveAtomIdentFromMRMap,
+                               retrieveRemappedSeqId)
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance,
+                                    dist_error,
+                                    angle_target_values,
+                                    dihedral_angle,
+                                    angle_error)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.ParserListenerUtil import (stripQuot,
@@ -133,138 +229,38 @@ except ImportError:
                                            getStarAtom,
                                            resetMemberId,
                                            getDistConstraintType,
-                                           getPotentialType,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           MAX_OFFSET_ATTEMPT,
-                                           THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                           PLANE_LIKE_LOWER_LIMIT,
-                                           PLANE_LIKE_UPPER_LIMIT,
-                                           DIST_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_ERROR,
-                                           ANGLE_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_ERROR,
-                                           RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR,
-                                           CSA_RESTRAINT_RANGE,
-                                           CSA_RESTRAINT_ERROR,
-                                           PCS_RESTRAINT_RANGE,
-                                           PCS_RESTRAINT_ERROR,
-                                           CS_RESTRAINT_RANGE,
-                                           CS_RESTRAINT_ERROR,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           NMR_STAR_LP_KEY_ITEMS,
-                                           CARTN_DATA_ITEMS,
-                                           AUTH_ATOM_CARTN_DATA_ITEMS)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (LARGE_ASYM_ID,
-                               monDict3,
-                               emptyValue,
-                               protonBeginCode,
-                               pseProBeginCode,
-                               aminoProtonCode,
-                               carboxylCode,
-                               rdcBbPairCode,
-                               getOneLetterCodeCan,
-                               updatePolySeqRst,
-                               updatePolySeqRstFromAtomSelectionSet,
-                               sortPolySeqRst,
-                               alignPolymerSequence,
-                               assignPolymerSequence,
-                               trimSequenceAlignment,
-                               retrieveAtomIdentFromMRMap,
-                               retrieveRemappedSeqId)
-    from nmr.NmrVrptUtility import (to_np_array,
-                                    distance,
-                                    dist_error,
-                                    angle_target_values,
-                                    dihedral_angle,
-                                    angle_error)
-
-
-DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
-DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
-
-DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
-DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
-
-
-ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
-ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
-
-ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
-ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
-
-
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
-
-RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
-RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
-
-
-CSA_RANGE_MIN = CSA_RESTRAINT_RANGE['min_inclusive']
-CSA_RANGE_MAX = CSA_RESTRAINT_RANGE['max_inclusive']
-
-CSA_ERROR_MIN = CSA_RESTRAINT_ERROR['min_exclusive']
-CSA_ERROR_MAX = CSA_RESTRAINT_ERROR['max_exclusive']
-
-
-PCS_RANGE_MIN = PCS_RESTRAINT_RANGE['min_inclusive']
-PCS_RANGE_MAX = PCS_RESTRAINT_RANGE['max_inclusive']
-
-PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
-PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
-
-
-CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
-CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
-
-CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
-CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
+                                           getPotentialType)
 
 
 # maximum column size of IAT
 MAX_COL_IAT = 8
 
-
 # maximum column size of IGRn
 MAX_COL_IGR = 200
-
 
 # maximum column size of RSTWT
 MAX_COL_RSTWT = 4
 
-
 # column sizes of distance restraint
 COL_DIST = 2
-
 
 # column sizes of angle restraint
 COL_ANG = 3
 
-
 # column sizes of torsional angle restraint
 COL_DIHED = 4
-
 
 # column sizes of plane-point angle restraint
 COL_PLANE_POINT = 5
 
-
 # column sizes of plane-plane angle restraint
 COL_PLANE_PLANE = 8
-
 
 # column sizes of generalized distance restraint (2 coordinate vectors)
 COL_DIST_COORD2 = 4
 
-
 # column sizes of generalized distance restraint (3 coordinate vectors)
 COL_DIST_COORD3 = 6
-
 
 # column sizes of generalized distance restraint (4 coordinate vectors)
 COL_DIST_COORD4 = 8
@@ -1747,7 +1743,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                    self.__getCurrentRestraint())
                                 self.__f.append(err)
 
-                            if angleName in emptyValue and atomSelTotal != 4:
+                            if angleName in EMPTY_VALUE and atomSelTotal != 4:
                                 continue
 
                             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
@@ -2446,7 +2442,7 @@ class AmberMRParserListener(ParseTreeListener):
                            and factor1['auth_comp_id'] != factor2['auth_comp_id']:
                             compId1 = self.translateToStdResNameWrapper(factor1['auth_seq_id'], factor1['auth_comp_id'])
                             compId2 = self.translateToStdResNameWrapper(factor2['auth_seq_id'], factor2['auth_comp_id'])
-                            if compId1 in monDict3 and compId2 in monDict3\
+                            if compId1 in MONDICT3 and compId2 in MONDICT3\
                                and self.__csStat.peptideLike(compId1) and self.__csStat.peptideLike(compId2):
                                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId1, factor1['auth_atom_id'])
                                 if len(_atomId) > 0 and details is None:
@@ -4011,7 +4007,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                    self.__getCurrentRestraint())
                                 self.__f.append(err)
 
-                            if angleName in emptyValue and atomSelTotal != 4:
+                            if angleName in EMPTY_VALUE and atomSelTotal != 4:
                                 continue
 
                             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
@@ -5294,10 +5290,10 @@ class AmberMRParserListener(ParseTreeListener):
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                     asis=not asis)
 
-                if compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
+                if compId in MONDICT3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
                     continue
 
-                if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                if compId not in MONDICT3 and self.__mrAtomNameMapping is not None:
                     origCompId = ps['auth_comp_id'][idx]
                     _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
                                                               origCompId, authAtomId, compId, coordAtomSite)
@@ -5317,7 +5313,7 @@ class AmberMRParserListener(ParseTreeListener):
                     atomSiteAtomId = coordAtomSite['atom_id']
                     if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
                         pass
-                    elif authAtomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                    elif authAtomId[0] not in PSE_PRO_BEGIN_CODE and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
                         atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
 
                 for idx, _atomId in enumerate(atomIds):
@@ -5408,9 +5404,9 @@ class AmberMRParserListener(ParseTreeListener):
                                     _seqId = factor['seq_id']
                                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                     if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
-                                        if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                        if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                             checked = True
-                                    if _atomId[0] in protonBeginCode:
+                                    if _atomId[0] in PROTON_BEGIN_CODE:
                                         bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                         if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -5431,7 +5427,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if enableWarning:
                                                 if seqKey in self.__coordUnobsAtom\
                                                    and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                        or (_atomId[0] in protonBeginCode
+                                                        or (_atomId[0] in PROTON_BEGIN_CODE
                                                             and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                     if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                     self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -5450,7 +5446,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if enableWarning:
                                     if seqKey in self.__coordUnobsAtom\
                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                            or (_atomId[0] in protonBeginCode
+                                            or (_atomId[0] in PROTON_BEGIN_CODE
                                                 and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -5503,10 +5499,10 @@ class AmberMRParserListener(ParseTreeListener):
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
-                        if compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
+                        if compId in MONDICT3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
                             continue
 
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                        if compId not in MONDICT3 and self.__mrAtomNameMapping is not None:
                             origCompId = ps['auth_comp_id'][idx]
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
                                                                       origCompId, authAtomId, compId, coordAtomSite)
@@ -5526,7 +5522,7 @@ class AmberMRParserListener(ParseTreeListener):
                             atomSiteAtomId = coordAtomSite['atom_id']
                             if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
                                 pass
-                            elif authAtomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                            elif authAtomId[0] not in PSE_PRO_BEGIN_CODE and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
                                 atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
 
                         for idx, _atomId in enumerate(atomIds):
@@ -5616,9 +5612,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             checked = False
                                             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
-                                            if _atomId[0] in protonBeginCode:
+                                            if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -5639,7 +5635,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if enableWarning:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode
+                                                                or (_atomId[0] in PROTON_BEGIN_CODE
                                                                     and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -5658,7 +5654,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if enableWarning:
                                             if seqKey in self.__coordUnobsAtom\
                                                and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                    or (_atomId[0] in protonBeginCode
+                                                    or (_atomId[0] in PROTON_BEGIN_CODE
                                                         and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -5794,7 +5790,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if factor['auth_seq_id'] + _offset in _ps['auth_seq_id']:
                                     _refCompId = _ps['comp_id'][_ps['auth_seq_id'].index(factor['auth_seq_id'] + _offset)]
                                     _compId = translateToStdResName(authCompId, _refCompId, self.__ccU)
-                                    if _compId in monDict3 and _compId != _refCompId:
+                                    if _compId in MONDICT3 and _compId != _refCompId:
                                         continue
                                 __chainId = _chainId
                                 __offset = _offset
@@ -5813,7 +5809,7 @@ class AmberMRParserListener(ParseTreeListener):
 
             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons and not globalSeqOffsetDone:
                 __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId,
-                                                           _compId if _compId in monDict3 else None)
+                                                           _compId if _compId in MONDICT3 else None)
                 if __chainId is not None and __chainId != chainId:
                     continue
                 if __seqId is not None:
@@ -5824,15 +5820,15 @@ class AmberMRParserListener(ParseTreeListener):
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
             useDefault_ = (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq
 
-            if _compId in monDict3 and _compId not in ps['comp_id']:
+            if _compId in MONDICT3 and _compId not in ps['comp_id']:
                 keep = False
                 if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
-                    if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
+                    if compId in MONDICT3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
                         keep = True
                         authCompId = compId
-                    elif compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
+                    elif compId not in MONDICT3 and self.__ccU.updateChemCompDict(compId):
                         parentCompId = self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
                         if _compId == parentCompId or getOneLetterCodeCan(_compId) == getOneLetterCodeCan(parentCompId):
                             keep = True
@@ -5847,17 +5843,17 @@ class AmberMRParserListener(ParseTreeListener):
                 origCompId = ps['auth_comp_id'][idx]
                 cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][idx]
 
-                if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                if compId not in MONDICT3 and self.__mrAtomNameMapping is not None:
                     _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
                                                                   origCompId, authAtomId, compId)
 
-                if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
+                if (((authCompId in (compId, origCompId, 'None') or compId not in MONDICT3) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                     asis=((not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel)  # 2mki
                                                                           or enforceAuthSeq or not self.__preferAuthSeq))
 
-                    if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
+                    if authCompId in (compId, origCompId) and compId in MONDICT3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
                         continue
 
                     if coordAtomSite is not None and _authAtomId in coordAtomSite['atom_id']:
@@ -5892,7 +5888,7 @@ class AmberMRParserListener(ParseTreeListener):
                         atomSiteAtomId = coordAtomSite['atom_id']
                         if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
                             pass
-                        elif authAtomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                        elif authAtomId[0] not in PSE_PRO_BEGIN_CODE and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
                             atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
 
                     if 'iat' in factor:
@@ -5983,9 +5979,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             _seqId = factor['seq_id']
                                             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                             if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
-                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
-                                            if _atomId[0] in protonBeginCode:
+                                            if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -6004,7 +6000,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in LARGE_ASYM_ID:
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode
+                                                            or (_atomId[0] in PROTON_BEGIN_CODE
                                                                 and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -6024,7 +6020,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                 _atomIds = []
                                 for _atomId in coordAtomSite['atom_id']:
-                                    if _atomId in aminoProtonCode:
+                                    if _atomId in AMINO_PROTON_CODE:
                                         _atomIds.append(_atomId)
                                 if len(_atomIds) >= len(factor['igr']):
                                     atomIds = _atomIds
@@ -6129,9 +6125,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             _seqId = _factor['seq_id']
                                             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                             if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
-                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
-                                            if _atomId[0] in protonBeginCode:
+                                            if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -6150,7 +6146,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in LARGE_ASYM_ID:
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode
+                                                            or (_atomId[0] in PROTON_BEGIN_CODE
                                                                 and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -6243,7 +6239,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
-                    if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                    if compId not in MONDICT3 and self.__mrAtomNameMapping is not None:
                         _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
                                                                       authCompId, authAtomId, compId, coordAtomSite,
                                                                       ignoreSeqId=True)
@@ -6358,9 +6354,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             checked = False
                                             auth_seq_id_list = list(filter(None, np['auth_seq_id']))
                                             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
-                                            if _atomId[0] in protonBeginCode:
+                                            if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -6376,7 +6372,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         checked = True
 
                                             if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
-                                                if coordAtomSite is not None and _atomId in carboxylCode\
+                                                if coordAtomSite is not None and _atomId in CARBOXYL_CODE\
                                                    and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId,
                                                                            self.__representativeAltId, self.__modelNumName):
                                                     self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -6388,7 +6384,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in LARGE_ASYM_ID:
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode
+                                                            or (_atomId[0] in PROTON_BEGIN_CODE
                                                                 and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -6408,7 +6404,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                 _atomIds = []
                                 for _atomId in coordAtomSite['atom_id']:
-                                    if _atomId in aminoProtonCode:
+                                    if _atomId in AMINO_PROTON_CODE:
                                         _atomIds.append(_atomId)
                                 if len(_atomIds) >= len(factor['igr']):
                                     atomIds = _atomIds
@@ -6506,9 +6502,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             checked = False
                                             auth_seq_id_list = list(filter(None, np['auth_seq_id']))
                                             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                                if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
-                                            if _atomId[0] in protonBeginCode:
+                                            if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -6527,7 +6523,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in LARGE_ASYM_ID:
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode
+                                                            or (_atomId[0] in PROTON_BEGIN_CODE
                                                                 and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -6661,7 +6657,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     if factor['auth_seq_id'] + _offset in _ps['auth_seq_id']:
                                         _refCompId = _ps['comp_id'][_ps['auth_seq_id'].index(factor['auth_seq_id'] + _offset)]
                                         _compId = translateToStdResName(authCompId, _refCompId, self.__ccU)
-                                        if _compId in monDict3 and _compId != _refCompId:
+                                        if _compId in MONDICT3 and _compId != _refCompId:
                                             continue
                                     __chainId = _chainId
                                     __offset = _offset
@@ -6680,7 +6676,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons and not globalSeqOffsetDone:
                     __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId,
-                                                               _compId if _compId in monDict3 else None)
+                                                               _compId if _compId in MONDICT3 else None)
                     if __chainId is not None and __chainId != chainId:
                         continue
                     if __seqId is not None:
@@ -6691,15 +6687,15 @@ class AmberMRParserListener(ParseTreeListener):
                     and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
                 useDefault_ = (useDefault or chainId in self.__concatHeteroLabel) and not enforceAuthSeq
 
-                if _compId in monDict3 and _compId not in ps['comp_id']:
+                if _compId in MONDICT3 and _compId not in ps['comp_id']:
                     keep = False
                     if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
                         idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                         compId = ps['comp_id'][idx]
-                        if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
+                        if compId in MONDICT3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
                             keep = True
                             authCompId = compId
-                        elif compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
+                        elif compId not in MONDICT3 and self.__ccU.updateChemCompDict(compId):
                             parentCompId = self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
                             if _compId == parentCompId or getOneLetterCodeCan(_compId) == getOneLetterCodeCan(parentCompId):
                                 keep = True
@@ -6715,18 +6711,18 @@ class AmberMRParserListener(ParseTreeListener):
                     cifSeqId = None if useDefault_ else ps['seq_id'][idx]
 
                     _authAtomId_ = authAtomId
-                    if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                    if compId not in MONDICT3 and self.__mrAtomNameMapping is not None:
                         _, _, _authAtomId_ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
                                                                         origCompId, authAtomId, compId)
 
-                    if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
+                    if (((authCompId in (compId, origCompId, 'None') or compId not in MONDICT3) and useDefault) or not useDefault)\
                        or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                         asis=((not hasAuthSeqScheme and chainId not in self.__concatHeteroLabel)  # 2mki
                                                                               or enforceAuthSeq or not self.__preferAuthSeq))
 
-                        if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
+                        if authCompId in (compId, origCompId) and compId in MONDICT3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
                             continue
 
                         if coordAtomSite is not None and _authAtomId_ in coordAtomSite['atom_id']:
@@ -6829,9 +6825,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 _seqId = factor['seq_id']
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                                 if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
-                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                    if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
-                                                if _atomId[0] in protonBeginCode:
+                                                if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -6850,7 +6846,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode
+                                                                or (_atomId[0] in PROTON_BEGIN_CODE
                                                                     and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -6870,7 +6866,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                     _atomIds = []
                                     for _atomId in coordAtomSite['atom_id']:
-                                        if _atomId in aminoProtonCode:
+                                        if _atomId in AMINO_PROTON_CODE:
                                             _atomIds.append(_atomId)
                                     if len(_atomIds) >= len(factor['igr']):
                                         atomIds = _atomIds
@@ -6967,9 +6963,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 _seqId = _factor['seq_id']
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                                 if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
-                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                    if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
-                                                if _atomId[0] in protonBeginCode:
+                                                if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -6988,7 +6984,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode
+                                                                or (_atomId[0] in PROTON_BEGIN_CODE
                                                                     and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -7023,7 +7019,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                        if compId not in MONDICT3 and self.__mrAtomNameMapping is not None:
                             origCompId = np['auth_comp_id'][idx]
                             _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
                                                                           origCompId, authAtomId, compId, coordAtomSite)
@@ -7126,9 +7122,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 checked = False
                                                 auth_seq_id_list = list(filter(None, np['auth_seq_id']))
                                                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                    if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
-                                                if _atomId[0] in protonBeginCode:
+                                                if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -7147,7 +7143,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode
+                                                                or (_atomId[0] in PROTON_BEGIN_CODE
                                                                     and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -7167,7 +7163,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                     _atomIds = []
                                     for _atomId in coordAtomSite['atom_id']:
-                                        if _atomId in aminoProtonCode:
+                                        if _atomId in AMINO_PROTON_CODE:
                                             _atomIds.append(_atomId)
                                     if len(_atomIds) >= len(factor['igr']):
                                         atomIds = _atomIds
@@ -7265,9 +7261,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 checked = False
                                                 auth_seq_id_list = list(filter(None, np['auth_seq_id']))
                                                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                                    if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                    if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
-                                                if _atomId[0] in protonBeginCode:
+                                                if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.__ccU.getBondedTo(compId, _atomId)
                                                     if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -7286,7 +7282,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode
+                                                                or (_atomId[0] in PROTON_BEGIN_CODE
                                                                     and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -8429,7 +8425,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         self.atomSelectionSet.append(atomSelection)
 
-                        if atom_id[0] not in protonBeginCode:
+                        if atom_id[0] not in PROTON_BEGIN_CODE:
                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
                                             f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.")
                             continue
@@ -8455,7 +8451,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         self.atomSelectionSet.append(atomSelection)
 
-                        if atom_id[0] not in protonBeginCode:
+                        if atom_id[0] not in PROTON_BEGIN_CODE:
                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
                                             f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.")
                             continue
@@ -8790,7 +8786,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     self.atomSelectionSet.append(atomSelection)
 
-                    if atom_id[0] not in protonBeginCode:
+                    if atom_id[0] not in PROTON_BEGIN_CODE:
                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=n)}"
                                         f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.")
                         continue
@@ -9309,7 +9305,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 self.atomSelectionSet.append(atomSelection)
 
-                if atom_id[0] not in protonBeginCode:
+                if atom_id[0] not in PROTON_BEGIN_CODE:
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                     f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.")
                     continue
@@ -9688,13 +9684,13 @@ class AmberMRParserListener(ParseTreeListener):
                             comp_id_j = atom_sel_j['comp_id']
                             atom_id_j = atom_sel_j['atom_id']
                             if self.__ccU.updateChemCompDict(comp_id_j):  # matches with comp_id in CCD
-                                if atom_id_j[0] in protonBeginCode:
+                                if atom_id_j[0] in PROTON_BEGIN_CODE:
                                     b = next((b for b in self.__ccU.lastBonds
                                               if atom_id_j in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
                                 else:
                                     b = next((b for b in self.__ccU.lastBonds
-                                              if (b[self.__ccU.ccbAtomId1] == atom_id_j and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode)
-                                              or (b[self.__ccU.ccbAtomId2] == atom_id_j and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)), None)
+                                              if (b[self.__ccU.ccbAtomId1] == atom_id_j and b[self.__ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE)
+                                              or (b[self.__ccU.ccbAtomId2] == atom_id_j and b[self.__ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE)), None)
                                 if b is not None:
                                     atom_id_i = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_j else b[self.__ccU.ccbAtomId2]
                                     atom_sel_i = copy.copy(atom_sel_j)
@@ -9729,13 +9725,13 @@ class AmberMRParserListener(ParseTreeListener):
                             comp_id_i = atom_sel_i['comp_id']
                             atom_id_i = atom_sel_i['atom_id']
                             if self.__ccU.updateChemCompDict(comp_id_i):  # matches with comp_id in CCD
-                                if atom_id_i[0] in protonBeginCode:
+                                if atom_id_i[0] in PROTON_BEGIN_CODE:
                                     b = next((b for b in self.__ccU.lastBonds
                                               if atom_id_i in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2])), None)
                                 else:
                                     b = next((b for b in self.__ccU.lastBonds
-                                              if (b[self.__ccU.ccbAtomId1] == atom_id_i and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode)
-                                              or (b[self.__ccU.ccbAtomId2] == atom_id_i and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)), None)
+                                              if (b[self.__ccU.ccbAtomId1] == atom_id_i and b[self.__ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE)
+                                              or (b[self.__ccU.ccbAtomId2] == atom_id_i and b[self.__ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE)), None)
                                 if b is not None:
                                     atom_id_j = b[self.__ccU.ccbAtomId1] if b[self.__ccU.ccbAtomId1] != atom_id_i else b[self.__ccU.ccbAtomId2]
                                     atom_sel_j = copy.copy(atom_sel_i)
@@ -9788,8 +9784,8 @@ class AmberMRParserListener(ParseTreeListener):
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
                         if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                                  or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                                  or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                             pass
@@ -10410,8 +10406,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if abs(seq_id_1 - seq_id_2) == 1:
 
                             if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                                    ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                                     or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                                    ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                                     or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                                      or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                                      or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                                 pass
@@ -10427,8 +10423,8 @@ class AmberMRParserListener(ParseTreeListener):
                         elif abs(seq_id_3 - seq_id_1) == 1:
 
                             if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
-                                    ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in rdcBbPairCode)
-                                     or (seq_id_3 > seq_id_1 and atom_id_3 in rdcBbPairCode and atom_id_1 == 'C')
+                                    ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in RDC_BB_PAIR_CODE)
+                                     or (seq_id_3 > seq_id_1 and atom_id_3 in RDC_BB_PAIR_CODE and atom_id_1 == 'C')
                                      or (seq_id_3 < seq_id_1 and atom_id_3.startswith('HA') and atom_id_1 == 'H')
                                      or (seq_id_3 > seq_id_1 and atom_id_3 == 'H' and atom_id_1.startswith('HA'))):
                                 pass
@@ -10444,8 +10440,8 @@ class AmberMRParserListener(ParseTreeListener):
                         elif abs(seq_id_2 - seq_id_3) == 1:
 
                             if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
-                                    ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in rdcBbPairCode)
-                                     or (seq_id_2 > seq_id_3 and atom_id_2 in rdcBbPairCode and atom_id_3 == 'C')
+                                    ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in RDC_BB_PAIR_CODE)
+                                     or (seq_id_2 > seq_id_3 and atom_id_2 in RDC_BB_PAIR_CODE and atom_id_3 == 'C')
                                      or (seq_id_2 < seq_id_3 and atom_id_2.startswith('HA') and atom_id_3 == 'H')
                                      or (seq_id_2 > seq_id_3 and atom_id_2 == 'H' and atom_id_3.startswith('HA'))):
                                 pass
@@ -10977,7 +10973,7 @@ class AmberMRParserListener(ParseTreeListener):
             iupacName.add(str(ctx.Simple_name_MP(i)).upper())
             i += 1
 
-        if self.__cur_resname_for_mapping in emptyValue:
+        if self.__cur_resname_for_mapping in EMPTY_VALUE:
             return
 
         if self.__cur_resname_for_mapping not in self.unambigAtomNameMapping:
@@ -11015,7 +11011,7 @@ class AmberMRParserListener(ParseTreeListener):
                 i += 1
                 j += 1
 
-            if self.__cur_resname_for_mapping in emptyValue:
+            if self.__cur_resname_for_mapping in EMPTY_VALUE:
                 return
 
             if self.__cur_resname_for_mapping not in self.ambigAtomNameMapping:
@@ -11104,7 +11100,7 @@ class AmberMRParserListener(ParseTreeListener):
             _, _, refCompId = self.getRealChainSeqId(ps, seqId, _compId)
             if refCompId is not None:
                 compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
-                if compId != _compId and compId in monDict3 and _compId in monDict3:
+                if compId != _compId and compId in MONDICT3 and _compId in MONDICT3:
                     continue
                 break
         if refCompId is None and self.__hasNonPolySeq:
@@ -11229,7 +11225,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes:
-                if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
+                if atomId is not None and atomId in AMINO_PROTON_CODE and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
                 self.__f.append("[Atom not found] "
@@ -11280,7 +11276,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if coordAtomSite is not None:
                         if any(True for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                             _atomId = __atomId
-                        elif __atomId[0][0] in protonBeginCode:
+                        elif __atomId[0][0] in PROTON_BEGIN_CODE:
                             __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
                             if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
                                 _atomId = __atomId
@@ -11297,7 +11293,7 @@ class AmberMRParserListener(ParseTreeListener):
                 atomSiteAtomId = coordAtomSite['atom_id']
                 if not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
                     pass
-                elif atomId[0] not in pseProBeginCode and not all(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
+                elif atomId[0] not in PSE_PRO_BEGIN_CODE and not all(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
                     _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
             lenAtomId = len(_atomId)
@@ -11418,14 +11414,14 @@ class AmberMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
-                    if atomId in aminoProtonCode and atomId != 'H1':
+                    if atomId in AMINO_PROTON_CODE and atomId != 'H1':
                         self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                         return
-                    if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
+                    if atomId in AMINO_PROTON_CODE or atomId == 'P' or atomId.startswith('HOP'):
                         checked = True
 
                 if not checked:
-                    if atomId[0] in protonBeginCode:
+                    if atomId[0] in PROTON_BEGIN_CODE:
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -11445,7 +11441,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if chainId in LARGE_ASYM_ID:
                             if seqKey in self.__coordUnobsAtom\
                                and (atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                    or (atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, atomId, exclProton=True)[0]
+                                    or (atomId[0] in PROTON_BEGIN_CODE and self.__ccU.getBondedAtoms(compId, atomId, exclProton=True)[0]
                                         in self.__coordUnobsAtom[seqKey]['atom_ids'])):
                                 self.__f.append("[Coordinate issue] "
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")

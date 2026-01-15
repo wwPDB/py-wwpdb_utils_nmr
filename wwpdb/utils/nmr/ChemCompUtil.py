@@ -31,23 +31,23 @@ from typing import IO, List, Tuple, Optional
 
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               CCD_ID_PAT)
     from wwpdb.utils.config.ConfigInfo import getSiteId
     from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
     from wwpdb.utils.nmr.io.ChemCompReader import (ChemCompReader,
-                                                   ccd_id_pattern,
                                                    is_reserved_lig_code)
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           monDict3,
-                                           protonBeginCode)
     cICc = ConfigInfoAppCc(getSiteId())
     CC_CVS_PATH = cICc.get_site_cc_cvs_path()
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   CCD_ID_PAT)
     from nmr.io.ChemCompReader import (ChemCompReader,
-                                       ccd_id_pattern,
                                        is_reserved_lig_code)
-    from nmr.AlignUtil import (emptyValue,
-                               monDict3,
-                               protonBeginCode)
     CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
 
@@ -190,12 +190,12 @@ class ChemCompUtil:
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
-        if compId in emptyValue:
+        if compId in EMPTY_VALUE:
             return False
 
         compId = compId.upper()
 
-        if not ccd_id_pattern.match(compId) or (not ligand and is_reserved_lig_code(compId)):
+        if not CCD_ID_PAT.match(compId) or (not ligand and is_reserved_lig_code(compId)):
             return False
 
         if compId in self.__failedCompId:
@@ -238,8 +238,8 @@ class ChemCompUtil:
         for carbon in carbons:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 3:
                 continue
             atmList.append(carbon)
@@ -262,8 +262,8 @@ class ChemCompUtil:
         for carbon in carbons:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 3:
                 continue
             atmList.extend(protons)
@@ -285,8 +285,8 @@ class ChemCompUtil:
         for carbon in carbons:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 3:
                 continue
             atmList.append(protons[0])
@@ -308,8 +308,8 @@ class ChemCompUtil:
         for carbon in carbons:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 3:
                 continue
             atmList.extend(protons[1:])
@@ -331,8 +331,8 @@ class ChemCompUtil:
         for corn in corns:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != corn else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == corn and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == corn and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == corn and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == corn and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 2:
                 continue
             atmList.append(protons[0])
@@ -354,8 +354,8 @@ class ChemCompUtil:
         for corn in corns:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != corn else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == corn and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == corn and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == corn and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == corn and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 2:
                 continue
             atmList.extend(protons[1:])
@@ -377,8 +377,8 @@ class ChemCompUtil:
         for n in ns:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != n else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 2:
                 continue
             atmList.append(protons[0])
@@ -400,8 +400,8 @@ class ChemCompUtil:
         for n in ns:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != n else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 2:
                 continue
             atmList.extend(protons[1:])
@@ -423,8 +423,8 @@ class ChemCompUtil:
         for n in ns:
             protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != n else b[self.ccbAtomId2])
                        for b in self.lastBonds
-                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in protonBeginCode)
-                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in protonBeginCode)]
+                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in PROTON_BEGIN_CODE)
+                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in PROTON_BEGIN_CODE)]
             if len(protons) != 1:
                 continue
             acyl_c = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != n else b[self.ccbAtomId2])
@@ -675,7 +675,7 @@ class ChemCompUtil:
         """ Write dictionary for standard residues as pickle file.
         """
 
-        for compId in monDict3:
+        for compId in MONDICT3:
             self.updateChemCompDict(compId)
 
         def write_dict_as_pickle(obj, file_name):

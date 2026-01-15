@@ -19,7 +19,6 @@ __version__ = "1.0.4"
 
 import sys
 import os
-import re
 
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
@@ -27,19 +26,20 @@ from mmcif.io.PdbxReader import PdbxReader
 from typing import IO, List, Optional
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               RESERVED_LIG_CODE,
+                                               CCD_ID_PAT)
 except ImportError:
-    from nmr.AlignUtil import emptyValue
-
-
-ccd_id_pattern = re.compile(r'(\w{1,3}|\w{5})')
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   RESERVED_LIG_CODE,
+                                   CCD_ID_PAT)
 
 
 def is_reserved_lig_code(comp_id: str) -> bool:
     """ Return a given comp_id is reserved for new ligands. (DAOTHER-7204, 7388)
     """
 
-    if comp_id in ('LIG', 'DRG', 'INH'):
+    if comp_id in RESERVED_LIG_CODE:
         return True
 
     if len(comp_id) == 2 and comp_id[0].isdigit() and comp_id[1].isdigit() and comp_id != '00':
@@ -172,12 +172,12 @@ class ChemCompReader:
         """ Set compId and CCD CIF file path based on file tree of CCD.
         """
 
-        if compId in emptyValue:
+        if compId in EMPTY_VALUE:
             return False
 
         self.__compId = compId.upper()
 
-        if not ccd_id_pattern.match(self.__compId) or (not ligand and is_reserved_lig_code(self.__compId)):
+        if not CCD_ID_PAT.match(self.__compId) or (not ligand and is_reserved_lig_code(self.__compId)):
             return False
 
         self.__filePath = os.path.join(self.__topCachePath,
@@ -198,12 +198,12 @@ class ChemCompReader:
 
         try:
 
-            if compId in emptyValue:
+            if compId in EMPTY_VALUE:
                 return False
 
             self.__compId = compId.upper()
 
-            if not ccd_id_pattern.match(self.__compId) or is_reserved_lig_code(self.__compId):
+            if not CCD_ID_PAT.match(self.__compId) or is_reserved_lig_code(self.__compId):
                 return False
 
             self.__filePath = filePath
@@ -357,7 +357,7 @@ class ChemCompReader:
             return []
 
         def apply_type(ctype, default, val):
-            if val in emptyValue:
+            if val in EMPTY_VALUE:
                 return default
             if ctype == 'int':
                 return int(val)

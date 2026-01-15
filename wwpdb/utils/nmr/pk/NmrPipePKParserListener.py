@@ -21,29 +21,29 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               SPECTRAL_DIM_TEMPLATE)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.NmrPipePKParser import NmrPipePKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       SPECTRAL_DIM_TEMPLATE,
-                                                       getMaxEffDigits,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                                        roundString)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   SPECTRAL_DIM_TEMPLATE)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.NmrPipePKParser import NmrPipePKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
-    from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           SPECTRAL_DIM_TEMPLATE,
-                                           getMaxEffDigits,
+    from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                            roundString)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import emptyValue
 
 
 # This class defines a complete listener for a parse tree produced by NmrPipePKParser.
@@ -83,7 +83,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if ctx.Simple_name_DA():
                 cur_spectral_dim['axis_code'] = axis_code = str(ctx.Simple_name_DA())
-                if axis_code not in emptyValue:
+                if axis_code not in EMPTY_VALUE:
                     digits = re.findall(r'\d+', axis_code)
                     for digit in digits:
                         num = int(digit)
@@ -242,7 +242,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
-                if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+                if ass in EMPTY_VALUE or (self.null_string is not None and ass == self.null_string):
                     ass = None
             else:
                 ass = None
@@ -392,7 +392,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
-                if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+                if ass in EMPTY_VALUE or (self.null_string is not None and ass == self.null_string):
                     ass = None
             else:
                 ass = None
@@ -555,7 +555,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
-                if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+                if ass in EMPTY_VALUE or (self.null_string is not None and ass == self.null_string):
                     ass = None
             else:
                 ass = None
@@ -739,14 +739,14 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if len(self.originalNumberSelection) > 3:
                 ass1 = self.originalNumberSelection[3]
-                if ass1 in emptyValue:
+                if ass1 in EMPTY_VALUE:
                     ass1 = None
             else:
                 ass1 = None
 
             if len(self.originalNumberSelection) > 4:
                 ass2 = self.originalNumberSelection[4]
-                if ass2 in emptyValue:
+                if ass2 in EMPTY_VALUE:
                     ass2 = None
             else:
                 ass2 = None
@@ -867,14 +867,14 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if len(self.originalNumberSelection) > 4:
                 ass1 = self.originalNumberSelection[4]
-                if ass1 in emptyValue:
+                if ass1 in EMPTY_VALUE:
                     ass1 = None
             else:
                 ass1 = None
 
             if len(self.originalNumberSelection) > 5:
                 ass2 = self.originalNumberSelection[5]
-                if ass2 in emptyValue:
+                if ass2 in EMPTY_VALUE:
                     ass2 = None
             else:
                 ass2 = None
@@ -1003,14 +1003,14 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if len(self.originalNumberSelection) > 5:
                 ass1 = self.originalNumberSelection[5]
-                if ass1 in emptyValue:
+                if ass1 in EMPTY_VALUE:
                     ass1 = None
             else:
                 ass1 = None
 
             if len(self.originalNumberSelection) > 6:
                 ass2 = self.originalNumberSelection[6]
-                if ass2 in emptyValue:
+                if ass2 in EMPTY_VALUE:
                     ass2 = None
             else:
                 ass2 = None

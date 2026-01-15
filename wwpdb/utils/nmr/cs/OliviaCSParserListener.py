@@ -18,15 +18,17 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.cs.OliviaCSParser import OliviaCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue, monDict3)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.cs.OliviaCSParser import OliviaCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from nmr.AlignUtil import (emptyValue, monDict3)
-    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by OliviaCSParser.
@@ -79,13 +81,13 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.compIdSet = set()
 
             def is_data(array: list) -> bool:
-                return not any(True for d in array if d in emptyValue)
+                return not any(True for d in array if d in EMPTY_VALUE)
 
             for ps in self.polySeq:
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
 
             for compId in self.compIdSet:
-                if compId in monDict3:
+                if compId in MONDICT3:
                     if len(compId) == 3:
                         self.polyPeptide = True
                     elif len(compId) == 2 and compId.startswith('D'):
@@ -163,7 +165,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
                 return
 
             if len(comp_id) == 1 and not self.polyRibonucleotide and not self.polyDeoxyribonucleotide and self.polyPeptide:
-                comp_id = next((_comp_id for _comp_id in self.compIdSet if _comp_id in monDict3 and monDict3[_comp_id] == comp_id), comp_id)
+                comp_id = next((_comp_id for _comp_id in self.compIdSet if _comp_id in MONDICT3 and MONDICT3[_comp_id] == comp_id), comp_id)
 
             self.atomSelectionSets.clear()
 

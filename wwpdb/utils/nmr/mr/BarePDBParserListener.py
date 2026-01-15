@@ -20,31 +20,31 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID)
+    from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
+                                           indexToLetter,
+                                           retrieveAtomIdentFromMRMap)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.BarePDBParser import BarePDBParser
     from wwpdb.utils.nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
-                                           protonBeginCode,
-                                           letterToDigit,
-                                           indexToLetter,
-                                           retrieveAtomIdentFromMRMap)
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import translateToStdResName
 except ImportError:
+    from nmr.NmrDpConstant import (MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
+    from nmr.AlignUtil import (letterToDigit,
+                               indexToLetter,
+                               retrieveAtomIdentFromMRMap)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.BarePDBParser import BarePDBParser
     from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
-    from nmr.mr.ParserListenerUtil import (translateToStdResName,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (monDict3,
-                               protonBeginCode,
-                               letterToDigit,
-                               indexToLetter,
-                               retrieveAtomIdentFromMRMap)
+    from nmr.mr.ParserListenerUtil import translateToStdResName
 
 
 # This class defines a complete listener for a parse tree produced by BarePDBParser.
@@ -138,7 +138,7 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
                 break
             if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                 hasSegCompId = True
-            if not hasSegCompId and compId not in monDict3 and self.mrAtomNameMapping is not None and atomName[0] in protonBeginCode:
+            if not hasSegCompId and compId not in MONDICT3 and self.mrAtomNameMapping is not None and atomName[0] in PROTON_BEGIN_CODE:
                 _, compId, _atomName = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId, compId, atomName)
                 if _atomName != atomName:
                     atomName = _atomName

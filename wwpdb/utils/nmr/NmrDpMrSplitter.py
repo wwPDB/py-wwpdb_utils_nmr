@@ -28,26 +28,49 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,
                                                AR_FILE_PATH_LIST_KEY,
                                                MR_MAX_SPACER_LINES,
-                                               READABLE_FILE_TYPE)
+                                               READABLE_FILE_TYPE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               MAX_DIM_NUM_OF_SPECTRA,
+                                               HALF_SPIN_NUCLEUS,
+                                               MR_FILE_HEADER_PAT,
+                                               DATABLOCK_PAT,
+                                               SF_ANONYMOUS_PAT,
+                                               SAVE_PAT,
+                                               LOOP_PAT,
+                                               STOP_PAT,
+                                               COMMENT_PAT,
+                                               WS_PAT,
+                                               MISMATCHED_INPUT_ERR_MSG,
+                                               EXTRANEOUS_INPUT_ERR_MSG,
+                                               NO_VIABLE_ALT_ERR_MSG,
+                                               EXPECTING_L_PAREN,
+                                               LINEAR_MR_FILE_TYPES,
+                                               RETRIAL_MR_FILE_TYPES,
+                                               PARSABLE_MR_FILE_TYPES,
+                                               ARCHIVAL_MR_FILE_TYPES,
+                                               PARSABLE_PK_FILE_TYPES,
+                                               CS_ERROR_MIN,
+                                               CS_ERROR_MAX,
+                                               CS_RANGE_MIN,
+                                               CS_RANGE_MAX,
+                                               DIST_RANGE_MIN,
+                                               DIST_RANGE_MAX,
+                                               ANGLE_RANGE_MIN,
+                                               ANGLE_RANGE_MAX,
+                                               RDC_RANGE_MIN,
+                                               RDC_RANGE_MAX,
+                                               WEIGHT_RANGE_MIN,
+                                               WEIGHT_RANGE_MAX,
+                                               KNOWN_ANGLE_NAMES,
+                                               CYANA_MR_FILE_EXTS)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
-                                           protonBeginCode,
-                                           getRestraintFormatName,
+    from wwpdb.utils.nmr.AlignUtil import (getRestraintFormatName,
                                            getRestraintFormatNames)
     from wwpdb.utils.nmr.NmrVrptUtility import uncompress_gzip_file
-    from wwpdb.utils.nmr.nef.NEFTranslator import MAX_DIM_NUM_OF_SPECTRA
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        startsWithPdbRecord,
-                                                       getRestraintName,
-                                                       HALF_SPIN_NUCLEUS,
-                                                       CS_RESTRAINT_ERROR,
-                                                       CS_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_RANGE,
-                                                       WEIGHT_RANGE,
-                                                       KNOWN_ANGLE_NAMES,
-                                                       CYANA_MR_FILE_EXTS)
+                                                       getRestraintName)
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
@@ -86,26 +109,49 @@ except ImportError:
     from nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,
                                    AR_FILE_PATH_LIST_KEY,
                                    MR_MAX_SPACER_LINES,
-                                   READABLE_FILE_TYPE)
+                                   READABLE_FILE_TYPE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   MAX_DIM_NUM_OF_SPECTRA,
+                                   HALF_SPIN_NUCLEUS,
+                                   MR_FILE_HEADER_PAT,
+                                   DATABLOCK_PAT,
+                                   SF_ANONYMOUS_PAT,
+                                   SAVE_PAT,
+                                   LOOP_PAT,
+                                   STOP_PAT,
+                                   COMMENT_PAT,
+                                   WS_PAT,
+                                   MISMATCHED_INPUT_ERR_MSG,
+                                   EXTRANEOUS_INPUT_ERR_MSG,
+                                   NO_VIABLE_ALT_ERR_MSG,
+                                   EXPECTING_L_PAREN,
+                                   LINEAR_MR_FILE_TYPES,
+                                   RETRIAL_MR_FILE_TYPES,
+                                   PARSABLE_MR_FILE_TYPES,
+                                   ARCHIVAL_MR_FILE_TYPES,
+                                   PARSABLE_PK_FILE_TYPES,
+                                   CS_ERROR_MIN,
+                                   CS_ERROR_MAX,
+                                   CS_RANGE_MIN,
+                                   CS_RANGE_MAX,
+                                   DIST_RANGE_MIN,
+                                   DIST_RANGE_MAX,
+                                   ANGLE_RANGE_MIN,
+                                   ANGLE_RANGE_MAX,
+                                   RDC_RANGE_MIN,
+                                   RDC_RANGE_MAX,
+                                   WEIGHT_RANGE_MIN,
+                                   WEIGHT_RANGE_MAX,
+                                   KNOWN_ANGLE_NAMES,
+                                   CYANA_MR_FILE_EXTS)
     from nmr.NmrDpRegistry import NmrDpRegistry
-    from nmr.AlignUtil import (monDict3,
-                               protonBeginCode,
-                               getRestraintFormatName,
+    from nmr.AlignUtil import (getRestraintFormatName,
                                getRestraintFormatNames)
     from nmr.NmrVrptUtility import uncompress_gzip_file
-    from nmr.nef.NEFTranslator import MAX_DIM_NUM_OF_SPECTRA
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            startsWithPdbRecord,
-                                           getRestraintName,
-                                           HALF_SPIN_NUCLEUS,
-                                           CS_RESTRAINT_ERROR,
-                                           CS_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_RANGE,
-                                           WEIGHT_RANGE,
-                                           KNOWN_ANGLE_NAMES,
-                                           CYANA_MR_FILE_EXTS)
+                                           getRestraintName)
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AriaMRReader import AriaMRReader
@@ -142,133 +188,53 @@ except ImportError:
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 
 
-CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
-CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
+GROMACS_COMMENT_PAT = re.compile(r'\s*;+[^0-9]?(.*)')
+CYANA_UNSET_INFO_PAT = re.compile(r'\s*unset\s+info.*')
+CYANA_PRINT_PAT = re.compile(r'\s*print\s+\".*\".*')
 
-CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
-CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
+SEL_MR_FILE_HEADER_PAT = re.compile(r'^# Restraints file \((\S+)\): (\S+)\s*')
+SEL_PK_FILE_HEADER_PAT = re.compile(r'^# Peak list file \((\S+)\): (\S+)\s*')
+SEL_CS_FILE_HEADER_PAT = re.compile(r'^# Chemical shifts file \((\S+)\): (\S+)\s*')
 
-DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
-DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
+PDB_FIRST_ATOM_PAT = re.compile(r'ATOM +1 .*')
 
-ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
-ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
+AMBER_A_FORMAT_PAT = re.compile(r'%FORMAT\((\d+)a(\d+)\)\s*')
+AMBER_I_FORMAT_PAT = re.compile(r'%FORMAT\((\d+)I(\d+)\)\s*')
+AMBER_R_PAT = re.compile(r'r(\d+)=(.*)')
 
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
+AMBER_RST_PAT = re.compile(r'\s*&[Rr][Ss][Tt].*')
+AMBER_END_PAT = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
+AMBER_MISSING_END_ERR_MSG = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+AMBER_EXTRA_END_ERR_MSG_PAT = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
+AMBER_EXPECTING_COMMAN_PAT = re.compile("expecting \\{.*Comma.*\\}")  # NOTICE: depends on ANTLR v4 and AmberMRLexer.g4
 
-WEIGHT_RANGE_MIN = WEIGHT_RANGE['min_inclusive']
-WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
+XPLOR_ANY_ASSI_PAT = re.compile(r'[Aa][Ss][Ss][Ii][Gg]?[Nn]?')
+XPLOR_ANY_REST_PAT = re.compile(r'[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?')
+XPLOR_ANY_SET_PAT = re.compile(r'[Ss][Ee][Tt]')
+XPLOR_CLASS_PAT = re.compile(r'\s*[Cc][Ll][Aa][Ss][Ss]?[Ii]?.*')
+XPLOR_ASSI_PAT = re.compile(r'\s*[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
+XPLOR_REST_PAT = re.compile(r'\s*[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?.*')
+XPLOR_SET_PAT = re.compile(r'\s*[Ss][Ee][Tt].*')
+XPLOR_END_PAT = re.compile(r'\s*[Ee][Nn][Dd].*')
+XPLOR_MISSING_END_ERR_MSG = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+XPLOR_EXTRA_END_ERR_MSG_PAT = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
+XPLOR_EXTRA_ASSI_ERR_MSG_PAT = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+XPLOR_EXTRA_SSI_ERR_MSG_PAT = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii]\S*' .*")  # NOTICE: depends on ANTLR v4
+XPLOR_EXTRA_L_PAREN_ERR_MSG_PAT = re.compile(r"extraneous input '\(' expecting .*")  # NOTICE: depends on ANTLR v4
+XPLOR_EXPECTNIG_SYMBOL_PAT = re.compile("expecting \\{.*Symbol_name.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+XPLOR_EXPECTING_EQU_OP_PAT = re.compile("expecting \\{.*Equ_op.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+XPLOR_EXPECTING_SEGID_PAT = re.compile("expecting \\{.*SegIdentifier.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
+GROMACS_TAG_PAT = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
 
-mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
+POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT = re.compile(r'\s*([13])$')
 
-datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
-sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
-save_pattern = re.compile(r'\s*save_\s*')
-loop_pattern = re.compile(r'\s*loop_\s*')
-stop_pattern = re.compile(r'\s*stop_\s*')
-cif_stop_pattern = re.compile(r'#\s*')
-ws_pattern = re.compile(r'\s+')
-comment_pattern = re.compile(r'\s*[#!]+(.*)')
-gromacs_comment_pattern = re.compile(r'\s*;+[^0-9]?(.*)')
-cyana_unset_info_pattern = re.compile(r'\s*unset\s+info.*')
-cyana_print_pattern = re.compile(r'\s*print\s+\".*\".*')
+SPARKY_ASSIGNMENT_PAT = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*')
 
-category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
-tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
-sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
-sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
+DEEP_L_PARENS_PAT = re.compile(r'.*\(\s*\(\s*\(\s*\(.*')
+DEEP_R_PARENS_PAT = re.compile(r'.*\)\s*\)\s*\)\s*\).*')
 
-onedep_model_file_pattern = re.compile(r'^(D_[0-9]{6,10})_model_P1.cif.V\d+$')
-onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
-onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
-mr_file_header_pattern = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
-
-sel_mr_file_header_pattern = re.compile(r'^# Restraints file \((\S+)\): (\S+)\s*')
-sel_pk_file_header_pattern = re.compile(r'^# Peak list file \((\S+)\): (\S+)\s*')
-sel_cs_file_header_pattern = re.compile(r'^# Chemical shifts file \((\S+)\): (\S+)\s*')
-
-pynmrstar_lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
-pdb_first_atom_pattern = re.compile(r'ATOM +1 .*')
-
-amber_a_format_pattern = re.compile(r'%FORMAT\((\d+)a(\d+)\)\s*')
-amber_i_format_pattern = re.compile(r'%FORMAT\((\d+)I(\d+)\)\s*')
-amber_r_pattern = re.compile(r'r(\d+)=(.*)')
-
-amber_rst_pattern = re.compile(r'\s*&[Rr][Ss][Tt].*')
-amber_end_pattern = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
-amber_missing_end_err_msg = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-amber_extra_end_err_msg_pattern = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
-amber_expecting_comma_pattern = re.compile("expecting \\{.*Comma.*\\}")  # NOTICE: depends on ANTLR v4 and AmberMRLexer.g4
-
-xplor_any_assi_pattern = re.compile(r'[Aa][Ss][Ss][Ii][Gg]?[Nn]?')
-xplor_any_rest_pattern = re.compile(r'[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?')
-xplor_any_set_pattern = re.compile(r'[Ss][Ee][Tt]')
-xplor_class_pattern = re.compile(r'\s*[Cc][Ll][Aa][Ss][Ss]?[Ii]?.*')
-xplor_assi_pattern = re.compile(r'\s*[Aa][Ss][Ss][Ii][Gg]?[Nn]?.*')
-xplor_rest_pattern = re.compile(r'\s*[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?.*')
-xplor_set_pattern = re.compile(r'\s*[Ss][Ee][Tt].*')
-xplor_end_pattern = re.compile(r'\s*[Ee][Nn][Dd].*')
-xplor_missing_end_err_msg = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-xplor_extra_end_err_msg_pattern = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
-xplor_extra_assi_err_msg_pattern = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-xplor_extra_ssi_err_msg_pattern = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii]\S*' .*")  # NOTICE: depends on ANTLR v4
-xplor_extra_l_paren_err_msg_pattern = re.compile(r"extraneous input '\(' expecting .*")  # NOTICE: depends on ANTLR v4
-xplor_expecting_symbol_pattern = re.compile("expecting \\{.*Symbol_name.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-xplor_expecting_equ_op_pattern = re.compile("expecting \\{.*Equ_op.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-xplor_expecting_seg_id_pattern = re.compile("expecting \\{.*SegIdentifier.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-
-seq_mismatch_warning_pattern = re.compile(r"\[Sequence mismatch warning\] \[.*\] The residue '(\d+):([0-9A-Z]+)' is not present "
-                                          r"in polymer sequence of chain (\S+) of the coordinates. Please update the sequence in the Macromolecules page.")
-
-inconsistent_restraint_warning_pattern = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s ?.*, (\S+)\] .*$")
-inconsistent_restraint_warning_wo_sf_pattern = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of ([^,]+)s.*\] .*$")
-
-gromacs_tag_pattern = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
-
-mismatched_input_err_msg = "mismatched input"  # NOTICE: depends on ANTLR v4
-extraneous_input_err_msg = "extraneous input"  # NOTICE: depends on ANTLR v4
-no_viable_alt_err_msg = "no viable alternative at input"  # NOTICE: depends on ANTLR v4
-expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
-
-possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
-
-sparky_assignment_pattern = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*')
-
-deep_l_parens_pattern = re.compile(r'.*\(\s*\(\s*\(\s*\(.*')
-deep_r_parens_pattern = re.compile(r'.*\)\s*\)\s*\)\s*\).*')
-
-concat_seq_id_ins_code_pattern = re.compile(r'(\d+)([A-Za-z\.\?]+)')
-
-comment_code_mixed_set = {'#', '!'}
-
-linear_mr_file_types = ('nm-res-bio', 'nm-res-cya', 'nm-res-ros', 'nm-res-syb')
-
-retrial_mr_file_types = ('nm-res-ari', 'nm-res-arx', 'nm-res-bio', 'nm-res-cns',
-                         'nm-res-cha', 'nm-res-cya', 'nm-res-dyn', 'nm-res-isd',
-                         'nm-res-noa', 'nm-res-ros', 'nm-res-sch', 'nm-res-syb',
-                         'nm-res-xpl')
-
-parsable_mr_file_types = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
-                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar',
-                          'nm-res-bio', 'nm-res-cha', 'nm-res-cns', 'nm-res-cya',
-                          'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-noa',
-                          'nm-res-sch', 'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
-
-archival_mr_file_types = ('nmr-star',
-                          'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
-                          'nm-res-amb', 'nm-res-ari', 'nm-res-arx', 'nm-res-bar',
-                          'nm-res-bio', 'nm-res-cha', 'nm-res-cns', 'nm-res-cya',
-                          'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-noa',
-                          'nm-res-oth', 'nm-res-sax', 'nm-res-sch', 'nm-res-syb',
-                          'nm-res-ros', 'nm-res-xpl')
-
-parsable_pk_file_types = ('nm-aux-xea',
-                          'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
-                          'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps',
-                          'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea',
-                          'nm-pea-xwi')
+COMMENT_CODE_MIXED_SET = {'#', '!'}
 
 
 def detect_bom(fPath: str, default: str = 'utf-8') -> str:
@@ -381,15 +347,15 @@ def get_type_of_star_file(fPath: str) -> str:
         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
                 str_syntax = False
-                if datablock_pattern.match(line):
+                if DATABLOCK_PAT.match(line):
                     str_syntax = has_datablock = True
-                elif sf_anonymous_pattern.match(line):
+                elif SF_ANONYMOUS_PAT.match(line):
                     str_syntax = has_anonymous_saveframe = True
-                elif save_pattern.match(line):
+                elif SAVE_PAT.match(line):
                     str_syntax = has_save = True
-                elif loop_pattern.match(line):
+                elif LOOP_PAT.match(line):
                     str_syntax = has_loop = True
-                elif stop_pattern.match(line):
+                elif STOP_PAT.match(line):
                     str_syntax = has_stop = True
 
                 if str_syntax:
@@ -445,7 +411,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
         for idx, line in enumerate(ifh):
 
-            if line.isspace() or comment_pattern.match(line):
+            if line.isspace() or COMMENT_PAT.match(line):
 
                 if 'Number of dimensions' in line or line.startswith('#INAME') or line.startswith('#CYANAFORMAT')\
                    or ('Amplitude' in line or 'Intensity' in line or 'Volume' in line):
@@ -485,7 +451,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                     col = re.split(r'[\s\t]+', line.strip())
                     len_col = len(col)
 
-                    if sparky_assignment_pattern.match(col[0]):
+                    if SPARKY_ASSIGNMENT_PAT.match(col[0]):
 
                         d = len_col - 1
 
@@ -591,7 +557,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                     col = re.split(r'[\s\t]+', line.strip())
                     len_col = len(col)
 
-                    if sparky_assignment_pattern.match(col[0]):
+                    if SPARKY_ASSIGNMENT_PAT.match(col[0]):
 
                         d = len_col - 2
 
@@ -726,7 +692,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
-        if 2 <= len_col - 2 <= 4 and sparky_assignment_pattern.match(col[0]):
+        if 2 <= len_col - 2 <= 4 and SPARKY_ASSIGNMENT_PAT.match(col[0]):
             try:
                 if all('.' in col[idx + 1] and CS_ERROR_MIN < float(col[idx + 1]) < CS_ERROR_MAX for idx in range(len_col - 2)):
                     if abs(float(col[-1])) >= CS_ERROR_MAX:
@@ -737,7 +703,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         return None
 
     if ' w1 ' in header and ' w2' in header\
-       and len_col > 2 and ('Assignment' not in header or sparky_assignment_pattern.match(col[0])):  # Sparky
+       and len_col > 2 and ('Assignment' not in header or SPARKY_ASSIGNMENT_PAT.match(col[0])):  # Sparky
         try:
             float(col[1])
             float(col[2])
@@ -746,7 +712,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             pass
 
     if 'Assignment' in header and 'Shift (ppm)' in header\
-       and len_col > 2 and sparky_assignment_pattern.match(col[0]):  # Sparky
+       and len_col > 2 and SPARKY_ASSIGNMENT_PAT.match(col[0]):  # Sparky
         try:
             float(col[1])
             float(col[2])
@@ -761,7 +727,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
 
     if ('Amplitude' in header or 'Intensity' in header)\
        and 'Assignment' in header:
-        if len_col > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
+        if len_col > 6 and SPARKY_ASSIGNMENT_PAT.match(col[6]):  # VNMR 2D
             try:
                 int(col[0])
                 float(col[1])
@@ -770,7 +736,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
-        elif len_col > 8 and sparky_assignment_pattern.match(col[8]):  # VNMR 3D
+        elif len_col > 8 and SPARKY_ASSIGNMENT_PAT.match(col[8]):  # VNMR 3D
             try:
                 int(col[0])
                 float(col[1])
@@ -780,7 +746,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
-        elif len_col > 10 and sparky_assignment_pattern.match(col[10]):  # VNMR 4D
+        elif len_col > 10 and SPARKY_ASSIGNMENT_PAT.match(col[10]):  # VNMR 4D
             try:
                 int(col[0])
                 float(col[1])
@@ -799,7 +765,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         if 'olume' in header:
             offset += 1
         if 'F3' not in header and 'f3' not in header and 'F4' not in header and 'f4' not in header\
-           and len_col > 3 + offset and sparky_assignment_pattern.match(col[3 + offset]):
+           and len_col > 3 + offset and SPARKY_ASSIGNMENT_PAT.match(col[3 + offset]):
             try:
                 int(col[0])
                 float(col[1])
@@ -809,7 +775,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
                 pass
 
         elif 'F4' not in header and 'f4' not in header\
-                and len_col > 4 + offset and sparky_assignment_pattern.match(col[4 + offset]):
+                and len_col > 4 + offset and SPARKY_ASSIGNMENT_PAT.match(col[4 + offset]):
             try:
                 int(col[0])
                 float(col[1])
@@ -819,7 +785,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
-        elif len_col > 5 + offset and sparky_assignment_pattern.match(col[5 + offset]):
+        elif len_col > 5 + offset and SPARKY_ASSIGNMENT_PAT.match(col[5 + offset]):
             try:
                 int(col[0])
                 float(col[1])
@@ -964,7 +930,7 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
             if len(dim) > 0:
                 return max(dim)
 
-        if len_col > 3 and sparky_assignment_pattern.match(col[0]):
+        if len_col > 3 and SPARKY_ASSIGNMENT_PAT.match(col[0]):
             return col[0].count('-') + 1
 
     if file_format == 'NMRView':
@@ -1016,7 +982,7 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
         if 'Dim 1' in line or 'Y(ppm)' in line or 'Y (ppm)' in line or 'F2' in line:
             return 2
 
-        if len_col > 6 and sparky_assignment_pattern.match(col[6]):
+        if len_col > 6 and SPARKY_ASSIGNMENT_PAT.match(col[6]):
             val = col[6]
             if 2 <= val.count('-') + 1 <= 4:
                 return val.count('-')
@@ -1027,7 +993,7 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
             if 2 <= val.count(',') + 1 <= 4:
                 return val.count(',')
 
-        if len_col > 8 and sparky_assignment_pattern.match(col[8]):
+        if len_col > 8 and SPARKY_ASSIGNMENT_PAT.match(col[8]):
             val = col[8]
             if 2 <= val.count('-') + 1 <= 4:
                 return val.count('-')
@@ -1038,7 +1004,7 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
             if 2 <= val.count(',') + 1 <= 4:
                 return val.count(',')
 
-        if len_col > 10 and sparky_assignment_pattern.match(col[10]):
+        if len_col > 10 and SPARKY_ASSIGNMENT_PAT.match(col[10]):
             val = col[10]
             if 2 <= val.count('-') + 1 <= 4:
                 return val.count('-')
@@ -1175,7 +1141,7 @@ class NmrDpMrSplitter:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
                             has_coordinate = True
-                            if pdb_first_atom_pattern.match(line):
+                            if PDB_FIRST_ATOM_PAT.match(line):
                                 if has_first_atom:
                                     has_ens_coord = True
                                 has_first_atom = True
@@ -1216,7 +1182,7 @@ class NmrDpMrSplitter:
                                     has_rdc_restraint = True
 
                                 elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like or has_hbond_restraint)\
-                                        and names[0][0] in hbond_da_atom_types and names[1][0] in protonBeginCode and names[2][0] in hbond_da_atom_types:
+                                        and names[0][0] in hbond_da_atom_types and names[1][0] in PROTON_BEGIN_CODE and names[2][0] in hbond_da_atom_types:
                                     has_hbond_restraint = True
 
                                 atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
@@ -1343,7 +1309,7 @@ class NmrDpMrSplitter:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
                             has_coordinate = True
-                            if pdb_first_atom_pattern.match(line):
+                            if PDB_FIRST_ATOM_PAT.match(line):
                                 if has_first_atom:
                                     has_ens_coord = True
                                 has_first_atom = True
@@ -1382,7 +1348,7 @@ class NmrDpMrSplitter:
                         if len(_line) == 0 or _line.startswith('#') or _line.startswith('!'):
                             continue
 
-                        s = re.split(',', ws_pattern.sub('', _line).lower())
+                        s = re.split(',', WS_PAT.sub('', _line).lower())
 
                         for t in s:
 
@@ -1456,9 +1422,9 @@ class NmrDpMrSplitter:
                                     except ValueError:
                                         pass
 
-                                elif amber_r_pattern.match(t):
+                                elif AMBER_R_PAT.match(t):
                                     len_values = len(values)
-                                    g = amber_r_pattern.search(t).groups()
+                                    g = AMBER_R_PAT.search(t).groups()
                                     try:
                                         r_idx = int(g[0]) - 1
                                         v = float(g[1])
@@ -1545,8 +1511,8 @@ class NmrDpMrSplitter:
                 atom_like_names_oth = self.__reg.csStat.getAtomLikeNameSet(1)
                 cs_atom_like_names_oth = list(filter(is_half_spin_nuclei, atom_like_names_oth))  # DAOTHER-7491
 
-                one_letter_codes = monDict3.values()
-                three_letter_codes = monDict3.keys()
+                one_letter_codes = MONDICT3.values()
+                three_letter_codes = MONDICT3.keys()
 
                 prohibited_col = set()
 
@@ -1559,7 +1525,7 @@ class NmrDpMrSplitter:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
                             has_coordinate = True
-                            if pdb_first_atom_pattern.match(line):
+                            if PDB_FIRST_ATOM_PAT.match(line):
                                 if has_first_atom:
                                     has_ens_coord = True
                                 has_first_atom = True
@@ -1606,10 +1572,10 @@ class NmrDpMrSplitter:
                                     chk_amb_atom_type_format = True
 
                             elif chk_atom_name_format:
-                                chk_atom_name_format = amber_a_format_pattern.match(line)
+                                chk_atom_name_format = AMBER_A_FORMAT_PAT.match(line)
                                 if chk_atom_name_format:
                                     in_atom_name = True
-                                    g = amber_a_format_pattern.search(line).groups()
+                                    g = AMBER_A_FORMAT_PAT.search(line).groups()
                                     max_cols = int(g[0])
                                     max_char = int(g[1])
                                 else:
@@ -1617,10 +1583,10 @@ class NmrDpMrSplitter:
                                 chk_atom_name_format = False
 
                             elif chk_residue_label_format:
-                                chk_residue_label_format = amber_a_format_pattern.match(line)
+                                chk_residue_label_format = AMBER_A_FORMAT_PAT.match(line)
                                 if chk_residue_label_format:
                                     in_residue_label = True
-                                    g = amber_a_format_pattern.search(line).groups()
+                                    g = AMBER_A_FORMAT_PAT.search(line).groups()
                                     max_cols = int(g[0])
                                     max_char = int(g[1])
                                 else:
@@ -1628,10 +1594,10 @@ class NmrDpMrSplitter:
                                 chk_residue_label_format = False
 
                             elif chk_residue_pointer_format:
-                                chk_residue_pointer_format = amber_i_format_pattern.match(line)
+                                chk_residue_pointer_format = AMBER_I_FORMAT_PAT.match(line)
                                 if chk_residue_pointer_format:
                                     in_residue_pointer = True
-                                    g = amber_i_format_pattern.search(line).groups()
+                                    g = AMBER_I_FORMAT_PAT.search(line).groups()
                                     max_cols = int(g[0])
                                     max_char = int(g[1])
                                 else:
@@ -1639,10 +1605,10 @@ class NmrDpMrSplitter:
                                 chk_residue_pointer_format = False
 
                             elif chk_amb_atom_type_format:
-                                chk_amb_atom_type_format = amber_a_format_pattern.match(line)
+                                chk_amb_atom_type_format = AMBER_A_FORMAT_PAT.match(line)
                                 if chk_amb_atom_type_format:
                                     in_amb_atom_type = True
-                                    g = amber_a_format_pattern.search(line).groups()
+                                    g = AMBER_A_FORMAT_PAT.search(line).groups()
                                     max_cols = int(g[0])
                                     max_char = int(g[1])
                                 else:
@@ -2079,7 +2045,7 @@ class NmrDpMrSplitter:
 
             try:
 
-                if file_type in parsable_mr_file_types and valid:
+                if file_type in PARSABLE_MR_FILE_TYPES and valid:
 
                     sll_pred = False
                     if file_path in self.__reg.sll_pred_holder and file_type in self.__reg.sll_pred_holder[file_path]:
@@ -2093,9 +2059,9 @@ class NmrDpMrSplitter:
                         has_deep_l_pattern = False
                         with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
                             for idx, line in enumerate(ifh):
-                                if deep_l_parens_pattern.match(line):
+                                if DEEP_L_PARENS_PAT.match(line):
                                     has_deep_l_pattern = True
-                                if has_deep_l_pattern and deep_r_parens_pattern.match(line):
+                                if has_deep_l_pattern and DEEP_R_PARENS_PAT.match(line):
                                     self.__reg.sll_pred_forced.append(file_path)
                                     sll_pred = True
                                     break
@@ -2106,7 +2072,7 @@ class NmrDpMrSplitter:
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                    if listener is not None and file_type in retrial_mr_file_types:
+                    if listener is not None and file_type in RETRIAL_MR_FILE_TYPES:
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
@@ -2173,7 +2139,7 @@ class NmrDpMrSplitter:
 
                         for description in messageList:
                             # ignore noeol error for linear mr file formats
-                            if description['line_number'] == total_line and file_type in linear_mr_file_types:
+                            if description['line_number'] == total_line and file_type in LINEAR_MR_FILE_TYPES:
                                 continue
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
@@ -2195,7 +2161,7 @@ class NmrDpMrSplitter:
                                          and _description['line_number'] == description['line_number']
                                          and _description['message'] == description['message']), None)
 
-                            if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
+                            if _err is not None and not COMMENT_PAT.match(_err) and not _err.isspace():
                                 s = '. ' if _err.startswith('Do you') else ':\n'
                                 err = err[:len_err] +\
                                     ("However, the error may be due to missing statement (e.g. 'noe', 'restraint dihedral', 'sanisotropy') "
@@ -2751,10 +2717,10 @@ class NmrDpMrSplitter:
                             in_header = False
                             continue
 
-                        if mr_file_header_pattern.match(line)\
-                           or sel_mr_file_header_pattern.match(line)\
-                           or sel_pk_file_header_pattern.match(line)\
-                           or sel_cs_file_header_pattern.match(line):
+                        if MR_FILE_HEADER_PAT.match(line)\
+                           or SEL_MR_FILE_HEADER_PAT.match(line)\
+                           or SEL_PK_FILE_HEADER_PAT.match(line)\
+                           or SEL_CS_FILE_HEADER_PAT.match(line):
                             has_mr_header = True
 
                         # skip legacy PDB
@@ -2768,15 +2734,15 @@ class NmrDpMrSplitter:
 
                         # check STAR
                         str_syntax = False
-                        if datablock_pattern.match(line):
+                        if DATABLOCK_PAT.match(line):
                             str_syntax = has_datablock = True
-                        elif sf_anonymous_pattern.match(line):
+                        elif SF_ANONYMOUS_PAT.match(line):
                             str_syntax = has_anonymous_saveframe = True
-                        elif save_pattern.match(line):
+                        elif SAVE_PAT.match(line):
                             str_syntax = has_save = True
-                        elif loop_pattern.match(line):
+                        elif LOOP_PAT.match(line):
                             str_syntax = has_loop = True
-                        elif stop_pattern.match(line):
+                        elif STOP_PAT.match(line):
                             str_syntax = has_stop = True
 
                         if str_syntax:
@@ -2987,8 +2953,8 @@ class NmrDpMrSplitter:
         src_basename = mr_core_path = mr_file_path = mr_file_link = None
         mr_part_paths, pk_list_paths = [], []
 
-        settled_file_types = list(parsable_mr_file_types)
-        settled_file_types.extend(list(parsable_pk_file_types))
+        settled_file_types = list(PARSABLE_MR_FILE_TYPES)
+        settled_file_types.extend(list(PARSABLE_PK_FILE_TYPES))
         settled_file_types.append('nm-res-sax')
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
@@ -3007,7 +2973,7 @@ class NmrDpMrSplitter:
 
             if file_type != 'nm-res-mr':
 
-                if file_type in linear_mr_file_types:
+                if file_type in LINEAR_MR_FILE_TYPES:
                     with open(src_file, 'r', errors='ignore') as ifh:
                         for line in ifh:
                             if 'Submitted Coord H atom name' in line:
@@ -3191,10 +3157,10 @@ class NmrDpMrSplitter:
                                 in_header = False
                                 continue
 
-                        if mr_file_header_pattern.match(line)\
-                           or sel_mr_file_header_pattern.match(line)\
-                           or sel_pk_file_header_pattern.match(line)\
-                           or sel_cs_file_header_pattern.match(line):
+                        if MR_FILE_HEADER_PAT.match(line)\
+                           or SEL_MR_FILE_HEADER_PAT.match(line)\
+                           or SEL_PK_FILE_HEADER_PAT.match(line)\
+                           or SEL_CS_FILE_HEADER_PAT.match(line):
                             has_mr_header = True
 
                         # skip legacy PDB
@@ -3208,15 +3174,15 @@ class NmrDpMrSplitter:
 
                         # check STAR
                         str_syntax = False
-                        if datablock_pattern.match(line):
+                        if DATABLOCK_PAT.match(line):
                             str_syntax = has_datablock = True
-                        elif sf_anonymous_pattern.match(line):
+                        elif SF_ANONYMOUS_PAT.match(line):
                             str_syntax = has_anonymous_saveframe = True
-                        elif save_pattern.match(line):
+                        elif SAVE_PAT.match(line):
                             str_syntax = has_save = True
-                        elif loop_pattern.match(line):
+                        elif LOOP_PAT.match(line):
                             str_syntax = has_loop = True
-                        elif stop_pattern.match(line):
+                        elif STOP_PAT.match(line):
                             str_syntax = has_stop = True
 
                         if str_syntax:
@@ -3240,7 +3206,7 @@ class NmrDpMrSplitter:
                             len_col = len(col)
                             if len_col == 10:
                                 original_comp_id = col[5].upper()
-                                if original_comp_id not in monDict3:  # extract non-standard residues
+                                if original_comp_id not in MONDICT3:  # extract non-standard residues
                                     try:
                                         atom_map = {'auth_atom_id': col[1],
                                                     'auth_comp_id': col[2],
@@ -3271,7 +3237,7 @@ class NmrDpMrSplitter:
 
                                     if len(col[4]) > 4 and len_col == 8:
                                         orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[4])
-                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id.upper() not in monDict3:
+                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id.upper() not in MONDICT3:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': auth_comp_id,
                                                         'auth_seq_id': auth_seq_id,
@@ -3281,7 +3247,7 @@ class NmrDpMrSplitter:
                                             if atom_map not in self.__reg.mr_atom_name_mapping:
                                                 self.__reg.mr_atom_name_mapping.append(atom_map)
                                     elif len_col == 9:
-                                        if auth_comp_id is not None and col[4] not in monDict3:
+                                        if auth_comp_id is not None and col[4] not in MONDICT3:
                                             try:
                                                 atom_map = {'auth_atom_id': col[1],
                                                             'auth_comp_id': auth_comp_id,
@@ -3295,7 +3261,7 @@ class NmrDpMrSplitter:
                                                 pass
                                 elif len(col[5]) > 4 and len_col == 9:
                                     orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[5])
-                                    if orig_comp_id is not None and orig_comp_id.upper() not in monDict3:
+                                    if orig_comp_id is not None and orig_comp_id.upper() not in MONDICT3:
                                         try:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': col[2],
@@ -3689,7 +3655,7 @@ class NmrDpMrSplitter:
             has_content = False
             with open(dst_file, 'r') as ifh:
                 for line in ifh:
-                    if line.isspace() or comment_pattern.match(line):
+                    if line.isspace() or COMMENT_PAT.match(line):
                         continue
                     has_content = True
                     break
@@ -3835,7 +3801,7 @@ class NmrDpMrSplitter:
 
                 with open(dst_file, 'r') as ifh:
                     for line in ifh:
-                        if line.isspace() or comment_pattern.match(line):
+                        if line.isspace() or COMMENT_PAT.match(line):
                             continue
                         has_content = True
                         break
@@ -3966,7 +3932,7 @@ class NmrDpMrSplitter:
 
                         _ar = ar.copy()
 
-                        for settled_file_type in parsable_pk_file_types:
+                        for settled_file_type in PARSABLE_PK_FILE_TYPES:
 
                             sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
 
@@ -4149,8 +4115,8 @@ class NmrDpMrSplitter:
                 with open(dst_file, 'r') as ifh:
                     for line in ifh:
 
-                        if mr_file_header_pattern.match(line):
-                            g = mr_file_header_pattern.search(line).groups()
+                        if MR_FILE_HEADER_PAT.match(line):
+                            g = MR_FILE_HEADER_PAT.search(line).groups()
 
                             if ofh is not None:
                                 if len(g[0]) > 0:
@@ -4166,12 +4132,12 @@ class NmrDpMrSplitter:
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             distinct = True
 
-                        elif sel_mr_file_header_pattern.match(line)\
-                                or sel_pk_file_header_pattern.match(line):
-                            if sel_mr_file_header_pattern.match(line):
-                                g = sel_mr_file_header_pattern.search(line).groups()
+                        elif SEL_MR_FILE_HEADER_PAT.match(line)\
+                                or SEL_PK_FILE_HEADER_PAT.match(line):
+                            if SEL_MR_FILE_HEADER_PAT.match(line):
+                                g = SEL_MR_FILE_HEADER_PAT.search(line).groups()
                             else:
-                                g = sel_pk_file_header_pattern.search(line).groups()
+                                g = SEL_PK_FILE_HEADER_PAT.search(line).groups()
 
                             if ofh is not None:
                                 ofh.close()
@@ -4189,8 +4155,8 @@ class NmrDpMrSplitter:
                             ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
                             distinct = True
 
-                        elif sel_cs_file_header_pattern.match(line):
-                            g = sel_cs_file_header_pattern.search(line).groups()
+                        elif SEL_CS_FILE_HEADER_PAT.match(line):
+                            g = SEL_CS_FILE_HEADER_PAT.search(line).groups()
 
                             if ofh is not None:
                                 ofh.close()
@@ -4208,7 +4174,7 @@ class NmrDpMrSplitter:
                             ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
                             distinct = True
 
-                        elif not line.isspace() and not comment_pattern.match(line):
+                        elif not line.isspace() and not COMMENT_PAT.match(line):
                             j += 1
                             if ofh is None:
                                 _dst_file = os.path.join(dir_path, src_basename + '-noname.mr')
@@ -4296,7 +4262,7 @@ class NmrDpMrSplitter:
                         _len_seq = None
                         with open(dst_file, 'r') as ifh:
                             for line in ifh:
-                                if line.isspace() or comment_pattern.match(line):
+                                if line.isspace() or COMMENT_PAT.match(line):
                                     continue
                                 seq = line.upper().split()
                                 len_seq = len(seq)
@@ -4309,14 +4275,14 @@ class NmrDpMrSplitter:
                                     is_seq = False
                                     break
                                 if len_seq == 2:
-                                    if (translateToStdResName(seq[0], ccU=self.__reg.ccU) in monDict3 and seq[1].isdigit())\
-                                       or (translateToStdResName(seq[1], ccU=self.__reg.ccU) in monDict3 and seq[0].isdigit()):
+                                    if (translateToStdResName(seq[0], ccU=self.__reg.ccU) in MONDICT3 and seq[1].isdigit())\
+                                       or (translateToStdResName(seq[1], ccU=self.__reg.ccU) in MONDICT3 and seq[0].isdigit()):
                                         is_seq = True
                                     else:
                                         is_seq = False
                                         break
                                 elif len_seq == 1:
-                                    if seq[0] in monDict3:
+                                    if seq[0] in MONDICT3:
                                         is_seq = True
                                     else:
                                         is_seq = False
@@ -4386,7 +4352,7 @@ class NmrDpMrSplitter:
 
                     _ar = ar.copy()
 
-                    for settled_file_type in parsable_pk_file_types:
+                    for settled_file_type in PARSABLE_PK_FILE_TYPES:
 
                         sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
 
@@ -5143,7 +5109,7 @@ class NmrDpMrSplitter:
                     if 'header' in mr_part_path or 'footer' in mr_part_path:
                         continue
 
-                    for file_type in archival_mr_file_types:
+                    for file_type in ARCHIVAL_MR_FILE_TYPES:
                         if file_type in mr_part_path:
                             file_path = mr_part_path[file_type]
                             if 'original_file_name' in mr_part_path and mr_part_path['original_file_name'] is not None:
@@ -5233,7 +5199,7 @@ class NmrDpMrSplitter:
             if not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
                 return file_type, content_subtype
 
-        for file_type in parsable_pk_file_types:
+        for file_type in PARSABLE_PK_FILE_TYPES:
 
             reader = self.getSimpleFileReader(file_type, False)
 
@@ -5470,7 +5436,7 @@ class NmrDpMrSplitter:
         if self.__reg.mr_debug:
             self.__reg.log.write('DIV-MR\n')
 
-        if file_type not in parsable_mr_file_types:
+        if file_type not in PARSABLE_MR_FILE_TYPES:
             return False
 
         err_message = err_desc['message']
@@ -5482,50 +5448,50 @@ class NmrDpMrSplitter:
         amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
 
-        xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
-        xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
-                                                       or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and xplor_end_pattern.match(err_input)))
+        xplor_missing_end = xplor_file_type and err_message.startswith(XPLOR_MISSING_END_ERR_MSG)
+        xplor_ends_wo_statement = xplor_file_type and (bool(XPLOR_EXTRA_END_ERR_MSG_PAT.match(err_message))
+                                                       or (err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                                                           and XPLOR_END_PAT.match(err_input)))
 
-        xplor_assi_after_or_tag = xplor_file_type and bool(xplor_extra_assi_err_msg_pattern.match(err_message))
-        xplor_assi_incompl_tag = xplor_file_type and bool(xplor_extra_ssi_err_msg_pattern.match(err_message))
+        xplor_assi_after_or_tag = xplor_file_type and bool(XPLOR_EXTRA_ASSI_ERR_MSG_PAT.match(err_message))
+        xplor_assi_incompl_tag = xplor_file_type and bool(XPLOR_EXTRA_SSI_ERR_MSG_PAT.match(err_message))
 
-        xplor_l_paren_wo_assi = xplor_file_type and bool(xplor_extra_l_paren_err_msg_pattern.match(err_message))
-        xplor_00_origin = xplor_file_type and err_message.startswith(no_viable_alt_err_msg) and ' 00' in err_input
+        xplor_l_paren_wo_assi = xplor_file_type and bool(XPLOR_EXTRA_L_PAREN_ERR_MSG_PAT.match(err_message))
+        xplor_00_origin = xplor_file_type and err_message.startswith(NO_VIABLE_ALT_ERR_MSG) and ' 00' in err_input
 
-        amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
-        amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
-                                                       or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and amber_end_pattern.match(err_input)))
+        amber_missing_end = amber_file_type and err_message.startswith(AMBER_MISSING_END_ERR_MSG)
+        amber_ends_wo_statement = amber_file_type and (bool(AMBER_EXTRA_END_ERR_MSG_PAT.match(err_message))
+                                                       or (err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                                                           and AMBER_END_PAT.match(err_input)))
 
         concat_xplor_assi = (xplor_file_type
-                             and (err_message.startswith(mismatched_input_err_msg)
-                                  or err_message.startswith(extraneous_input_err_msg))
-                             and bool(xplor_assi_pattern.search(err_input))
-                             and not bool(xplor_class_pattern.search(err_input)))
+                             and (err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                  or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG))
+                             and bool(XPLOR_ASSI_PAT.search(err_input))
+                             and not bool(XPLOR_CLASS_PAT.search(err_input)))
         concat_xplor_rest = (xplor_file_type
-                             and (err_message.startswith(mismatched_input_err_msg)
-                                  or err_message.startswith(extraneous_input_err_msg))
-                             and bool(xplor_rest_pattern.search(err_input)))
+                             and (err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                  or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG))
+                             and bool(XPLOR_REST_PAT.search(err_input)))
         concat_xplor_set = (xplor_file_type
-                            and (err_message.startswith(mismatched_input_err_msg)
-                                 or err_message.startswith(extraneous_input_err_msg))
-                            and bool(xplor_set_pattern.search(err_input))
+                            and (err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                 or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG))
+                            and bool(XPLOR_SET_PAT.search(err_input))
                             and get_peak_list_format_from_string(err_input) is None)
         concat_amber_rst = (amber_file_type
-                            and (err_message.startswith(mismatched_input_err_msg)
-                                 or err_message.startswith(extraneous_input_err_msg))
-                            and bool(amber_rst_pattern.search(err_input))
-                            and not bool(amber_rst_pattern.match(err_input)))
+                            and (err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                 or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG))
+                            and bool(AMBER_RST_PAT.search(err_input))
+                            and not bool(AMBER_RST_PAT.match(err_input)))
 
-        concat_gromacs_tag = not gromacs_file_type and bool(gromacs_tag_pattern.search(err_input))
+        concat_gromacs_tag = not gromacs_file_type and bool(GROMACS_TAG_PAT.search(err_input))
 
-        concat_comment = (file_type in linear_mr_file_types
-                          and err_message.startswith(no_viable_alt_err_msg)
-                          and bool(comment_pattern.search(err_input)))
+        concat_comment = (file_type in LINEAR_MR_FILE_TYPES
+                          and err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                          and bool(COMMENT_PAT.search(err_input)))
 
-        if concat_xplor_assi and bool(xplor_assi_pattern.match(err_input)):
-            if expecting_l_paren in err_message:
+        if concat_xplor_assi and bool(XPLOR_ASSI_PAT.match(err_input)):
+            if EXPECTING_L_PAREN in err_message:
                 xplor_missing_end = True
                 concat_xplor_assi = False
             if concat_xplor_rest or concat_xplor_set:
@@ -5556,7 +5522,7 @@ class NmrDpMrSplitter:
 
                     concat_input = err_input[err_column_position:]
 
-                    if comment_pattern.match(concat_input) or (len(concat_input) > 0 and concat_input[0].isalnum()):
+                    if COMMENT_PAT.match(concat_input) or (len(concat_input) > 0 and concat_input[0].isalnum()):
 
                         if self.__reg.mr_debug:
                             self.__reg.log.write('DIV-MR-EXIT #1-1\n')
@@ -5636,8 +5602,8 @@ class NmrDpMrSplitter:
                 i += 1
                 if i < err_line_number - MR_MAX_SPACER_LINES:
                     if ws_or_comment:
-                        if line.isspace() or comment_pattern.match(line)\
-                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
+                        if line.isspace() or COMMENT_PAT.match(line)\
+                           or (gromacs_file_type and GROMACS_COMMENT_PAT.match(line)):
                             pass
                         else:
                             ws_or_comment = False
@@ -5646,14 +5612,14 @@ class NmrDpMrSplitter:
                     continue
                 if i < err_line_number:
                     if ws_or_comment:
-                        if line.isspace() or comment_pattern.match(line)\
-                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
+                        if line.isspace() or COMMENT_PAT.match(line)\
+                           or (gromacs_file_type and GROMACS_COMMENT_PAT.match(line)):
                             pass
                         else:
                             ws_or_comment = False
                     interval.append({'line': line,
-                                     'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))
-                                     or (gromacs_file_type and bool(gromacs_comment_pattern.match(line)))})
+                                     'ws_or_comment': line.isspace() or bool(COMMENT_PAT.match(line))
+                                     or (gromacs_file_type and bool(GROMACS_COMMENT_PAT.match(line)))})
                     if i < err_line_number - 1:
                         continue
                     if i == err_line_number - 1:
@@ -5662,7 +5628,7 @@ class NmrDpMrSplitter:
                     _c = interval[-1]['line'][0]
                     for _interval in reversed(interval):
                         c = _interval['line'][0]
-                        if _interval['ws_or_comment'] and {c, _c} != comment_code_mixed_set:
+                        if _interval['ws_or_comment'] and {c, _c} != COMMENT_CODE_MIXED_SET:
                             _c = c
                             _k -= 1
                             continue
@@ -5681,16 +5647,16 @@ class NmrDpMrSplitter:
 
         offset += err_line_number - 1
 
-        xplor_missing_end_before = (xplor_file_type and err_message.startswith(mismatched_input_err_msg)
-                                    and not bool(xplor_expecting_symbol_pattern.search(err_message))  # exclude syntax errors in a factor
-                                    and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
+        xplor_missing_end_before = (xplor_file_type and err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                    and not bool(XPLOR_EXPECTNIG_SYMBOL_PAT.search(err_message))  # exclude syntax errors in a factor
+                                    and prev_input is not None and bool(XPLOR_ASSI_PAT.search(prev_input)))
 
-        xplor_no_syntax_err_in_fac_or_ann = not bool(xplor_expecting_equ_op_pattern.search(err_message))\
-            and not bool(xplor_expecting_seg_id_pattern.search(err_message))\
-            and not err_message.startswith(no_viable_alt_err_msg)
+        xplor_no_syntax_err_in_fac_or_ann = not bool(XPLOR_EXPECTING_EQU_OP_PAT.search(err_message))\
+            and not bool(XPLOR_EXPECTING_SEGID_PAT.search(err_message))\
+            and not err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
 
-        amber_missing_comma_before = (amber_file_type and err_message.startswith(mismatched_input_err_msg)
-                                      and bool(amber_expecting_comma_pattern.search(err_message)))
+        amber_missing_comma_before = (amber_file_type and err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                      and bool(AMBER_EXPECTING_COMMAN_PAT.search(err_message)))
 
         if (xplor_missing_end or xplor_ends_wo_statement
                 or xplor_l_paren_wo_assi or xplor_00_origin
@@ -5706,7 +5672,7 @@ class NmrDpMrSplitter:
 
             if err_line_number - 1 in (i, j + j_offset) and xplor_l_paren_wo_assi:  # this should be before 'concat_comment' routine
 
-                if comment_pattern.match(prev_input) and xplor_assi_pattern.search(prev_input):
+                if COMMENT_PAT.match(prev_input) and XPLOR_ASSI_PAT.search(prev_input):
 
                     k = k2 = 0
 
@@ -5716,7 +5682,7 @@ class NmrDpMrSplitter:
                             if k <= err_line_number:
                                 continue
                             if k < err_line_number + MR_MAX_SPACER_LINES:
-                                if xplor_assi_pattern.match(line) or comment_pattern.match(line) or line.isspace():
+                                if XPLOR_ASSI_PAT.match(line) or COMMENT_PAT.match(line) or line.isspace():
                                     k2 = k
                                     break
                                 continue
@@ -5795,9 +5761,9 @@ class NmrDpMrSplitter:
                 with open(src_path, 'r') as ifh:
                     for line in ifh:
                         if k == offset:
-                            if xplor_ends_wo_statement and xplor_end_pattern.match(line):
+                            if xplor_ends_wo_statement and XPLOR_END_PAT.match(line):
                                 has_end_tag = True
-                            if amber_ends_wo_statement and amber_end_pattern.match(line):
+                            if amber_ends_wo_statement and AMBER_END_PAT.match(line):
                                 has_end_tag = True
                             break
                         k += 1
@@ -5832,23 +5798,23 @@ class NmrDpMrSplitter:
                 code_index = -1
 
                 if concat_xplor_assi:
-                    for m in xplor_any_assi_pattern.finditer(err_input):
+                    for m in XPLOR_ANY_ASSI_PAT.finditer(err_input):
                         code_index = m.start()
                 elif concat_xplor_rest:
-                    for m in xplor_any_rest_pattern.finditer(err_input):
+                    for m in XPLOR_ANY_REST_PAT.finditer(err_input):
                         code_index = m.start()
                 elif concat_xplor_set:
-                    for m in xplor_any_set_pattern.finditer(err_input):
+                    for m in XPLOR_ANY_SET_PAT.finditer(err_input):
                         code_index = m.start()
                 elif concat_amber_rst:
-                    for m in amber_rst_pattern.finditer(err_input):
+                    for m in AMBER_RST_PAT.finditer(err_input):
                         code_index = m.start()
 
                 if code_index != -1:
                     test_line = err_input[0:code_index]
 
                     if len(test_line.strip()) > 0:
-                        typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
+                        typo_for_comment_out = bool(POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT.match(test_line))
 
                         if reader is None:
                             reader = self.getSimpleFileReader(file_type, False)
@@ -5870,7 +5836,7 @@ class NmrDpMrSplitter:
                                     for line in ifh:
                                         if k == offset:
                                             if typo_for_comment_out:
-                                                g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                                g = POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT.search(test_line).groups()
                                                 if g[0] == '1':
                                                     test_line = re.sub(r'1', '!', test_line)
                                                 else:
@@ -5985,7 +5951,7 @@ class NmrDpMrSplitter:
                                 open(cor_src_path, 'w') as ofh:
                             for line in ifh:
                                 if middle:
-                                    if k == err_line_number - 2 and comment_pattern.match(line):
+                                    if k == err_line_number - 2 and COMMENT_PAT.match(line):
                                         ofh.write('end\n')
                                         is_done = True
                                     elif k == err_line_number - 1 and not is_done:
@@ -6090,8 +6056,8 @@ class NmrDpMrSplitter:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if prev_input is not None and (err_message.startswith(no_viable_alt_err_msg) or err_message.startswith(extraneous_input_err_msg)):
-                if comment_pattern.match(prev_input):
+            if prev_input is not None and (err_message.startswith(NO_VIABLE_ALT_ERR_MSG) or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG)):
+                if COMMENT_PAT.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                     err_desc['previous_input'] = prev_input
@@ -6159,11 +6125,11 @@ class NmrDpMrSplitter:
 
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
-                if not has_lexer_error and (prev_input is None or not (prev_input.isspace() or bool(comment_pattern.match(prev_input)))):
+                if not has_lexer_error and (prev_input is None or not (prev_input.isspace() or bool(COMMENT_PAT.match(prev_input)))):
 
-                    if err_column_position == 0 and file_type not in linear_mr_file_types:
+                    if err_column_position == 0 and file_type not in LINEAR_MR_FILE_TYPES:
 
-                        for test_file_type in linear_mr_file_types:
+                        for test_file_type in LINEAR_MR_FILE_TYPES:
                             test_reader = self.getSimpleFileReader(test_file_type, False)
 
                             listener, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
@@ -6192,7 +6158,7 @@ class NmrDpMrSplitter:
 
                                 with open(div_dst_file, 'r') as ifh:
                                     for line in ifh:
-                                        if k > 0 and not (line.isspace() or bool(comment_pattern.match(line))):
+                                        if k > 0 and not (line.isspace() or bool(COMMENT_PAT.match(line))):
                                             listener, parser_err_listener, lexer_err_listener = test_reader.parse(line, None, isFilePath=False)
                                             has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                                             has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
@@ -6245,7 +6211,7 @@ class NmrDpMrSplitter:
                     os.remove(div_try_file)
 
                     if prev_input is not None:
-                        if comment_pattern.match(prev_input):
+                        if COMMENT_PAT.match(prev_input):
                             err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
                         elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                             err_desc['previous_input'] = prev_input
@@ -6270,7 +6236,7 @@ class NmrDpMrSplitter:
             os.remove(div_try_file)
 
             if prev_input is not None:
-                if comment_pattern.match(prev_input):
+                if COMMENT_PAT.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                     err_desc['previous_input'] = prev_input
@@ -6285,7 +6251,7 @@ class NmrDpMrSplitter:
             os.remove(div_try_file)
 
             if prev_input is not None:
-                if comment_pattern.match(prev_input):
+                if COMMENT_PAT.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
                     err_desc['previous_input'] = prev_input
@@ -6295,14 +6261,14 @@ class NmrDpMrSplitter:
 
             return False  # actual issue in the line before the parser error should be handled by manual
 
-        if prev_input is not None and comment_pattern.match(prev_input)\
-           and len_valid_types > 0 and valid_types[0] not in parsable_pk_file_types\
+        if prev_input is not None and COMMENT_PAT.match(prev_input)\
+           and len_valid_types > 0 and valid_types[0] not in PARSABLE_PK_FILE_TYPES\
            and file_type != 'nm-res-cya' and 'nm-res-cya' not in valid_types:
             # CYANA MR grammar is lax to check comment
 
             try:
 
-                g = comment_pattern.search(prev_input).groups()
+                g = COMMENT_PAT.search(prev_input).groups()
 
                 test_line = g[0]
 
@@ -6415,12 +6381,12 @@ class NmrDpMrSplitter:
         amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
 
-        xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
-                                                       or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and xplor_end_pattern.match(err_input)))
-        amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
-                                                       or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and amber_end_pattern.match(err_input)))
+        xplor_ends_wo_statement = xplor_file_type and (bool(XPLOR_EXTRA_END_ERR_MSG_PAT.match(err_message))
+                                                       or (err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                                                           and XPLOR_END_PAT.match(err_input)))
+        amber_ends_wo_statement = amber_file_type and (bool(AMBER_EXTRA_END_ERR_MSG_PAT.match(err_message))
+                                                       or (err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                                                           and AMBER_END_PAT.match(err_input)))
 
         corrected = False
 
@@ -6435,9 +6401,9 @@ class NmrDpMrSplitter:
             with open(src_path, 'r') as ifh:
                 for line in ifh:
                     if k == _offset:
-                        if xplor_ends_wo_statement and xplor_end_pattern.match(line):
+                        if xplor_ends_wo_statement and XPLOR_END_PAT.match(line):
                             has_end_tag = True
-                        if amber_ends_wo_statement and amber_end_pattern.match(line):
+                        if amber_ends_wo_statement and AMBER_END_PAT.match(line):
                             has_end_tag = True
                         break
                     k += 1
@@ -6467,14 +6433,14 @@ class NmrDpMrSplitter:
         if err_column_position > 0 and not err_input[0:err_column_position].isspace():
             test_line = err_input[err_column_position:]
 
-            if comment_pattern.match(test_line):
+            if COMMENT_PAT.match(test_line):
 
                 if self.__reg.mr_debug:
                     self.__reg.log.write('PEEL-MR-EXIT #1\n')
 
                 return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset) | corrected
 
-            for test_file_type in parsable_mr_file_types:
+            for test_file_type in PARSABLE_MR_FILE_TYPES:
 
                 if test_file_type == file_type:
                     continue
@@ -6521,8 +6487,8 @@ class NmrDpMrSplitter:
                         continue
                     if i < err_line_number - 1:
                         interval.append({'line': line,
-                                         'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))
-                                         or (gromacs_file_type and bool(gromacs_comment_pattern.match(line)))})
+                                         'ws_or_comment': line.isspace() or bool(COMMENT_PAT.match(line))
+                                         or (gromacs_file_type and bool(GROMACS_COMMENT_PAT.match(line)))})
                         continue
                     if i == err_line_number - 1:
                         prev_input = line
@@ -6589,15 +6555,15 @@ class NmrDpMrSplitter:
                         continue
                     if i < err_line_number:
                         interval.append({'line': line,
-                                         'ws_or_comment': line.isspace() or bool(comment_pattern.match(line))
-                                         or (gromacs_file_type and bool(gromacs_comment_pattern.match(line)))})
+                                         'ws_or_comment': line.isspace() or bool(COMMENT_PAT.match(line))
+                                         or (gromacs_file_type and bool(GROMACS_COMMENT_PAT.match(line)))})
                         if i < err_line_number - 1:
                             continue
                         _k = len(interval) - 1
                         _c = interval[-1]['line'][0]
                         for _interval in reversed(interval):
                             c = _interval['line'][0]
-                            if _interval['ws_or_comment'] and {c, _c} != comment_code_mixed_set:
+                            if _interval['ws_or_comment'] and {c, _c} != COMMENT_CODE_MIXED_SET:
                                 _c = c
                                 _k -= 1
                                 continue
@@ -6611,8 +6577,8 @@ class NmrDpMrSplitter:
                                 j2 += 1
                         continue
                     if not is_valid:
-                        if line.isspace() or comment_pattern.match(line)\
-                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
+                        if line.isspace() or COMMENT_PAT.match(line)\
+                           or (gromacs_file_type and GROMACS_COMMENT_PAT.match(line)):
                             ofh2.write(line)
                             j2 += 1
                             continue
@@ -6629,12 +6595,12 @@ class NmrDpMrSplitter:
                                 continue
                         is_valid = True
                     if ws_or_comment:
-                        if line.isspace() or comment_pattern.match(line)\
-                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
+                        if line.isspace() or COMMENT_PAT.match(line)\
+                           or (gromacs_file_type and GROMACS_COMMENT_PAT.match(line)):
                             ofh2.write(line)
                             j2 += 1
                             continue
-                    if cyana_unset_info_pattern.match(line) or cyana_print_pattern.match(line):
+                    if CYANA_UNSET_INFO_PAT.match(line) or CYANA_PRINT_PAT.match(line):
                         ofh2.write(line)
                         j2 += 1
                         continue
@@ -6797,7 +6763,7 @@ class NmrDpMrSplitter:
         if self.__reg.mr_debug:
             self.__reg.log.write('DO-DIV-MR\n')
 
-        if file_type not in parsable_mr_file_types:
+        if file_type not in PARSABLE_MR_FILE_TYPES:
             return False
 
         err_message = err_desc['message']
@@ -6816,45 +6782,45 @@ class NmrDpMrSplitter:
         amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
 
-        xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
-        xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
-                                                       or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and xplor_end_pattern.match(err_input)))
+        xplor_missing_end = xplor_file_type and err_message.startswith(XPLOR_MISSING_END_ERR_MSG)
+        xplor_ends_wo_statement = xplor_file_type and (bool(XPLOR_EXTRA_END_ERR_MSG_PAT.match(err_message))
+                                                       or (err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                                                           and XPLOR_END_PAT.match(err_input)))
 
-        xplor_l_paren_wo_assi = xplor_file_type and bool(xplor_extra_l_paren_err_msg_pattern.match(err_message))
-        xplor_00_origin = xplor_file_type and err_message.startswith(no_viable_alt_err_msg) and ' 00' in err_input
+        xplor_l_paren_wo_assi = xplor_file_type and bool(XPLOR_EXTRA_L_PAREN_ERR_MSG_PAT.match(err_message))
+        xplor_00_origin = xplor_file_type and err_message.startswith(NO_VIABLE_ALT_ERR_MSG) and ' 00' in err_input
 
-        amber_missing_end = amber_file_type and err_message.startswith(amber_missing_end_err_msg)
-        amber_ends_wo_statement = amber_file_type and (bool(amber_extra_end_err_msg_pattern.match(err_message))
-                                                       or (err_message.startswith(no_viable_alt_err_msg)
-                                                           and amber_end_pattern.match(err_input)))
+        amber_missing_end = amber_file_type and err_message.startswith(AMBER_MISSING_END_ERR_MSG)
+        amber_ends_wo_statement = amber_file_type and (bool(AMBER_EXTRA_END_ERR_MSG_PAT.match(err_message))
+                                                       or (err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                                                           and AMBER_END_PAT.match(err_input)))
 
         concat_xplor_assi = (xplor_file_type
-                             and (err_message.startswith(mismatched_input_err_msg)
-                                  or err_message.startswith(extraneous_input_err_msg))
-                             and bool(xplor_assi_pattern.search(err_input))
-                             and not bool(xplor_class_pattern.search(err_input)))
+                             and (err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                  or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG))
+                             and bool(XPLOR_ASSI_PAT.search(err_input))
+                             and not bool(XPLOR_CLASS_PAT.search(err_input)))
         concat_xplor_rest = (xplor_file_type
-                             and (err_message.startswith(mismatched_input_err_msg)
-                                  or err_message.startswith(extraneous_input_err_msg))
-                             and bool(xplor_rest_pattern.search(err_input)))
+                             and (err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                  or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG))
+                             and bool(XPLOR_REST_PAT.search(err_input)))
         concat_xplor_set = (xplor_file_type
-                            and (err_message.startswith(mismatched_input_err_msg)
-                                 or err_message.startswith(extraneous_input_err_msg))
-                            and bool(xplor_set_pattern.search(err_input))
+                            and (err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                 or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG))
+                            and bool(XPLOR_SET_PAT.search(err_input))
                             and get_peak_list_format_from_string(err_input) is None)
         concat_amber_rst = (amber_file_type
-                            and (err_message.startswith(mismatched_input_err_msg)
-                                 or err_message.startswith(extraneous_input_err_msg))
-                            and bool(amber_rst_pattern.search(err_input))
-                            and not bool(amber_rst_pattern.match(err_input)))
+                            and (err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                 or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG))
+                            and bool(AMBER_RST_PAT.search(err_input))
+                            and not bool(AMBER_RST_PAT.match(err_input)))
 
-        concat_comment = (file_type in linear_mr_file_types
-                          and err_message.startswith(no_viable_alt_err_msg)
-                          and bool(comment_pattern.search(err_input)))
+        concat_comment = (file_type in LINEAR_MR_FILE_TYPES
+                          and err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                          and bool(COMMENT_PAT.search(err_input)))
 
-        if concat_xplor_assi and bool(xplor_assi_pattern.match(err_input)):
-            if expecting_l_paren in err_message:
+        if concat_xplor_assi and bool(XPLOR_ASSI_PAT.match(err_input)):
+            if EXPECTING_L_PAREN in err_message:
                 xplor_missing_end = True
                 concat_xplor_assi = False
             if concat_xplor_rest or concat_xplor_set:
@@ -6873,8 +6839,8 @@ class NmrDpMrSplitter:
                 i += 1
                 if i < err_line_number:
                     if ws_or_comment:
-                        if line.isspace() or comment_pattern.match(line)\
-                           or (gromacs_file_type and gromacs_comment_pattern.match(line)):
+                        if line.isspace() or COMMENT_PAT.match(line)\
+                           or (gromacs_file_type and GROMACS_COMMENT_PAT.match(line)):
                             pass
                         else:
                             ws_or_comment = False
@@ -6892,16 +6858,16 @@ class NmrDpMrSplitter:
 
         offset += err_line_number - 1
 
-        xplor_missing_end_before = (xplor_file_type and err_message.startswith(mismatched_input_err_msg)
-                                    and not bool(xplor_expecting_symbol_pattern.search(err_message))  # exclude syntax errors in a factor
-                                    and prev_input is not None and bool(xplor_assi_pattern.search(prev_input)))
+        xplor_missing_end_before = (xplor_file_type and err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                    and not bool(XPLOR_EXPECTNIG_SYMBOL_PAT.search(err_message))  # exclude syntax errors in a factor
+                                    and prev_input is not None and bool(XPLOR_ASSI_PAT.search(prev_input)))
 
-        xplor_no_syntax_err_in_fac_or_ann = not bool(xplor_expecting_equ_op_pattern.search(err_message))\
-            and not bool(xplor_expecting_seg_id_pattern.search(err_message))\
-            and not err_message.startswith(no_viable_alt_err_msg)
+        xplor_no_syntax_err_in_fac_or_ann = not bool(XPLOR_EXPECTING_EQU_OP_PAT.search(err_message))\
+            and not bool(XPLOR_EXPECTING_SEGID_PAT.search(err_message))\
+            and not err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
 
-        amber_missing_comma_before = (amber_file_type and err_message.startswith(mismatched_input_err_msg)
-                                      and bool(amber_expecting_comma_pattern.search(err_message)))
+        amber_missing_comma_before = (amber_file_type and err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
+                                      and bool(AMBER_EXPECTING_COMMAN_PAT.search(err_message)))
 
         if (xplor_missing_end or xplor_ends_wo_statement
                 or xplor_l_paren_wo_assi or xplor_00_origin
@@ -6960,9 +6926,9 @@ class NmrDpMrSplitter:
                 with open(src_path, 'r') as ifh:
                     for line in ifh:
                         if k == offset:
-                            if xplor_ends_wo_statement and xplor_end_pattern.match(line):
+                            if xplor_ends_wo_statement and XPLOR_END_PAT.match(line):
                                 has_end_tag = True
-                            if amber_ends_wo_statement and amber_end_pattern.match(line):
+                            if amber_ends_wo_statement and AMBER_END_PAT.match(line):
                                 has_end_tag = True
                             break
                         k += 1
@@ -6997,23 +6963,23 @@ class NmrDpMrSplitter:
                 code_index = -1
 
                 if concat_xplor_assi:
-                    for m in xplor_any_assi_pattern.finditer(err_input):
+                    for m in XPLOR_ANY_ASSI_PAT.finditer(err_input):
                         code_index = m.start()
                 elif concat_xplor_rest:
-                    for m in xplor_any_rest_pattern.finditer(err_input):
+                    for m in XPLOR_ANY_REST_PAT.finditer(err_input):
                         code_index = m.start()
                 elif concat_xplor_set:
-                    for m in xplor_any_set_pattern.finditer(err_input):
+                    for m in XPLOR_ANY_SET_PAT.finditer(err_input):
                         code_index = m.start()
                 elif concat_amber_rst:
-                    for m in amber_rst_pattern.finditer(err_input):
+                    for m in AMBER_RST_PAT.finditer(err_input):
                         code_index = m.start()
 
                 if code_index != -1:
                     test_line = err_input[0:code_index]
 
                     if len(test_line.strip()) > 0:
-                        typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
+                        typo_for_comment_out = bool(POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT.match(test_line))
 
                         if reader is None:
                             reader = self.getSimpleFileReader(file_type, False)
@@ -7035,7 +7001,7 @@ class NmrDpMrSplitter:
                                     for line in ifh:
                                         if k == offset:
                                             if typo_for_comment_out:
-                                                g = possible_typo_for_comment_out_pattern.search(test_line).groups()
+                                                g = POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT.search(test_line).groups()
                                                 if g[0] == '1':
                                                     test_line = re.sub(r'1', '!', test_line)
                                                 else:
@@ -7119,7 +7085,7 @@ class NmrDpMrSplitter:
                                 open(cor_src_path, 'w') as ofh:
                             for line in ifh:
                                 if middle:
-                                    if k == err_line_number - 2 and comment_pattern.match(line):
+                                    if k == err_line_number - 2 and COMMENT_PAT.match(line):
                                         ofh.write('end\n')
                                         is_done = True
                                     elif k == err_line_number - 1 and not is_done:
@@ -7251,9 +7217,9 @@ class NmrDpMrSplitter:
 
         if len_valid_types == 0 and len_possible_types == 0:
 
-            if xplor_file_type and bool(xplor_assi_pattern.search(err_input)):
+            if xplor_file_type and bool(XPLOR_ASSI_PAT.search(err_input)):
 
-                if prev_input is not None and err_message.startswith(extraneous_input_err_msg):
+                if prev_input is not None and err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG):
                     err_desc['previous_input'] = prev_input
 
                 os.remove(div_src_file)
@@ -7340,7 +7306,7 @@ class NmrDpMrSplitter:
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             if listener is not None:
-                if file_type in retrial_mr_file_types:
+                if file_type in RETRIAL_MR_FILE_TYPES:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:

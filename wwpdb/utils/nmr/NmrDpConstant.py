@@ -443,6 +443,7 @@ DNR_PARENT_CODE = ('DC', 'CYT', 'DC5', 'DC3')
 CH_PARENT_CODE = ('C', 'RCYT', 'C5', 'C3')
 
 PDB_ID_PAT = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
+LEGACY_PDB_ID_PAT = re.compile(r'^[0-9][0-9A-Za-z]{3}$')
 
 BMRB_ID_PAT = re.compile(r'^(bmr)?([0-9]+)$')
 

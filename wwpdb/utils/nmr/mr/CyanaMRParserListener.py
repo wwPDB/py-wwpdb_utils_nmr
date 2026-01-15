@@ -21,12 +21,30 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               RDC_BB_PAIR_CODE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_RANGE_MIN,
+                                               DIST_RANGE_MAX,
+                                               DIST_ERROR_MAX,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               KNOWN_ANGLE_NAMES,
+                                               KNOWN_ANGLE_ATOM_NAMES,
+                                               KNOWN_ANGLE_SEQ_OFFSET,
+                                               KNOWN_ANGLE_CARBO_ATOM_NAMES,
+                                               KNOWN_ANGLE_CARBO_SEQ_OFFSET,
+                                               CARTN_DATA_ITEMS)
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
-    from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import (BaseLinearMRParserListener,
-                                                               DIST_RANGE_MIN,
-                                                               DIST_RANGE_MAX,
-                                                               DIST_ERROR_MAX)
+    from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        getRdcCode,
@@ -47,32 +65,32 @@ try:
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        getDstFuncForHBond,
-                                                       getDstFuncForSsBond,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       KNOWN_ANGLE_NAMES,
-                                                       KNOWN_ANGLE_ATOM_NAMES,
-                                                       KNOWN_ANGLE_SEQ_OFFSET,
-                                                       KNOWN_ANGLE_CARBO_ATOM_NAMES,
-                                                       KNOWN_ANGLE_CARBO_SEQ_OFFSET,
-                                                       CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
-                                           emptyValue,
-                                           protonBeginCode,
-                                           rdcBbPairCode)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
-                                                distance)
+                                                       getDstFuncForSsBond)
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   RDC_BB_PAIR_CODE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_RANGE_MIN,
+                                   DIST_RANGE_MAX,
+                                   DIST_ERROR_MAX,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   KNOWN_ANGLE_NAMES,
+                                   KNOWN_ANGLE_ATOM_NAMES,
+                                   KNOWN_ANGLE_SEQ_OFFSET,
+                                   KNOWN_ANGLE_CARBO_ATOM_NAMES,
+                                   KNOWN_ANGLE_CARBO_SEQ_OFFSET,
+                                   CARTN_DATA_ITEMS)
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.CyanaMRParser import CyanaMRParser
-    from nmr.mr.BaseLinearMRParserListener import (BaseLinearMRParserListener,
-                                                   DIST_RANGE_MIN,
-                                                   DIST_RANGE_MAX,
-                                                   DIST_ERROR_MAX)
+    from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            getRdcCode,
@@ -93,25 +111,7 @@ except ImportError:
                                            getDistConstraintType,
                                            getPotentialType,
                                            getDstFuncForHBond,
-                                           getDstFuncForSsBond,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           KNOWN_ANGLE_NAMES,
-                                           KNOWN_ANGLE_ATOM_NAMES,
-                                           KNOWN_ANGLE_SEQ_OFFSET,
-                                           KNOWN_ANGLE_CARBO_ATOM_NAMES,
-                                           KNOWN_ANGLE_CARBO_SEQ_OFFSET,
-                                           CARTN_DATA_ITEMS)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (monDict3,
-                               emptyValue,
-                               protonBeginCode,
-                               rdcBbPairCode)
-    from nmr.NmrVrptUtility import (to_np_array,
-                                    distance)
+                                           getDstFuncForSsBond)
 
 
 # This class defines a complete listener for a parse tree produced by CyanaMRParser.
@@ -519,8 +519,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
                         if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')):
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')):
                             pass
                         else:
                             isRdc = False
@@ -539,7 +539,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
                                or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
                                 isRdc = False
-                            elif comp_id_1 in monDict3\
+                            elif comp_id_1 in MONDICT3\
                                     and self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
                                     and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 pass
@@ -813,8 +813,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                              or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
                              or {atom_id_1, atom_id_2} == {'H', 'N'}
@@ -1140,8 +1140,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
                         if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')):
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')):
                             pass
                         else:
                             isRdc = False
@@ -1160,7 +1160,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
                                or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
                                 isRdc = False
-                            elif comp_id_1 in monDict3\
+                            elif comp_id_1 in MONDICT3\
                                     and self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
                                     and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 pass
@@ -1433,8 +1433,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                              or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
                              or {atom_id_1, atom_id_2} == {'H', 'N'}
@@ -1810,7 +1810,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in monDict3:
+                                elif _compId in MONDICT3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -1864,7 +1864,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                     self.getCurrentRestraint())
                                 self.f.append(err)
 
-                            if _angleName in emptyValue and atomSelTotal != 4:
+                            if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                                 continue
 
                             fixedAngleName = _angleName
@@ -1890,7 +1890,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                 self.getCurrentRestraint())
                             self.f.append(err)
 
-                        if _angleName in emptyValue and atomSelTotal != 4:
+                        if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                             continue
 
                         if isinstance(combinationId, int):
@@ -1993,7 +1993,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in monDict3:
+                                elif _compId in MONDICT3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -2031,7 +2031,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     False)
 
-                            if _angleName in emptyValue:
+                            if _angleName in EMPTY_VALUE:
                                 continue
 
                             fixedAngleName = _angleName
@@ -2243,8 +2243,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass
@@ -4471,7 +4471,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if len(self.col_order_of_dist_w_chain) == 0:
                 for j in range(3):
-                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.ccU) in monDict3:
+                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.ccU) in MONDICT3:
                         compId = translateToStdResName(jVal[j], ccU=self.ccU)
                         if self.ccU.updateChemCompDict(compId):
                             for k in range(3):
@@ -4519,7 +4519,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         break
                             if len(self.col_order_of_dist_w_chain) == 3:
                                 break
-                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.ccU) not in monDict3:
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.ccU) not in MONDICT3:
                         compId = translateToStdResName(jVal[j], ccU=self.ccU)
                         if self.ccU.updateChemCompDict(compId):
                             for k in range(3):
@@ -4566,7 +4566,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if len(self.col_order_of_dist_w_chain) == 3:
                                 break
                 for j in range(3, 6):
-                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.ccU) in monDict3:
+                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.ccU) in MONDICT3:
                         compId = translateToStdResName(jVal[j], ccU=self.ccU)
                         if self.ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
@@ -4614,7 +4614,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         break
                             if len(self.col_order_of_dist_w_chain) == 6:
                                 break
-                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.ccU) not in monDict3:
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.ccU) not in MONDICT3:
                         compId = translateToStdResName(jVal[j], ccU=self.ccU)
                         if self.ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
@@ -4937,8 +4937,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
                         if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')):
+                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                                 or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')):
                             pass
                         else:
                             isRdc = False
@@ -4957,7 +4957,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
                                or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
                                 isRdc = False
-                            elif comp_id_1 in monDict3\
+                            elif comp_id_1 in MONDICT3\
                                     and self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
                                     and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 pass
@@ -5245,8 +5245,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
                     if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                             or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                            ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                             or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                              or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
                              or {atom_id_1, atom_id_2} == {'H', 'N'}
@@ -5664,7 +5664,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in monDict3:
+                                elif _compId in MONDICT3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -5718,7 +5718,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                     self.getCurrentRestraint())
                                 self.f.append(err)
 
-                            if _angleName in emptyValue and atomSelTotal != 4:
+                            if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                                 continue
 
                             fixedAngleName = _angleName
@@ -5744,7 +5744,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                                 self.getCurrentRestraint())
                             self.f.append(err)
 
-                        if _angleName in emptyValue and atomSelTotal != 4:
+                        if _angleName in EMPTY_VALUE and atomSelTotal != 4:
                             continue
 
                         if isinstance(combinationId, int):
@@ -5847,7 +5847,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in monDict3:
+                                elif _compId in MONDICT3:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -5885,7 +5885,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     False)
 
-                            if _angleName in emptyValue:
+                            if _angleName in EMPTY_VALUE:
                                 continue
 
                             fixedAngleName = _angleName
@@ -6055,8 +6055,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                          or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
                          or {atom_id_1, atom_id_2} == {'H', 'N'}):
@@ -6328,7 +6328,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if len(_head) == 1 and len(_tail) == 1:
                     dist = distance(to_np_array(_head[0]), to_np_array(_tail[0]))
-                    if dist > (3.4 if atom_id_1[0] not in protonBeginCode and atom_id_2[0] not in protonBeginCode else 2.4):
+                    if dist > (3.4 if atom_id_1[0] not in PROTON_BEGIN_CODE and atom_id_2[0] not in PROTON_BEGIN_CODE else 2.4):
                         self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                                       f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                       f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
@@ -6495,7 +6495,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if len(_head) == 1 and len(_tail) == 1:
                     dist = distance(to_np_array(_head[0]), to_np_array(_tail[0]))
-                    if dist > (3.5 if atom_id_1[0] not in protonBeginCode and atom_id_2[0] not in protonBeginCode else 2.5):
+                    if dist > (3.5 if atom_id_1[0] not in PROTON_BEGIN_CODE and atom_id_2[0] not in PROTON_BEGIN_CODE else 2.5):
                         self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                                       f"The distance of the covalent bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                       f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
@@ -6822,7 +6822,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             iupacName.add(str(ctx.Simple_name_MP(i)).upper())
             i += 1
 
-        if self.cur_resname_for_mapping in emptyValue:
+        if self.cur_resname_for_mapping in EMPTY_VALUE:
             return
 
         if self.cur_resname_for_mapping not in self.unambigAtomNameMapping:
@@ -6869,7 +6869,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 i += 1
                 j += 1
 
-            if self.cur_resname_for_mapping in emptyValue:
+            if self.cur_resname_for_mapping in EMPTY_VALUE:
                 return
 
             if self.cur_resname_for_mapping not in self.ambigAtomNameMapping:

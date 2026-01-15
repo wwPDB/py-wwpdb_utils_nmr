@@ -24,8 +24,76 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import (CifReader,
-                                              SYMBOLS_ELEMENT)
+    from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
+                                               EMPTY_VALUE,
+                                               ELEMENT_SYMBOLS,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               PSE_PRO_BEGIN_CODE,
+                                               AMINO_PROTON_CODE,
+                                               CARBOXYL_CODE,
+                                               RDC_BB_PAIR_CODE,
+                                               ZINC_ION_CODE,
+                                               CALCIUM_ION_CODE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               MAX_PREF_LABEL_SCHEME_COUNT,
+                                               MAX_ALLOWED_EXT_SEQ,
+                                               UNREAL_AUTH_SEQ_NUM,
+                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                               PLANE_LIKE_LOWER_LIMIT,
+                                               PLANE_LIKE_UPPER_LIMIT,
+                                               DIST_RESTRAINT_RANGE,
+                                               DIST_RESTRAINT_ERROR,
+                                               ANGLE_RESTRAINT_RANGE,
+                                               ANGLE_RESTRAINT_ERROR,
+                                               RDC_RESTRAINT_RANGE,
+                                               RDC_RESTRAINT_ERROR,
+                                               DIST_RANGE_MIN,
+                                               DIST_RANGE_MAX,
+                                               DIST_ERROR_MIN,
+                                               DIST_ERROR_MAX,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               DIST_AMBIG_MED,
+                                               DIST_AMBIG_UNCERT,
+                                               ANGLE_RANGE_MIN,
+                                               ANGLE_RANGE_MAX,
+                                               ANGLE_ERROR_MIN,
+                                               ANGLE_ERROR_MAX,
+                                               RDC_RANGE_MIN,
+                                               RDC_RANGE_MAX,
+                                               RDC_ERROR_MIN,
+                                               RDC_ERROR_MAX,
+                                               CARTN_DATA_ITEMS)
+    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
+                                           updatePolySeqRst,
+                                           updatePolySeqRstAmbig,
+                                           mergePolySeqRstAmbig,
+                                           sortPolySeqRst,
+                                           alignPolymerSequence,
+                                           assignPolymerSequence,
+                                           trimSequenceAlignment,
+                                           retrieveAtomIdentFromMRMap,
+                                           retrieveAtomIdFromMRMap,
+                                           retrieveRemappedSeqId,
+                                           retrieveRemappedSeqIdAndCompId,
+                                           splitPolySeqRstForMultimers,
+                                           splitPolySeqRstForExactNoes,
+                                           retrieveRemappedChainId,
+                                           splitPolySeqRstForNonPoly,
+                                           retrieveRemappedNonPoly,
+                                           splitPolySeqRstForBranched,
+                                           retrieveOriginalSeqIdFromMRMap)
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance,
+                                                dist_error,
+                                                angle_target_values,
+                                                dihedral_angle,
+                                                angle_error)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -57,66 +125,78 @@ try:
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
-                                                       getDstFuncForSsBond,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       MAX_PREF_LABEL_SCHEME_COUNT,
-                                                       MAX_ALLOWED_EXT_SEQ,
-                                                       UNREAL_AUTH_SEQ_NUM,
-                                                       THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                                       PLANE_LIKE_LOWER_LIMIT,
-                                                       PLANE_LIKE_UPPER_LIMIT,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_ERROR,
-                                                       ANGLE_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_ERROR,
-                                                       RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       DIST_AMBIG_MED,
-                                                       DIST_AMBIG_UNCERT,
-                                                       CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
-                                           monDict3,
-                                           emptyValue,
-                                           protonBeginCode,
-                                           pseProBeginCode,
-                                           aminoProtonCode,
-                                           carboxylCode,
-                                           rdcBbPairCode,
-                                           zincIonCode,
-                                           calciumIonCode,
-                                           deepcopy,
-                                           updatePolySeqRst,
-                                           updatePolySeqRstAmbig,
-                                           mergePolySeqRstAmbig,
-                                           sortPolySeqRst,
-                                           alignPolymerSequence,
-                                           assignPolymerSequence,
-                                           trimSequenceAlignment,
-                                           retrieveAtomIdentFromMRMap,
-                                           retrieveAtomIdFromMRMap,
-                                           retrieveRemappedSeqId,
-                                           retrieveRemappedSeqIdAndCompId,
-                                           splitPolySeqRstForMultimers,
-                                           splitPolySeqRstForExactNoes,
-                                           retrieveRemappedChainId,
-                                           splitPolySeqRstForNonPoly,
-                                           retrieveRemappedNonPoly,
-                                           splitPolySeqRstForBranched,
-                                           retrieveOriginalSeqIdFromMRMap)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
-                                                distance,
-                                                dist_error,
-                                                angle_target_values,
-                                                dihedral_angle,
-                                                angle_error)
+                                                       getDstFuncForSsBond)
 except ImportError:
-    from nmr.io.CifReader import (CifReader,
-                                  SYMBOLS_ELEMENT)
+    from nmr.NmrDpConstant import (LARGE_ASYM_ID,
+                                   EMPTY_VALUE,
+                                   ELEMENT_SYMBOLS,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   PSE_PRO_BEGIN_CODE,
+                                   AMINO_PROTON_CODE,
+                                   CARBOXYL_CODE,
+                                   RDC_BB_PAIR_CODE,
+                                   ZINC_ION_CODE,
+                                   CALCIUM_ION_CODE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   MAX_PREF_LABEL_SCHEME_COUNT,
+                                   MAX_ALLOWED_EXT_SEQ,
+                                   UNREAL_AUTH_SEQ_NUM,
+                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                   PLANE_LIKE_LOWER_LIMIT,
+                                   PLANE_LIKE_UPPER_LIMIT,
+                                   DIST_RESTRAINT_RANGE,
+                                   DIST_RESTRAINT_ERROR,
+                                   ANGLE_RESTRAINT_RANGE,
+                                   ANGLE_RESTRAINT_ERROR,
+                                   RDC_RESTRAINT_RANGE,
+                                   RDC_RESTRAINT_ERROR,
+                                   DIST_RANGE_MIN,
+                                   DIST_RANGE_MAX,
+                                   DIST_ERROR_MIN,
+                                   DIST_ERROR_MAX,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   DIST_AMBIG_MED,
+                                   DIST_AMBIG_UNCERT,
+                                   ANGLE_RANGE_MIN,
+                                   ANGLE_RANGE_MAX,
+                                   ANGLE_ERROR_MIN,
+                                   ANGLE_ERROR_MAX,
+                                   RDC_RANGE_MIN,
+                                   RDC_RANGE_MAX,
+                                   RDC_ERROR_MIN,
+                                   RDC_ERROR_MAX,
+                                   CARTN_DATA_ITEMS)
+    from nmr.AlignUtil import (deepcopy,
+                               updatePolySeqRst,
+                               updatePolySeqRstAmbig,
+                               mergePolySeqRstAmbig,
+                               sortPolySeqRst,
+                               alignPolymerSequence,
+                               assignPolymerSequence,
+                               trimSequenceAlignment,
+                               retrieveAtomIdentFromMRMap,
+                               retrieveAtomIdFromMRMap,
+                               retrieveRemappedSeqId,
+                               retrieveRemappedSeqIdAndCompId,
+                               splitPolySeqRstForMultimers,
+                               splitPolySeqRstForExactNoes,
+                               retrieveRemappedChainId,
+                               splitPolySeqRstForNonPoly,
+                               retrieveRemappedNonPoly,
+                               splitPolySeqRstForBranched,
+                               retrieveOriginalSeqIdFromMRMap)
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance,
+                                    dist_error,
+                                    angle_target_values,
+                                    dihedral_angle,
+                                    angle_error)
+    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.io.CifReader import CifReader
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -148,84 +228,7 @@ except ImportError:
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
-                                           getDstFuncForSsBond,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           MAX_PREF_LABEL_SCHEME_COUNT,
-                                           MAX_ALLOWED_EXT_SEQ,
-                                           UNREAL_AUTH_SEQ_NUM,
-                                           THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                           PLANE_LIKE_LOWER_LIMIT,
-                                           PLANE_LIKE_UPPER_LIMIT,
-                                           DIST_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_ERROR,
-                                           ANGLE_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_ERROR,
-                                           RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           DIST_AMBIG_MED,
-                                           DIST_AMBIG_UNCERT,
-                                           CARTN_DATA_ITEMS)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (LARGE_ASYM_ID,
-                               monDict3,
-                               emptyValue,
-                               protonBeginCode,
-                               pseProBeginCode,
-                               aminoProtonCode,
-                               carboxylCode,
-                               rdcBbPairCode,
-                               zincIonCode,
-                               calciumIonCode,
-                               deepcopy,
-                               updatePolySeqRst,
-                               updatePolySeqRstAmbig,
-                               mergePolySeqRstAmbig,
-                               sortPolySeqRst,
-                               alignPolymerSequence,
-                               assignPolymerSequence,
-                               trimSequenceAlignment,
-                               retrieveAtomIdentFromMRMap,
-                               retrieveAtomIdFromMRMap,
-                               retrieveRemappedSeqId,
-                               retrieveRemappedSeqIdAndCompId,
-                               splitPolySeqRstForMultimers,
-                               splitPolySeqRstForExactNoes,
-                               retrieveRemappedChainId,
-                               splitPolySeqRstForNonPoly,
-                               retrieveRemappedNonPoly,
-                               splitPolySeqRstForBranched,
-                               retrieveOriginalSeqIdFromMRMap)
-    from nmr.NmrVrptUtility import (to_np_array,
-                                    distance,
-                                    dist_error,
-                                    angle_target_values,
-                                    dihedral_angle,
-                                    angle_error)
-
-
-DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
-DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
-
-DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
-DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
-
-
-ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
-ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
-
-ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
-ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
-
-
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
-
-RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
-RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
+                                           getDstFuncForSsBond)
 
 
 # This class defines a complete listener for a parse tree produced by RosettaMRParser.
@@ -1662,7 +1665,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
                             continue
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
+                if atomId is not None and cifCompId not in MONDICT3 and self.__mrAtomNameMapping:
                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                     origCompId = ps['auth_comp_id'][idx]
                     atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1692,7 +1695,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                                if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
+                                if atomId is not None and cifCompId not in MONDICT3 and self.__mrAtomNameMapping:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCheck=self.__hasCoord)
                                     origCompId = ps['auth_comp_id'][idx]
                                     atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1751,7 +1754,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                    if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
+                    if atomId is not None and cifCompId not in MONDICT3 and self.__mrAtomNameMapping:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                         origCompId = np['auth_comp_id'][idx]
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1776,7 +1779,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                        if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
+                        if atomId is not None and cifCompId not in MONDICT3 and self.__mrAtomNameMapping:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCheck=self.__hasCoord)
                             origCompId = ps['auth_comp_id'][idx]
                             atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1796,7 +1799,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             idx = np['seq_id'].index(seqId)
                             cifCompId = np['comp_id'][idx]
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
-                            if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
+                            if atomId is not None and cifCompId not in MONDICT3 and self.__mrAtomNameMapping:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCheck=self.__hasCoord)
                                 origCompId = np['auth_comp_id'][idx]
                                 atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1826,7 +1829,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         updatePolySeqRst(self.__polySeqRst, chainId, seqId, cifCompId)
-                        if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
+                        if atomId is not None and cifCompId not in MONDICT3 and self.__mrAtomNameMapping:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                             origCompId = ps['auth_comp_id'][idx]
                             atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1839,7 +1842,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0:
             if atomId is not None:
                 if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
-                    if atomId in aminoProtonCode and atomId != 'H1':
+                    if atomId in AMINO_PROTON_CODE and atomId != 'H1':
                         return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1', fixedChainId)
                 if self.__monoPolymer and seqId < 1:
                     refChainId = self.__polySeq[0]['auth_chain_id']
@@ -2104,7 +2107,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0:
             if atomId is not None:
                 if seqId == 1 or (fixedChainId, seqId - 1) in self.__coordUnobsRes:
-                    if atomId in aminoProtonCode and atomId != 'H1':
+                    if atomId in AMINO_PROTON_CODE and atomId != 'H1':
                         return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1')
                 if (('-' in atomId and ':' in atomId) or '.' in atomId):
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -2155,7 +2158,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=self.__preferAuthSeq)
 
-            if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
+            if self.__mrAtomNameMapping is not None and cifCompId not in MONDICT3:
                 _atomId_ = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != _atomId_ and coordAtomSite is not None\
                    and (_atomId_ in coordAtomSite['atom_id'] or (_atomId_.endswith('%') and _atomId_[:-1] + '2' in coordAtomSite['atom_id'])):
@@ -2175,7 +2178,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     if key in self.__cachedDictForStarAtom:
                         _atomId = deepcopy(self.__cachedDictForStarAtom[key])
                     else:
-                        pattern = re.compile(fr'H{atomId_[1:]}\d+') if cifCompId in monDict3 else re.compile(fr'H{atomId_[1:]}\S?$')
+                        pattern = re.compile(fr'H{atomId_[1:]}\d+') if cifCompId in MONDICT3 else re.compile(fr'H{atomId_[1:]}\S?$')
                         atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
                         if len(atomIdList) > 1:
                             hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
@@ -2201,7 +2204,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     if details is not None:
                         if atomId_ != authAtomId:
                             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, authAtomId, leave_unmatched=True)
-                        elif len(atomId_) > 1 and not atomId_[-1].isalpha() and (atomId_[0] in pseProBeginCode or atomId_[0] in ('C', 'N', 'P', 'F')):
+                        elif len(atomId_) > 1 and not atomId_[-1].isalpha() and (atomId_[0] in PSE_PRO_BEGIN_CODE or atomId_[0] in ('C', 'N', 'P', 'F')):
                             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId_[:-1], leave_unmatched=True)
                             if atomId_[-1].isdigit() and int(atomId_[-1]) <= len(_atomId):
                                 _atomId = [_atomId[int(atomId_[-1]) - 1]]
@@ -2215,7 +2218,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if coordAtomSite is not None:
                             if any(True for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
                                 _atomId = __atomId__
-                            elif __atomId__[0][0] in protonBeginCode:
+                            elif __atomId__[0][0] in PROTON_BEGIN_CODE:
                                 __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
                                 if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
                                     _atomId = __atomId__
@@ -2243,20 +2246,20 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 if coordAtomSite is not None:
                     atomSiteAtomId = coordAtomSite['atom_id']
-                    if len(_atomId) == 0 and authAtomId in zincIonCode and 'ZN' in atomSiteAtomId:
+                    if len(_atomId) == 0 and authAtomId in ZINC_ION_CODE and 'ZN' in atomSiteAtomId:
                         atomId_ = 'ZN'
                         _atomId = [atomId_]
-                    elif len(_atomId) == 0 and authAtomId in calciumIonCode and 'CA' in atomSiteAtomId:
+                    elif len(_atomId) == 0 and authAtomId in CALCIUM_ION_CODE and 'CA' in atomSiteAtomId:
                         atomId_ = 'CA'
                         _atomId = [atomId_]
                     elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
                         pass
-                    elif atomId_[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
+                    elif atomId_[0] not in PSE_PRO_BEGIN_CODE and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
                         _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
                 lenAtomId = len(_atomId)
 
-                if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:
+                if lenAtomId == 0 and not isPolySeq and cifCompId in ELEMENT_SYMBOLS:
                     _atomId = [cifCompId]
                     lenAtomId = 1
 
@@ -2275,7 +2278,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if key in self.__cachedDictForStarAtom:
                     _atomId = deepcopy(self.__cachedDictForStarAtom[key])
                 else:
-                    pattern = re.compile(fr'H{atomId[1:]}\d+') if cifCompId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
+                    pattern = re.compile(fr'H{atomId[1:]}\d+') if cifCompId in MONDICT3 else re.compile(fr'H{atomId[1:]}\S?$')
                     atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
                     if len(atomIdList) > 1:
                         hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
@@ -2312,7 +2315,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     if coordAtomSite is not None:
                         if any(True for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
                             _atomId = __atomId__
-                        elif __atomId__[0][0] in protonBeginCode:
+                        elif __atomId__[0][0] in PROTON_BEGIN_CODE:
                             __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
                             if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
                                 _atomId = __atomId__
@@ -2344,15 +2347,15 @@ class RosettaMRParserListener(ParseTreeListener):
 
             if coordAtomSite is not None:
                 atomSiteAtomId = coordAtomSite['atom_id']
-                if len(_atomId) == 0 and authAtomId in zincIonCode and 'ZN' in atomSiteAtomId:
+                if len(_atomId) == 0 and authAtomId in ZINC_ION_CODE and 'ZN' in atomSiteAtomId:
                     atomId = 'ZN'
                     _atomId = [atomId]
-                elif len(_atomId) == 0 and authAtomId in calciumIonCode and 'CA' in atomSiteAtomId:
+                elif len(_atomId) == 0 and authAtomId in CALCIUM_ION_CODE and 'CA' in atomSiteAtomId:
                     atomId = 'CA'
                     _atomId = [atomId]
                 elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
                     pass
-                elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
+                elif atomId[0] not in PSE_PRO_BEGIN_CODE and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
                     _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
             lenAtomId = len(_atomId)
@@ -2373,7 +2376,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for cifAtomId in _atomId:
 
-                if seqKey in self.__coordUnobsRes and cifCompId in monDict3 and self.__reasons is not None and 'non_poly_remap' in self.__reasons:
+                if seqKey in self.__coordUnobsRes and cifCompId in MONDICT3 and self.__reasons is not None and 'non_poly_remap' in self.__reasons:
                     if self.__ccU.updateChemCompDict(cifCompId):
                         try:
                             next(cca for cca in self.__ccU.lastAtomList
@@ -2618,12 +2621,12 @@ class RosettaMRParserListener(ParseTreeListener):
                     max_auth_seq_id = max(auth_seq_id_list)
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes\
                    or seqId == min_auth_seq_id:
-                    if atomId in aminoProtonCode and atomId != 'H1':
+                    if atomId in AMINO_PROTON_CODE and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
-                    if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
+                    if atomId in AMINO_PROTON_CODE or atomId == 'P' or atomId.startswith('HOP'):
                         checked = True
                 if not checked:
-                    if atomId[0] in protonBeginCode:
+                    if atomId[0] in PROTON_BEGIN_CODE:
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
@@ -2639,7 +2642,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 return 'Ignorable hydroxyl group', asis
                     if seqId == max_auth_seq_id\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
-                        if coordAtomSite is not None and atomId in carboxylCode\
+                        if coordAtomSite is not None and atomId in CARBOXYL_CODE\
                            and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):
                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
@@ -2650,11 +2653,11 @@ class RosettaMRParserListener(ParseTreeListener):
                     if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
                         if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
                            or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
-                           or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                           or (compId in MONDICT3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                                and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                     or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                             ext_seq = True
-                        elif self.__reasons is None and compId in monDict3 and atomId == 'H' and seqId < min_auth_seq_id\
+                        elif self.__reasons is None and compId in MONDICT3 and atomId == 'H' and seqId < min_auth_seq_id\
                                 and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:
@@ -2669,7 +2672,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         else:
                             if seqKey in self.__coordUnobsAtom\
                                and (atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                    or (atomId[0] in protonBeginCode
+                                    or (atomId[0] in PROTON_BEGIN_CODE
                                         and any(True for bondedTo in self.__ccU.getBondedAtoms(compId, atomId, exclProton=True)
                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
@@ -3356,7 +3359,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                                                            self.__getCurrentRestraint())
                         self.__f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -3391,7 +3394,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                                                        self.__getCurrentRestraint())
                     self.__f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):
@@ -3533,7 +3536,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                                                        self.__getCurrentRestraint())
                     self.__f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
@@ -3576,7 +3579,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                                                        self.__getCurrentRestraint())
                     self.__f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
@@ -5250,8 +5253,8 @@ class RosettaMRParserListener(ParseTreeListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass

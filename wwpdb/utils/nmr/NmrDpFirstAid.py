@@ -32,7 +32,11 @@ try:
                                                NUM_DIM_ITEMS,
                                                ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG,
                                                SF_TAG_PREFIXES,
-                                               AUX_LP_CATEGORIES)
+                                               AUX_LP_CATEGORIES,
+                                               EMPTY_VALUE,
+                                               NEF_VERSION,
+                                               MAX_DIM_NUM_OF_SPECTRA,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpMrSplitter import (datablock_pattern,
                                                  sf_anonymous_pattern,
@@ -47,12 +51,8 @@ try:
                                                  pynmrstar_lp_obj_pattern,
                                                  onedep_upload_file_pattern,
                                                  onedep_file_pattern)
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
-    from wwpdb.utils.nmr.nef.NEFTranslator import (NEF_VERSION,
-                                                   MAX_DIM_NUM_OF_SPECTRA)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS
 except ImportError:
     from nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
                                    MR_FILE_PATH_LIST_KEY,
@@ -64,7 +64,11 @@ except ImportError:
                                    NUM_DIM_ITEMS,
                                    ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG,
                                    SF_TAG_PREFIXES,
-                                   AUX_LP_CATEGORIES)
+                                   AUX_LP_CATEGORIES,
+                                   EMPTY_VALUE,
+                                   NEF_VERSION,
+                                   MAX_DIM_NUM_OF_SPECTRA,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
     from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpMrSplitter import (datablock_pattern,
                                      sf_anonymous_pattern,
@@ -79,12 +83,8 @@ except ImportError:
                                      pynmrstar_lp_obj_pattern,
                                      onedep_upload_file_pattern,
                                      onedep_file_pattern)
-    from nmr.AlignUtil import emptyValue
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
-    from nmr.nef.NEFTranslator import (NEF_VERSION,
-                                       MAX_DIM_NUM_OF_SPECTRA)
-    from nmr.mr.ParserListenerUtil import ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -905,7 +905,7 @@ class NmrDpFirstAid:
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i == line_num:
-                            if sf_framecode not in emptyValue:
+                            if sf_framecode not in EMPTY_VALUE:
                                 ofh.write(re.sub(r'["\']?' + sf_framecode + r'["\']?\s*$', saveframe_name + r'\n', line))
                             else:
                                 ofh.write(re.sub(rf'\{sf_framecode}\s*$', saveframe_name + r'\n', line))
@@ -1304,7 +1304,7 @@ class NmrDpFirstAid:
                     atom_name_col = loop.tags.index('atom_name')
 
                     for row in loop:
-                        if row[atom_type_col] in emptyValue:
+                        if row[atom_type_col] in EMPTY_VALUE:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -1345,7 +1345,7 @@ class NmrDpFirstAid:
                     atom_name_col = loop.tags.index('atom_name')
 
                     for row in loop:
-                        if row[iso_num_col] in emptyValue:
+                        if row[iso_num_col] in EMPTY_VALUE:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -1591,7 +1591,7 @@ class NmrDpFirstAid:
                     atom_name_col = loop.tags.index('Atom_ID')
 
                     for row in loop:
-                        if row[atom_type_col] in emptyValue:
+                        if row[atom_type_col] in EMPTY_VALUE:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
@@ -1632,7 +1632,7 @@ class NmrDpFirstAid:
                     atom_name_col = loop.tags.index('Atom_ID')
 
                     for row in loop:
-                        if row[iso_num_col] in emptyValue:
+                        if row[iso_num_col] in EMPTY_VALUE:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'

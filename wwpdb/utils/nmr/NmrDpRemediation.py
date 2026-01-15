@@ -46,7 +46,23 @@ try:
                                                ITEM_NAMES_IN_CS_LOOP,
                                                ITEM_NAMES_IN_DIST_LOOP,
                                                ITEM_NAMES_IN_DIHED_LOOP,
-                                               ITEM_NAMES_IN_RDC_LOOP)
+                                               ITEM_NAMES_IN_RDC_LOOP,
+                                               LOW_SEQ_COVERAGE,
+                                               EMPTY_VALUE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               PSE_PRO_BEGIN_CODE,
+                                               AMINO_PROTON_CODE,
+                                               UNKNOWN_RESIDUE,
+                                               NMR_STAR_VERSION,
+                                               PARAMAGNETIC_ELEMENTS,
+                                               MAX_DIM_NUM_OF_SPECTRA,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               ALLOWED_AMBIGUITY_CODES,
+                                               MAX_OFFSET_ATTEMPT,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               REPRESENTATIVE_ASYM_ID)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpMrSplitter import (comment_pattern,
                                                  onedep_model_file_pattern,
@@ -59,14 +75,7 @@ try:
                                                  get_peak_list_format,
                                                  get_number_of_dimensions_of_peak_list)
     from wwpdb.utils.nmr.NmrDpValidation import is_like_planality_boundary
-    from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
-                                           emptyValue,
-                                           monDict3,
-                                           protonBeginCode,
-                                           pseProBeginCode,
-                                           aminoProtonCode,
-                                           unknownResidue,
-                                           deepcopy,
+    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            letterToDigit,
                                            fillBlankCompIdWithOffset,
                                            getScoreOfSeqAlign,
@@ -84,9 +93,6 @@ try:
                                               get_first_sf_tag,
                                               set_sf_tag)
     from wwpdb.utils.nmr.NmrVrptUtility import write_as_pickle
-    from wwpdb.utils.nmr.nef.NEFTranslator import (NMR_STAR_VERSION,
-                                                   PARAMAGNETIC_ELEMENTS,
-                                                   MAX_DIM_NUM_OF_SPECTRA)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        isAmbigAtomSelection,
@@ -99,13 +105,7 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
-                                                       getPotentialType,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       ALLOWED_AMBIGUITY_CODES,
-                                                       MAX_OFFSET_ATTEMPT,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       REPRESENTATIVE_ASYM_ID)
+                                                       getPotentialType)
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
@@ -173,7 +173,23 @@ except ImportError:
                                    ITEM_NAMES_IN_CS_LOOP,
                                    ITEM_NAMES_IN_DIST_LOOP,
                                    ITEM_NAMES_IN_DIHED_LOOP,
-                                   ITEM_NAMES_IN_RDC_LOOP)
+                                   ITEM_NAMES_IN_RDC_LOOP,
+                                   LOW_SEQ_COVERAGE,
+                                   EMPTY_VALUE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   PSE_PRO_BEGIN_CODE,
+                                   AMINO_PROTON_CODE,
+                                   UNKNOWN_RESIDUE,
+                                   NMR_STAR_VERSION,
+                                   PARAMAGNETIC_ELEMENTS,
+                                   MAX_DIM_NUM_OF_SPECTRA,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   ALLOWED_AMBIGUITY_CODES,
+                                   MAX_OFFSET_ATTEMPT,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   REPRESENTATIVE_ASYM_ID)
     from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpMrSplitter import (comment_pattern,
                                      onedep_model_file_pattern,
@@ -186,14 +202,7 @@ except ImportError:
                                      get_peak_list_format,
                                      get_number_of_dimensions_of_peak_list)
     from nmr.NmrDpValidation import is_like_planality_boundary
-    from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
-                               emptyValue,
-                               monDict3,
-                               protonBeginCode,
-                               pseProBeginCode,
-                               aminoProtonCode,
-                               unknownResidue,
-                               deepcopy,
+    from nmr.AlignUtil import (deepcopy,
                                letterToDigit,
                                fillBlankCompIdWithOffset,
                                getScoreOfSeqAlign,
@@ -211,9 +220,6 @@ except ImportError:
                                   get_first_sf_tag,
                                   set_sf_tag)
     from nmr.NmrVrptUtility import write_as_pickle
-    from nmr.nef.NEFTranslator import (NMR_STAR_VERSION,
-                                       PARAMAGNETIC_ELEMENTS,
-                                       MAX_DIM_NUM_OF_SPECTRA)
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            isAmbigAtomSelection,
@@ -226,13 +232,7 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
-                                           getPotentialType,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           ALLOWED_AMBIGUITY_CODES,
-                                           MAX_OFFSET_ATTEMPT,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           REPRESENTATIVE_ASYM_ID)
+                                           getPotentialType)
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AriaMRReader import AriaMRReader
@@ -431,7 +431,7 @@ class NmrDpRemediation:
             for row in dat:
                 if row is not None and len(row) > 0:
                     for col in row:
-                        if col is not None and col not in emptyValue:
+                        if col is not None and col not in EMPTY_VALUE:
                             return False
 
             loop.remove_tag(tags)
@@ -783,7 +783,7 @@ class NmrDpRemediation:
 
                 _seq_id = row[seq_id_col]
 
-                if _seq_id in emptyValue or int(_seq_id) != seq_id:
+                if _seq_id in EMPTY_VALUE or int(_seq_id) != seq_id:
                     continue
 
                 comp_id = row[comp_id_col]
@@ -813,7 +813,7 @@ class NmrDpRemediation:
 
                     _seq_id = row[seq_id_col]
 
-                    if _seq_id in emptyValue or int(_seq_id) != seq_id:
+                    if _seq_id in EMPTY_VALUE or int(_seq_id) != seq_id:
                         continue
 
                     comp_id = row[comp_id_col]
@@ -859,7 +859,7 @@ class NmrDpRemediation:
                 mandatory_tag = False
 
             itName = g[0]
-            itValue = None if g[1] in emptyValue else g[1]
+            itValue = None if g[1] in EMPTY_VALUE else g[1]
             itEnum = [str(e.strip("'")) for e in re.sub(r"\', \'", "\',\'", g[2]).split(',')]
 
             if self.__reg.star_data_type[0] == 'Entry' or self.__reg.star_data_type[0] == 'Saveframe':
@@ -906,7 +906,7 @@ class NmrDpRemediation:
                             itCol = tagNames.index(itName)
 
                             val = sf.tags[itCol][1]
-                            if val in emptyValue:
+                            if val in EMPTY_VALUE:
                                 val = None
 
                             if val is itValue or val == itValue:
@@ -1077,7 +1077,7 @@ class NmrDpRemediation:
 
                                 val = row[itCol]
 
-                                if val in emptyValue:
+                                if val in EMPTY_VALUE:
                                     continue
 
                                 if val == itValue:
@@ -1211,7 +1211,7 @@ class NmrDpRemediation:
                 if lower_limit is not None:
                     target_value += 0.4
 
-                if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+                if (atom_id_1_ == 'F' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'F' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                     if target_value < 1.2 or target_value > 1.5:
                         return False
@@ -1221,7 +1221,7 @@ class NmrDpRemediation:
                     if target_value < 2.2 or target_value > 2.5:
                         return False
 
-                elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+                elif (atom_id_1_ == 'O' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'O' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                     if target_value < 1.5 or target_value > 2.5:
                         return False
@@ -1236,7 +1236,7 @@ class NmrDpRemediation:
                     if target_value < 2.5 or target_value > 3.5:
                         return False
 
-                elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+                elif (atom_id_1_ == 'N' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'N' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                     if target_value < 1.5 or target_value > 2.5:
                         return False
@@ -1499,7 +1499,7 @@ class NmrDpRemediation:
 
                 angle_type = row[angle_type_name]
 
-                if angle_type in emptyValue:
+                if angle_type in EMPTY_VALUE:
                     continue
 
                 angle_type = angle_type.lower()
@@ -1975,16 +1975,16 @@ class NmrDpRemediation:
 
                 if file_type == 'nef':
                     if 'residue_variant' in orig_lp_data[0]:
-                        if any(True for _row in orig_lp_data if _row['residue_variant'] not in emptyValue):
+                        if any(True for _row in orig_lp_data if _row['residue_variant'] not in EMPTY_VALUE):
                             has_res_var_dat = True
 
                 else:
                     if 'Auth_variant_ID' in orig_lp_data[0]:
-                        if any(True for _row in orig_lp_data if _row['Auth_variant_ID'] not in emptyValue):
+                        if any(True for _row in orig_lp_data if _row['Auth_variant_ID'] not in EMPTY_VALUE):
                             has_res_var_dat = True
 
                     if 'NEF_index' in orig_lp_data[0]:
-                        if any(True for _row in orig_lp_data if _row['NEF_index'] not in emptyValue):
+                        if any(True for _row in orig_lp_data if _row['NEF_index'] not in EMPTY_VALUE):
                             has_nef_index = True
 
                     if 'Entry_ID' in orig_lp_data[0]:
@@ -2098,7 +2098,7 @@ class NmrDpRemediation:
 
         ec_numbers = []
         for item in entity_assembly:
-            if 'entity_ec' in item and item['entity_ec'] not in emptyValue and item['entity_ec'] not in ec_numbers:
+            if 'entity_ec' in item and item['entity_ec'] not in EMPTY_VALUE and item['entity_ec'] not in ec_numbers:
                 ec_numbers.append(item['entity_ec'])
         if len(ec_numbers) == 0:
             ec_number = '.'
@@ -2110,7 +2110,7 @@ class NmrDpRemediation:
             if 'entity_details' not in item:
                 continue
             _details = item['entity_details'].strip().rstrip('\n')
-            if _details in emptyValue or _details + '\n' in details:
+            if _details in EMPTY_VALUE or _details + '\n' in details:
                 continue
             if len(details.strip()) > 0:
                 details += _details + '\n'
@@ -2134,7 +2134,7 @@ class NmrDpRemediation:
             asm_sf.add_tag('Entry_ID', self.__reg.entry_id)
             asm_sf.add_tag('ID', 1)
             assembly_name = self.__reg.assembly_name
-            if assembly_name in emptyValue and self.__reg.cR.hasItem('struct', 'pdbx_descriptor'):
+            if assembly_name in EMPTY_VALUE and self.__reg.cR.hasItem('struct', 'pdbx_descriptor'):
                 struct = self.__reg.cR.getDictList('struct')
                 assembly_name = struct[0]['pdbx_descriptor']
             asm_sf.add_tag('Name', assembly_name)
@@ -2363,13 +2363,13 @@ class NmrDpRemediation:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_key = (entity_assembly_id, _auth_seq_id)
-                            if _seq_key in seq_keys or _auth_comp_id in emptyValue or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694
+                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
                             row[chain_id_col], row[seq_id_col], row[comp_id_col], row[idx_col] =\
                                 auth_asym_id, _auth_seq_id, _auth_comp_id, nef_index
-                            row[seq_link_col] = 'start' if index == 1 else 'middle' if _auth_comp_id not in unknownResidue else 'dummy'
+                            row[seq_link_col] = 'start' if index == 1 else 'middle' if _auth_comp_id not in UNKNOWN_RESIDUE else 'dummy'
 
                             loop.add_data(row)
 
@@ -2440,7 +2440,7 @@ class NmrDpRemediation:
                     if orig_row is not None:
                         row[auth_var_id_col] = orig_row['residue_variant']
 
-                if auth_comp_id not in emptyValue:
+                if auth_comp_id not in EMPTY_VALUE:
                     loop.add_data(row)
 
                 nef_index += 1
@@ -2454,13 +2454,13 @@ class NmrDpRemediation:
                                 loop.data[-1][seq_link_col] = 'middle'
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_key = (entity_assembly_id, _auth_seq_id)
-                            if _seq_key in seq_keys or _auth_comp_id in emptyValue or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694:
+                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694:
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
                             row[chain_id_col], row[seq_id_col], row[comp_id_col], row[idx_col] =\
                                 auth_asym_id, _auth_seq_id, _auth_comp_id, nef_index
-                            row[seq_link_col] = 'end' if _auth_comp_id not in unknownResidue else 'dummy'
+                            row[seq_link_col] = 'end' if _auth_comp_id not in UNKNOWN_RESIDUE else 'dummy'
 
                             loop.add_data(row)
 
@@ -2616,7 +2616,7 @@ class NmrDpRemediation:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_id = _auth_seq_id + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
-                            if _seq_key in seq_keys or _auth_comp_id in emptyValue or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694
+                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
@@ -2624,7 +2624,7 @@ class NmrDpRemediation:
                                 entity_assembly_id, entity_id, _seq_id, _seq_id
                             row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] =\
                                 _auth_comp_id, auth_asym_id, _auth_seq_id, _auth_comp_id
-                            row[seq_link_col] = 'start' if index == 1 else 'middle' if _auth_comp_id not in unknownResidue else 'dummy'
+                            row[seq_link_col] = 'start' if index == 1 else 'middle' if _auth_comp_id not in UNKNOWN_RESIDUE else 'dummy'
                             row[asm_id_col] = 1
                             if idx_col != -1:
                                 row[idx_col] = nef_index
@@ -2712,7 +2712,7 @@ class NmrDpRemediation:
                 if entry_id_col != -1:
                     row[entry_id_col] = self.__reg.entry_id
 
-                if comp_id not in emptyValue:
+                if comp_id not in EMPTY_VALUE:
                     loop.add_data(row)
 
                 nef_index += 1
@@ -2728,7 +2728,7 @@ class NmrDpRemediation:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_id = _auth_seq_id + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
-                            if _seq_key in seq_keys or _auth_comp_id in emptyValue or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694:
+                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694:
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
@@ -2736,7 +2736,7 @@ class NmrDpRemediation:
                                 entity_assembly_id, entity_id, _seq_id, _seq_id
                             row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] =\
                                 _auth_comp_id, auth_asym_id, _auth_seq_id, _auth_comp_id
-                            row[seq_link_col] = 'end' if _auth_comp_id not in unknownResidue else 'dummy'
+                            row[seq_link_col] = 'end' if _auth_comp_id not in UNKNOWN_RESIDUE else 'dummy'
                             row[asm_id_col] = 1
                             if idx_col != -1:
                                 row[idx_col] = nef_index
@@ -3624,7 +3624,7 @@ class NmrDpRemediation:
 
                 ent_keys = self.__reg.cR.getDictList('entity_keywords')
                 for ent_key in ent_keys:
-                    if int(ent_key['entity_id']) == entity_id and 'text' in ent_key and ent_key['text'] not in emptyValue:
+                    if int(ent_key['entity_id']) == entity_id and 'text' in ent_key and ent_key['text'] not in EMPTY_VALUE:
                         row = [None] * len(tags)
 
                         row[0], row[1], row[2] =\
@@ -3705,7 +3705,7 @@ class NmrDpRemediation:
                                 seq_keys.add(_seq_key)
                                 row = [None] * len(tags)
                                 row[0], row[1], row[2] = _seq_id, d['auth_seq_id'], d['auth_comp_id']
-                                if d['auth_comp_id'] not in monDict3 and d['auth_comp_id'] != 'HOH':
+                                if d['auth_comp_id'] not in MONDICT3 and d['auth_comp_id'] != 'HOH':
                                     row[3] = f"$chem_comp_{d['auth_comp_id']}"
                                 row[4], row[5] = entity_id, self.__reg.entry_id
 
@@ -3717,12 +3717,12 @@ class NmrDpRemediation:
 
                     row[0], row[1], row[2] = seq_id if entity_type == 'polymer' else index, auth_seq_id, comp_id
 
-                    if comp_id not in monDict3 and comp_id != 'HOH':
+                    if comp_id not in MONDICT3 and comp_id != 'HOH':
                         row[3] = f"$chem_comp_{comp_id}"
 
                     row[4], row[5] = entity_id, self.__reg.entry_id
 
-                    if comp_id not in emptyValue:
+                    if comp_id not in EMPTY_VALUE:
                         eci_loop.add_data(row)
 
                     index += 1
@@ -3737,7 +3737,7 @@ class NmrDpRemediation:
                         _seq_id = d['auth_seq_id'] + _offset
                         row = [None] * len(tags)
                         row[0], row[1], row[2] = _seq_id, d['auth_seq_id'], d['auth_comp_id']
-                        if d['auth_comp_id'] not in monDict3 and d['auth_comp_id'] != 'HOH':
+                        if d['auth_comp_id'] not in MONDICT3 and d['auth_comp_id'] != 'HOH':
                             row[3] = f"$chem_comp_{d['auth_comp_id']}"
                         row[4], row[5] = entity_id, self.__reg.entry_id
 
@@ -3815,7 +3815,7 @@ class NmrDpRemediation:
                         row[1], row[4], row[5] = comp_id, entity_id, self.__reg.entry_id
                         row[2] = row[3] = seq_id
 
-                        if comp_id not in emptyValue:
+                        if comp_id not in EMPTY_VALUE:
                             eps_loop.add_data(row)
 
                     if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
@@ -3947,7 +3947,7 @@ class NmrDpRemediation:
         modified = False
 
         for row in loop:
-            if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in emptyValue:
+            if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in EMPTY_VALUE:
                 continue
 
             try:
@@ -4096,7 +4096,7 @@ class NmrDpRemediation:
         modified = False
 
         for row in loop:
-            if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in emptyValue:
+            if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in EMPTY_VALUE:
                 continue
 
             try:
@@ -4107,7 +4107,7 @@ class NmrDpRemediation:
             if nmr_seq_id not in nmr_ps['seq_id']:
                 continue
 
-            if row[auth_chain_id_col] in emptyValue or row[auth_chain_id_col] == 'UNMAPPED':
+            if row[auth_chain_id_col] in EMPTY_VALUE or row[auth_chain_id_col] == 'UNMAPPED':
                 row[auth_chain_id_col] = cif_ps['auth_chain_id' if 'auth_chain_id' in cif_ps else 'chain_id']
                 if auth_seq_id_col != -1:
                     try:
@@ -4119,7 +4119,7 @@ class NmrDpRemediation:
                         return False
 
         for row in loop:
-            if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in emptyValue:
+            if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in EMPTY_VALUE:
                 continue
 
             try:
@@ -4130,7 +4130,7 @@ class NmrDpRemediation:
             if nmr_seq_id not in nmr_ps['seq_id']:
                 continue
 
-            if row[auth_chain_id_col] in emptyValue or row[auth_chain_id_col] == 'UNMAPPED':
+            if row[auth_chain_id_col] in EMPTY_VALUE or row[auth_chain_id_col] == 'UNMAPPED':
                 row[auth_chain_id_col] = cif_ps['auth_chain_id' if 'auth_chain_id' in cif_ps else 'chain_id']
                 if auth_seq_id_col != -1:
                     row[auth_seq_id_col] =\
@@ -4295,7 +4295,7 @@ class NmrDpRemediation:
                 if 'Type' in _loop.tags:
                     type_col = _loop.tags.index('Type')
                     for _row in _loop:
-                        if _row[type_col] in emptyValue:
+                        if _row[type_col] in EMPTY_VALUE:
                             continue
                         text = _row[type_col].lower()
                         if 'sail' in text or 'stereo-array isotope labeling' in text:
@@ -4314,7 +4314,7 @@ class NmrDpRemediation:
                         if 'Isotopic_labeling' in _loop.tags:
                             isotopic_labeling_col = _loop.tags.index('Isotopic_labeling')
                             for _row in _loop:
-                                if _row[isotopic_labeling_col] in emptyValue:
+                                if _row[isotopic_labeling_col] in EMPTY_VALUE:
                                     continue
                                 text = _row[isotopic_labeling_col].lower()
                                 if 'sail' in text or 'stereo-array isotope labeling' in text:
@@ -4571,7 +4571,7 @@ class NmrDpRemediation:
                     val_err = row[val_err_col]
                     _row[5] = val_err
 
-                    if val_err not in emptyValue:
+                    if val_err not in EMPTY_VALUE:
                         try:
                             _val_err = float(val_err)
                             if _val_err < 0.0:
@@ -4579,7 +4579,7 @@ class NmrDpRemediation:
                         except ValueError:
                             pass
 
-                _row[6] = 'H' if _row[3][0] in protonBeginCode else atom_id[0]
+                _row[6] = 'H' if _row[3][0] in PROTON_BEGIN_CODE else atom_id[0]
                 if _row[6] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                     _row[7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[6]][0]
 
@@ -4689,7 +4689,7 @@ class NmrDpRemediation:
                         if isinstance(row, str) and concat_seq_id_ins_code_pattern.match(row):
                             g = concat_seq_id_ins_code_pattern.search(row).groups()
                             loop.data[idx][auth_seq_id_col] = g[0]
-                            if g[1] not in emptyValue:
+                            if g[1] not in EMPTY_VALUE:
                                 loop.data[idx][ins_code_col] = g[1]
 
                     if not has_ins_code:
@@ -4774,7 +4774,7 @@ class NmrDpRemediation:
                     orig_dat = loop.get_tag(orig_pdb_tags)
                     if len(orig_dat) > 0:
                         for row in orig_dat:
-                            if all(d not in emptyValue for d in row):
+                            if all(d not in EMPTY_VALUE for d in row):
                                 has_orig_seq = True
                                 break
                         if has_orig_seq:
@@ -4782,7 +4782,7 @@ class NmrDpRemediation:
                             orig_pdb_tags.append('Atom_ID')
                             dat = loop.get_tag(orig_pdb_tags)
                             for row in dat:
-                                if row[3] in emptyValue:
+                                if row[3] in EMPTY_VALUE:
                                     continue
                                 orig_atom_id = row[3].upper()
                                 comp_id = row[4]
@@ -4790,7 +4790,7 @@ class NmrDpRemediation:
                                 if orig_atom_id == atom_id:
                                     continue
                                 ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                                if ambig_code == 0 or atom_id[0] not in protonBeginCode:
+                                if ambig_code == 0 or atom_id[0] not in PROTON_BEGIN_CODE:
                                     continue
                                 len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                 if len_in_grp == 2 and ambig_code == 2:
@@ -4802,7 +4802,7 @@ class NmrDpRemediation:
                     orig_dat = loop.get_tag(orig_pdb_tags)
                     if len(orig_dat) > 0:
                         for row in orig_dat:
-                            if all(d not in emptyValue for d in row):
+                            if all(d not in EMPTY_VALUE for d in row):
                                 has_orig_seq = True
                                 break
 
@@ -4850,17 +4850,17 @@ class NmrDpRemediation:
                 _src_idx = src_idx
                 if src_idx > 0:
                     src_idx -= 1
-                fill_auth_atom_id = self.__reg.annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
-                fill_orig_atom_id = _row[23] not in emptyValue
+                fill_auth_atom_id = self.__reg.annotation_mode or (_row[19] in EMPTY_VALUE and _row[18] not in EMPTY_VALUE)
+                fill_orig_atom_id = _row[23] not in EMPTY_VALUE
 
                 if _seq_key is not None:
-                    if _seq_key in truncated_loop_sequence and _row[24] in emptyValue:
+                    if _seq_key in truncated_loop_sequence and _row[24] in EMPTY_VALUE:
                         _row[24] = 'UNMAPPED'
                     seq_key = (_seq_key[0], _seq_key[1], comp_id)
                     _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
                 if _seq_key in coord_atom_site\
                    and (coord_atom_site[_seq_key]['comp_id'] == comp_id
-                        or (_seq_key not in coord_unobs_res and coord_atom_site[_seq_key]['comp_id'] not in monDict3)
+                        or (_seq_key not in coord_unobs_res and coord_atom_site[_seq_key]['comp_id'] not in MONDICT3)
                         or (_seq_key in coord_unobs_res and coord_unobs_res[_seq_key]['comp_id'] != comp_id)):  # 8b9r: A:24:VAL (unobserved), A:24:CU
                     _coord_atom_site = coord_atom_site[_seq_key]
                     _atom_site_atom_id = _coord_atom_site['atom_id']
@@ -4934,15 +4934,15 @@ class NmrDpRemediation:
                                 atom_id = 'H1'
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
-                        elif atom_id in aminoProtonCode and 'C' + atom_id[1:] in _atom_site_atom_id:
+                        elif atom_id in AMINO_PROTON_CODE and 'C' + atom_id[1:] in _atom_site_atom_id:
                             bonded = self.__reg.ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
                             if len(bonded) == 1 and bonded[0] in _atom_site_atom_id:
                                 atom_id = bonded[0]
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
-                        if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 4.0):
+                        if len(missing_ch3) > 0 and (_row[9] in EMPTY_VALUE or float(_row[9]) >= 4.0):
                             heme = False
-                            if _row[9] not in emptyValue:
+                            if _row[9] not in EMPTY_VALUE:
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
                                     heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['_chem_comp.name']
                             if not heme:
@@ -4980,7 +4980,7 @@ class NmrDpRemediation:
                             _row[6] = atom_id
                             if fill_auth_atom_id:
                                 _row[19] = _row[6]
-                            _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                            _row[7] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                         else:
@@ -4988,7 +4988,7 @@ class NmrDpRemediation:
                             atom_ids = sorted(atom_ids)
                             _row[6] = atom_ids[0]
                             _row[19] = None
-                            fill_auth_atom_id = _row[18] not in emptyValue
+                            fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                             if self.__reg.ccU.updateChemCompDict(comp_id):
                                 cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
                                 if cca is not None:
@@ -4996,11 +4996,11 @@ class NmrDpRemediation:
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
-                                    _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
+                                    _row[7] = 'H' if _row[6][0] in PROTON_BEGIN_CODE else atom_id[0]
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
-                                _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                                _row[7] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
@@ -5052,7 +5052,7 @@ class NmrDpRemediation:
                                     atom_type = atom_id_src[0]
                                     ambig_code_src = row_src[ambig_code_col]
                                     atom_ids_in_group_src = self.__reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
-                                        if atom_type in protonBeginCode else []
+                                        if atom_type in PROTON_BEGIN_CODE else []
                                     ambig_code_4_test = hetero_group_test = False
                                     for offset in range(1, 10):
                                         if src_idx + offset < len(src_lp):
@@ -5197,7 +5197,7 @@ class NmrDpRemediation:
                                     _row[13] = None
 
                             if len_atom_ids > 1:
-                                if _row[12] == 1 or _row[12] in emptyValue:
+                                if _row[12] == 1 or _row[12] in EMPTY_VALUE:
                                     if _row[6] not in methyl_atoms\
                                        or (_row[6] in methyl_atoms
                                            and ((_row[7][0] == 'H' and len_atom_ids == 6)
@@ -5218,9 +5218,9 @@ class NmrDpRemediation:
                                     __row[6] = _atom_id
                                     if fill_auth_atom_id:
                                         __row[19] = __row[6]
-                                    if fill_orig_atom_id and len(missing_ch3) > 0 and __row[23] in emptyValue:
+                                    if fill_orig_atom_id and len(missing_ch3) > 0 and __row[23] in EMPTY_VALUE:
                                         if _atom_id in methyl_atoms:
-                                            if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
+                                            if ch3_name_in_xplor and _atom_id[0] in PROTON_BEGIN_CODE:
                                                 __row[23] = __row[6][-1] + __row[6][:-1]
                                             else:
                                                 __row[23] = copy.copy(__row[6])
@@ -5233,9 +5233,9 @@ class NmrDpRemediation:
 
                             if fill_auth_atom_id:
                                 _row[19] = _row[6]
-                            if fill_orig_atom_id and len(missing_ch3) > 0 and _row[23] in emptyValue:
+                            if fill_orig_atom_id and len(missing_ch3) > 0 and _row[23] in EMPTY_VALUE:
                                 if _row[6] in methyl_atoms:
-                                    if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
+                                    if ch3_name_in_xplor and _row[6][0] in PROTON_BEGIN_CODE:
                                         _row[23] = _row[6][-1] + _row[6][:-1]
                                     else:
                                         _row[23] = copy.copy(_row[6])
@@ -5270,9 +5270,9 @@ class NmrDpRemediation:
                                         missing_ch3.remove(row[atom_id_col])
                                         if len(missing_ch3) == 0:
                                             break
-                    if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 4.0):
+                    if len(missing_ch3) > 0 and (_row[9] in EMPTY_VALUE or float(_row[9]) >= 4.0):
                         heme = False
-                        if _row[9] not in emptyValue:
+                        if _row[9] not in EMPTY_VALUE:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
                                 heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['_chem_comp.name']
                         if not heme:
@@ -5301,7 +5301,7 @@ class NmrDpRemediation:
                         _row[6] = atom_id
                         if fill_auth_atom_id or _row[6] != _row[19]:
                             _row[19] = _row[6]
-                        _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                        _row[7] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                     else:
@@ -5309,7 +5309,7 @@ class NmrDpRemediation:
                         atom_ids = sorted(atom_ids)
                         _row[6] = atom_ids[0]
                         _row[19] = None
-                        fill_auth_atom_id = _row[18] not in emptyValue
+                        fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                         if self.__reg.ccU.updateChemCompDict(comp_id):
                             cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
                             if cca is not None:
@@ -5317,11 +5317,11 @@ class NmrDpRemediation:
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
-                                _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
+                                _row[7] = 'H' if _row[6][0] in PROTON_BEGIN_CODE else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                         else:
-                            _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                            _row[7] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
@@ -5373,7 +5373,7 @@ class NmrDpRemediation:
                                 atom_type = atom_id_src[0]
                                 ambig_code_src = row_src[ambig_code_col]
                                 atom_ids_in_group = self.__reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
-                                    if atom_type in protonBeginCode else []
+                                    if atom_type in PROTON_BEGIN_CODE else []
                                 ambig_code_4_test = hetero_group_test = False
                                 for offset in range(1, 10):
                                     if src_idx + offset < len(src_lp):
@@ -5518,7 +5518,7 @@ class NmrDpRemediation:
                                 _row[13] = None
 
                         if len_atom_ids > 1:
-                            if _row[12] == 1 or _row[12] in emptyValue:
+                            if _row[12] == 1 or _row[12] in EMPTY_VALUE:
                                 if _row[6] not in methyl_atoms\
                                    or (_row[6] in methyl_atoms
                                        and ((_row[7][0] == 'H' and len_atom_ids == 6)
@@ -5539,9 +5539,9 @@ class NmrDpRemediation:
                                 if fill_auth_atom_id:
                                     __row[19] = __row[6]
                                 if fill_orig_atom_id and len(missing_ch3) > 0\
-                                   and __row[23] in emptyValue:
+                                   and __row[23] in EMPTY_VALUE:
                                     if _atom_id in methyl_atoms:
-                                        if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
+                                        if ch3_name_in_xplor and _atom_id[0] in PROTON_BEGIN_CODE:
                                             __row[23] = __row[6][-1] + __row[6][:-1]
                                         else:
                                             __row[23] = copy.copy(__row[6])
@@ -5555,9 +5555,9 @@ class NmrDpRemediation:
                         if fill_auth_atom_id:
                             _row[19] = _row[6]
                         if fill_orig_atom_id and len(missing_ch3) > 0\
-                           and _row[23] in emptyValue:
+                           and _row[23] in EMPTY_VALUE:
                             if _row[6] in methyl_atoms:
-                                if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
+                                if ch3_name_in_xplor and _row[6][0] in PROTON_BEGIN_CODE:
                                     _row[23] = _row[6][-1] + _row[6][:-1]
                                 else:
                                     _row[23] = copy.copy(_row[6])
@@ -5742,7 +5742,7 @@ class NmrDpRemediation:
                         val_err = row[val_err_col]
                         _row[10] = val_err
 
-                        if val_err not in emptyValue:
+                        if val_err not in EMPTY_VALUE:
                             try:
                                 _val_err = float(val_err)
                                 if _val_err < 0.0:
@@ -5755,7 +5755,7 @@ class NmrDpRemediation:
 
                     if ambig_code_col != -1:
                         ambig_code = row[ambig_code_col]
-                        if ambig_code not in emptyValue:
+                        if ambig_code not in EMPTY_VALUE:
                             try:
                                 ambig_code = int(ambig_code) if isinstance(ambig_code, str) else ambig_code
                                 if ambig_code in ALLOWED_AMBIGUITY_CODES:
@@ -5767,7 +5767,7 @@ class NmrDpRemediation:
 
                     if ambig_set_id_col != -1:
                         ambig_set_id = row[ambig_set_id_col]
-                        if ambig_set_id not in emptyValue:
+                        if ambig_set_id not in EMPTY_VALUE:
                             try:
                                 ambig_set_id = int(ambig_set_id)
                                 if ambig_set_id > 0:
@@ -5780,7 +5780,7 @@ class NmrDpRemediation:
                             occupancy = row[occupancy_col]
                         except IndexError:
                             occupancy = '.'
-                        if occupancy not in emptyValue:
+                        if occupancy not in EMPTY_VALUE:
                             try:
                                 occupancy = float(occupancy)
                                 if occupancy >= 0.0:
@@ -5790,7 +5790,7 @@ class NmrDpRemediation:
 
                     if reson_id_col != -1:
                         reson_id = row[reson_id_col]
-                        if reson_id not in emptyValue:
+                        if reson_id not in EMPTY_VALUE:
                             try:
                                 reson_id = int(reson_id)
                                 if reson_id > 0:
@@ -5938,42 +5938,42 @@ class NmrDpRemediation:
                                 _row[27] = auth_to_ins_code[seq_key]
 
                             if seq_key in auth_to_orig_seq:
-                                if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                     __seq_key = (_seq_key[0], orig_seq_id, comp_id)
                                     if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
                                        and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                         _seq_key = __seq_key
-                                        if _row[21] in emptyValue or _row[22] in emptyValue:
+                                        if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
                                             _row[21], _row[22] = orig_seq_id, orig_comp_id
                                     else:
                                         _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                 if not has_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                    if orig_seq_id in emptyValue:
+                                    if orig_seq_id in EMPTY_VALUE:
                                         orig_seq_id = auth_seq_id
-                                    if orig_comp_id in emptyValue:
+                                    if orig_comp_id in EMPTY_VALUE:
                                         orig_comp_id = comp_id
                                     _row[20], _row[21], _row[22], _row[23] =\
                                         auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                elif any(True for d in orig_dat[idx] if d in emptyValue):
+                                elif any(True for d in orig_dat[idx] if d in EMPTY_VALUE):
                                     if seq_key in _auth_to_orig_seq:
                                         _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                     elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self.__reg.ccU) == auth_comp_id:
                                         _row[20], _row[21], _row[22] = auth_asym_id, auth_seq_id, comp_id
                                         _row[5] = comp_id = auth_comp_id
-                                    if _row[23] in emptyValue:
+                                    if _row[23] in EMPTY_VALUE:
                                         _row[23] = atom_id
                                     ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                     if ambig_code > 0:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                        if orig_seq_id in emptyValue:
+                                        if orig_seq_id in EMPTY_VALUE:
                                             orig_seq_id = auth_seq_id
-                                        if orig_comp_id in emptyValue:
+                                        if orig_comp_id in EMPTY_VALUE:
                                             orig_comp_id = comp_id
                                         _row[20], _row[21], _row[22] =\
                                             auth_asym_id, orig_seq_id, orig_comp_id
-                                        if atom_id[0] not in protonBeginCode:
+                                        if atom_id[0] not in PROTON_BEGIN_CODE:
                                             _row[23] = atom_id
                                         else:
                                             len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
@@ -5983,7 +5983,7 @@ class NmrDpRemediation:
                                             elif len_in_grp == 3:
                                                 _row[23] = (atom_id[-1] + atom_id[0:-1])\
                                                     if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                            elif _row[23] in emptyValue:
+                                            elif _row[23] in EMPTY_VALUE:
                                                 _row[23] = atom_id
 
                             else:
@@ -6005,7 +6005,7 @@ class NmrDpRemediation:
                                                                comp_id, atom_id, loop, idx)
                             reparse_request |= reparse
 
-                        elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
+                        elif auth_asym_id not in EMPTY_VALUE and auth_seq_id not in EMPTY_VALUE and auth_comp_id not in EMPTY_VALUE:
 
                             try:
                                 _auth_seq_id = int(auth_seq_id)
@@ -6021,39 +6021,39 @@ class NmrDpRemediation:
                                         _row[27] = auth_to_ins_code[seq_key]
 
                                     if seq_key in auth_to_orig_seq:
-                                        if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                        if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                             __seq_key = (_seq_key[0], orig_seq_id, comp_id)
                                             if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
                                                and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                                 _seq_key = __seq_key
-                                                if _row[21] in emptyValue or _row[22] in emptyValue:
+                                                if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
                                                     _row[21], _row[22] = orig_seq_id, orig_comp_id
                                             else:
                                                 _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                         if not has_orig_seq:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                            if orig_seq_id in emptyValue:
+                                            if orig_seq_id in EMPTY_VALUE:
                                                 orig_seq_id = auth_seq_id
-                                            if orig_comp_id in emptyValue:
+                                            if orig_comp_id in EMPTY_VALUE:
                                                 orig_comp_id = comp_id
                                             _row[20], _row[21], _row[22], _row[23] =\
                                                 auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                        elif any(True for d in orig_dat[idx] if d in emptyValue):
+                                        elif any(True for d in orig_dat[idx] if d in EMPTY_VALUE):
                                             if seq_key in _auth_to_orig_seq:
                                                 _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
-                                            if _row[23] in emptyValue:
+                                            if _row[23] in EMPTY_VALUE:
                                                 _row[23] = atom_id
                                             ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                             if ambig_code > 0:
                                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                                if orig_seq_id in emptyValue:
+                                                if orig_seq_id in EMPTY_VALUE:
                                                     orig_seq_id = auth_seq_id
-                                                if orig_comp_id in emptyValue:
+                                                if orig_comp_id in EMPTY_VALUE:
                                                     orig_comp_id = comp_id
                                                 _row[20], _row[21], _row[22] =\
                                                     auth_asym_id, orig_seq_id, orig_comp_id
-                                                if atom_id[0] not in protonBeginCode:
+                                                if atom_id[0] not in PROTON_BEGIN_CODE:
                                                     _row[23] = atom_id
                                                 else:
                                                     len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
@@ -6063,7 +6063,7 @@ class NmrDpRemediation:
                                                     elif len_in_grp == 3:
                                                         _row[23] = (atom_id[-1] + atom_id[0:-1])\
                                                             if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                                    elif _row[23] in emptyValue:
+                                                    elif _row[23] in EMPTY_VALUE:
                                                         _row[23] = atom_id
 
                                     else:
@@ -6216,42 +6216,42 @@ class NmrDpRemediation:
                             _row[27] = auth_to_ins_code[seq_key]
 
                         if seq_key in auth_to_orig_seq:
-                            if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                            if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                 __seq_key = (_seq_key[0], orig_seq_id, comp_id)
                                 if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
                                    and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                     _seq_key = __seq_key
-                                    if _row[21] in emptyValue or _row[22] in emptyValue:
+                                    if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
                                         _row[21], _row[22] = orig_seq_id, orig_comp_id
                                 else:
                                     _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                             if not has_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                if orig_seq_id in emptyValue:
+                                if orig_seq_id in EMPTY_VALUE:
                                     orig_seq_id = auth_seq_id
-                                if orig_comp_id in emptyValue:
+                                if orig_comp_id in EMPTY_VALUE:
                                     orig_comp_id = comp_id
                                 _row[20], _row[21], _row[22], _row[23] =\
                                     auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                            elif any(True for d in orig_dat[idx] if d in emptyValue):
+                            elif any(True for d in orig_dat[idx] if d in EMPTY_VALUE):
                                 if seq_key in _auth_to_orig_seq:
                                     _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                 elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self.__reg.ccU) == auth_comp_id:
                                     _row[20], _row[21], _row[22] = auth_asym_id, auth_seq_id, comp_id
                                     _row[5] = comp_id = auth_comp_id
-                                if _row[23] in emptyValue:
+                                if _row[23] in EMPTY_VALUE:
                                     _row[23] = atom_id
                                 ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                 if ambig_code > 0:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                    if orig_seq_id in emptyValue:
+                                    if orig_seq_id in EMPTY_VALUE:
                                         orig_seq_id = auth_seq_id
-                                    if orig_comp_id in emptyValue:
+                                    if orig_comp_id in EMPTY_VALUE:
                                         orig_comp_id = comp_id
                                     _row[20], _row[21], _row[22] =\
                                         auth_asym_id, orig_seq_id, orig_comp_id
-                                    if atom_id[0] not in protonBeginCode:
+                                    if atom_id[0] not in PROTON_BEGIN_CODE:
                                         _row[23] = atom_id
                                     else:
                                         len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
@@ -6261,7 +6261,7 @@ class NmrDpRemediation:
                                         elif len_in_grp == 3:
                                             _row[23] = (atom_id[-1] + atom_id[0:-1])\
                                                 if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                        elif _row[23] in emptyValue:
+                                        elif _row[23] in EMPTY_VALUE:
                                             _row[23] = atom_id
 
                         else:
@@ -6289,7 +6289,7 @@ class NmrDpRemediation:
                     if not resolved:
 
                         chain_id = row[chain_id_col]
-                        if chain_id in emptyValue:
+                        if chain_id in EMPTY_VALUE:
                             chain_id = REPRESENTATIVE_ASYM_ID
 
                         if chain_id in copied_chain_ids:
@@ -6323,39 +6323,39 @@ class NmrDpRemediation:
                                     _row[27] = auth_to_ins_code[seq_key]
 
                                 if seq_key in auth_to_orig_seq:
-                                    if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                    if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                         __seq_key = (_seq_key[0], orig_seq_id, comp_id)
                                         if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
                                            and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                             _seq_key = __seq_key
-                                            if _row[21] in emptyValue or _row[22] in emptyValue:
+                                            if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
                                                 _row[21], _row[22] = orig_seq_id, orig_comp_id
                                         else:
                                             _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                     if not has_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                        if orig_seq_id in emptyValue:
+                                        if orig_seq_id in EMPTY_VALUE:
                                             orig_seq_id = auth_seq_id
-                                        if orig_comp_id in emptyValue:
+                                        if orig_comp_id in EMPTY_VALUE:
                                             orig_comp_id = comp_id
                                         _row[20], _row[21], _row[22], _row[23] =\
                                             auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                    elif any(True for d in orig_dat[idx] if d in emptyValue):
+                                    elif any(True for d in orig_dat[idx] if d in EMPTY_VALUE):
                                         if seq_key in _auth_to_orig_seq:
                                             _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
-                                        if _row[23] in emptyValue:
+                                        if _row[23] in EMPTY_VALUE:
                                             _row[23] = atom_id
                                         ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                         if ambig_code > 0:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                            if orig_seq_id in emptyValue:
+                                            if orig_seq_id in EMPTY_VALUE:
                                                 orig_seq_id = auth_seq_id
-                                            if orig_comp_id in emptyValue:
+                                            if orig_comp_id in EMPTY_VALUE:
                                                 orig_comp_id = comp_id
                                             _row[20], _row[21], _row[22] =\
                                                 auth_asym_id, orig_seq_id, orig_comp_id
-                                            if atom_id[0] not in protonBeginCode:
+                                            if atom_id[0] not in PROTON_BEGIN_CODE:
                                                 _row[23] = atom_id
                                             else:
                                                 len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
@@ -6365,7 +6365,7 @@ class NmrDpRemediation:
                                                 elif len_in_grp == 3:
                                                     _row[23] = (atom_id[-1] + atom_id[0:-1])\
                                                         if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                                elif _row[23] in emptyValue:
+                                                elif _row[23] in EMPTY_VALUE:
                                                     _row[23] = atom_id
 
                                 else:
@@ -6464,7 +6464,7 @@ class NmrDpRemediation:
                                                         if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                                         if seq_key is not None:
 
-                                            if comp_id != seq_key[2] and comp_id in monDict3 and seq_key[2] in monDict3:
+                                            if comp_id != seq_key[2] and comp_id in MONDICT3 and seq_key[2] in MONDICT3:
                                                 resolved = False
 
                                             else:
@@ -6517,7 +6517,7 @@ class NmrDpRemediation:
                                     seq_key = (auth_asym_id, auth_seq_id, _orig_comp_id)
                                     dummy_key = (auth_asym_id, auth_seq_id, '.')
                                     _seq_key = (seq_key[0], seq_key[1])
-                                    if seq_key in auth_to_star_seq or (dummy_key in auth_to_star_seq and _orig_comp_id in monDict3):
+                                    if seq_key in auth_to_star_seq or (dummy_key in auth_to_star_seq and _orig_comp_id in MONDICT3):
                                         try:
                                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                         except KeyError:  # DAOTHER-9644: map residue on truncated loop
@@ -6536,7 +6536,7 @@ class NmrDpRemediation:
                                                            and auth_seq_id in cif_ps['auth_seq_id']), None)
                                             if cif_ps is not None:
                                                 _idx_ = cif_ps['auth_seq_id'].index(auth_seq_id)
-                                                if cif_ps['comp_id'][_idx_] in emptyValue:
+                                                if cif_ps['comp_id'][_idx_] in EMPTY_VALUE:
                                                     cif_ps['comp_id'][_idx_] = cif_ps['auth_comp_id'][_idx_] = _orig_comp_id
                                                     if self.__reg.asmChkCachePath is not None:
                                                         write_as_pickle(self.__reg.caC, self.__reg.asmChkCachePath)
@@ -6551,39 +6551,39 @@ class NmrDpRemediation:
                                             _row[27] = auth_to_ins_code[seq_key]
 
                                         if seq_key in auth_to_orig_seq:
-                                            if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                            if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                                 __seq_key = (_seq_key[0], orig_seq_id, comp_id)
                                                 if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
                                                    and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                                     _seq_key = __seq_key
-                                                    if _row[21] in emptyValue or _row[22] in emptyValue:
+                                                    if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
                                                         _row[21], _row[22] = orig_seq_id, orig_comp_id
                                                 else:
                                                     _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                             if not has_orig_seq:
                                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                                if orig_seq_id in emptyValue:
+                                                if orig_seq_id in EMPTY_VALUE:
                                                     orig_seq_id = auth_seq_id
-                                                if orig_comp_id in emptyValue:
+                                                if orig_comp_id in EMPTY_VALUE:
                                                     orig_comp_id = comp_id
                                                 _row[20], _row[21], _row[22], _row[23] =\
                                                     auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                            elif any(True for d in orig_dat[idx] if d in emptyValue):
+                                            elif any(True for d in orig_dat[idx] if d in EMPTY_VALUE):
                                                 if seq_key in _auth_to_orig_seq:
                                                     _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
-                                                if _row[23] in emptyValue:
+                                                if _row[23] in EMPTY_VALUE:
                                                     _row[23] = atom_id
                                                 ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                                 if ambig_code > 0:
                                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                                    if orig_seq_id in emptyValue:
+                                                    if orig_seq_id in EMPTY_VALUE:
                                                         orig_seq_id = auth_seq_id
-                                                    if orig_comp_id in emptyValue:
+                                                    if orig_comp_id in EMPTY_VALUE:
                                                         orig_comp_id = comp_id
                                                     _row[20], _row[21], _row[22] =\
                                                         auth_asym_id, orig_seq_id, orig_comp_id
-                                                    if atom_id[0] not in protonBeginCode:
+                                                    if atom_id[0] not in PROTON_BEGIN_CODE:
                                                         _row[23] = atom_id
                                                     else:
                                                         len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
@@ -6593,7 +6593,7 @@ class NmrDpRemediation:
                                                         elif len_in_grp == 3:
                                                             _row[23] = (atom_id[-1] + atom_id[0:-1])\
                                                                 if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                                        elif _row[23] in emptyValue:
+                                                        elif _row[23] in EMPTY_VALUE:
                                                             _row[23] = atom_id
 
                                         else:
@@ -6830,7 +6830,7 @@ class NmrDpRemediation:
                                     else:
                                         __offset = 0
 
-                                    if comp_id not in monDict3:
+                                    if comp_id not in MONDICT3:
                                         for item in entity_assembly:
                                             if 'comp_id' in item and comp_id == item['comp_id']:
                                                 _entity_assembly_id = item['entity_assembly_id']
@@ -6945,21 +6945,21 @@ class NmrDpRemediation:
                                                     _row[1], _row[2] = entity_assembly_id, entity_id
                                                     _row[3] = _row[4] = seq_id
 
-                                                    if _row[17] in emptyValue:
+                                                    if _row[17] in EMPTY_VALUE:
                                                         _row[17] = _seq_id
-                                                    if _row[18] in emptyValue:
+                                                    if _row[18] in EMPTY_VALUE:
                                                         _row[18] = comp_id
-                                                    if _row[19] in emptyValue:
+                                                    if _row[19] in EMPTY_VALUE:
                                                         _row[19] = atom_id
 
                                                     _row[16] = _row[20] = auth_asym_id
-                                                    if _row[21] in emptyValue:
+                                                    if _row[21] in EMPTY_VALUE:
                                                         _row[21] = _row[17]
-                                                    if _row[22] in emptyValue:
+                                                    if _row[22] in EMPTY_VALUE:
                                                         _row[22] = _row[18]
-                                                    if _row[23] in emptyValue:
+                                                    if _row[23] in EMPTY_VALUE:
                                                         _row[23] = _row[19]
-                                                    if _row[24] in emptyValue:
+                                                    if _row[24] in EMPTY_VALUE:
                                                         _row[24] = 'UNMAPPED'
 
                                                     _index, _row, reparse = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
@@ -7040,13 +7040,13 @@ class NmrDpRemediation:
                             len_atom_ids = len(atom_ids)
                             if len_atom_ids == 0 or comp_id_bmrb_only or _row[24] == 'UNMAPPED':
                                 _row[6] = atom_id
-                                _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                                _row[7] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
                                 _row[6] = atom_ids[0]
                                 _row[19] = None
-                                fill_auth_atom_id = _row[18] not in emptyValue
+                                fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
                                     cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
                                     if cca is not None:
@@ -7054,11 +7054,11 @@ class NmrDpRemediation:
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
-                                        _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
+                                        _row[7] = 'H' if _row[6][0] in PROTON_BEGIN_CODE else atom_id[0]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
-                                    _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                                    _row[7] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
@@ -7081,16 +7081,16 @@ class NmrDpRemediation:
                                     _row[6] = atom_ids[-1]
 
                                 if fill_auth_atom_id:
-                                    _row[19] = _row[6] if self.__reg.caC is not None or row[auth_atom_id_col] in emptyValue else row[auth_atom_id_col]
+                                    _row[19] = _row[6] if self.__reg.caC is not None or row[auth_atom_id_col] in EMPTY_VALUE else row[auth_atom_id_col]
 
                     # DAOTHER-9065
-                    if isinstance(_row[1], int) and str(_row[1]) not in seq_id_offset_for_unmapped and _row[24] in emptyValue:
+                    if isinstance(_row[1], int) and str(_row[1]) not in seq_id_offset_for_unmapped and _row[24] in EMPTY_VALUE:
                         if isinstance(_row[3], int):
                             if isinstance(_row[17], int):
                                 seq_id_offset_for_unmapped[str(_row[1])] = _row[3] - _row[17]
                             elif isinstance(_row[17], str) and _row[17].isdigit():
                                 seq_id_offset_for_unmapped[str(_row[1])] = _row[3] - int(_row[17])
-                    elif isinstance(_row[1], str) and _row[1] not in seq_id_offset_for_unmapped and _row[24] in emptyValue:
+                    elif isinstance(_row[1], str) and _row[1] not in seq_id_offset_for_unmapped and _row[24] in EMPTY_VALUE:
                         if isinstance(_row[3], int):
                             if isinstance(_row[17], int):
                                 seq_id_offset_for_unmapped[_row[1]] = _row[3] - _row[17]
@@ -7170,7 +7170,7 @@ class NmrDpRemediation:
                                 _atom_type = _atom_id[0]
                                 _ambig_code = str(ambig_code)
                                 _atom_ids_in_group = self.__reg.ccU.getProtonsInSameGroup(comp_id, _atom_id)\
-                                    if _atom_type in protonBeginCode else []
+                                    if _atom_type in PROTON_BEGIN_CODE else []
                                 ambig_code_4_test = hetero_group_test = False
                                 _idx = idx
                                 for offset in range(1, 10):
@@ -7312,7 +7312,7 @@ class NmrDpRemediation:
                         elif ambig_code in (4, 5, 6, 9):
                             has_genuine_ambig_code = True
 
-                    if _row[8] not in emptyValue:  # DAOTHER-9520: Atom_isotppe_number is mandatory
+                    if _row[8] not in EMPTY_VALUE:  # DAOTHER-9520: Atom_isotppe_number is mandatory
                         lp.add_data(_row)
 
                         index += 1
@@ -7358,7 +7358,7 @@ class NmrDpRemediation:
                 for _id in conflict_id:
                     del lp.data[_id]
 
-            if not any(True for _row in lp if _row[1] in emptyValue or (isinstance(_row[1], str) and not _row[1].isdigit())):
+            if not any(True for _row in lp if _row[1] in EMPTY_VALUE or (isinstance(_row[1], str) and not _row[1].isdigit())):
                 try:
                     lp.sort_rows(['Atom_ID', 'Atom_isotope_number', 'Comp_index_ID', 'Entity_assembly_ID'])
                 except (TypeError, ValueError):
@@ -7375,7 +7375,7 @@ class NmrDpRemediation:
 
                     ambig_code = _row[12]
 
-                    if _row[13] not in emptyValue:
+                    if _row[13] not in EMPTY_VALUE:
                         ambig_code = copy.copy(_row[12])
                         ambig_set_id = copy.copy(_row[13])
                         chain_id = _row[1]
@@ -8940,7 +8940,7 @@ class NmrDpRemediation:
 
                 cs_list = get_first_sf_tag(sf['saveframe'], 'Chemical_shift_list')
 
-                if cs_list in emptyValue:
+                if cs_list in EMPTY_VALUE:
                     sf_category = SF_CATEGORIES['nmr-star']['chem_shift']
                     cs_sf_list = master_entry.get_saveframes_by_category(sf_category)
                     if len(cs_sf_list) == 1:
@@ -9044,7 +9044,7 @@ class NmrDpRemediation:
         sf_name_map = {}
         for idx, sf in enumerate(star_data.get_saveframes_by_category(sf_category), start=1):
             tagNames = [t[0] for t in sf.tags]
-            if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
+            if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in EMPTY_VALUE:
                 # sf.remove_tag('Text_data')
                 if 'Text_data_format' in tagNames:
                     set_sf_tag(sf, 'Text_data_format', '.')
@@ -9082,7 +9082,7 @@ class NmrDpRemediation:
                 except KeyError:
                     pass
 
-            if get_first_sf_tag(sf, 'Text_data') in emptyValue:
+            if get_first_sf_tag(sf, 'Text_data') in EMPTY_VALUE:
                 star_data.remove_saveframe(sf.name)
                 truncated = True
 
@@ -9148,7 +9148,7 @@ class NmrDpRemediation:
 
             for idx, row in enumerate(dat):
 
-                if any(True for col in row if col in emptyValue):
+                if any(True for col in row if col in EMPTY_VALUE):
                     continue
 
                 lower_limit, target_value, upper_limit = float(row[0]), float(row[1]), float(row[2])
@@ -9310,7 +9310,7 @@ class NmrDpRemediation:
                 text_data = get_first_sf_tag(sf, 'Text_data')
 
                 if any(True for loop in sf.loops if loop.category in ('_Peak_row_format', '_Peak_general_char'))\
-                        or text_data not in emptyValue:
+                        or text_data not in EMPTY_VALUE:
 
                     list_id += 1
 
@@ -9379,7 +9379,7 @@ class NmrDpRemediation:
 
                 cs_list = get_first_sf_tag(sf, 'Chemical_shift_list')
 
-                if cs_list in emptyValue:
+                if cs_list in EMPTY_VALUE:
                     sf_category = SF_CATEGORIES['nmr-star']['chem_shift']
                     cs_sf_list = master_entry.get_saveframes_by_category(sf_category)
                     if len(cs_sf_list) == 1:
@@ -9439,7 +9439,7 @@ class NmrDpRemediation:
         if len(self.__reg.star_data) > 0 and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
             for idx, sf in enumerate(self.__reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
                 list_id = get_first_sf_tag(sf, 'ID')
-                _rlist_ids.append({'list_id': int(list_id) if list_id not in emptyValue else idx, 'data_file_name': get_first_sf_tag(sf, 'Data_file_name')})
+                _rlist_ids.append({'list_id': int(list_id) if list_id not in EMPTY_VALUE else idx, 'data_file_name': get_first_sf_tag(sf, 'Data_file_name')})
             for sf in self.__reg.star_data[0].get_saveframes_by_category('assembly'):
                 try:
                     lp = sf.get_loop('_Entity_assembly')
@@ -9549,7 +9549,7 @@ class NmrDpRemediation:
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g not in emptyValue:
+                        if g not in EMPTY_VALUE:
                             msg_dict['sf_framecode'] = g[1]
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
@@ -9638,7 +9638,7 @@ class NmrDpRemediation:
 
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g[1] not in emptyValue:
+                        if g[1] not in EMPTY_VALUE:
                             def_sf_framecode = g[1]
                             break
 
@@ -9647,7 +9647,7 @@ class NmrDpRemediation:
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        msg_dict['sf_framecode'] = g[1] if g[1] not in emptyValue else def_sf_framecode
+                        msg_dict['sf_framecode'] = g[1] if g[1] not in EMPTY_VALUE else def_sf_framecode
                         msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
@@ -9704,7 +9704,7 @@ class NmrDpRemediation:
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
-            if original_file_name in emptyValue:
+            if original_file_name in EMPTY_VALUE:
                 original_file_name = file_name
 
             reserved_list_ids = None
@@ -10248,7 +10248,7 @@ class NmrDpRemediation:
 
                 data_file_name = get_first_sf_tag(sf['saveframe'], 'Data_file_name')
 
-                if data_file_name not in emptyValue:
+                if data_file_name not in EMPTY_VALUE:
 
                     _sf_list = master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)
 
@@ -10854,7 +10854,7 @@ class NmrDpRemediation:
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g not in emptyValue:
+                        if g not in EMPTY_VALUE:
                             msg_dict['sf_framecode'] = g[1]
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
@@ -11056,7 +11056,7 @@ class NmrDpRemediation:
 
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g[1] not in emptyValue:
+                        if g[1] not in EMPTY_VALUE:
                             def_sf_framecode = g[1]
                             break
 
@@ -11065,7 +11065,7 @@ class NmrDpRemediation:
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        msg_dict['sf_framecode'] = g[1] if g[1] not in emptyValue else def_sf_framecode
+                        msg_dict['sf_framecode'] = g[1] if g[1] not in EMPTY_VALUE else def_sf_framecode
                         msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
@@ -11120,7 +11120,7 @@ class NmrDpRemediation:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
-            if original_file_name in emptyValue and self.__reg.internal_mode:
+            if original_file_name in EMPTY_VALUE and self.__reg.internal_mode:
                 original_file_name = file_name
 
             if file_type == 'nm-res-amb' and amberAtomNumberDict is None and 'has_comments' in ar and not ar['has_comments']:
@@ -12626,7 +12626,7 @@ class NmrDpRemediation:
         if len(self.__reg.star_data) > 0 and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
             for idx, sf in enumerate(self.__reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
                 list_id = get_first_sf_tag(sf, 'ID')
-                rlist_ids.append(int(list_id) if list_id not in emptyValue else idx)
+                rlist_ids.append(int(list_id) if list_id not in EMPTY_VALUE else idx)
 
         reserved_list_ids = {content_subtype: rlist_ids} if len(rlist_ids) > 0 else None
 
@@ -12924,7 +12924,7 @@ class NmrDpRemediation:
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g not in emptyValue:
+                        if g not in EMPTY_VALUE:
                             msg_dict['sf_framecode'] = g[1]
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
@@ -13057,7 +13057,7 @@ class NmrDpRemediation:
 
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g[1] not in emptyValue:
+                        if g[1] not in EMPTY_VALUE:
                             def_sf_framecode = g[1]
                             break
 
@@ -13066,7 +13066,7 @@ class NmrDpRemediation:
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        msg_dict['sf_framecode'] = g[1] if g[1] not in emptyValue else def_sf_framecode
+                        msg_dict['sf_framecode'] = g[1] if g[1] not in EMPTY_VALUE else def_sf_framecode
                         msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
@@ -13126,7 +13126,7 @@ class NmrDpRemediation:
             #         original_file_name = os.path.basename(input_source_dic['original_file_name'])
             #     if file_name != original_file_name and original_file_name is not None:
             #         file_name = f"{original_file_name} ({file_name})"
-            # if original_file_name in emptyValue:
+            # if original_file_name in EMPTY_VALUE:
             #     original_file_name = file_name
             # """
             if file_type == 'nm-pea-any':
@@ -14322,7 +14322,7 @@ class NmrDpRemediation:
 
                     cs_list = get_first_sf_tag(sf['saveframe'], 'Chemical_shift_list')
 
-                    if cs_list in emptyValue:
+                    if cs_list in EMPTY_VALUE:
                         sf_category = SF_CATEGORIES['nmr-star']['chem_shift']
                         cs_sf_list = master_entry.get_saveframes_by_category(sf_category)
                         if len(cs_sf_list) == 1:
@@ -14330,7 +14330,7 @@ class NmrDpRemediation:
 
                     # prevent duplication of spectral peak list
                     data_file_name = get_first_sf_tag(sf['saveframe'], 'Data_file_name')
-                    if data_file_name not in emptyValue and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
+                    if data_file_name not in EMPTY_VALUE and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
                         continue
 
                     try:
@@ -14714,7 +14714,7 @@ class NmrDpRemediation:
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         avr_method = get_first_sf_tag(sf, 'NOE_dist_averaging_method')
-                        if len(avr_method) > 0 and avr_method not in emptyValue:
+                        if len(avr_method) > 0 and avr_method not in EMPTY_VALUE:
                             cst_sf.add_tag('NOE_dist_averaging_method', avr_method)
                             break
 
@@ -14723,7 +14723,7 @@ class NmrDpRemediation:
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': 'distance', 'constraint_subsubtype': 'simple'}
                             constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                            if len(constraint_type) > 0 and constraint_type not in emptyValue:
+                            if len(constraint_type) > 0 and constraint_type not in EMPTY_VALUE:
                                 sf_item[sf_framecode]['constraint_subtype'] = constraint_type
 
                         lp = sf.get_loop(lp_category)
@@ -14764,7 +14764,7 @@ class NmrDpRemediation:
                         has_or_code = False
 
                         potential_type = get_first_sf_tag(sf, 'Potential_type')
-                        has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+                        has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
 
                         _potential_type = None
                         count = 0
@@ -14780,15 +14780,15 @@ class NmrDpRemediation:
                             count += 1
                             if not has_potential_type:
                                 dst_func = {}
-                                if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                                if target_value_col != -1 and row[target_value_col] not in EMPTY_VALUE:
                                     dst_func['target_value'] = float(row[target_value_col])
-                                if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                                if lower_limit_col != -1 and row[lower_limit_col] not in EMPTY_VALUE:
                                     dst_func['lower_limit'] = float(row[lower_limit_col])
-                                if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                                if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE:
                                     dst_func['upper_limit'] = float(row[upper_limit_col])
-                                if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                                if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in EMPTY_VALUE:
                                     dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
-                                if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                                if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in EMPTY_VALUE:
                                     dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
                                 if _potential_type is None:
                                     _potential_type = getPotentialType(file_type, 'dist', dst_func)
@@ -14809,21 +14809,21 @@ class NmrDpRemediation:
                                     _id = int(row[id_col])
                                     if _id != prev_id:
                                         _atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                                  'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
+                                                  'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                                   'comp_id': row[comp_id_1_col],
                                                   'atom_id': row[atom_id_1_col]}
                                         _atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                                  'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
+                                                  'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                                   'comp_id': row[comp_id_2_col],
                                                   'atom_id': row[atom_id_2_col]}
                                         prev_id = _id
                                         continue
                                     atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                             'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
+                                             'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                              'comp_id': row[comp_id_1_col],
                                              'atom_id': row[atom_id_1_col]}
                                     atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                             'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
+                                             'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                              'comp_id': row[comp_id_2_col],
                                              'atom_id': row[atom_id_2_col]}
                                     if isAmbigAtomSelection([_atom1, atom1], self.__reg.csStat)\
@@ -14857,7 +14857,7 @@ class NmrDpRemediation:
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
 
-                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                                if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE:
                                     continue
 
                                 atom_id_1_ = atom_id_1[0]
@@ -14868,17 +14868,17 @@ class NmrDpRemediation:
                                     disele_bond = True
                                 elif 'SG' in (atom_id_1, atom_id_2):
                                     disulf_bond = True
-                                elif (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+                                elif (atom_id_1_ == 'F' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'F' and atom_id_1_ in PROTON_BEGIN_CODE):
                                     hydrog_bond = True
                                 elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
                                     hydrog_bond = True
-                                elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+                                elif (atom_id_1_ == 'O' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'O' and atom_id_1_ in PROTON_BEGIN_CODE):
                                     hydrog_bond = True
                                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
                                     hydrog_bond = True
                                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
                                     hydrog_bond = True
-                                elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+                                elif (atom_id_1_ == 'N' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'N' and atom_id_1_ in PROTON_BEGIN_CODE):
                                     hydrog_bond = True
                                 elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
                                     hydrog_bond = True
@@ -14977,17 +14977,17 @@ class NmrDpRemediation:
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
 
-                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
+                                if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE or _id == prev_id:
                                     continue
 
                                 prev_id = _id
 
                                 combination_id = row[combination_id_col] if combination_id_col != -1 else None
-                                upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
+                                upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE else None
 
                                 offset = abs(seq_id_1 - seq_id_2)
                                 ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                                uniq = combination_id in emptyValue and not ambig
+                                uniq = combination_id in EMPTY_VALUE and not ambig
 
                                 NOE_tot_num += 1
 
@@ -15055,7 +15055,7 @@ class NmrDpRemediation:
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         avr_method = get_first_sf_tag(sf, 'ROE_dist_averaging_method')
-                        if len(avr_method) > 0 or avr_method not in emptyValue:
+                        if len(avr_method) > 0 or avr_method not in EMPTY_VALUE:
                             cst_sf.add_tag('ROE_dist_averaging_method', avr_method)
                             break
 
@@ -15120,17 +15120,17 @@ class NmrDpRemediation:
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
 
-                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
+                                if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE or _id == prev_id:
                                     continue
 
                                 prev_id = _id
 
                                 combination_id = row[combination_id_col] if combination_id_col != -1 else None
-                                upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
+                                upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE else None
 
                                 offset = abs(seq_id_1 - seq_id_2)
                                 ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                                uniq = combination_id in emptyValue and not ambig
+                                uniq = combination_id in EMPTY_VALUE and not ambig
 
                                 ROE_tot_num += 1
 
@@ -15205,7 +15205,7 @@ class NmrDpRemediation:
                             upper_linear_limit_col = -1
 
                         potential_type = get_first_sf_tag(sf, 'Potential_type')
-                        has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+                        has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
 
                         _potential_type = None
                         count = 0
@@ -15219,15 +15219,15 @@ class NmrDpRemediation:
                             count += 1
                             if not has_potential_type:
                                 dst_func = {}
-                                if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                                if target_value_col != -1 and row[target_value_col] not in EMPTY_VALUE:
                                     dst_func['target_value'] = float(row[target_value_col])
-                                if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                                if lower_limit_col != -1 and row[lower_limit_col] not in EMPTY_VALUE:
                                     dst_func['lower_limit'] = float(row[lower_limit_col])
-                                if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                                if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE:
                                     dst_func['upper_limit'] = float(row[upper_limit_col])
-                                if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                                if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in EMPTY_VALUE:
                                     dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
-                                if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                                if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in EMPTY_VALUE:
                                     dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
                                 if _potential_type is None:
                                     _potential_type = getPotentialType(file_type, 'dihed', dst_func)
@@ -15272,7 +15272,7 @@ class NmrDpRemediation:
                             prev_id = _id
                             auth_asym_id = row[auth_asym_id_col]
                             try:
-                                auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                                auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                             except (ValueError, TypeError):
                                 continue
                             auth_comp_id = row[auth_comp_id_col]
@@ -15350,7 +15350,7 @@ class NmrDpRemediation:
                             prev_id = _id
                             auth_asym_id = row[auth_asym_id_col]
                             try:
-                                auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                                auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                             except (ValueError, TypeError):
                                 continue
                             auth_comp_id = row[auth_comp_id_col]
@@ -15426,7 +15426,7 @@ class NmrDpRemediation:
                             prev_id = _id
                             auth_asym_id = row[auth_asym_id_col]
                             try:
-                                auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                                auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                             except (ValueError, TypeError):
                                 continue
                             auth_comp_id = row[auth_comp_id_col]
@@ -15489,7 +15489,7 @@ class NmrDpRemediation:
                             upper_linear_limit_col = -1
 
                         potential_type = get_first_sf_tag(sf, 'Potential_type')
-                        has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+                        has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
 
                         _potential_type = None
                         count = 0
@@ -15503,15 +15503,15 @@ class NmrDpRemediation:
                             count += 1
                             if not has_potential_type:
                                 dst_func = {}
-                                if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                                if target_value_col != -1 and row[target_value_col] not in EMPTY_VALUE:
                                     dst_func['target_value'] = float(row[target_value_col])
-                                if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                                if lower_limit_col != -1 and row[lower_limit_col] not in EMPTY_VALUE:
                                     dst_func['lower_limit'] = float(row[lower_limit_col])
-                                if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                                if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE:
                                     dst_func['upper_limit'] = float(row[upper_limit_col])
-                                if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                                if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in EMPTY_VALUE:
                                     dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
-                                if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                                if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in EMPTY_VALUE:
                                     dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
                                 if _potential_type is None:
                                     _potential_type = getPotentialType(file_type, 'rdc', dst_func)
@@ -15576,15 +15576,15 @@ class NmrDpRemediation:
                             chain_id_1 = row[chain_id_1_col]
                             chain_id_2 = row[chain_id_2_col]
                             try:
-                                seq_id_1 = int(row[seq_id_1_col]) if row[seq_id_1_col] not in emptyValue else None
-                                seq_id_2 = int(row[seq_id_2_col]) if row[seq_id_2_col] not in emptyValue else None
+                                seq_id_1 = int(row[seq_id_1_col]) if row[seq_id_1_col] not in EMPTY_VALUE else None
+                                seq_id_2 = int(row[seq_id_2_col]) if row[seq_id_2_col] not in EMPTY_VALUE else None
                             except (ValueError, TypeError):
                                 continue
                             comp_id_1 = row[comp_id_1_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
 
-                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                            if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE:
                                 continue
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -15612,7 +15612,7 @@ class NmrDpRemediation:
                                 elif vector == {'CA', 'N'} and offset == 0:
                                     RDC_CAN_tot_num += 1
                                 elif atom_id_1[0] == atom_id_2[0]:
-                                    if atom_id_1[0] in protonBeginCode:
+                                    if atom_id_1[0] in PROTON_BEGIN_CODE:
                                         RDC_HH_tot_num += 1
                                     elif atom_id_1[0] == 'C':
                                         RDC_CC_tot_num += 1
@@ -15634,14 +15634,14 @@ class NmrDpRemediation:
                                     RDC_medium_range_tot_num += 1
                                 else:
                                     RDC_long_range_tot_num += 1
-                                if combination_id in emptyValue:
+                                if combination_id in EMPTY_VALUE:
                                     RDC_unambig_intramol_tot_num += 1
                                 else:
                                     RDC_ambig_intramol_tot_num += 1
 
                             else:
                                 RDC_intermol_tot_num += 1
-                                if combination_id in emptyValue:
+                                if combination_id in EMPTY_VALUE:
                                     RDC_unambig_intermol_tot_num += 1
                                 else:
                                     RDC_ambig_intermol_tot_num += 1
@@ -15807,7 +15807,7 @@ class NmrDpRemediation:
                             row[2] = _block_id
                         constraint_type = sf_item[sf_framecode]['constraint_type']
                         constraint_subtype = get_first_sf_tag(sf, 'Constraint_type') if content_subtype != 'other_restraint' else get_first_sf_tag(sf, 'Definition')
-                        if len(constraint_subtype) == 0 or constraint_subtype in emptyValue:
+                        if len(constraint_subtype) == 0 or constraint_subtype in EMPTY_VALUE:
                             constraint_subtype = sf_item[sf_framecode]['constraint_subtype']\
                                 if 'constraint_subtype' in sf_item[sf_framecode] else None
                         if constraint_subtype is not None and constraint_subtype == 'RDC':  # DAOTHER-9471
@@ -15849,7 +15849,7 @@ class NmrDpRemediation:
                         for block_id in v:
                             for sf in master_entry.get_saveframes_by_category('general_distance_constraints'):
                                 _block_id = get_first_sf_tag(sf, 'Block_ID')
-                                if _block_id in emptyValue:
+                                if _block_id in EMPTY_VALUE:
                                     continue
                                 if isinstance(_block_id, int):
                                     _block_id = str(_block_id)
@@ -16159,7 +16159,7 @@ class NmrDpRemediation:
                     if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
                         continue
 
-                    if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                    if 'original_file_name' in ar and ar['original_file_name'] not in EMPTY_VALUE:
                         file_name = ar['original_file_name']
                     else:
                         file_name = input_source_dic['file_name']
@@ -16211,7 +16211,7 @@ class NmrDpRemediation:
                             use_member_logic_code = False
                         else:
                             dat = lp.get_tag(['Member_logic_code'])
-                            use_member_logic_code = any(True for row in dat if row not in emptyValue)
+                            use_member_logic_code = any(True for row in dat if row not in EMPTY_VALUE)
 
                     if not use_member_logic_code:
                         self.__reg.dpV.updateGenDistConstIdInMrStr(sf_item)
@@ -16265,17 +16265,17 @@ class NmrDpRemediation:
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
 
-                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
+                            if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE or _id == prev_id:
                                 continue
 
                             prev_id = _id
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
-                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
+                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE else None
 
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                            uniq = combination_id in emptyValue and not ambig
+                            uniq = combination_id in EMPTY_VALUE and not ambig
 
                             NOE_tot_num += 1
 
@@ -16408,17 +16408,17 @@ class NmrDpRemediation:
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
 
-                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
+                            if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE or _id == prev_id:
                                 continue
 
                             prev_id = _id
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
-                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
+                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE else None
 
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                            uniq = combination_id in emptyValue and not ambig
+                            uniq = combination_id in EMPTY_VALUE and not ambig
 
                             ROE_tot_num += 1
 
@@ -16497,7 +16497,7 @@ class NmrDpRemediation:
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
                         try:
-                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                         except (ValueError, TypeError):
                             continue
                         auth_comp_id = row[auth_comp_id_col]
@@ -16621,7 +16621,7 @@ class NmrDpRemediation:
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
                         try:
-                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                         except (ValueError, TypeError):
                             continue
                         auth_comp_id = row[auth_comp_id_col]
@@ -16726,7 +16726,7 @@ class NmrDpRemediation:
                         prev_id = _id
                         auth_asym_id = row[auth_asym_id_col]
                         try:
-                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                         except (ValueError, TypeError):
                             continue
                         auth_comp_id = row[auth_comp_id_col]
@@ -16843,7 +16843,7 @@ class NmrDpRemediation:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
 
-                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                        if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE:
                             continue
 
                         combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -16871,7 +16871,7 @@ class NmrDpRemediation:
                             elif vector == {'CA', 'N'} and offset == 0:
                                 RDC_CAN_tot_num += 1
                             elif atom_id_1[0] == atom_id_2[0]:
-                                if atom_id_1[0] in protonBeginCode:
+                                if atom_id_1[0] in PROTON_BEGIN_CODE:
                                     RDC_HH_tot_num += 1
                                 elif atom_id_1[0] == 'C':
                                     RDC_CC_tot_num += 1
@@ -16893,14 +16893,14 @@ class NmrDpRemediation:
                                 RDC_medium_range_tot_num += 1
                             else:
                                 RDC_long_range_tot_num += 1
-                            if combination_id in emptyValue:
+                            if combination_id in EMPTY_VALUE:
                                 RDC_unambig_intramol_tot_num += 1
                             else:
                                 RDC_ambig_intramol_tot_num += 1
 
                         else:
                             RDC_intermol_tot_num += 1
-                            if combination_id in emptyValue:
+                            if combination_id in EMPTY_VALUE:
                                 RDC_unambig_intermol_tot_num += 1
                             else:
                                 RDC_ambig_intermol_tot_num += 1
@@ -16966,10 +16966,10 @@ class NmrDpRemediation:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
 
-                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                        if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE:
                             continue
 
-                        if atom_id_1[0] in protonBeginCode:
+                        if atom_id_1[0] in PROTON_BEGIN_CODE:
                             if self.__reg.ccU.updateChemCompDict(comp_id_1):
                                 bonded_atom_id_1 = self.__reg.ccU.getBondedAtoms(comp_id_1, atom_id_1)
                                 if len(bonded_atom_id_1) == 0:
@@ -16982,7 +16982,7 @@ class NmrDpRemediation:
                                            and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
                                            and _row[atom_id_2_col] == bonded_atom_id_1[0])):
                                     continue
-                        if atom_id_2[0] in protonBeginCode:
+                        if atom_id_2[0] in PROTON_BEGIN_CODE:
                             if self.__reg.ccU.updateChemCompDict(comp_id_2):
                                 bonded_atom_id_2 = self.__reg.ccU.getBondedAtoms(comp_id_2, atom_id_2)
                                 if len(bonded_atom_id_2) == 0:
@@ -17040,10 +17040,10 @@ class NmrDpRemediation:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
 
-                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                        if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE:
                             continue
 
-                        if atom_id_1[0] in protonBeginCode:
+                        if atom_id_1[0] in PROTON_BEGIN_CODE:
                             if self.__reg.ccU.updateChemCompDict(comp_id_1):
                                 bonded_atom_id_1 = self.__reg.ccU.getBondedAtoms(comp_id_1, atom_id_1)
                                 if len(bonded_atom_id_1) == 0:
@@ -17056,7 +17056,7 @@ class NmrDpRemediation:
                                            and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
                                            and _row[atom_id_2_col] == bonded_atom_id_1[0])):
                                     continue
-                        if atom_id_2[0] in protonBeginCode:
+                        if atom_id_2[0] in PROTON_BEGIN_CODE:
                             if self.__reg.ccU.updateChemCompDict(comp_id_2):
                                 bonded_atom_id_2 = self.__reg.ccU.getBondedAtoms(comp_id_2, atom_id_2)
                                 if len(bonded_atom_id_2) == 0:
@@ -17227,7 +17227,7 @@ class NmrDpRemediation:
                 _name = get_first_sf_tag(sf, 'Name')
                 _code = get_first_sf_tag(sf, 'Sf_framecode')
                 defined_software.append(_name)
-                if _id not in emptyValue and _name not in emptyValue \
+                if _id not in EMPTY_VALUE and _name not in EMPTY_VALUE \
                    and (isinstance(_id, int) or _id.isdigit())\
                    and _name not in software_dict:
                     _id_ = int(_id) if isinstance(_id, str) else _id
@@ -17489,7 +17489,7 @@ class NmrDpRemediation:
             cyana_subtype = {}
             for row in dat:
                 if row[1] == 'CYANA' and row[3] == 'distance' and row[4] == dist_subtype and row[5] == 'simple':
-                    if row[0] not in cyana_subtype or row[2] in emptyValue:
+                    if row[0] not in cyana_subtype or row[2] in EMPTY_VALUE:
                         cyana_subtype[row[0]] = []
                     cyana_subtype[row[0]].append(row[2] if isinstance(row[2], str) else str(row[2]))
 
@@ -17501,7 +17501,7 @@ class NmrDpRemediation:
                     for block_id in v:
                         for sf in master_entry.get_saveframes_by_category('general_distance_constraints'):
                             _block_id = get_first_sf_tag(sf, 'Block_ID')
-                            if _block_id in emptyValue:
+                            if _block_id in EMPTY_VALUE:
                                 continue
                             if isinstance(_block_id, int):
                                 _block_id = str(_block_id)
@@ -17562,7 +17562,7 @@ class NmrDpRemediation:
                                         if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
                                             continue
 
-                                        if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                                        if 'original_file_name' in ar and ar['original_file_name'] not in EMPTY_VALUE:
                                             if ar['original_file_name'] == data_file_name:
                                                 ar['original_file_name'] = _data_file_name
                                                 update_data_file_name = True
@@ -17657,7 +17657,7 @@ class NmrDpRemediation:
                                         if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
                                             continue
 
-                                        if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                                        if 'original_file_name' in ar and ar['original_file_name'] not in EMPTY_VALUE:
                                             if ar['original_file_name'] == data_file_name:
                                                 ar['original_file_name'] = _data_file_name
                                                 update_data_file_name = True
@@ -17716,7 +17716,7 @@ class NmrDpRemediation:
                 if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
                     continue
 
-                if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                if 'original_file_name' in ar and ar['original_file_name'] not in EMPTY_VALUE:
                     file_name = ar['original_file_name']
                 else:
                     file_name = input_source_dic['file_name']

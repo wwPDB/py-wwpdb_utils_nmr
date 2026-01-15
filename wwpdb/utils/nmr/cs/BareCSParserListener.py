@@ -19,17 +19,17 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
-    from wwpdb.utils.nmr.cs.BareCSParser import BareCSParser
-    from wwpdb.utils.nmr.cs.BaseCSParserListener import (BaseCSParserListener,
-                                                         CHEM_SHIFT_HALF_SPIN_NUCLEUS)
+    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+                                               ASSIGNMENT_HALF_SPIN_NUCLEUS)
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import monDict3
+    from wwpdb.utils.nmr.cs.BareCSParser import BareCSParser
+    from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
 except ImportError:
-    from nmr.cs.BareCSParser import BareCSParser
-    from nmr.cs.BaseCSParserListener import (BaseCSParserListener,
-                                             CHEM_SHIFT_HALF_SPIN_NUCLEUS)
+    from nmr.NmrDpConstant import (MONDICT3,
+                                   ASSIGNMENT_HALF_SPIN_NUCLEUS)
     from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import monDict3
+    from nmr.cs.BareCSParser import BareCSParser
+    from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
 # This class defines a complete listener for a parse tree produced by BareCSParser.
@@ -82,7 +82,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 @return: True for spin 1/2 nuclei, False otherwise
             """
 
-            return any(True for nucl in CHEM_SHIFT_HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
+            return any(True for nucl in ASSIGNMENT_HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
 
         atom_like_names = self.csStat.getAtomLikeNameSet(1)
         cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))
@@ -238,7 +238,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                     if len(comp_id) == 1:
                                         if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             try:
-                                                comp_id = next(k for k, v in monDict3.items() if v == comp_id)
+                                                comp_id = next(k for k, v in MONDICT3.items() if v == comp_id)
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -250,7 +250,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                     if len(comp_id) == 1:
                                         if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             try:
-                                                comp_id = next(k for k, v in monDict3.items() if v == comp_id)
+                                                comp_id = next(k for k, v in MONDICT3.items() if v == comp_id)
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -341,7 +341,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                     if len(comp_id) == 1:
                                         if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             try:
-                                                comp_id = next(k for k, v in monDict3.items() if v == comp_id)
+                                                comp_id = next(k for k, v in MONDICT3.items() if v == comp_id)
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -353,7 +353,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                     if len(comp_id) == 1:
                                         if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             try:
-                                                comp_id = next(k for k, v in monDict3.items() if v == comp_id)
+                                                comp_id = next(k for k, v in MONDICT3.items() if v == comp_id)
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:

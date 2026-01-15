@@ -21,6 +21,48 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               RDC_BB_PAIR_CODE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                               PLANE_LIKE_LOWER_LIMIT,
+                                               PLANE_LIKE_UPPER_LIMIT,
+                                               DIST_RESTRAINT_RANGE,
+                                               DIST_RESTRAINT_ERROR,
+                                               ANGLE_RESTRAINT_RANGE,
+                                               ANGLE_RESTRAINT_ERROR,
+                                               RDC_RESTRAINT_RANGE,
+                                               RDC_RESTRAINT_ERROR,
+                                               DIST_RANGE_MIN,
+                                               DIST_RANGE_MAX,
+                                               DIST_ERROR_MIN,
+                                               DIST_ERROR_MAX,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               ANGLE_RANGE_MIN,
+                                               ANGLE_RANGE_MAX,
+                                               ANGLE_ERROR_MIN,
+                                               ANGLE_ERROR_MAX,
+                                               RDC_RANGE_MIN,
+                                               RDC_RANGE_MAX,
+                                               RDC_ERROR_MIN,
+                                               RDC_ERROR_MAX,
+                                               NMR_STAR_LP_KEY_ITEMS,
+                                               CARTN_DATA_ITEMS)
+    from wwpdb.utils.nmr.AlignUtil import (updatePolySeqRstFromAtomSelectionSet,
+                                           sortPolySeqRst,
+                                           alignPolymerSequence,
+                                           assignPolymerSequence,
+                                           trimSequenceAlignment)
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance,
+                                                dist_error,
+                                                angle_target_values,
+                                                dihedral_angle,
+                                                angle_error)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.GromacsMRParser import GromacsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -42,38 +84,50 @@ try:
                                                        getStarAtom,
                                                        resetMemberId,
                                                        getDistConstraintType,
-                                                       getPotentialType,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                                       PLANE_LIKE_LOWER_LIMIT,
-                                                       PLANE_LIKE_UPPER_LIMIT,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_ERROR,
-                                                       ANGLE_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_ERROR,
-                                                       RDC_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_ERROR,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       NMR_STAR_LP_KEY_ITEMS,
-                                                       CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           rdcBbPairCode,
-                                           updatePolySeqRstFromAtomSelectionSet,
-                                           sortPolySeqRst,
-                                           alignPolymerSequence,
-                                           assignPolymerSequence,
-                                           trimSequenceAlignment)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
-                                                distance,
-                                                dist_error,
-                                                angle_target_values,
-                                                dihedral_angle,
-                                                angle_error)
+                                                       getPotentialType)
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   RDC_BB_PAIR_CODE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                   PLANE_LIKE_LOWER_LIMIT,
+                                   PLANE_LIKE_UPPER_LIMIT,
+                                   DIST_RESTRAINT_RANGE,
+                                   DIST_RESTRAINT_ERROR,
+                                   ANGLE_RESTRAINT_RANGE,
+                                   ANGLE_RESTRAINT_ERROR,
+                                   RDC_RESTRAINT_RANGE,
+                                   RDC_RESTRAINT_ERROR,
+                                   DIST_RANGE_MIN,
+                                   DIST_RANGE_MAX,
+                                   DIST_ERROR_MIN,
+                                   DIST_ERROR_MAX,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   ANGLE_RANGE_MIN,
+                                   ANGLE_RANGE_MAX,
+                                   ANGLE_ERROR_MIN,
+                                   ANGLE_ERROR_MAX,
+                                   RDC_RANGE_MIN,
+                                   RDC_RANGE_MAX,
+                                   RDC_ERROR_MIN,
+                                   RDC_ERROR_MAX,
+                                   NMR_STAR_LP_KEY_ITEMS,
+                                   CARTN_DATA_ITEMS)
+    from nmr.AlignUtil import (updatePolySeqRstFromAtomSelectionSet,
+                               sortPolySeqRst,
+                               alignPolymerSequence,
+                               assignPolymerSequence,
+                               trimSequenceAlignment)
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance,
+                                    dist_error,
+                                    angle_target_values,
+                                    dihedral_angle,
+                                    angle_error)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.GromacsMRParser import GromacsMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -95,57 +149,7 @@ except ImportError:
                                            getStarAtom,
                                            resetMemberId,
                                            getDistConstraintType,
-                                           getPotentialType,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                           PLANE_LIKE_LOWER_LIMIT,
-                                           PLANE_LIKE_UPPER_LIMIT,
-                                           DIST_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_ERROR,
-                                           ANGLE_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_ERROR,
-                                           RDC_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_ERROR,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           NMR_STAR_LP_KEY_ITEMS,
-                                           CARTN_DATA_ITEMS)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (emptyValue,
-                               rdcBbPairCode,
-                               updatePolySeqRstFromAtomSelectionSet,
-                               sortPolySeqRst,
-                               alignPolymerSequence,
-                               assignPolymerSequence,
-                               trimSequenceAlignment)
-    from nmr.NmrVrptUtility import (to_np_array,
-                                    distance,
-                                    dist_error,
-                                    angle_target_values,
-                                    dihedral_angle,
-                                    angle_error)
-
-
-DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
-DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
-
-DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
-DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
-
-
-ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
-ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
-
-ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
-ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
-
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
-
-RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
-RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
+                                           getPotentialType)
 
 
 # This class defines a complete listener for a parse tree produced by GromacsMRParser.
@@ -1070,7 +1074,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                                                        self.__getCurrentRestraint())
                     self.__f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
@@ -1324,8 +1328,8 @@ class GromacsMRParserListener(ParseTreeListener):
             elif abs(seq_id_1 - seq_id_2) == 1:
 
                 if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                          or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                     pass

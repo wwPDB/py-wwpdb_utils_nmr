@@ -12,71 +12,62 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.1"
 
-import sys
 import re
 import copy
 import pynmrstar
 import itertools
 
-from packaging import version
 from operator import itemgetter
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
+                                               ALLOWED_AMBIGUITY_CODES,
+                                               ALLOWED_ISOTOPE_NUMBERS,
+                                               WELL_KNOWN_ISOTOPE_NUMBERS,
+                                               CS_UNCERT_MAX,
+                                               MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY,
+                                               PROTEIN_RELATED_WORDS,
+                                               DNA_RELATED_WORDS,
+                                               RNA_RELATED_WORDS,
+                                               ALLOWED_THIOL_STATES)
+    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           monDict3,
-                                           getOneLetterCodeCan)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
-                                                       ALLOWED_AMBIGUITY_CODES,
-                                                       ALLOWED_ISOTOPE_NUMBERS,
-                                                       WELL_KNOWN_ISOTOPE_NUMBERS,
-                                                       CS_UNCERTAINTY_RANGE,
-                                                       getMaxEffDigits,
-                                                       roundString,
-                                                       retrieveOriginalFileName)
+    from wwpdb.utils.nmr.AlignUtil import getOneLetterCodeCan
     from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
                                               get_first_sf_tag,
                                               set_sf_tag)
-    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
+                                                       roundString,
+                                                       retrieveOriginalFileName)
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
+                                   ALLOWED_AMBIGUITY_CODES,
+                                   ALLOWED_ISOTOPE_NUMBERS,
+                                   WELL_KNOWN_ISOTOPE_NUMBERS,
+                                   CS_UNCERT_MAX,
+                                   MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY,
+                                   PROTEIN_RELATED_WORDS,
+                                   DNA_RELATED_WORDS,
+                                   RNA_RELATED_WORDS,
+                                   ALLOWED_THIOL_STATES)
+    from nmr.NmrDpReport import NmrDpReport
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.AlignUtil import (emptyValue,
-                               monDict3,
-                               getOneLetterCodeCan)
-    from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
-                                           ALLOWED_AMBIGUITY_CODES,
-                                           ALLOWED_ISOTOPE_NUMBERS,
-                                           WELL_KNOWN_ISOTOPE_NUMBERS,
-                                           CS_UNCERTAINTY_RANGE,
-                                           getMaxEffDigits,
-                                           roundString,
-                                           retrieveOriginalFileName)
+    from nmr.AlignUtil import getOneLetterCodeCan
     from nmr.CifToNmrStar import (CifToNmrStar,
                                   get_first_sf_tag,
                                   set_sf_tag)
-    from nmr.NmrDpReport import NmrDpReport
-
-
-__python_3_7__ = version.parse(sys.version.split()[0]) >= version.parse("3.7.0")
-
-
-CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
-
-
-MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY = 10
-
-
-protein_related_words = ['protein', 'peptide', 'amino', 'n-term', 'c-term', 'domain', 'enzyme', 'ase']
-dna_related_words = ['dna', 'deoxyribonucleotide', 'nucleotide', "5'-", "3'-"]
-rna_related_words = ['rna', 'ribonucleotide', 'nucleotide', "5'-", "3'-"]
-
-allowed_thiol_states = ('all disulfide bound', 'all other bound', 'all free', 'not present', 'not available', 'unknown', 'not reported',
-                        'free and disulfide bound', 'free and other bound', 'free disulfide and other bound', 'disulfide and other bound')
+    from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
+                                           roundString,
+                                           retrieveOriginalFileName)
 
 
 class BMRBAnnTasks:
@@ -163,7 +154,7 @@ class BMRBAnnTasks:
             return len(value) - 1 - value.index('.') if '.' in value else 0
 
         def not_title(title: str):
-            if title in emptyValue:
+            if title in EMPTY_VALUE:
                 return True
             title = title.lower()
             return title.startswith('unidentified') or title.startswith('unclassified')\
@@ -245,7 +236,7 @@ class BMRBAnnTasks:
             except KeyError:
                 pass
 
-            if not self.__internalMode and self.__derivedEntryId not in emptyValue:
+            if not self.__internalMode and self.__derivedEntryId not in EMPTY_VALUE:
 
                 lp_category = '_Related_entries'
 
@@ -262,7 +253,7 @@ class BMRBAnnTasks:
                         for idx, row in enumerate(related_entries):
                             if row == ['BMRB', self.__derivedEntryId]:
                                 has_provenance = True
-                                if self.__derivedEntryTitle not in emptyValue:
+                                if self.__derivedEntryTitle not in EMPTY_VALUE:
                                     lp.data[idx][lp.tags.index('Relationship')] = self.__derivedEntryTitle
                                 break
 
@@ -270,7 +261,7 @@ class BMRBAnnTasks:
                             row = [None] * len(lp.tags)
                             row[lp.tags.index('Database_name')] = 'BMRB'
                             row[lp.tags.index('Database_accession_code')] = self.__derivedEntryId
-                            if self.__derivedEntryTitle not in emptyValue:
+                            if self.__derivedEntryTitle not in EMPTY_VALUE:
                                 row[lp.tags.index('Relationship')] = self.__derivedEntryTitle
                             row[lp.tags.index('Entry_ID')] = self.__entryId
 
@@ -337,10 +328,10 @@ class BMRBAnnTasks:
                         exp_list = lp.get_tag(tags)
 
                         def sync_exp_lp_and_sf(row, idx, id_col, label_col, parent_sf_tag_prefix):
-                            if (row[id_col] in emptyValue and row[label_col] not in emptyValue)\
-                               or (row[id_col] not in emptyValue and row[label_col] in emptyValue):
+                            if (row[id_col] in EMPTY_VALUE and row[label_col] not in EMPTY_VALUE)\
+                               or (row[id_col] not in EMPTY_VALUE and row[label_col] in EMPTY_VALUE):
                                 list_id = sf_framecode = None
-                                if row[id_col] in emptyValue:
+                                if row[id_col] in EMPTY_VALUE:
                                     _sf_framecode = row[label_col].lstrip('$')
                                     sf_framecode = _sf_framecode.replace(' ', '_')
                                     try:
@@ -348,7 +339,7 @@ class BMRBAnnTasks:
                                         list_id = get_first_sf_tag(parent_sf, 'ID')
                                     except KeyError:
                                         pass
-                                    if list_id in emptyValue and sf_framecode.split('_')[-1].isdigit():
+                                    if list_id in EMPTY_VALUE and sf_framecode.split('_')[-1].isdigit():
                                         list_id = sf_framecode.split('_')[-1]
                                         if _sf_framecode != sf_framecode:
                                             sf_framecode = f'{parent_sf_tag_prefix[1:]}_{list_id}'
@@ -388,7 +379,7 @@ class BMRBAnnTasks:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 smpl_id = get_first_sf_tag(sf, 'ID')
                 if not isinstance(smpl_id, int):
-                    if len(smpl_id) == 0 or smpl_id in emptyValue or not smpl_id.isdigit():
+                    if len(smpl_id) == 0 or smpl_id in EMPTY_VALUE or not smpl_id.isdigit():
                         smpl_id = 1
                         set_sf_tag(sf, 'ID', smpl_id)
                     else:
@@ -401,7 +392,7 @@ class BMRBAnnTasks:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 cs_ref_id = get_first_sf_tag(sf, 'ID')
                 if not isinstance(cs_ref_id, int):
-                    if len(cs_ref_id) == 0 or cs_ref_id in emptyValue or not cs_ref_id.isdigit():
+                    if len(cs_ref_id) == 0 or cs_ref_id in EMPTY_VALUE or not cs_ref_id.isdigit():
                         cs_ref_id = 1
                         set_sf_tag(sf, 'ID', cs_ref_id)
                     else:
@@ -417,7 +408,7 @@ class BMRBAnnTasks:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 smpl_cond_list_id = get_first_sf_tag(sf, 'ID')
                 if not isinstance(smpl_cond_list_id, int):
-                    if len(smpl_cond_list_id) == 0 or smpl_cond_list_id in emptyValue or not smpl_cond_list_id.isdigit():
+                    if len(smpl_cond_list_id) == 0 or smpl_cond_list_id in EMPTY_VALUE or not smpl_cond_list_id.isdigit():
                         smpl_cond_list_id = 1
                         set_sf_tag(sf, 'ID', smpl_cond_list_id)
                     else:
@@ -438,7 +429,7 @@ class BMRBAnnTasks:
                 self.__c2S.set_local_sf_id(sf, list_id)
                 cs_ref_id = get_first_sf_tag(sf, 'Chem_shift_reference_ID')
                 if not isinstance(cs_ref_id, int):
-                    if len(cs_ref_id) == 0 or cs_ref_id in emptyValue or not cs_ref_id.isdigit():
+                    if len(cs_ref_id) == 0 or cs_ref_id in EMPTY_VALUE or not cs_ref_id.isdigit():
                         cs_ref_id = 1
                         set_sf_tag(sf, 'Chem_shift_reference_ID', cs_ref_id)
                     else:
@@ -457,7 +448,7 @@ class BMRBAnnTasks:
 
                 smpl_cond_list_id = get_first_sf_tag(sf, 'Sample_condition_list_ID')
                 if not isinstance(smpl_cond_list_id, int):
-                    if len(smpl_cond_list_id) == 0 or smpl_cond_list_id in emptyValue or not smpl_cond_list_id.isdigit():
+                    if len(smpl_cond_list_id) == 0 or smpl_cond_list_id in EMPTY_VALUE or not smpl_cond_list_id.isdigit():
                         smpl_cond_list_id = 1
                         set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
                     else:
@@ -518,7 +509,7 @@ class BMRBAnnTasks:
                                         reserved_ids, duplicated_idxs, reserved_names = [], [], []
 
                                         for idx, cs_exp in enumerate(cs_exp_list):
-                                            if cs_exp[0] not in emptyValue:
+                                            if cs_exp[0] not in EMPTY_VALUE:
                                                 if cs_exp[0] not in reserved_ids:
                                                     reserved_ids.append(cs_exp[0])
                                                 else:
@@ -588,7 +579,7 @@ class BMRBAnnTasks:
                                 chain_id_col = lp.tags.index('Entity_assembly_ID')
 
                                 if not any(True for _row in lp
-                                           if _row[chain_id_col] in emptyValue
+                                           if _row[chain_id_col] in EMPTY_VALUE
                                            or (isinstance(_row[chain_id_col], str) and not _row[chain_id_col].isdigit())):
                                     try:
                                         lp.sort_rows(['Atom_ID', 'Atom_isotope_number', 'Comp_index_ID', 'Entity_assembly_ID'])
@@ -605,9 +596,9 @@ class BMRBAnnTasks:
                         dat = lp.get_tag(tags)
 
                         for row in dat:
-                            if isinstance(row[0], str) and row[0] not in emptyValue and row[0].isdigit():
+                            if isinstance(row[0], str) and row[0] not in EMPTY_VALUE and row[0].isdigit():
                                 ent_asym_id_with_exptl_data.add(int(row[0]))
-                            if row[1] not in emptyValue and row[2] not in emptyValue and row[3] not in emptyValue:
+                            if row[1] not in EMPTY_VALUE and row[2] not in EMPTY_VALUE and row[3] not in EMPTY_VALUE:
                                 try:
                                     seq_key = (int(row[1]), int(row[2]))
                                     if seq_key not in label_to_auth_seq:
@@ -634,9 +625,9 @@ class BMRBAnnTasks:
                                 isotope_number = int(row[0])
                                 isotope_nums[cs_ref_id].add(isotope_number)
                                 isotope_nums_in_loop.add(isotope_number)
-                                if row[1] in emptyValue and isotope_number in ALLOWED_ISOTOPE_NUMBERS:
+                                if row[1] in EMPTY_VALUE and isotope_number in ALLOWED_ISOTOPE_NUMBERS:
                                     isotope_nums_with_empty_val_err.add(isotope_number)
-                                if row[1] not in emptyValue:
+                                if row[1] not in EMPTY_VALUE:
                                     try:
                                         val_err = float(row[1])
                                         if val_err > 0.0:
@@ -650,9 +641,9 @@ class BMRBAnnTasks:
                                             lp.data[idx][val_err_col] = abs(val_err)
                                     except ValueError:
                                         pass
-                                if row[2] in emptyValue:
+                                if row[2] in EMPTY_VALUE:
                                     empty_ambig_code = True
-                                if row[3] not in emptyValue:
+                                if row[3] not in EMPTY_VALUE:
                                     if isinstance(row[3], str):
                                         entity_id = int(row[3])
                                     else:
@@ -673,7 +664,7 @@ class BMRBAnnTasks:
                                 else:
                                     continue
 
-                                if len(cs_val_err) == 0 or cs_val_err in emptyValue:
+                                if len(cs_val_err) == 0 or cs_val_err in EMPTY_VALUE:
                                     empty_val_err_tag = f'_Assigned_chem_shift_list.Chem_shift_{isotope_number}{type_symbol}_err'
                                     if empty_val_err_tag not in empty_val_err_tags:
                                         empty_val_err_tags.append(empty_val_err_tag)
@@ -688,7 +679,7 @@ class BMRBAnnTasks:
                                         try:
                                             if int(row[0]) != isotope_number:
                                                 continue
-                                            if row[1] in emptyValue:
+                                            if row[1] in EMPTY_VALUE:
                                                 lp.data[idx][val_err_col] = cs_val_err
                                         except (ValueError, TypeError):
                                             continue
@@ -706,7 +697,7 @@ class BMRBAnnTasks:
                                 else:
                                     continue
 
-                                if len(cs_val_err) == 0 or cs_val_err in emptyValue:
+                                if len(cs_val_err) == 0 or cs_val_err in EMPTY_VALUE:
                                     zero_val_err_tag = f'_Assigned_chem_shift_list.Chem_shift_{isotope_number}{type_symbol}_err'
                                     if zero_val_err_tag not in zero_val_err_tags:
                                         zero_val_err_tags.append(zero_val_err_tag)
@@ -721,7 +712,7 @@ class BMRBAnnTasks:
                                         try:
                                             if int(row[0]) != isotope_number:
                                                 continue
-                                            if row[1] in emptyValue:
+                                            if row[1] in EMPTY_VALUE:
                                                 lp.data[idx][val_err_col] = cs_val_err
                                         except (ValueError, TypeError):
                                             continue
@@ -748,7 +739,7 @@ class BMRBAnnTasks:
 
                                     checked = _ambig_code != 1
 
-                                    if ambig_code in emptyValue or (isinstance(ambig_code, str) and not ambig_code.isdigit()):
+                                    if ambig_code in EMPTY_VALUE or (isinstance(ambig_code, str) and not ambig_code.isdigit()):
                                         checked = False
                                     else:
                                         ambig_code = int(ambig_code)
@@ -759,7 +750,7 @@ class BMRBAnnTasks:
                                                 pass
                                             elif {ambig_code, _ambig_code} == {2, 3}:
                                                 checked = False
-                                            elif ambig_code in (4, 5) and ambig_set_id not in emptyValue:
+                                            elif ambig_code in (4, 5) and ambig_set_id not in EMPTY_VALUE:
                                                 checked = True
 
                                     if not checked and _ambig_code > 0:
@@ -777,7 +768,7 @@ class BMRBAnnTasks:
 
                                     checked = _ambig_code != 1
 
-                                    if ambig_code in emptyValue or (isinstance(ambig_code, str) and not ambig_code.isdigit()):
+                                    if ambig_code in EMPTY_VALUE or (isinstance(ambig_code, str) and not ambig_code.isdigit()):
                                         pass
                                     else:
                                         ambig_code = int(ambig_code)
@@ -839,7 +830,7 @@ class BMRBAnnTasks:
                             dat = lp.get_tag(['Comp_ID'])
 
                             for row in dat:
-                                if row not in emptyValue:
+                                if row not in EMPTY_VALUE:
                                     if row in ('ALA', 'ARG', 'ASN', 'ASP', 'CYS',
                                                'GLN', 'GLU', 'GLY', 'HIS', 'ILE',
                                                'LEU', 'LYS', 'MET', 'PHE', 'PRO',
@@ -876,7 +867,7 @@ class BMRBAnnTasks:
                         except KeyError:
                             pass
 
-                    if polymer_type not in emptyValue:
+                    if polymer_type not in EMPTY_VALUE:
                         if polymer_type == 'polypeptide(L)':
                             polymer_common_type = 'protein'
                         elif polymer_type == 'polydeoxyribonucleotide':
@@ -888,7 +879,7 @@ class BMRBAnnTasks:
                         if len(polymer_common_type) > 0:
                             set_sf_tag(sf, 'Polymer_common_type', polymer_common_type)
 
-                    if polymer_common_type not in emptyValue:
+                    if polymer_common_type not in EMPTY_VALUE:
                         polymer_common_types.append({polymer_common_type: entity_id})
 
                     try:
@@ -917,7 +908,7 @@ class BMRBAnnTasks:
 
                         sf.add_loop(_lp)
 
-                        if num_of_monomers in emptyValue:
+                        if num_of_monomers in EMPTY_VALUE:
                             num_of_monomers = len(dat)
 
                             lp_category = '_Entity_comp_index'
@@ -929,7 +920,7 @@ class BMRBAnnTasks:
                             dat = lp.get_tag(['Comp_ID'])
 
                             for row in dat:
-                                if row not in emptyValue:
+                                if row not in EMPTY_VALUE:
                                     if row in ('ALA', 'ARG', 'ASN', 'ASP', 'CYS',
                                                'GLN', 'GLU', 'GLY', 'HIS', 'ILE',
                                                'LEU', 'LYS', 'MET', 'PHE', 'PRO',
@@ -966,8 +957,8 @@ class BMRBAnnTasks:
                         dat = lp.get_tag(['Comp_ID'])
 
                         for row in dat:
-                            if row not in emptyValue:
-                                if row not in monDict3:
+                            if row not in EMPTY_VALUE:
+                                if row not in MONDICT3:
                                     if row not in nstd_monomers:
                                         nstd_monomers.append(row)
                                     if _type != 'non-polymer':
@@ -990,9 +981,9 @@ class BMRBAnnTasks:
                                     row[auth_seq_id_col] = label_to_auth_seq[seq_key]
                                     offset = label_to_auth_seq[seq_key] - int(row[id_col])
                                 elif offset is not None:
-                                    if row[auth_seq_id_col] in emptyValue:
+                                    if row[auth_seq_id_col] in EMPTY_VALUE:
                                         row[auth_seq_id_col] = int(row[id_col]) + offset
-                                if row[auth_seq_id_col] in emptyValue:
+                                if row[auth_seq_id_col] in EMPTY_VALUE:
                                     pass
                                 elif isinstance(row[auth_seq_id_col], int):
                                     if row[auth_seq_id_col] in reserved_auth_seq_ids:
@@ -1009,11 +1000,11 @@ class BMRBAnnTasks:
                                     except ValueError:
                                         row[auth_seq_id_col] = None
 
-                            if len(conflict_auth_seq_ids) == 0 and (all(row[auth_seq_id_col] not in emptyValue for row in lp) or len(lp) == 1):
+                            if len(conflict_auth_seq_ids) == 0 and (all(row[auth_seq_id_col] not in EMPTY_VALUE for row in lp) or len(lp) == 1):
                                 break
 
                             for row in reversed(lp):
-                                if row[auth_seq_id_col] in emptyValue:
+                                if row[auth_seq_id_col] in EMPTY_VALUE:
                                     pass
                                 elif isinstance(row[auth_seq_id_col], int):
                                     if row[auth_seq_id_col] in conflict_auth_seq_ids:
@@ -1027,7 +1018,7 @@ class BMRBAnnTasks:
                                     row[auth_seq_id_col] = label_to_auth_seq[seq_key]
                                     offset = label_to_auth_seq[seq_key] - int(row[id_col])
                                 elif offset is not None:
-                                    if row[auth_seq_id_col] in emptyValue:
+                                    if row[auth_seq_id_col] in EMPTY_VALUE:
                                         row[auth_seq_id_col] = int(row[id_col]) + offset
 
                             trial += 1
@@ -1048,7 +1039,7 @@ class BMRBAnnTasks:
                         _dat = _lp.get_tag(['Name'])
 
                         for _row in _dat:
-                            if _row not in emptyValue:
+                            if _row not in EMPTY_VALUE:
                                 for _name in _row.split(','):
                                     common_names.append(_name.strip())
 
@@ -1070,7 +1061,7 @@ class BMRBAnnTasks:
                                     _dat = _lp.get_tag(['Entity_ID', 'Gene_mnemonic'])
 
                                     for _row in _dat:
-                                        if int(_row[0]) == entity_id and _row[1] not in emptyValue:
+                                        if int(_row[0]) == entity_id and _row[1] not in EMPTY_VALUE:
                                             for _name in _row[1].split(','):
                                                 gene_mnemonic.append(_name.strip())
                                             break
@@ -1212,10 +1203,10 @@ class BMRBAnnTasks:
                     dat = lp.get_tag(tags)
 
                     for idx, row in enumerate(dat):
-                        if row[1] in emptyValue:
+                        if row[1] in EMPTY_VALUE:
                             continue
                         spectrometer_label = row[1][1:] if row[1][0] == '$' else row[1]
-                        if row[0] in emptyValue:
+                        if row[0] in EMPTY_VALUE:
                             spectrometer_id = next((k for k, v in spectrometer_dict.items() if v['label'] == spectrometer_label), None)
                             if spectrometer_id is not None:
                                 spectrometer_id_col = lp.tags.index('NMR_spectrometer_ID')
@@ -1229,7 +1220,7 @@ class BMRBAnnTasks:
             for spectrometer_id, spectrometer in spectrometer_dict.items():
 
                 sf_framecode = spectrometer['label']
-                if sf_framecode not in emptyValue and ' ' in sf_framecode:
+                if sf_framecode not in EMPTY_VALUE and ' ' in sf_framecode:
                     sf_framecode = f'NMR_spectrometer_{spectrometer_id}'
 
                 sf = next((sf for sf in master_entry.frame_list if sf.category == 'NMR_spectrometer' and sf.name == sf_framecode), None)
@@ -1352,7 +1343,7 @@ class BMRBAnnTasks:
                                     if val > 0.0:
                                         ionic_strength = f'{lp.data[idx][val_col]} {row[2]}'
                                 except (ValueError, TypeError):
-                                    if row[1] in emptyValue:
+                                    if row[1] in EMPTY_VALUE:
                                         lp.data[idx][val_col] = '?'
                                     else:
                                         if ionic_strength_pat.match(row[1]):
@@ -1506,7 +1497,7 @@ class BMRBAnnTasks:
                                 resid = (100 - total_v) // zero_comps
                                 solvent_system = {k: v if v > 0 else resid for k, v in solvent_system.items()}
 
-                    elif _solvent_system not in emptyValue:
+                    elif _solvent_system not in EMPTY_VALUE:
                         if solvent_with_percent_pat.match(_solvent_system):
                             g = solvent_with_percent_pat.search(_solvent_system).groups()
                             solvent_name = g[1].strip()
@@ -1562,14 +1553,14 @@ class BMRBAnnTasks:
                     solvent_in_sample_loop, appended_solvent_in_sample_loop, touched_entity_id = [], [], []
 
                     for idx, row in enumerate(dat):
-                        if row[7] == 'solvent' and row[1] not in emptyValue and re.search(and_pat, row[1]):
+                        if row[7] == 'solvent' and row[1] not in EMPTY_VALUE and re.search(and_pat, row[1]):
                             del lp.data[idx]
                             break
 
                     entity_id_remap = {}
                     if len(entity_dict) > 1:
                         for idx, row in enumerate(dat):
-                            if row[1] not in emptyValue and row[5] not in emptyValue:
+                            if row[1] not in EMPTY_VALUE and row[5] not in EMPTY_VALUE:
                                 key = row[1].lower()
                                 entity_id = int(row[5]) if isinstance(row[5], str) else row[5]
                                 if entity_id in entity_dict:
@@ -1583,10 +1574,10 @@ class BMRBAnnTasks:
                                                 entity_id_remap[k] = entity_id
 
                     for idx, row in enumerate(dat):
-                        if row[0] in emptyValue:
+                        if row[0] in EMPTY_VALUE:
                             lp.data[idx][id_col] = idx + 1
                         entity_id = None
-                        if row[5] not in emptyValue:
+                        if row[5] not in EMPTY_VALUE:
                             entity_id = _entity_id = int(row[5]) if isinstance(row[5], str) else row[5]
                             entity_id = entity_id_remap.get(entity_id, entity_id)
                             if entity_id in entity_dict:
@@ -1596,11 +1587,11 @@ class BMRBAnnTasks:
                                 lp.data[idx][assembly_label_col] = entity['assembly_label']
                                 lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
                                 lp.data[idx][type_col] = entity['sample_type']
-                                if row[8] in emptyValue and (row[9] in emptyValue or row[10] in emptyValue):
+                                if row[8] in EMPTY_VALUE and (row[9] in EMPTY_VALUE or row[10] in EMPTY_VALUE):
                                     has_mand_concentration_val = False
                                 has_poly_entity = True
                                 touched_entity_id.append(entity_id)
-                        elif row[1] not in emptyValue:
+                        elif row[1] not in EMPTY_VALUE:
                             if redundant_solvent_pat.match(row[1]):
                                 h = redundant_solvent_pat.search(row[1])
                                 if h[1] == h[2]:
@@ -1616,17 +1607,17 @@ class BMRBAnnTasks:
                                         if cross_check_entity(key, entity) and k not in touched_entity_id:
                                             entity_id = k
                                             break
-                            if entity_id is None and any(word in key for word in protein_related_words):
+                            if entity_id is None and any(word in key for word in PROTEIN_RELATED_WORDS):
                                 can_entity_id = [k for k, v in entity_dict.items()
                                                  if k not in touched_entity_id and v['sample_type'] in ('protein', 'peptide')]
                                 if len(can_entity_id) == 1:
                                     entity_id = can_entity_id[0]
-                            if entity_id is None and any(word in key for word in dna_related_words):
+                            if entity_id is None and any(word in key for word in DNA_RELATED_WORDS):
                                 can_entity_id = [k for k, v in entity_dict.items()
                                                  if k not in touched_entity_id and v['sample_type'] == 'DNA']
                                 if len(can_entity_id) == 1:
                                     entity_id = can_entity_id[0]
-                            if entity_id is None and any(word in key for word in rna_related_words):
+                            if entity_id is None and any(word in key for word in RNA_RELATED_WORDS):
                                 can_entity_id = [k for k, v in entity_dict.items()
                                                  if k not in touched_entity_id and v['sample_type'] == 'RNA']
                                 if len(can_entity_id) == 1:
@@ -1640,7 +1631,7 @@ class BMRBAnnTasks:
                                 lp.data[idx][entity_id_col] = entity_id
                                 lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
                                 lp.data[idx][type_col] = entity['sample_type']
-                                if row[8] in emptyValue and (row[9] in emptyValue or row[10] in emptyValue):
+                                if row[8] in EMPTY_VALUE and (row[9] in EMPTY_VALUE or row[10] in EMPTY_VALUE):
                                     has_mand_concentration_val = False
                                 if entity['sample_type'] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid'):
                                     has_poly_entity = True
@@ -1649,7 +1640,7 @@ class BMRBAnnTasks:
                                     lp.data[idx][isotopic_labeling_col] = solvent_isotope[row[1]]
                                 lp.data[idx][type_col] = 'solvent'
                                 lp.data[idx][concentration_val_col] = solvent_system[row[1]]
-                                if row[11] in emptyValue:
+                                if row[11] in EMPTY_VALUE:
                                     lp.data[idx][concentration_val_units_col] = '%'
                                 if row[1] not in solvent_in_sample_loop:
                                     solvent_in_sample_loop.append(row[1])
@@ -1723,7 +1714,7 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'solvent'
                                     solvent_in_sample_loop.append('D2O')
 
-                        if row[2] not in emptyValue:
+                        if row[2] not in EMPTY_VALUE:
                             if is_natural_abundance(row[2]):
                                 lp.data[idx][isotopic_labeling_col] = 'natural abundance'
                             if ',' in row[2] and ']-' not in row[2]:
@@ -1776,7 +1767,7 @@ class BMRBAnnTasks:
                                 if effective_labeling:
                                     lp.data[idx][isotopic_labeling_col] = f'[{"; ".join(isotopic_labelings)}]'
 
-                        if row[8] not in emptyValue and isinstance(row[8], str):
+                        if row[8] not in EMPTY_VALUE and isinstance(row[8], str):
                             for delimiter in ('-', '/', ':', ',', '~'):
                                 if delimiter not in row[8]:
                                     continue
@@ -1835,7 +1826,7 @@ class BMRBAnnTasks:
                                                if entity_dict[_entity_id]['sample_type'] in ('DNA', 'RNA', 'DNA/RNA hybrid')), None)
                             if _entity_id is not None:
                                 _row = next((_row for _row in lp.data
-                                             if _row[entity_id_col] not in emptyValue
+                                             if _row[entity_id_col] not in EMPTY_VALUE
                                              and ((isinstance(_row[entity_id_col], str) and int(_row[entity_id_col]) == _entity_id)
                                                   or (isinstance(_row[entity_id_col], int) and _row[entity_id_col] == _entity_id))), None)
                                 if _row is not None:
@@ -1861,7 +1852,7 @@ class BMRBAnnTasks:
                     if is_single_sample_loop:
 
                         for row in dat:
-                            if row[5] in emptyValue:
+                            if row[5] in EMPTY_VALUE:
                                 continue
                             if not is_natural_abundance(row[2]):
                                 continue
@@ -1892,13 +1883,13 @@ class BMRBAnnTasks:
                         if ref_concentration_val is not None:
                             can_ligand_idx = None
                             for idx, row in enumerate(lp):
-                                if row[entity_id_col] in emptyValue:
+                                if row[entity_id_col] in EMPTY_VALUE:
                                     test_concentration_val = f'{row[concentration_val_col]} '\
                                         f'{row[concentration_val_min_col]} '\
                                         f'{row[concentration_val_max_col]} '\
                                         f'{row[concentration_val_units_col]}'
                                     if test_concentration_val == ref_concentration_val\
-                                       and not any(word in row[mol_common_name_col] for word in protein_related_words)\
+                                       and not any(word in row[mol_common_name_col] for word in PROTEIN_RELATED_WORDS)\
                                        and not row[mol_common_name_col].startswith(ref_common_name):
                                         if isinstance(can_ligand_idx, int):
                                             can_ligand_idx = None
@@ -1941,7 +1932,7 @@ class BMRBAnnTasks:
                         dat = lp.get_tag(tags)
 
                         for row in dat:
-                            if row[5] in emptyValue:
+                            if row[5] in EMPTY_VALUE:
                                 continue
                             if not is_natural_abundance(row[2]):
                                 continue
@@ -1956,7 +1947,7 @@ class BMRBAnnTasks:
                         dat = lp.get_tag(tags)
 
                         for idx, row in enumerate(dat):
-                            if row[2] not in emptyValue and '?' in row[2] and row[7] == 'solvent':
+                            if row[2] not in EMPTY_VALUE and '?' in row[2] and row[7] == 'solvent':
                                 lp.data[idx][isotopic_labeling_col] = row[2].replace('?% ', '')
 
                     # sort sample loop
@@ -1976,9 +1967,9 @@ class BMRBAnnTasks:
                     for sample_type in ['protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid', 'carbohydrate', 'polysaccharide']:
                         idx_dict = []
                         for idx, row in enumerate(data):
-                            if row[1] not in emptyValue and row[1] == sample_type:
+                            if row[1] not in EMPTY_VALUE and row[1] == sample_type:
                                 entity_id = 9999
-                                if row[0] not in emptyValue:
+                                if row[0] not in EMPTY_VALUE:
                                     if isinstance(row[0], str):
                                         if row[0].isdigit():
                                             entity_id = int(row[0])
@@ -1997,7 +1988,7 @@ class BMRBAnnTasks:
                     data = lp.get_tag(tags)
 
                     for idx, row in enumerate(data):
-                        if row[0] in emptyValue and row[1] in emptyValue:
+                        if row[0] in EMPTY_VALUE and row[1] in EMPTY_VALUE:
                             entity_id = next((_row[0] for _row in data
                                               if len([term in _row[2] for term in row[2].split()]) > 2 and row[3] != _row[3]), None)
                             if entity_id is None:
@@ -2021,7 +2012,7 @@ class BMRBAnnTasks:
 
                     unsorted_sample_types = []
                     for idx, row in enumerate(data):
-                        if row[1] in emptyValue:
+                        if row[1] in EMPTY_VALUE:
                             if '' not in unsorted_sample_types:
                                 unsorted_sample_types.append('')
                             continue
@@ -2035,9 +2026,9 @@ class BMRBAnnTasks:
                         for sample_type in sorted(unsorted_sample_types):
                             idx_dict = []
                             for idx, row in enumerate(data):
-                                if row[1] not in emptyValue and row[1] == sample_type:
+                                if row[1] not in EMPTY_VALUE and row[1] == sample_type:
                                     entity_id = 9999
-                                    if row[0] not in emptyValue:
+                                    if row[0] not in EMPTY_VALUE:
                                         if isinstance(row[0], str):
                                             if row[0].isdigit():
                                                 entity_id = int(row[0])
@@ -2054,9 +2045,9 @@ class BMRBAnnTasks:
                     for sample_type in ['reducing agent', 'chelating agent', 'salt', 'buffer', 'phospholipid', 'internal reference', 'solvent']:
                         idx_dict = []
                         for idx, row in enumerate(data):
-                            if row[1] not in emptyValue and row[1] == sample_type:
+                            if row[1] not in EMPTY_VALUE and row[1] == sample_type:
                                 entity_id = 9999
-                                if row[0] not in emptyValue:
+                                if row[0] not in EMPTY_VALUE:
                                     if isinstance(row[0], str):
                                         if row[0].isdigit():
                                             entity_id = int(row[0])
@@ -2071,7 +2062,7 @@ class BMRBAnnTasks:
                                 cur_id += 1
                     # """
                     # for idx, row in enumerate(data):
-                    #     if row[1] in emptyValue:
+                    #     if row[1] in EMPTY_VALUE:
                     #         _row = lp.data[idx]
                     #         _row[type_col] = 'na (yet not decided)'
                     #         _row[id_col] = cur_id
@@ -2241,14 +2232,14 @@ class BMRBAnnTasks:
 
                                 if _idx <= MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                     volume = row[0]
-                                    if volume in emptyValue:
+                                    if volume in EMPTY_VALUE:
                                         volume = None
                                     else:
                                         volume = float(volume)
                                         has_volume = True
 
                                     height = row[1]
-                                    if height in emptyValue:
+                                    if height in EMPTY_VALUE:
                                         height = None
                                     else:
                                         height = float(height)
@@ -2260,18 +2251,18 @@ class BMRBAnnTasks:
                                                       'volume': volume,
                                                       'height': height})
 
-                                if row[4] not in emptyValue:
+                                if row[4] not in EMPTY_VALUE:
                                     has_assign = True
 
                             if has_assign:
                                 for row in dat:
-                                    if row[4] not in emptyValue:
+                                    if row[4] not in EMPTY_VALUE:
                                         assigns += 1
 
                                 if 'Details' in lp.tags:
                                     dat = lp.get_tag(['Details'])
                                     for row in dat:
-                                        if row not in emptyValue:
+                                        if row not in EMPTY_VALUE:
                                             if ' -> ' in row:
                                                 details -= 1
                                             else:
@@ -2284,13 +2275,13 @@ class BMRBAnnTasks:
 
                                 if _idx <= MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                     volume = row[0]
-                                    if volume in emptyValue:
+                                    if volume in EMPTY_VALUE:
                                         volume = None
                                     else:
                                         volume = float(volume)
 
                                     height = row[1]
-                                    if height in emptyValue:
+                                    if height in EMPTY_VALUE:
                                         height = None
                                     else:
                                         height = float(height)
@@ -2301,20 +2292,20 @@ class BMRBAnnTasks:
                                                       'volume': volume,
                                                       'height': height})
 
-                                if row[5] not in emptyValue:
+                                if row[5] not in EMPTY_VALUE:
                                     has_assign = True
                                     if _idx > MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                         break
 
                             if has_assign:
                                 for row in dat:
-                                    if row[5] not in emptyValue:
+                                    if row[5] not in EMPTY_VALUE:
                                         assigns += 1
 
                             if has_assign and 'Details' in lp.tags:
                                 dat = lp.get_tag(['Details'])
                                 for row in dat:
-                                    if row not in emptyValue:
+                                    if row not in EMPTY_VALUE:
                                         if ' -> ' in row:
                                             details -= 1
                                         else:
@@ -2327,13 +2318,13 @@ class BMRBAnnTasks:
 
                                 if _idx <= MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                     volume = row[0]
-                                    if volume in emptyValue:
+                                    if volume in EMPTY_VALUE:
                                         volume = None
                                     else:
                                         volume = float(volume)
 
                                     height = row[1]
-                                    if height in emptyValue:
+                                    if height in EMPTY_VALUE:
                                         height = None
                                     else:
                                         height = float(height)
@@ -2344,20 +2335,20 @@ class BMRBAnnTasks:
                                                       'volume': volume,
                                                       'height': height})
 
-                                if row[6] not in emptyValue:
+                                if row[6] not in EMPTY_VALUE:
                                     has_assign = True
                                     if _idx > MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                         break
 
                             if has_assign:
                                 for row in dat:
-                                    if row[6] not in emptyValue:
+                                    if row[6] not in EMPTY_VALUE:
                                         assigns += 1
 
                             if has_assign and 'Details' in lp.tags:
                                 dat = lp.get_tag(['Details'])
                                 for row in dat:
-                                    if row not in emptyValue:
+                                    if row not in EMPTY_VALUE:
                                         if ' -> ' in row:
                                             details -= 1
                                         else:
@@ -2437,17 +2428,17 @@ class BMRBAnnTasks:
                                 pk_cs = sf.get_loop('_Assigned_peak_chem_shift')
                                 dat_pk_cs = pk_cs.get_tag(['Auth_entity_ID'])
                                 for row_pk_cs in dat_pk_cs:
-                                    if row_pk_cs not in emptyValue:
+                                    if row_pk_cs not in EMPTY_VALUE:
                                         sp_info[idx]['has_assign'] = True
                                         break
                                 if sp_info[idx]['has_assign']:
                                     for row_pk_cs in dat_pk_cs:
-                                        if row_pk_cs not in emptyValue:
+                                        if row_pk_cs not in EMPTY_VALUE:
                                             assigns += 1
                                     if 'Details' in pk_cs.tags:
                                         dat_pk_cs = pk_cs.get_tag(['Details'])
                                         for row_pk_cs in dat_pk_cs:
-                                            if row_pk_cs not in emptyValue:
+                                            if row_pk_cs not in EMPTY_VALUE:
                                                 if ' -> ' in row_pk_cs:
                                                     details -= 1
                                                 else:
@@ -2459,7 +2450,7 @@ class BMRBAnnTasks:
                             sp_info[idx]['signature'] = signature
 
                     except KeyError:
-                        if get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                        if get_first_sf_tag(sf, 'Text_data') in EMPTY_VALUE:
                             empty_sf_framecodes.append(sf_framecode)
 
             if len(sp_info) > 1:
@@ -2562,20 +2553,20 @@ class BMRBAnnTasks:
                     sf_framecode = sp_info[idx]['sf_framecode']
                     sf = master_entry.get_saveframe_by_name(sf_framecode)
                     file_name = get_first_sf_tag(sf, 'Data_file_name')
-                    file_name_ = retrieveOriginalFileName(file_name) if file_name not in emptyValue else file_name
+                    file_name_ = retrieveOriginalFileName(file_name) if file_name not in EMPTY_VALUE else file_name
 
                     res_sf_framecode = sp_info[res_idx[idx]]['sf_framecode']
 
                     _sf = master_entry.get_saveframe_by_name(res_sf_framecode)
                     _file_name = get_first_sf_tag(_sf, 'Data_file_name')
-                    _file_name_ = retrieveOriginalFileName(_file_name) if _file_name not in emptyValue else _file_name
+                    _file_name_ = retrieveOriginalFileName(_file_name) if _file_name not in EMPTY_VALUE else _file_name
 
-                    if _file_name in emptyValue and _file_name_ not in emptyValue:
+                    if _file_name in EMPTY_VALUE and _file_name_ not in EMPTY_VALUE:
                         set_sf_tag(_sf, 'Data_file_name', _file_name_)
-                    elif _file_name_ in emptyValue and file_name_ not in emptyValue:
+                    elif _file_name_ in EMPTY_VALUE and file_name_ not in EMPTY_VALUE:
                         set_sf_tag(_sf, 'Data_file_name', file_name_)
 
-                    if _file_name_ not in emptyValue and file_name_ not in emptyValue:
+                    if _file_name_ not in EMPTY_VALUE and file_name_ not in EMPTY_VALUE:
                         if _file_name_ != file_name_ and not mr_name_pat.match(file_name_)\
                            and pk_name_pat.match(_file_name_):
                             set_sf_tag(_sf, 'Data_file_name', file_name_)
@@ -2657,7 +2648,7 @@ class BMRBAnnTasks:
                 if any(True for t in sf.tags if t[0] == 'Chem_shift_reference_ID'):
                     chem_shift_ref_id = get_first_sf_tag(sf, 'Chem_shift_reference_ID')
 
-                    if chem_shift_ref_id in emptyValue:
+                    if chem_shift_ref_id in EMPTY_VALUE:
                         _sf_category = 'chem_shift_reference'
 
                         if _sf_category in self.__sfCategoryList:
@@ -2667,7 +2658,7 @@ class BMRBAnnTasks:
 
                 exp_id = get_first_sf_tag(sf, 'Experiment_ID')
 
-                if exp_id not in emptyValue:
+                if exp_id not in EMPTY_VALUE:
                     exp_id = int(exp_id)
 
                     _sf_category = 'experiment_list'
@@ -2686,15 +2677,15 @@ class BMRBAnnTasks:
                             _dat = _lp.get_tag(_tags)
 
                             for _row in _dat:
-                                if _row[0] in emptyValue or int(_row[0]) != exp_id:
+                                if _row[0] in EMPTY_VALUE or int(_row[0]) != exp_id:
                                     continue
-                                if _row[1] not in emptyValue:
+                                if _row[1] not in EMPTY_VALUE:
                                     set_sf_tag(sf, 'Sample_ID', _row[1])
-                                if _row[2] not in emptyValue:
+                                if _row[2] not in EMPTY_VALUE:
                                     set_sf_tag(sf, 'Sample_label', _row[2])
-                                if _row[3] not in emptyValue:
+                                if _row[3] not in EMPTY_VALUE:
                                     set_sf_tag(sf, 'Sample_condition_list_ID', _row[3])
-                                if _row[4] not in emptyValue:
+                                if _row[4] not in EMPTY_VALUE:
                                     set_sf_tag(sf, 'Sample_condition_list_label', _row[4])
                                 break
 
@@ -2705,7 +2696,7 @@ class BMRBAnnTasks:
 
                 sample_id = get_first_sf_tag(sf, 'Sample_ID')
 
-                if sample_id in emptyValue:
+                if sample_id in EMPTY_VALUE:
                     _sf_category = 'sample'
 
                     _sf_list = master_entry.get_saveframes_by_category(_sf_category)
@@ -2717,7 +2708,7 @@ class BMRBAnnTasks:
 
                 sample_condition_list_id = get_first_sf_tag(sf, 'Sample_condition_list_ID')
 
-                if sample_condition_list_id in emptyValue:
+                if sample_condition_list_id in EMPTY_VALUE:
                     _sf_category = 'sample_conditions'
 
                     _sf_list = master_entry.get_saveframes_by_category(_sf_category)
@@ -2763,10 +2754,10 @@ class BMRBAnnTasks:
                             if isinstance(row[0], int):
                                 _isotope_numbers.add(row[0])
                             else:
-                                if row[0] in emptyValue or not row[0].isdigit():
+                                if row[0] in EMPTY_VALUE or not row[0].isdigit():
                                     continue
                                 _isotope_numbers.add(int(row[0]))
-                            if row[1] not in emptyValue:
+                            if row[1] not in EMPTY_VALUE:
                                 try:
                                     n = int(row[0]) if isinstance(row[0], str) else row[0]
                                     ratio = float(row[1])
@@ -2849,7 +2840,7 @@ class BMRBAnnTasks:
 
                                 try:
                                     del_row_idx.append(next(idx for idx, row in enumerate(dat)
-                                                            if isinstance(row[0], str) and row[0] not in emptyValue
+                                                            if isinstance(row[0], str) and row[0] not in EMPTY_VALUE
                                                             and row[0].isdigit() and int(row[0]) == n))
                                 except StopIteration:
                                     continue
@@ -3021,14 +3012,14 @@ class BMRBAnnTasks:
                 exp_id_mapping = {}
 
                 for idx, row in enumerate(dat, start=1):
-                    if row not in emptyValue and int(row) != idx:
+                    if row not in EMPTY_VALUE and int(row) != idx:
                         exp_id_mapping[int(row)] = idx
 
                 if len(exp_id_mapping) > 0:
                     id_col = lp.tags.index('ID')
 
                     for idx, row in enumerate(lp):
-                        if row[id_col] not in emptyValue and int(row[id_col]) in exp_id_mapping:
+                        if row[id_col] not in EMPTY_VALUE and int(row[id_col]) in exp_id_mapping:
                             lp.data[idx][id_col] = exp_id_mapping[int(row[id_col])]
 
                     _sf_category = 'assigned_chemical_shifts'
@@ -3045,7 +3036,7 @@ class BMRBAnnTasks:
                                 exp_id_col = _lp.tags.index('Experiment_ID')
 
                                 for _idx, _row in enumerate(_lp):
-                                    if _row[exp_id_col] not in emptyValue and int(_row[exp_id_col]) in exp_id_mapping:
+                                    if _row[exp_id_col] not in EMPTY_VALUE and int(_row[exp_id_col]) in exp_id_mapping:
                                         _lp.data[_idx][exp_id_col] = exp_id_mapping[int(_row[exp_id_col])]
 
                             except KeyError:
@@ -3057,7 +3048,7 @@ class BMRBAnnTasks:
                         for _sf in master_entry.get_saveframes_by_category(_sf_category):
                             exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
 
-                            if exp_id not in emptyValue and int(exp_id) in exp_id_mapping:
+                            if exp_id not in EMPTY_VALUE and int(exp_id) in exp_id_mapping:
                                 set_sf_tag(_sf, 'Experiment_ID', exp_id_mapping[int(exp_id)])
 
                             exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
@@ -3074,7 +3065,7 @@ class BMRBAnnTasks:
                     for _sf in master_entry.get_saveframes_by_category(_sf_category):
                         exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
 
-                        if exp_id not in emptyValue:
+                        if exp_id not in EMPTY_VALUE:
 
                             if isinstance(exp_id, int):
                                 exp_id = str(int)
@@ -3087,7 +3078,7 @@ class BMRBAnnTasks:
 
                                 spectrometer_id = exp_row[2]
 
-                                if spectrometer_id in emptyValue:
+                                if spectrometer_id in EMPTY_VALUE:
                                     continue
 
                                 if isinstance(spectrometer_id, str):
@@ -3146,7 +3137,7 @@ class BMRBAnnTasks:
                                         isotope_num = _row[isotope_num_col]
                                         spec_freq = _row[spec_freq_col]
 
-                                        if spec_freq in emptyValue and isotope_num in cs_ref_ratio_map:
+                                        if spec_freq in EMPTY_VALUE and isotope_num in cs_ref_ratio_map:
                                             _lp.data[idx][spec_freq_col] = roundString(f'{field_strength * cs_ref_ratio_map[isotope_num]}',
                                                                                        field_strength_max_didits)
 
@@ -3155,7 +3146,7 @@ class BMRBAnnTasks:
 
                             else:
                                 num_of_dim = get_first_sf_tag(_sf, 'Number_of_spectral_dimensions')
-                                if num_of_dim in emptyValue:
+                                if num_of_dim in EMPTY_VALUE:
                                     set_sf_tag(_sf, 'Experiment_ID', None)
                                     continue
                                 if isinstance(num_of_dim, str):
@@ -3165,7 +3156,7 @@ class BMRBAnnTasks:
                                         set_sf_tag(_sf, 'Experiment_ID', None)
                                         continue
                                 exp_class = get_first_sf_tag(_sf, 'Experiment_class')
-                                if exp_class in emptyValue:
+                                if exp_class in EMPTY_VALUE:
                                     set_sf_tag(_sf, 'Experiment_ID', None)
                                     continue
                                 if 'through-space' in exp_class:
@@ -3195,7 +3186,7 @@ class BMRBAnnTasks:
 
                                 spectrometer_id = exp_row[2]
 
-                                if spectrometer_id in emptyValue:
+                                if spectrometer_id in EMPTY_VALUE:
                                     continue
 
                                 if isinstance(spectrometer_id, str):
@@ -3254,7 +3245,7 @@ class BMRBAnnTasks:
                                         isotope_num = _row[isotope_num_col]
                                         spec_freq = _row[spec_freq_col]
 
-                                        if spec_freq in emptyValue and isotope_num in cs_ref_ratio_map:
+                                        if spec_freq in EMPTY_VALUE and isotope_num in cs_ref_ratio_map:
                                             _lp.data[idx][spec_freq_col] = roundString(f'{field_strength * cs_ref_ratio_map[isotope_num]}',
                                                                                        field_strength_max_didits)
 
@@ -3361,9 +3352,9 @@ class BMRBAnnTasks:
 
                             if get_first_sf_tag(sf, 'Type') == 'non-polymer':
                                 comp_id = get_first_sf_tag(sf, 'BMRB_code')
-                                if comp_id in emptyValue:
+                                if comp_id in EMPTY_VALUE:
                                     comp_id = get_first_sf_tag(sf, 'Nonpolymer_comp_ID')
-                                if comp_id in emptyValue:
+                                if comp_id in EMPTY_VALUE:
                                     continue
 
                         except ValueError:
@@ -3389,7 +3380,7 @@ class BMRBAnnTasks:
                 dat = lp.get_tag(['Entity_ID'])
 
                 for row in dat:
-                    if row not in emptyValue:
+                    if row not in EMPTY_VALUE:
                         entity_id = int(row)
                         if entity_id in entity_dict:
                             entity = entity_dict[entity_id]
@@ -3402,7 +3393,7 @@ class BMRBAnnTasks:
                 dat = lp.get_tag(['ID', 'Experimental_data_reported'])
 
                 for idx, row in enumerate(dat):
-                    if isinstance(row[0], str) and row[0] not in emptyValue and row[0].isdigit() and row[1] != 'yes':
+                    if isinstance(row[0], str) and row[0] not in EMPTY_VALUE and row[0].isdigit() and row[1] != 'yes':
                         if int(row[0]) in ent_asym_id_with_exptl_data:
                             lp.data[idx][exptl_data_col] = 'yes'
 
@@ -3437,7 +3428,7 @@ class BMRBAnnTasks:
                         one_letter_code += getOneLetterCodeCan(row)
                         if idx % 20 == 0:
                             one_letter_code += '\n'
-                        if row not in emptyValue:
+                        if row not in EMPTY_VALUE:
                             if row in ('CYS', 'DCY'):
                                 cys_total += 1
 
@@ -3448,20 +3439,20 @@ class BMRBAnnTasks:
                     pass
 
                 if cys_total == 0:
-                    if thiol_state in emptyValue or thiol_state not in allowed_thiol_states:
+                    if thiol_state in EMPTY_VALUE or thiol_state not in ALLOWED_THIOL_STATES:
                         set_sf_tag(sf, 'Thiol_state', 'not present')
 
                 elif has_reducing_agent:
-                    if thiol_state in emptyValue or thiol_state not in allowed_thiol_states:
+                    if thiol_state in EMPTY_VALUE or thiol_state not in ALLOWED_THIOL_STATES:
                         set_sf_tag(sf, 'Thiol_state', 'all free')
 
                 elif total_cys_in_assembly == 1:
-                    if thiol_state in emptyValue or thiol_state not in allowed_thiol_states:
+                    if thiol_state in EMPTY_VALUE or thiol_state not in ALLOWED_THIOL_STATES:
                         set_sf_tag(sf, 'Thiol_state', 'all free')
 
             else:
                 thiol_state = get_first_sf_tag(sf, 'Thiol_state')
-                if thiol_state in emptyValue or thiol_state not in allowed_thiol_states:
+                if thiol_state in EMPTY_VALUE or thiol_state not in ALLOWED_THIOL_STATES:
                     set_sf_tag(sf, 'Thiol_state', 'not present')
 
         if total_cys_in_assembly > 1:
@@ -3478,7 +3469,7 @@ class BMRBAnnTasks:
 
                 sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                 thiol_state = get_first_sf_tag(sf, 'Thiol_state')
-                if thiol_state in emptyValue or thiol_state in ('not available', 'not present', 'not reported', 'unknown', 'all free'):
+                if thiol_state in EMPTY_VALUE or thiol_state in ('not available', 'not present', 'not reported', 'unknown', 'all free'):
                     continue
 
                 if sample_type in ('protein', 'peptide') and entity['total_cys'] > 0:
@@ -3530,10 +3521,10 @@ class BMRBAnnTasks:
                 continue
             for label_tag in label_tags:
                 label = get_first_sf_tag(sf, label_tag)
-                if label in emptyValue:
+                if label in EMPTY_VALUE:
                     parent_sf_tag_prefix = f'_{label_tag[:-6]}'
                     parent_list_id = get_first_sf_tag(sf, f'{parent_sf_tag_prefix[1:]}_ID')
-                    if parent_list_id in emptyValue:
+                    if parent_list_id in EMPTY_VALUE:
                         continue
                     try:
                         parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', parent_list_id)[0]

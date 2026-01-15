@@ -65,7 +65,44 @@ try:
                                                ITEM_NAMES_IN_PK_LOOP,
                                                ITEM_NAMES_IN_DIST_LOOP,
                                                ITEM_NAMES_IN_DIHED_LOOP,
-                                               ITEM_NAMES_IN_RDC_LOOP)
+                                               ITEM_NAMES_IN_RDC_LOOP,
+                                               LOW_SEQ_COVERAGE,
+                                               LARGE_ASYM_ID,
+                                               LEN_MAJOR_ASYM_ID,
+                                               EMPTY_VALUE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               PSE_PRO_BEGIN_CODE,
+                                               AMINO_PROTON_CODE,
+                                               RDC_BB_PAIR_CODE,
+                                               PARAMAGNETIC_ELEMENTS,
+                                               FERROMAGNETIC_ELEMENTS,
+                                               NON_METAL_ELEMENTS,
+                                               MAX_DIM_NUM_OF_SPECTRA,
+                                               MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               ALLOWED_AMBIGUITY_CODES,
+                                               CS_UNCERT_MAX,
+                                               DIST_UNCERT_MAX,
+                                               ANGLE_UNCERT_MAX,
+                                               RDC_UNCERT_MAX,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               REPRESENTATIVE_ASYM_ID,
+                                               NMR_STAR_LP_KEY_ITEMS,
+                                               NMR_STAR_LP_DATA_ITEMS,
+                                               NMR_STAR_LP_DATA_ITEMS_INS_CODE,
+                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                               PLANE_LIKE_LOWER_LIMIT,
+                                               PLANE_LIKE_UPPER_LIMIT,
+                                               C_CARBONYL_CENTER_MAX,
+                                               C_CARBONYL_CENTER_MIN,
+                                               C_AROMATIC_CENTER_MAX,
+                                               C_AROMATIC_CENTER_MIN_TOR,
+                                               C_ALIPHATIC_CENTER_MAX,
+                                               C_ALIPHATIC_CENTER_MIN,
+                                               C_METHYL_CENTER_MAX,
+                                               C_METHYL_CENTER_MIN)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpMrSplitter import (mr_file_name_pattern,
                                                  ws_pattern,
@@ -75,15 +112,7 @@ try:
                                                  convert_rtf_to_ascii,
                                                  is_rtf_file)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
-    from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
-                                           LARGE_ASYM_ID,
-                                           emptyValue,
-                                           monDict3,
-                                           protonBeginCode,
-                                           pseProBeginCode,
-                                           aminoProtonCode,
-                                           rdcBbPairCode,
-                                           letterToDigit,
+    from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            alignPolymerSequence,
                                            assignPolymerSequence)
     from wwpdb.utils.nmr.CifToNmrStar import (has_key_value,
@@ -96,12 +125,6 @@ try:
                                                 distance,
                                                 to_unit_vector,
                                                 dihedral_angle)
-    from wwpdb.utils.nmr.nef.NEFTranslator import (PARAMAGNETIC_ELEMENTS,
-                                                   FERROMAGNETIC_ELEMENTS,
-                                                   NON_METAL_ELEMENTS,
-                                                   MAX_DIM_NUM_OF_SPECTRA,
-                                                   MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
-    from wwpdb.utils.nmr.io.CifReader import LEN_MAJOR_ASYM_ID
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        isIdenticalRestraint,
@@ -115,26 +138,7 @@ try:
                                                        getRowForStrMr,
                                                        assignCoordPolymerSequenceWithChainId,
                                                        selectCoordAtoms,
-                                                       getPotentialType,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       ALLOWED_AMBIGUITY_CODES,
-                                                       CS_UNCERTAINTY_RANGE,
-                                                       DIST_UNCERTAINTY_RANGE,
-                                                       ANGLE_UNCERTAINTY_RANGE,
-                                                       RDC_UNCERTAINTY_RANGE,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       REPRESENTATIVE_ASYM_ID,
-                                                       NMR_STAR_LP_KEY_ITEMS,
-                                                       NMR_STAR_LP_DATA_ITEMS,
-                                                       NMR_STAR_LP_DATA_ITEMS_INS_CODE,
-                                                       THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                                       PLANE_LIKE_LOWER_LIMIT,
-                                                       PLANE_LIKE_UPPER_LIMIT)
-    from wwpdb.utils.nmr.pk.BasePKParserListener import (C_CARBONYL_CENTER_MAX, C_CARBONYL_CENTER_MIN,
-                                                         C_AROMATIC_CENTER_MAX, C_AROMATIC_CENTER_MIN_TOR,
-                                                         C_ALIPHATIC_CENTER_MAX, C_ALIPHATIC_CENTER_MIN,
-                                                         C_METHYL_CENTER_MAX, C_METHYL_CENTER_MIN)
+                                                       getPotentialType)
     from wwpdb.utils.nmr.rci.RCI import RCI
 except ImportError:
     from nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
@@ -174,7 +178,44 @@ except ImportError:
                                    ITEM_NAMES_IN_PK_LOOP,
                                    ITEM_NAMES_IN_DIST_LOOP,
                                    ITEM_NAMES_IN_DIHED_LOOP,
-                                   ITEM_NAMES_IN_RDC_LOOP)
+                                   ITEM_NAMES_IN_RDC_LOOP,
+                                   LOW_SEQ_COVERAGE,
+                                   LARGE_ASYM_ID,
+                                   LEN_MAJOR_ASYM_ID,
+                                   EMPTY_VALUE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   PSE_PRO_BEGIN_CODE,
+                                   AMINO_PROTON_CODE,
+                                   RDC_BB_PAIR_CODE,
+                                   PARAMAGNETIC_ELEMENTS,
+                                   FERROMAGNETIC_ELEMENTS,
+                                   NON_METAL_ELEMENTS,
+                                   MAX_DIM_NUM_OF_SPECTRA,
+                                   MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   ALLOWED_AMBIGUITY_CODES,
+                                   CS_UNCERT_MAX,
+                                   DIST_UNCERT_MAX,
+                                   ANGLE_UNCERT_MAX,
+                                   RDC_UNCERT_MAX,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   REPRESENTATIVE_ASYM_ID,
+                                   NMR_STAR_LP_KEY_ITEMS,
+                                   NMR_STAR_LP_DATA_ITEMS,
+                                   NMR_STAR_LP_DATA_ITEMS_INS_CODE,
+                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                   PLANE_LIKE_LOWER_LIMIT,
+                                   PLANE_LIKE_UPPER_LIMIT,
+                                   C_CARBONYL_CENTER_MAX,
+                                   C_CARBONYL_CENTER_MIN,
+                                   C_AROMATIC_CENTER_MAX,
+                                   C_AROMATIC_CENTER_MIN_TOR,
+                                   C_ALIPHATIC_CENTER_MAX,
+                                   C_ALIPHATIC_CENTER_MIN,
+                                   C_METHYL_CENTER_MAX,
+                                   C_METHYL_CENTER_MIN)
     from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpMrSplitter import (mr_file_name_pattern,
                                      ws_pattern,
@@ -184,15 +225,7 @@ except ImportError:
                                      convert_rtf_to_ascii,
                                      is_rtf_file)
     from nmr.NmrDpReport import NmrDpReportInputSource
-    from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
-                               LARGE_ASYM_ID,
-                               emptyValue,
-                               monDict3,
-                               protonBeginCode,
-                               pseProBeginCode,
-                               aminoProtonCode,
-                               rdcBbPairCode,
-                               letterToDigit,
+    from nmr.AlignUtil import (letterToDigit,
                                alignPolymerSequence,
                                assignPolymerSequence)
     from nmr.CifToNmrStar import (has_key_value,
@@ -205,12 +238,6 @@ except ImportError:
                                     distance,
                                     to_unit_vector,
                                     dihedral_angle)
-    from nmr.nef.NEFTranslator import (PARAMAGNETIC_ELEMENTS,
-                                       FERROMAGNETIC_ELEMENTS,
-                                       NON_METAL_ELEMENTS,
-                                       MAX_DIM_NUM_OF_SPECTRA,
-                                       MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
-    from nmr.io.CifReader import LEN_MAJOR_ASYM_ID
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            isIdenticalRestraint,
@@ -224,36 +251,9 @@ except ImportError:
                                            getRowForStrMr,
                                            assignCoordPolymerSequenceWithChainId,
                                            selectCoordAtoms,
-                                           getPotentialType,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           ALLOWED_AMBIGUITY_CODES,
-                                           CS_UNCERTAINTY_RANGE,
-                                           DIST_UNCERTAINTY_RANGE,
-                                           ANGLE_UNCERTAINTY_RANGE,
-                                           RDC_UNCERTAINTY_RANGE,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           REPRESENTATIVE_ASYM_ID,
-                                           NMR_STAR_LP_KEY_ITEMS,
-                                           NMR_STAR_LP_DATA_ITEMS,
-                                           NMR_STAR_LP_DATA_ITEMS_INS_CODE,
-                                           THRESHOLD_FOR_CIRCULAR_SHIFT,
-                                           PLANE_LIKE_LOWER_LIMIT,
-                                           PLANE_LIKE_UPPER_LIMIT)
-    from nmr.pk.BasePKParserListener import (C_CARBONYL_CENTER_MAX, C_CARBONYL_CENTER_MIN,
-                                             C_AROMATIC_CENTER_MAX, C_AROMATIC_CENTER_MIN_TOR,
-                                             C_ALIPHATIC_CENTER_MAX, C_ALIPHATIC_CENTER_MIN,
-                                             C_METHYL_CENTER_MAX, C_METHYL_CENTER_MIN)
+                                           getPotentialType)
     from nmr.rci.RCI import RCI
 
-
-CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
-
-DIST_UNCERT_MAX = DIST_UNCERTAINTY_RANGE['max_inclusive']
-
-ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
-
-RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
 pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
 bmrb_id_pattern = re.compile(r'^(bmr)?([0-9]+)$')
@@ -591,7 +591,7 @@ def get_atom_name_mapping(lp: pynmrstar.Loop, list_of_tags: List[List[str]]) -> 
         if set(tags) & set(lp.tags) == set(tags):
             list_of_dat[idx] = lp.get_tag(tags)
             for row in list_of_dat[idx]:
-                if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
+                if row[0] in EMPTY_VALUE or row[1] in EMPTY_VALUE or row[2] in EMPTY_VALUE or row[1] != row[2]:
                     continue
                 key = (row[0], row[2])
                 if key not in identity_mapping:
@@ -601,7 +601,7 @@ def get_atom_name_mapping(lp: pynmrstar.Loop, list_of_tags: List[List[str]]) -> 
         if dat is None:
             continue
         for row in dat:
-            if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
+            if row[0] in EMPTY_VALUE or row[1] in EMPTY_VALUE or row[2] in EMPTY_VALUE or row[1] == row[2]:
                 continue
             comp_id = row[0]
             atom_id = row[1]
@@ -660,10 +660,10 @@ class NmrDpValidation:
 
             if chem_comp_sf is not None:
                 cc_name = get_first_sf_tag(chem_comp_sf, 'Name')
-                if cc_name in emptyValue:
+                if cc_name in EMPTY_VALUE:
                     cc_name = None
                 processing_site = get_first_sf_tag(chem_comp_sf, 'Processing_site')
-                if processing_site in emptyValue:
+                if processing_site in EMPTY_VALUE:
                     processing_site = None
 
         if self.__reg.ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
@@ -872,7 +872,7 @@ class NmrDpValidation:
                 for sf in self.__reg.star_data[0].get_saveframes_by_category('assembly'):
                     self.__reg.assembly_name = get_first_sf_tag(sf, 'Name', '?')
                     details = get_first_sf_tag(sf, 'Details')
-                    if details not in emptyValue and ws_pattern.match(details):
+                    if details not in EMPTY_VALUE and ws_pattern.match(details):
                         set_sf_tag(sf, 'Details', None)
                     break
 
@@ -1724,7 +1724,7 @@ class NmrDpValidation:
 
             for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                if file_type == 'nmr-star' and sf_category == 'assembly' and self.__reg.assembly_name in emptyValue:
+                if file_type == 'nmr-star' and sf_category == 'assembly' and self.__reg.assembly_name in EMPTY_VALUE:
                     self.__reg.assembly_name = get_first_sf_tag(sf, 'Name', '?')
 
                 for tag in sf.tags:
@@ -2130,11 +2130,11 @@ class NmrDpValidation:
         """ Return type of dihedral angle restraint.
         """
 
-        if data_type in emptyValue:
+        if data_type in EMPTY_VALUE:
             data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                    atoms, plane_like)
 
-            if data_type in emptyValue or data_type.startswith('pseudo'):
+            if data_type in EMPTY_VALUE or data_type.startswith('pseudo'):
                 data_type = 'undefined'
             else:
                 data_type = data_type.lower()
@@ -2551,7 +2551,7 @@ class NmrDpValidation:
 
             neighbor = [n for n in _neighbor
                         if n['seq_id'] != cif_seq_id
-                        and n['type_symbol'] not in protonBeginCode
+                        and n['type_symbol'] not in PROTON_BEGIN_CODE
                         and distance(to_np_array(n), o) < CUTOFF_AROMATIC
                         and n['atom_id'] in self.__reg.csStat.getAromaticAtoms(n['comp_id'])]
 
@@ -2613,10 +2613,10 @@ class NmrDpValidation:
                 if b1[self.__reg.ccU.ccbAromaticFlag] != 'Y':
                     continue
 
-                if b1[self.__reg.ccU.ccbAtomId1] == na_atom_id and b1[self.__reg.ccU.ccbAtomId2][0] not in protonBeginCode:
+                if b1[self.__reg.ccU.ccbAtomId1] == na_atom_id and b1[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE:
                     na_ = b1[self.__reg.ccU.ccbAtomId2]
 
-                elif b1[self.__reg.ccU.ccbAtomId2] == na_atom_id and b1[self.__reg.ccU.ccbAtomId1][0] not in protonBeginCode:
+                elif b1[self.__reg.ccU.ccbAtomId2] == na_atom_id and b1[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE:
                     na_ = b1[self.__reg.ccU.ccbAtomId1]
 
                 else:
@@ -2627,10 +2627,10 @@ class NmrDpValidation:
                     if b2[self.__reg.ccU.ccbAromaticFlag] != 'Y':
                         continue
 
-                    if b2[self.__reg.ccU.ccbAtomId1] == na_ and b2[self.__reg.ccU.ccbAtomId2][0] not in protonBeginCode and b2[self.__reg.ccU.ccbAtomId2] != na_atom_id:
+                    if b2[self.__reg.ccU.ccbAtomId1] == na_ and b2[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE and b2[self.__reg.ccU.ccbAtomId2] != na_atom_id:
                         na__ = b2[self.__reg.ccU.ccbAtomId2]
 
-                    elif b2[self.__reg.ccU.ccbAtomId2] == na_ and b2[self.__reg.ccU.ccbAtomId1][0] not in protonBeginCode and b2[self.__reg.ccU.ccbAtomId1] != na_atom_id:
+                    elif b2[self.__reg.ccU.ccbAtomId2] == na_ and b2[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE and b2[self.__reg.ccU.ccbAtomId1] != na_atom_id:
                         na__ = b2[self.__reg.ccU.ccbAtomId1]
 
                     else:
@@ -2641,10 +2641,10 @@ class NmrDpValidation:
                         if b3[self.__reg.ccU.ccbAromaticFlag] != 'Y':
                             continue
 
-                        if b3[self.__reg.ccU.ccbAtomId1] == na__ and b3[self.__reg.ccU.ccbAtomId2][0] not in protonBeginCode and b3[self.__reg.ccU.ccbAtomId2] != na_:
+                        if b3[self.__reg.ccU.ccbAtomId1] == na__ and b3[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE and b3[self.__reg.ccU.ccbAtomId2] != na_:
                             na___ = b3[self.__reg.ccU.ccbAtomId2]
 
-                        elif b3[self.__reg.ccU.ccbAtomId2] == na__ and b3[self.__reg.ccU.ccbAtomId1][0] not in protonBeginCode and b3[self.__reg.ccU.ccbAtomId1] != na_:
+                        elif b3[self.__reg.ccU.ccbAtomId2] == na__ and b3[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE and b3[self.__reg.ccU.ccbAtomId1] != na_:
                             na___ = b3[self.__reg.ccU.ccbAtomId1]
 
                         else:
@@ -3666,7 +3666,7 @@ class NmrDpValidation:
                                     else:
                                         _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
-                                        if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
+                                        if comp_id not in EMPTY_VALUE and _comp_id not in EMPTY_VALUE and comp_id != _comp_id:
                                             return False
 
                 #  brute force check
@@ -3695,7 +3695,7 @@ class NmrDpValidation:
                                         if seq_id in ps1['seq_id']:
                                             _comp_id = ps1['comp_id'][ps1['seq_id'].index(seq_id)]
 
-                                            if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
+                                            if comp_id not in EMPTY_VALUE and _comp_id not in EMPTY_VALUE and comp_id != _comp_id:
                                                 return False
 
                             # inverse check required for unverified sequences
@@ -3712,7 +3712,7 @@ class NmrDpValidation:
                                             j = ps2['seq_id'].index(seq_id)
                                             _comp_id = ps2['comp_id'][j]
 
-                                            if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
+                                            if comp_id not in EMPTY_VALUE and _comp_id not in EMPTY_VALUE and comp_id != _comp_id:
                                                 return False
 
         return True
@@ -3722,15 +3722,15 @@ class NmrDpValidation:
             @return: True for representative comp IDs are matched, False otherwise
         """
 
-        if comp_id in emptyValue or ref_comp_id in emptyValue:
+        if comp_id in EMPTY_VALUE or ref_comp_id in EMPTY_VALUE:
             return False
 
         if '_' in comp_id:
             comp_id = comp_id.split('_')[0]
 
-        elif comp_id not in monDict3 and self.__reg.ccU.updateChemCompDict(comp_id):
+        elif comp_id not in MONDICT3 and self.__reg.ccU.updateChemCompDict(comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__reg.ccU.lastChemCompDict:  # matches with comp_id in CCD
-                if self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
+                if self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in EMPTY_VALUE:
                     comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
                     if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         comp_id = 'D' + comp_id
@@ -3740,9 +3740,9 @@ class NmrDpValidation:
         if '_' in ref_comp_id:
             ref_comp_id = ref_comp_id.split('_')[0]
 
-        elif ref_comp_id not in monDict3 and self.__reg.ccU.updateChemCompDict(ref_comp_id):
+        elif ref_comp_id not in MONDICT3 and self.__reg.ccU.updateChemCompDict(ref_comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__reg.ccU.lastChemCompDict:  # matches with comp_id in CCD
-                if self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in emptyValue:
+                if self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in EMPTY_VALUE:
                     ref_comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
                     if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         ref_comp_id = 'D' + ref_comp_id
@@ -3956,7 +3956,7 @@ class NmrDpValidation:
 
                 if row is not None:
                     val = row['Val']
-                    return val if val not in emptyValue else None
+                    return val if val not in EMPTY_VALUE else None
 
             return None
 
@@ -4024,7 +4024,7 @@ class NmrDpValidation:
                     atom2 = {}
                     cs_val2 = None
 
-                if member_id not in emptyValue:
+                if member_id not in EMPTY_VALUE:
                     has_member_id = True
 
                 _atoms1 = [atom1, _atom1]
@@ -4035,9 +4035,9 @@ class NmrDpValidation:
 
                 elif rest_id != _rest_id and len(atom1) > 0 and len(atom2) > 0:
 
-                    if (member_id in emptyValue or member_logic_code == 'OR'):
+                    if (member_id in EMPTY_VALUE or member_logic_code == 'OR'):
 
-                        if atom1['atom_id'][0] in protonBeginCode and atom2['atom_id'][0] in protonBeginCode:
+                        if atom1['atom_id'][0] in PROTON_BEGIN_CODE and atom2['atom_id'][0] in PROTON_BEGIN_CODE:
 
                             if (values == _values and not isAmbigAtomSelection(_atoms1, self.__reg.csStat)
                                 and not isAmbigAtomSelection(_atoms2, self.__reg.csStat))\
@@ -4060,7 +4060,7 @@ class NmrDpValidation:
 
                                         _row[member_logic_code_col] = 'OR'
 
-                                        if _member_logic_code in emptyValue:
+                                        if _member_logic_code in EMPTY_VALUE:
                                             lp.data[-1][member_logic_code_col] = 'OR'
 
                                     except IndexError:
@@ -4079,14 +4079,14 @@ class NmrDpValidation:
                     if not isAmbigAtomSelection(_atoms1, self.__reg.csStat)\
                        and not isAmbigAtomSelection(_atoms2, self.__reg.csStat):
 
-                        if member_logic_code in emptyValue:
+                        if member_logic_code in EMPTY_VALUE:
                             modified = True
 
                         try:
 
                             _row[member_logic_code_col] = 'OR'
 
-                            if _member_logic_code in emptyValue:
+                            if _member_logic_code in EMPTY_VALUE:
                                 lp.data[-1][member_logic_code_col] = 'OR'
 
                                 modified = True
@@ -4104,7 +4104,7 @@ class NmrDpValidation:
 
             if not self.__reg.native_combined:  # DAOTHER-8855
                 _row[id_col] = sf_item['id']
-            if combination_id_col == -1 or (combination_id_col != -1 and _row[combination_id_col] in emptyValue):
+            if combination_id_col == -1 or (combination_id_col != -1 and _row[combination_id_col] in EMPTY_VALUE):
                 try:
                     _row[member_id_col] = None
                 except IndexError:
@@ -4307,7 +4307,7 @@ class NmrDpValidation:
             except IndexError:
                 combination_id = None
 
-            if combination_id not in emptyValue and str(combination_id) != '1':
+            if combination_id not in EMPTY_VALUE and str(combination_id) != '1':
                 sf_item['id'] -= 1
 
             _row[id_col] = sf_item['id']
@@ -4333,7 +4333,7 @@ class NmrDpValidation:
             except TypeError:
                 return False
 
-            if combination_id in emptyValue and idx + 1 < len_loop:
+            if combination_id in EMPTY_VALUE and idx + 1 < len_loop:
                 combination_id = 1
 
                 for idx2 in range(idx + 1, len_loop):
@@ -4436,14 +4436,14 @@ class NmrDpValidation:
                 atom_ids = pair['atom_id']
 
                 # standard residue
-                if comp_id in monDict3:
+                if comp_id in MONDICT3:
 
                     if file_type == 'nef':
 
                         _atom_ids = []
                         for atom_id in atom_ids:
 
-                            if atom_id in emptyValue:
+                            if atom_id in EMPTY_VALUE:
                                 continue
 
                             _atom_id = self.__reg.nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
@@ -4477,7 +4477,7 @@ class NmrDpValidation:
 
                     for atom_id in atom_ids:
 
-                        if atom_id in emptyValue:
+                        if atom_id in EMPTY_VALUE:
                             continue
 
                         if self.__reg.remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
@@ -4607,7 +4607,7 @@ class NmrDpValidation:
 
                         for atom_id in atom_ids:
 
-                            if atom_id in emptyValue:
+                            if atom_id in EMPTY_VALUE:
                                 continue
 
                             if file_type == 'nef':
@@ -4648,7 +4648,7 @@ class NmrDpValidation:
 
                         for atom_id in atom_ids:
 
-                            if atom_id in emptyValue:
+                            if atom_id in EMPTY_VALUE:
                                 continue
 
                             if self.__reg.remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
@@ -4693,21 +4693,21 @@ class NmrDpValidation:
 
                 try:
 
-                    peptide_only = all(len(pair['comp_id']) == 3 and pair['comp_id'] in monDict3 for pair in pairs)
+                    peptide_only = all(len(pair['comp_id']) == 3 and pair['comp_id'] in MONDICT3 for pair in pairs)
 
                     auth_pairs = self.__reg.nefT.get_star_auth_comp_atom_pair(sf, lp_category)[0]
 
                     for auth_pair in auth_pairs:
                         auth_comp_id = auth_pair['comp_id']
                         if peptide_only and len(auth_comp_id) == 1:
-                            comp_id = next((k for k, v in monDict3.items() if v == auth_comp_id), auth_comp_id)
+                            comp_id = next((k for k, v in MONDICT3.items() if v == auth_comp_id), auth_comp_id)
                         else:
                             comp_id = auth_comp_id
                         comp_id = translateToStdResName(comp_id, ccU=self.__reg.ccU)
                         auth_atom_ids = auth_pair['atom_id']
 
                         # standard residue
-                        if comp_id in monDict3:
+                        if comp_id in MONDICT3:
 
                             self.__reg.ccU.updateChemCompDict(comp_id)
                             ref_atom_ids = [a[self.__reg.ccU.ccaAtomId] for a in self.__reg.ccU.lastAtomList]
@@ -4715,7 +4715,7 @@ class NmrDpValidation:
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
 
-                                if auth_atom_id in emptyValue:
+                                if auth_atom_id in EMPTY_VALUE:
                                     continue
 
                                 _auth_atom_id = translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids, ccU=self.__reg.ccU)
@@ -4758,7 +4758,7 @@ class NmrDpValidation:
 
                             for auth_atom_id in auth_atom_ids:
 
-                                if auth_atom_id in emptyValue:
+                                if auth_atom_id in EMPTY_VALUE:
                                     continue
 
                                 if not self.__reg.nefT.validate_comp_atom(comp_id,
@@ -4801,7 +4801,7 @@ class NmrDpValidation:
 
                                     for auth_atom_id in (set(auth_atom_ids) | set(atom_ids)) - set(atom_ids):
 
-                                        if auth_atom_id in emptyValue:
+                                        if auth_atom_id in EMPTY_VALUE:
                                             continue
 
                                         if self.__reg.nonblk_bad_nterm and self.__reg.csStat.peptideLike(comp_id)\
@@ -4830,7 +4830,7 @@ class NmrDpValidation:
 
                                 for auth_atom_id in auth_atom_ids:
 
-                                    if auth_atom_id in emptyValue:
+                                    if auth_atom_id in EMPTY_VALUE:
                                         continue
 
                                     if self.__reg.nonblk_bad_nterm and self.__reg.csStat.peptideLike(comp_id)\
@@ -5012,7 +5012,7 @@ class NmrDpValidation:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__reg.remediation_mode and 1 in isotope_nums and atom_id[0] in pseProBeginCode:  # DAOTHER-8663, 8751, 9520
+                            if self.__reg.remediation_mode and 1 in isotope_nums and atom_id[0] in PSE_PRO_BEGIN_CODE:  # DAOTHER-8663, 8751, 9520
                                 continue
 
                             err = f"Invalid atom name {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
@@ -5207,7 +5207,7 @@ class NmrDpValidation:
 
                         ambig_code = _row[ambig_code_col]
 
-                        if ambig_code in emptyValue:
+                        if ambig_code in EMPTY_VALUE:
                             continue
 
                         if isinstance(ambig_code, str):
@@ -5231,7 +5231,7 @@ class NmrDpValidation:
 
                         ambig_code = _row[ambig_code_col]
 
-                        if ambig_code in emptyValue:
+                        if ambig_code in EMPTY_VALUE:
                             continue
 
                         if isinstance(ambig_code, str):
@@ -6053,7 +6053,7 @@ class NmrDpValidation:
                         ambig_code_set = set()
                         invalid_ambig_code_set = set()
                         for row in ambig_code_dat:
-                            if row not in emptyValue:
+                            if row not in EMPTY_VALUE:
                                 if row.isdigit() and int(row) in ALLOWED_AMBIGUITY_CODES:
                                     ambig_code_set.add(int(row))
                                 else:
@@ -6126,12 +6126,12 @@ class NmrDpValidation:
                 value = row[value_name]
                 occupancy = '.' if file_type == 'nef' else row[occupancy_name]
 
-                alt_chain_id = set(emptyValue)
+                alt_chain_id = set(EMPTY_VALUE)
                 alt_chain_id.add(chain_id)
                 if chain_id.isalpha():
                     alt_chain_id.add(str(letterToDigit(chain_id)))
 
-                if value in emptyValue:
+                if value in EMPTY_VALUE:
                     continue
 
                 if file_type == 'nef' or self.isNmrAtomName(comp_id, atom_id):
@@ -6167,14 +6167,14 @@ class NmrDpValidation:
                 has_cs_stat = False
 
                 # non-standard residue
-                if comp_id not in monDict3:
+                if comp_id not in MONDICT3:
 
                     if has_mr_atom_name_mapping and atom_id_[0] == 'H':
                         try:
                             _row_ = loop.data[idx]
                             auth_seq_id, auth_comp_id, auth_atom_id, orig_atom_name =\
                                 int(_row_[auth_seq_id_col]), _row_[auth_comp_id_col], _row_[auth_atom_id_col], _row_[orig_atom_name_col].upper()
-                            if auth_comp_id not in emptyValue and auth_atom_id not in emptyValue and orig_atom_name not in emptyValue\
+                            if auth_comp_id not in EMPTY_VALUE and auth_atom_id not in EMPTY_VALUE and orig_atom_name not in EMPTY_VALUE\
                                and auth_atom_id != orig_atom_name:
                                 try:
                                     atom_map = next(atom_map for atom_map in self.__reg.mr_atom_name_mapping
@@ -6198,7 +6198,7 @@ class NmrDpValidation:
                     if len(cs_stats) == 0:
                         if self.__reg.ccU.updateChemCompDict(comp_id):
                             parent_comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
-                            if parent_comp_id in monDict3:  # DAOTHER-9198: retrieve BMRB chemical shift statittics from parent comp_id if possible (i.e. DNR -> DC)
+                            if parent_comp_id in MONDICT3:  # DAOTHER-9198: retrieve BMRB chemical shift statittics from parent comp_id if possible (i.e. DNR -> DC)
                                 cs_stats = self.__reg.csStat.get(parent_comp_id)
 
                     cs_stat = next((cs_stat for cs_stat in cs_stats if cs_stat['atom_id'] == atom_id_ and cs_stat['count'] > 0), None)
@@ -6211,7 +6211,7 @@ class NmrDpValidation:
 
                         has_cs_stat = True
 
-                        if atom_id_[0] in protonBeginCode and 'methyl' in cs_stat['desc']:
+                        if atom_id_[0] in PROTON_BEGIN_CODE and 'methyl' in cs_stat['desc']:
                             methyl_h_list = self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id)
                             _atom_id = methyl_h_list[0] if len(methyl_h_list) > 0 else atom_id
                             methyl_cs_key = (chain_id, seq_id, _atom_id, occupancy)
@@ -6320,8 +6320,8 @@ class NmrDpValidation:
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."\
                                                 f"{no_reason_message if self.__reg.cifChecked else ''}"\
                                                 f"{fold_warn_message}\n"
-                                            if _details in emptyValue or (details not in _details):
-                                                if _details in emptyValue:
+                                            if _details in EMPTY_VALUE or (details not in _details):
+                                                if _details in EMPTY_VALUE:
                                                     loop.data[idx][details_col] = details
                                                 else:
                                                     loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -6374,8 +6374,8 @@ class NmrDpValidation:
                                                 f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
                                                 f"is located at a distance of {na['ring_distance']}Å, "\
                                                 f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
-                                            if _details in emptyValue or (details not in _details):
-                                                if _details in emptyValue:
+                                            if _details in EMPTY_VALUE or (details not in _details):
+                                                if _details in EMPTY_VALUE:
                                                     loop.data[idx][details_col] = details
                                                 else:
                                                     loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -6420,8 +6420,8 @@ class NmrDpValidation:
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                             f"The nearest paramagnetic/ferromagnetic atom {pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
                                             f"is located at a distance of {pa['distance']}Å.\n"
-                                        if _details in emptyValue or (details not in _details):
-                                            if _details in emptyValue:
+                                        if _details in EMPTY_VALUE or (details not in _details):
+                                            if _details in EMPTY_VALUE:
                                                 loop.data[idx][details_col] = details
                                             else:
                                                 loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -6609,8 +6609,8 @@ class NmrDpValidation:
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."\
                                                 f"{no_reason_message if self.__reg.cifChecked else ''}"\
                                                 f"{fold_warn_message}\n"
-                                            if _details in emptyValue or (details not in _details):
-                                                if _details in emptyValue:
+                                            if _details in EMPTY_VALUE or (details not in _details):
+                                                if _details in EMPTY_VALUE:
                                                     loop.data[idx][details_col] = details
                                                 else:
                                                     loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -6661,8 +6661,8 @@ class NmrDpValidation:
                                                     f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
                                                     f"is located at a distance of {na['ring_distance']}Å, "\
                                                     f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
-                                                if _details in emptyValue or (details not in _details):
-                                                    if _details in emptyValue:
+                                                if _details in EMPTY_VALUE or (details not in _details):
+                                                    if _details in EMPTY_VALUE:
                                                         loop.data[idx][details_col] = details
                                                     else:
                                                         loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -6708,8 +6708,8 @@ class NmrDpValidation:
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                                 f"The nearest paramagnetic/ferromagnetic atom {pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
                                                 f"is located at a distance of {pa['distance']}Å.\n"
-                                            if _details in emptyValue or (details not in _details):
-                                                if _details in emptyValue:
+                                            if _details in EMPTY_VALUE or (details not in _details):
+                                                if _details in EMPTY_VALUE:
                                                     loop.data[idx][details_col] = details
                                                 else:
                                                     loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -6806,7 +6806,7 @@ class NmrDpValidation:
 
                         has_cs_stat = True
 
-                        if atom_id_[0] in protonBeginCode and 'methyl' in cs_stat['desc']:
+                        if atom_id_[0] in PROTON_BEGIN_CODE and 'methyl' in cs_stat['desc']:
                             methyl_cs_key = (chain_id, seq_id, atom_id_[:-1], occupancy)
 
                             if methyl_cs_key not in methyl_cs_vals:
@@ -6911,8 +6911,8 @@ class NmrDpValidation:
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."\
                                             f"{no_reason_message if self.__reg.cifChecked else ''}"\
                                             f"{fold_warn_message}\n"
-                                        if _details in emptyValue or (details not in _details):
-                                            if _details in emptyValue:
+                                        if _details in EMPTY_VALUE or (details not in _details):
+                                            if _details in EMPTY_VALUE:
                                                 loop.data[idx][details_col] = details
                                             else:
                                                 loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -6965,8 +6965,8 @@ class NmrDpValidation:
                                             f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
-                                        if _details in emptyValue or (details not in _details):
-                                            if _details in emptyValue:
+                                        if _details in EMPTY_VALUE or (details not in _details):
+                                            if _details in EMPTY_VALUE:
                                                 loop.data[idx][details_col] = details
                                             else:
                                                 loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -7011,8 +7011,8 @@ class NmrDpValidation:
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                         f"The nearest paramagnetic/ferromagnetic atom {pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
                                         f"is located at a distance of {pa['distance']}Å.\n"
-                                    if _details in emptyValue or (details not in _details):
-                                        if _details in emptyValue:
+                                    if _details in EMPTY_VALUE or (details not in _details):
+                                        if _details in EMPTY_VALUE:
                                             loop.data[idx][details_col] = details
                                         else:
                                             loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -7124,7 +7124,7 @@ class NmrDpValidation:
                 if file_type == 'nmr-star' and ambig_code_name in row:
                     ambig_code = row[ambig_code_name]
 
-                    if ambig_code in emptyValue or ambig_code == 1:
+                    if ambig_code in EMPTY_VALUE or ambig_code == 1:
                         continue
 
                     _atom_id = atom_id
@@ -7242,7 +7242,7 @@ class NmrDpValidation:
 
                             ambig_set_id = row[ambig_set_id_name]
 
-                            if ambig_set_id in emptyValue:
+                            if ambig_set_id in EMPTY_VALUE:
 
                                 if ambig_code in (4, 5):
 
@@ -7397,7 +7397,7 @@ class NmrDpValidation:
                                     atom_id2 = _row[atom_id_name]
                                     value2 = _row[value_name]
 
-                                    if comp_id2 not in monDict3:
+                                    if comp_id2 not in MONDICT3:
                                         continue
 
                                     _atom_id2 = atom_id2
@@ -7547,7 +7547,7 @@ class NmrDpValidation:
                     chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
                         comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row)
 
-                    if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                    if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE:
                         continue
 
                     if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
@@ -7635,8 +7635,8 @@ class NmrDpValidation:
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
                         if self.__reg.csStat.peptideLike(comp_id_1) and self.__reg.csStat.peptideLike(comp_id_2)\
-                           and ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                                or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                           and ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                                or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
                                 or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
                                 or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                             pass
@@ -8444,7 +8444,7 @@ class NmrDpValidation:
 
                     if file_type == 'nef':
 
-                        if variant in emptyValue:
+                        if variant in EMPTY_VALUE:
                             continue
 
                         for _variant in variant.split(','):
@@ -8540,7 +8540,7 @@ class NmrDpValidation:
                                         + f") which is a {variant_name} {_variant_!r} is not present in the coordinates."
 
                                     checked = False
-                                    if atom_id_[0] in protonBeginCode:
+                                    if atom_id_[0] in PROTON_BEGIN_CODE:
                                         cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == atom_id_), None)
                                         bonded_to = self.__reg.ccU.getBondedAtoms(comp_id, atom_id_)
                                         peptide_like = self.__reg.csStat.peptideLike(comp_id)
@@ -8922,7 +8922,7 @@ class NmrDpValidation:
                                 if isinstance(val, str) and concat_seq_id_ins_code_pattern.match(val):
                                     g = concat_seq_id_ins_code_pattern.search(val).groups()
                                     loop.data[idx][auth_seq_id_cols[col]] = g[0]
-                                    if g[1] not in emptyValue:
+                                    if g[1] not in EMPTY_VALUE:
                                         loop.data[idx][ins_code_cols[col]] = g[1]
 
                 offset_holder = {}
@@ -9085,7 +9085,7 @@ class NmrDpValidation:
 
                                 if has_auth_atom_name:
                                     auth_atom_id = row_[atom_dim_num * 4 + d]
-                                    if auth_atom_id in emptyValue:
+                                    if auth_atom_id in EMPTY_VALUE:
                                         auth_atom_id = atom_id
                                 else:
                                     auth_atom_id = atom_id
@@ -9271,7 +9271,7 @@ class NmrDpValidation:
                                 memberLogicCode = '.'
                                 if member_logic_code_col != -1:
                                     memberLogicCode = loop.data[idx][member_logic_code_col]
-                                    if memberLogicCode in emptyValue:
+                                    if memberLogicCode in EMPTY_VALUE:
                                         memberLogicCode = '.'
                                 memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1 else memberLogicCode
 
@@ -9493,7 +9493,7 @@ class NmrDpValidation:
 
                                 if has_auth_atom_name:
                                     auth_atom_id = row_[atom_dim_num * 4 + d]
-                                    if auth_atom_id in emptyValue:
+                                    if auth_atom_id in EMPTY_VALUE:
                                         auth_atom_id = atom_id
                                 else:
                                     auth_atom_id = atom_id
@@ -9703,7 +9703,7 @@ class NmrDpValidation:
                                 memberLogicCode = '.'
                                 if member_logic_code_col != -1:
                                     memberLogicCode = loop.data[idx][member_logic_code_col]
-                                    if memberLogicCode in emptyValue:
+                                    if memberLogicCode in EMPTY_VALUE:
                                         memberLogicCode = '.'
                                 memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1 else memberLogicCode
 
@@ -9881,7 +9881,7 @@ class NmrDpValidation:
                         if auth_comp_id_name in loop.tags:
                             tags = [auth_chain_id_names[d], auth_seq_id_names[d], auth_comp_id_names[d]]
                             for idx, row in enumerate(loop.get_tag(tags)):
-                                if row[2] not in emptyValue:
+                                if row[2] not in EMPTY_VALUE:
                                     continue
                                 try:
                                     chain_id, seq_id = row[0], int(row[1])
@@ -10102,7 +10102,7 @@ class NmrDpValidation:
                             memberLogicCode = '.'
                             if member_logic_code_col != -1:
                                 memberLogicCode = loop.data[idx][member_logic_code_col]
-                                if memberLogicCode in emptyValue:
+                                if memberLogicCode in EMPTY_VALUE:
                                     memberLogicCode = '.'
                             memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1 else memberLogicCode
 
@@ -10191,7 +10191,7 @@ class NmrDpValidation:
                         use_member_logic_code = False
                     else:
                         dat = lp.get_tag(['Member_logic_code'])
-                        use_member_logic_code = any(True for row in dat if row not in emptyValue)
+                        use_member_logic_code = any(True for row in dat if row not in EMPTY_VALUE)
 
                 if not use_member_logic_code:
                     if not self.updateGenDistConstIdInMrStr(sf_item):
@@ -10205,7 +10205,7 @@ class NmrDpValidation:
                 sf_item['constraint_type'] = 'distance'
                 sf_item['constraint_subsubtype'] = 'simple'
                 constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if len(constraint_type) > 0 and constraint_type not in emptyValue:
+                if len(constraint_type) > 0 and constraint_type not in EMPTY_VALUE:
                     sf_item['constraint_subtype'] = constraint_type
 
                 item_names = ITEM_NAMES_IN_DIST_LOOP[file_type]
@@ -10244,7 +10244,7 @@ class NmrDpValidation:
                 has_or_code = False
 
                 potential_type = get_first_sf_tag(sf, 'Potential_type')
-                has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+                has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
 
                 _potential_type = None
                 count = 0
@@ -10260,15 +10260,15 @@ class NmrDpValidation:
                     count += 1
                     if not has_potential_type:
                         dst_func = {}
-                        if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                        if target_value_col != -1 and row[target_value_col] not in EMPTY_VALUE:
                             dst_func['target_value'] = float(row[target_value_col])
-                        if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                        if lower_limit_col != -1 and row[lower_limit_col] not in EMPTY_VALUE:
                             dst_func['lower_limit'] = float(row[lower_limit_col])
-                        if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                        if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE:
                             dst_func['upper_limit'] = float(row[upper_limit_col])
-                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in EMPTY_VALUE:
                             dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
-                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in EMPTY_VALUE:
                             dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
                         if _potential_type is None:
                             _potential_type = getPotentialType(file_type, 'dist', dst_func)
@@ -10289,21 +10289,21 @@ class NmrDpValidation:
                             _id = int(row[id_col])
                             if _id != prev_id:
                                 _atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                          'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
+                                          'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                           'comp_id': row[comp_id_1_col],
                                           'atom_id': row[atom_id_1_col]}
                                 _atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                          'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
+                                          'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                           'comp_id': row[comp_id_2_col],
                                           'atom_id': row[atom_id_2_col]}
                                 prev_id = _id
                                 continue
                             atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                     'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in emptyValue else None,
+                                     'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                      'comp_id': row[comp_id_1_col],
                                      'atom_id': row[atom_id_1_col]}
                             atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                     'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
+                                     'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                      'comp_id': row[comp_id_2_col],
                                      'atom_id': row[atom_id_2_col]}
                             if isAmbigAtomSelection([_atom1, atom1], self.__reg.csStat)\
@@ -10350,7 +10350,7 @@ class NmrDpValidation:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
 
-                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                        if atom_id_1 in EMPTY_VALUE or atom_id_2 in EMPTY_VALUE:
                             continue
 
                         atom_id_1_ = atom_id_1[0]
@@ -10361,17 +10361,17 @@ class NmrDpValidation:
                             disele_bond = True
                         elif 'SG' in (atom_id_1, atom_id_2):
                             disulf_bond = True
-                        elif (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+                        elif (atom_id_1_ == 'F' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'F' and atom_id_1_ in PROTON_BEGIN_CODE):
                             hydrog_bond = True
                         elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
                             hydrog_bond = True
-                        elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+                        elif (atom_id_1_ == 'O' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'O' and atom_id_1_ in PROTON_BEGIN_CODE):
                             hydrog_bond = True
                         elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
                             hydrog_bond = True
                         elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
                             hydrog_bond = True
-                        elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+                        elif (atom_id_1_ == 'N' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'N' and atom_id_1_ in PROTON_BEGIN_CODE):
                             hydrog_bond = True
                         elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
                             hydrog_bond = True
@@ -10446,7 +10446,7 @@ class NmrDpValidation:
                     upper_linear_limit_col = -1
 
                 potential_type = get_first_sf_tag(sf, 'Potential_type')
-                has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+                has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
 
                 _potential_type = None
                 count = 0
@@ -10460,15 +10460,15 @@ class NmrDpValidation:
                     count += 1
                     if not has_potential_type:
                         dst_func = {}
-                        if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                        if target_value_col != -1 and row[target_value_col] not in EMPTY_VALUE:
                             dst_func['target_value'] = float(row[target_value_col])
-                        if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                        if lower_limit_col != -1 and row[lower_limit_col] not in EMPTY_VALUE:
                             dst_func['lower_limit'] = float(row[lower_limit_col])
-                        if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                        if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE:
                             dst_func['upper_limit'] = float(row[upper_limit_col])
-                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in EMPTY_VALUE:
                             dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
-                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in EMPTY_VALUE:
                             dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
                         if _potential_type is None:
                             _potential_type = getPotentialType(file_type, 'dihed', dst_func)
@@ -10494,7 +10494,7 @@ class NmrDpValidation:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                     auth_comp_id = row[auth_comp_id_col]
 
                     seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
@@ -10525,7 +10525,7 @@ class NmrDpValidation:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                     auth_comp_id = row[auth_comp_id_col]
 
                     seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
@@ -10556,7 +10556,7 @@ class NmrDpValidation:
                         continue
                     prev_id = _id
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                    auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in EMPTY_VALUE else None
                     auth_comp_id = row[auth_comp_id_col]
 
                     seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
@@ -10607,7 +10607,7 @@ class NmrDpValidation:
                     upper_linear_limit_col = -1
 
                 potential_type = get_first_sf_tag(sf, 'Potential_type')
-                has_potential_type = len(potential_type) > 0 and potential_type not in emptyValue and potential_type != 'unknown'
+                has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
 
                 _potential_type = None
                 count = 0
@@ -10621,15 +10621,15 @@ class NmrDpValidation:
                     count += 1
                     if not has_potential_type:
                         dst_func = {}
-                        if target_value_col != -1 and row[target_value_col] not in emptyValue:
+                        if target_value_col != -1 and row[target_value_col] not in EMPTY_VALUE:
                             dst_func['target_value'] = float(row[target_value_col])
-                        if lower_limit_col != -1 and row[lower_limit_col] not in emptyValue:
+                        if lower_limit_col != -1 and row[lower_limit_col] not in EMPTY_VALUE:
                             dst_func['lower_limit'] = float(row[lower_limit_col])
-                        if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue:
+                        if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE:
                             dst_func['upper_limit'] = float(row[upper_limit_col])
-                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in emptyValue:
+                        if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in EMPTY_VALUE:
                             dst_func['lower_linear_limit'] = float(row[lower_linear_limit_col])
-                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in emptyValue:
+                        if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in EMPTY_VALUE:
                             dst_func['upper_linear_limit'] = float(row[upper_linear_limit_col])
                         if _potential_type is None:
                             _potential_type = getPotentialType(file_type, 'rdc', dst_func)
@@ -10865,7 +10865,7 @@ class NmrDpValidation:
 
                         if valid_auth_seq:
 
-                            if atom_id not in emptyValue:
+                            if atom_id not in EMPTY_VALUE:
 
                                 if comp_id in auth_atom_name_to_id:
                                     if atom_id in auth_atom_name_to_id[comp_id]:
@@ -10898,7 +10898,7 @@ class NmrDpValidation:
                                             pass
                                 elif col == 4:
                                     comp_id = row[loop.tags.index(assign_item)]
-                                    if comp_id not in emptyValue:
+                                    if comp_id not in EMPTY_VALUE:
                                         comp_id = comp_id.upper()
                                 else:
                                     atom_id = row[loop.tags.index(assign_item)]
@@ -10914,7 +10914,7 @@ class NmrDpValidation:
                                     seq_key = (auth_asym_id, auth_seq_id, comp_id)
                                 if seq_key in auth_to_star_seq:
 
-                                    if atom_id not in emptyValue:
+                                    if atom_id not in EMPTY_VALUE:
 
                                         if comp_id in auth_atom_name_to_id:
                                             if atom_id in auth_atom_name_to_id[comp_id]:
@@ -10947,7 +10947,7 @@ class NmrDpValidation:
 
                     if valid_auth_seq:
 
-                        if atom_id not in emptyValue:
+                        if atom_id not in EMPTY_VALUE:
 
                             if comp_id in auth_atom_name_to_id:
                                 if atom_id in auth_atom_name_to_id[comp_id]:
@@ -10973,7 +10973,7 @@ class NmrDpValidation:
                                     pass
                             elif col == 3:
                                 comp_id = row[loop.tags.index(assign_item)]
-                                if comp_id not in emptyValue:
+                                if comp_id not in EMPTY_VALUE:
                                     comp_id = comp_id.upper()
                             else:
                                 atom_id = row[loop.tags.index(assign_item)]
@@ -10989,7 +10989,7 @@ class NmrDpValidation:
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
                             if seq_key in auth_to_star_seq:
 
-                                if atom_id not in emptyValue:
+                                if atom_id not in EMPTY_VALUE:
 
                                     if comp_id in auth_atom_name_to_id:
                                         if atom_id in auth_atom_name_to_id[comp_id]:
@@ -11028,7 +11028,7 @@ class NmrDpValidation:
 
                             if valid_auth_seq:
 
-                                if atom_id not in emptyValue:
+                                if atom_id not in EMPTY_VALUE:
 
                                     if comp_id in auth_atom_name_to_id:
                                         if atom_id in auth_atom_name_to_id[comp_id]:
@@ -11061,7 +11061,7 @@ class NmrDpValidation:
                                                 pass
                                     elif col == 4:
                                         comp_id = row[loop.tags.index(assign_item)]
-                                        if comp_id not in emptyValue:
+                                        if comp_id not in EMPTY_VALUE:
                                             comp_id = comp_id.upper()
                                     else:
                                         atom_id = row[loop.tags.index(assign_item)]
@@ -11076,7 +11076,7 @@ class NmrDpValidation:
                                         if _seq_key in coord_atom_site:  # DAOTHER-8817
                                             comp_id = coord_atom_site[_seq_key]['comp_id']
 
-                                        if atom_id not in emptyValue:
+                                        if atom_id not in EMPTY_VALUE:
 
                                             if comp_id in auth_atom_name_to_id:
                                                 if atom_id in auth_atom_name_to_id[comp_id]:
@@ -11109,7 +11109,7 @@ class NmrDpValidation:
 
                         if valid_auth_seq:
 
-                            if atom_id not in emptyValue:
+                            if atom_id not in EMPTY_VALUE:
 
                                 if comp_id in auth_atom_name_to_id:
                                     if atom_id in auth_atom_name_to_id[comp_id]:
@@ -11135,7 +11135,7 @@ class NmrDpValidation:
                                         pass
                                 elif col == 3:
                                     comp_id = row[loop.tags.index(assign_item)]
-                                    if comp_id not in emptyValue:
+                                    if comp_id not in EMPTY_VALUE:
                                         comp_id = comp_id.upper()
                                 else:
                                     atom_id = row[loop.tags.index(assign_item)]
@@ -11150,7 +11150,7 @@ class NmrDpValidation:
                                     if _seq_key in coord_atom_site:  # DAOTHER-8817
                                         comp_id = coord_atom_site[_seq_key]['comp_id']
 
-                                    if atom_id not in emptyValue:
+                                    if atom_id not in EMPTY_VALUE:
 
                                         if comp_id in auth_atom_name_to_id:
                                             if atom_id in auth_atom_name_to_id[comp_id]:
@@ -11318,7 +11318,7 @@ class NmrDpValidation:
                                         pass
                             elif col == 4:
                                 comp_id = row[loop.tags.index(assign_item)]
-                                if comp_id not in emptyValue:
+                                if comp_id not in EMPTY_VALUE:
                                     comp_id = comp_id.upper()
                             else:
                                 atom_id = row[loop.tags.index(assign_item)]
@@ -11554,7 +11554,7 @@ class NmrDpValidation:
                                 pass
                         elif col == 3:
                             comp_id = row[loop.tags.index(assign_item)]
-                            if comp_id not in emptyValue:
+                            if comp_id not in EMPTY_VALUE:
                                 comp_id = comp_id.upper()
                         else:
                             atom_id = row[loop.tags.index(assign_item)]
@@ -11919,7 +11919,7 @@ class NmrDpValidation:
                     continue
 
                 if content_subtype.startswith('spectral_peak')\
-                   and (chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue):
+                   and (chain_id in EMPTY_VALUE or seq_id in EMPTY_VALUE or comp_id in EMPTY_VALUE or atom_id in EMPTY_VALUE):
                     continue
 
                 if chain_id not in nmr2ca:
@@ -12113,8 +12113,8 @@ class NmrDpValidation:
                         auth_seq_id_name = f'Auth_seq_ID_{j + 1}'
 
                     if auth_asym_id_name in row and auth_seq_id_name in row\
-                       and row[auth_asym_id_name] not in emptyValue\
-                       and row[auth_seq_id_name] not in emptyValue\
+                       and row[auth_asym_id_name] not in EMPTY_VALUE\
+                       and row[auth_seq_id_name] not in EMPTY_VALUE\
                        and (isinstance(row[auth_seq_id_name], int) or row[auth_seq_id_name].isdigit()):
                         cif_chain_id = row[auth_asym_id_name]
                         cif_seq_id = row[auth_seq_id_name]
@@ -12145,9 +12145,9 @@ class NmrDpValidation:
                     if self.__reg.nonblk_bad_nterm\
                        and (seq_id == 1 or cif_seq_id == 1 or ((seq_key[0], seq_key[1] - 1)
                                                                if seq_key is not None else (cif_chain_id, cif_seq_id - 1)) in coord_unobs_res)\
-                       and atom_id_ in aminoProtonCode and (cyclic or comp_id == 'PRO'
-                                                            or (atom_id_ in protonBeginCode
-                                                                or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
+                       and atom_id_ in AMINO_PROTON_CODE and (cyclic or comp_id == 'PRO'
+                                                              or (atom_id_ in PROTON_BEGIN_CODE
+                                                                  or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
 
                         err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "
 
@@ -12169,8 +12169,8 @@ class NmrDpValidation:
                             _details = loop.data[idx][details_col]
                             details = f"{chain_id}:{seq_id}:{comp_id}:{atom_name} is not present in the coordinates. "\
                                 "However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n"
-                            if _details in emptyValue or (details not in _details):
-                                if _details in emptyValue:
+                            if _details in EMPTY_VALUE or (details not in _details):
+                                if _details in EMPTY_VALUE:
                                     loop.data[idx][details_col] = details
                                 else:
                                     loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
@@ -12184,10 +12184,10 @@ class NmrDpValidation:
 
                     elif ca['conflict'] == 0:  # no conflict in sequenc alignment
 
-                        if comp_id in monDict3:
+                        if comp_id in MONDICT3:
 
                             checked = coord_issue = False
-                            if atom_id_[0] in protonBeginCode:
+                            if atom_id_[0] in PROTON_BEGIN_CODE:
                                 self.__reg.ccU.updateChemCompDict(comp_id)
                                 cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == atom_id_), None)
                                 bonded_to = self.__reg.ccU.getBondedAtoms(comp_id, atom_id_)
@@ -12209,7 +12209,7 @@ class NmrDpValidation:
 
                             if not checked and err.endswith("not present in the coordinates."):
 
-                                if atom_id_[0] in protonBeginCode:
+                                if atom_id_[0] in PROTON_BEGIN_CODE:
                                     bonded_to = self.__reg.ccU.getBondedAtoms(comp_id, atom_id_)
                                     if len(bonded_to) > 0 and coord_atom_site_ is not None and bonded_to[0] not in coord_atom_site_['atom_id']:
                                         err += " Additionally, the attached atom ("\
@@ -13391,7 +13391,7 @@ class NmrDpValidation:
                            or ('dihedral angle' in _constraint_type and _constraint_subtype == 'unknown'):
                             ambig = True
 
-                        if _constraint_subsubtype not in emptyValue and _constraint_subsubtype == 'ambi':
+                        if _constraint_subsubtype not in EMPTY_VALUE and _constraint_subsubtype == 'ambi':
                             ambig = True
 
             except (IndexError, ValueError):
@@ -13683,7 +13683,7 @@ class NmrDpValidation:
 
             for row in lp_data:
 
-                if row[atom_type] in emptyValue or row[iso_number] in emptyValue or row[value_name] in emptyValue:
+                if row[atom_type] in EMPTY_VALUE or row[iso_number] in EMPTY_VALUE or row[value_name] in EMPTY_VALUE:
                     continue
 
                 data_type = str(row[iso_number]) + row[atom_type].lower() + '_chemical_shifts'
@@ -13763,7 +13763,7 @@ class NmrDpValidation:
 
                                 for a in all_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                         all_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -13785,7 +13785,7 @@ class NmrDpValidation:
                                         _chain_id = chain_id_map[_chain_id] = row[chain_id_name]
 
                                     if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
-                                       or row[value_name] in emptyValue:
+                                       or row[value_name] in EMPTY_VALUE:
                                         continue
 
                                     atom_id = row[atom_id_name]
@@ -13806,7 +13806,7 @@ class NmrDpValidation:
 
                                             if a in all_atoms:
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -13830,7 +13830,7 @@ class NmrDpValidation:
 
                                         if atom_id in all_atoms:
 
-                                            if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
+                                            if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                                 all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                             elif data_type == '13C' and c13_col != -1:
@@ -13904,7 +13904,7 @@ class NmrDpValidation:
 
                                 for a in bb_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                         bb_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -13926,7 +13926,7 @@ class NmrDpValidation:
                                         _chain_id = chain_id_map[_chain_id] = row[chain_id_name]
 
                                     if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
-                                       or row[value_name] in emptyValue:
+                                       or row[value_name] in EMPTY_VALUE:
                                         continue
 
                                     atom_id = row[atom_id_name]
@@ -13947,7 +13947,7 @@ class NmrDpValidation:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -13966,7 +13966,7 @@ class NmrDpValidation:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                             bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -14032,7 +14032,7 @@ class NmrDpValidation:
 
                                 for a in sc_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                         sc_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -14054,7 +14054,7 @@ class NmrDpValidation:
                                         _chain_id = chain_id_map[_chain_id] = row[chain_id_name]
 
                                     if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
-                                       or row[value_name] in emptyValue:
+                                       or row[value_name] in EMPTY_VALUE:
                                         continue
 
                                     atom_id = row[atom_id_name]
@@ -14075,7 +14075,7 @@ class NmrDpValidation:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -14094,7 +14094,7 @@ class NmrDpValidation:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                             sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -14157,7 +14157,7 @@ class NmrDpValidation:
 
                                 for a in ch3_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                         ch3_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -14173,7 +14173,7 @@ class NmrDpValidation:
                                         _chain_id = chain_id_map[_chain_id] = row[chain_id_name]
 
                                     if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
-                                       or row[value_name] in emptyValue:
+                                       or row[value_name] in EMPTY_VALUE:
                                         continue
 
                                     atom_id = row[atom_id_name]
@@ -14194,7 +14194,7 @@ class NmrDpValidation:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -14207,7 +14207,7 @@ class NmrDpValidation:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                             ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -14264,7 +14264,7 @@ class NmrDpValidation:
 
                                 for a in aro_atoms:
 
-                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                    if h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                         aro_c[h1_col]['number_of_target_shifts'] += 1
 
                                     elif c13_col != -1 and a.startswith('C'):
@@ -14283,7 +14283,7 @@ class NmrDpValidation:
                                         _chain_id = chain_id_map[_chain_id] = row[chain_id_name]
 
                                     if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
-                                       or row[value_name] in emptyValue:
+                                       or row[value_name] in EMPTY_VALUE:
                                         continue
 
                                     atom_id = row[atom_id_name]
@@ -14304,7 +14304,7 @@ class NmrDpValidation:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in protonBeginCode:
+                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -14320,7 +14320,7 @@ class NmrDpValidation:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in protonBeginCode:
+                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                             aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -14352,7 +14352,7 @@ class NmrDpValidation:
 
             for row in lp_data:
 
-                if row[atom_type] in emptyValue or row[iso_number] in emptyValue or row[value_name] in emptyValue:
+                if row[atom_type] in EMPTY_VALUE or row[iso_number] in EMPTY_VALUE or row[value_name] in EMPTY_VALUE:
                     continue
 
                 data_type = str(row[iso_number]) + row[atom_type].lower() + '_chemical_shifts'
@@ -14366,7 +14366,7 @@ class NmrDpValidation:
                 _chain_id = chain_id if file_type == 'nef' or self.__reg.remediation_mode else str(letterToDigit(chain_id))
                 _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
-                if value in emptyValue:
+                if value in EMPTY_VALUE:
                     continue
 
                 if file_type == 'nef' or self.isNmrAtomName(comp_id, atom_id):
@@ -14389,7 +14389,7 @@ class NmrDpValidation:
                 has_cs_stat = False
 
                 # non-standard residue
-                if comp_id not in monDict3:
+                if comp_id not in MONDICT3:
 
                     neighbor_comp_ids = set(_row[comp_id_name] for _row in lp_data
                                             if _row[chain_id_name] == _chain_id
@@ -15100,8 +15100,8 @@ class NmrDpValidation:
 
                         for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
-                            if comp_id not in emptyValue:
-                                if comp_id not in monDict3:
+                            if comp_id not in EMPTY_VALUE:
+                                if comp_id not in MONDICT3:
                                     continue
                                 if not self.__reg.csStat.peptideLike(comp_id):
                                     continue
@@ -15109,7 +15109,7 @@ class NmrDpValidation:
                             else:
                                 _comp_id = self.__getCoordCompId(chain_id, seq_id)
                                 if _comp_id is not None:
-                                    if _comp_id not in monDict3:
+                                    if _comp_id not in MONDICT3:
                                         continue
                                     if not self.__reg.csStat.peptideLike(_comp_id):
                                         continue
@@ -15123,7 +15123,7 @@ class NmrDpValidation:
 
                                 if row[chain_id_name] != _chain_id\
                                    or row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
-                                   or row[value_name] in emptyValue:
+                                   or row[value_name] in EMPTY_VALUE:
                                     continue
 
                                 atom_id = row[atom_id_name]
@@ -15409,11 +15409,11 @@ class NmrDpValidation:
 
                 if (member_logic_code is not None and member_logic_code == 'OR') or rest_id == _rest_id:
                     atom1 = {'chain_id': chain_id_1,
-                             'seq_id': int(seq_id_1) if seq_id_1 not in emptyValue else None,
+                             'seq_id': int(seq_id_1) if seq_id_1 not in EMPTY_VALUE else None,
                              'comp_id': comp_id_1,
                              'atom_id': atom_id_1}
                     atom2 = {'chain_id': chain_id_2,
-                             'seq_id': int(seq_id_2) if seq_id_2 not in emptyValue else None,
+                             'seq_id': int(seq_id_2) if seq_id_2 not in EMPTY_VALUE else None,
                              'comp_id': comp_id_2,
                              'atom_id': atom_id_2}
                     if None not in (_atom1, _atom2):
@@ -15542,7 +15542,7 @@ class NmrDpValidation:
                 else:
                     count[data_type] = 1
 
-                if (combination_id is not None) and (combination_id not in emptyValue):
+                if (combination_id is not None) and (combination_id not in EMPTY_VALUE):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -16163,7 +16163,7 @@ class NmrDpValidation:
 
             if not ambig:
 
-                if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+                if (atom_id_1_ == 'F' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'F' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                     if 1.2 - delta_minus <= target_value <= 1.5:
                         hydrogen_bond_type = 'F...H-x'
@@ -16187,7 +16187,7 @@ class NmrDpValidation:
                         hydrogen_bond_type = 'F...h-F (too far!)'
                         hydrogen_bond = True
 
-                elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+                elif (atom_id_1_ == 'O' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'O' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                     if 1.5 - delta_minus <= target_value <= 2.5:
                         hydrogen_bond_type = 'O...H-x'
@@ -16223,7 +16223,7 @@ class NmrDpValidation:
                         hydrogen_bond_type = 'O...h-O (too far!)'
                         hydrogen_bond = True
 
-                elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+                elif (atom_id_1_ == 'N' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'N' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                     if 1.5 - delta_minus <= target_value <= 2.5:
                         hydrogen_bond_type = 'N...H-x'
@@ -16499,7 +16499,7 @@ class NmrDpValidation:
             atom_id_1_ = atom_id_1[0]
             atom_id_2_ = atom_id_2[0]
 
-            if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+            if (atom_id_1_ == 'F' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'F' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                 if 1.2 <= target_value <= 1.5:
                     hydrogen_bond_type = 'F...H-x'
@@ -16523,7 +16523,7 @@ class NmrDpValidation:
                     hydrogen_bond_type = 'F...h-F (too far!)'
                     hydrogen_bond = True
 
-            elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+            elif (atom_id_1_ == 'O' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'O' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                 if 1.5 <= target_value <= 2.5:
                     hydrogen_bond_type = 'O...H-x'
@@ -16559,7 +16559,7 @@ class NmrDpValidation:
                     hydrogen_bond_type = 'O...h-O (too far!)'
                     hydrogen_bond = True
 
-            elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+            elif (atom_id_1_ == 'N' and atom_id_2_ in PROTON_BEGIN_CODE) or (atom_id_2_ == 'N' and atom_id_1_ in PROTON_BEGIN_CODE):
 
                 if 1.5 <= target_value <= 2.5:
                     hydrogen_bond_type = 'N...H-x'
@@ -16985,7 +16985,7 @@ class NmrDpValidation:
                 else:
                     count[data_type] = 1
 
-                if (combination_id is not None) and (combination_id not in emptyValue):
+                if (combination_id is not None) and (combination_id not in EMPTY_VALUE):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -17554,7 +17554,7 @@ class NmrDpValidation:
                 else:
                     count[data_type] = 1
 
-                if (combination_id is not None) and (combination_id not in emptyValue):
+                if (combination_id is not None) and (combination_id not in EMPTY_VALUE):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -17979,11 +17979,11 @@ class NmrDpValidation:
                                 continue
                             axis_code = sp_dim['Axis_code']
                             atom_type = sp_dim.get('Atom_type')
-                            if atom_type in emptyValue:
+                            if atom_type in EMPTY_VALUE:
                                 atom_type = ''.join(j for j in axis_code if not j.isdigit())
                             atom_isotope_number = sp_dim.get('Atom_isotope_number')
-                            if atom_isotope_number in emptyValue:
-                                if atom_type not in emptyValue and atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                            if atom_isotope_number in EMPTY_VALUE:
+                                if atom_type not in EMPTY_VALUE and atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     atom_isotope_number = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type[0]][0]
                                 else:
                                     try:
@@ -17999,28 +17999,28 @@ class NmrDpValidation:
                                 under_sampling_type = sp_dim['Under_sampling_type']
                             if 'Center_frequency_offset' in sp_dim:
                                 center_point = sp_dim['Center_frequency_offset']
-                                if center_point in emptyValue:
+                                if center_point in EMPTY_VALUE:
                                     center_point = None
                             if 'Encoding_code' in sp_dim:
                                 encoding_code = sp_dim['Encoding_code']
-                                if encoding_code in emptyValue:
+                                if encoding_code in EMPTY_VALUE:
                                     encoding_code = None
                             if 'Encoded_reduced_dimension_ID' in sp_dim:
                                 encoded_src_dim_id = sp_dim['Encoded_reduced_dimension_ID']
-                                if encoded_src_dim_id in emptyValue:
+                                if encoded_src_dim_id in EMPTY_VALUE:
                                     encoded_src_dim_id = None
                             if 'Magnetization_linkage_ID' in sp_dim:
                                 mag_link_id = sp_dim['Magnetization_linkage_ID']
-                                if mag_link_id in emptyValue:
+                                if mag_link_id in EMPTY_VALUE:
                                     mag_link_id = None
 
-                        if sp_freq is not None and sp_freq in emptyValue:
+                        if sp_freq is not None and sp_freq in EMPTY_VALUE:
                             sp_freq = None
 
                         if center_point is None:
                             center_point = None if None in (first_point, sp_width) else (first_point - sp_width / 2.0)
 
-                        if under_sampling_type is not None and under_sampling_type in emptyValue:
+                        if under_sampling_type is not None and under_sampling_type in EMPTY_VALUE:
                             under_sampling_type = None
 
                         if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none'):
@@ -18070,7 +18070,7 @@ class NmrDpValidation:
                                             continue
                                         _axis_code = _sp_dim['Axis_code']
                                         _atom_type = _sp_dim.get('Atom_type')
-                                        if _atom_type in emptyValue:
+                                        if _atom_type in EMPTY_VALUE:
                                             _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
 
                                     if _atom_type == 'C':
@@ -18089,10 +18089,10 @@ class NmrDpValidation:
                                                 _sp_freq = _sp_dim['Spectrometer_frequency']
                                             if 'Center_frequency_offset' in _sp_dim:
                                                 _center_point = _sp_dim['Center_frequency_offset']
-                                                if _center_point in emptyValue:
+                                                if _center_point in EMPTY_VALUE:
                                                     _center_point = None
 
-                                        if _sp_freq is not None and _sp_freq in emptyValue:
+                                        if _sp_freq is not None and _sp_freq in EMPTY_VALUE:
                                             _sp_freq = None
 
                                         if _center_point is None:
@@ -18166,7 +18166,7 @@ class NmrDpValidation:
                         comp_id = row[comp_id_names[j]]
                         atom_id = row[atom_id_names[j]]
 
-                        if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
+                        if chain_id in EMPTY_VALUE or seq_id in EMPTY_VALUE or comp_id in EMPTY_VALUE or atom_id in EMPTY_VALUE:
                             has_assignment = False
                             break
 
@@ -18262,11 +18262,11 @@ class NmrDpValidation:
                             continue
                         axis_code = sp_dim['Axis_code']
                         atom_type = sp_dim.get('Atom_type')
-                        if atom_type in emptyValue:
+                        if atom_type in EMPTY_VALUE:
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
                         atom_isotope_number = sp_dim.get('Atom_isotope_number')
-                        if atom_isotope_number in emptyValue:
-                            if atom_type not in emptyValue and atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                        if atom_isotope_number in EMPTY_VALUE:
+                            if atom_type not in EMPTY_VALUE and atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 atom_isotope_number = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type[0]][0]
                             else:
                                 try:
@@ -18282,28 +18282,28 @@ class NmrDpValidation:
                             under_sampling_type = sp_dim['Under_sampling_type']
                         if 'Center_frequency_offset' in sp_dim:
                             center_point = sp_dim['Center_frequency_offset']
-                            if center_point in emptyValue:
+                            if center_point in EMPTY_VALUE:
                                 center_point = None
                         if 'Encoding_code' in sp_dim:
                             encoding_code = sp_dim['Encoding_code']
-                            if encoding_code in emptyValue:
+                            if encoding_code in EMPTY_VALUE:
                                 encoding_code = None
                         if 'Encoded_reduced_dimension_ID' in sp_dim:
                             encoded_src_dim_id = sp_dim['Encoded_reduced_dimension_ID']
-                            if encoded_src_dim_id in emptyValue:
+                            if encoded_src_dim_id in EMPTY_VALUE:
                                 encoded_src_dim_id = None
                         if 'Magnetization_linkage_ID' in sp_dim:
                             mag_link_id = sp_dim['Magnetization_linkage_ID']
-                            if mag_link_id in emptyValue:
+                            if mag_link_id in EMPTY_VALUE:
                                 mag_link_id = None
 
-                        if sp_freq is not None and sp_freq in emptyValue:
+                        if sp_freq is not None and sp_freq in EMPTY_VALUE:
                             sp_freq = None
 
                         if center_point is None:
                             center_point = None if None in (first_point, sp_width) else (first_point - sp_width / 2.0)
 
-                        if under_sampling_type is not None and under_sampling_type in emptyValue:
+                        if under_sampling_type is not None and under_sampling_type in EMPTY_VALUE:
                             under_sampling_type = None
 
                         if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none'):
@@ -18347,7 +18347,7 @@ class NmrDpValidation:
                                         continue
                                     _axis_code = _sp_dim['Axis_code']
                                     _atom_type = _sp_dim.get('Atom_type')
-                                    if _atom_type in emptyValue:
+                                    if _atom_type in EMPTY_VALUE:
                                         _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
 
                                     if _atom_type == 'C':
@@ -18359,10 +18359,10 @@ class NmrDpValidation:
                                             _sp_freq = _sp_dim['Spectrometer_frequency']
                                         if 'Center_frequency_offset' in _sp_dim:
                                             _center_point = _sp_dim['Center_frequency_offset']
-                                            if _center_point in emptyValue:
+                                            if _center_point in EMPTY_VALUE:
                                                 _center_point = None
 
-                                        if _sp_freq is not None and _sp_freq in emptyValue:
+                                        if _sp_freq is not None and _sp_freq in EMPTY_VALUE:
                                             _sp_freq = None
 
                                         if _center_point is None:
@@ -18450,7 +18450,7 @@ class NmrDpValidation:
                         comp_id = k[comp_id_name]
                         atom_id = k[atom_id_name]
 
-                        if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
+                        if chain_id in EMPTY_VALUE or seq_id in EMPTY_VALUE or comp_id in EMPTY_VALUE or atom_id in EMPTY_VALUE:
                             has_assignment = False
                             break
 
@@ -18571,7 +18571,7 @@ class NmrDpValidation:
 
                         dat = lp.get_tag(['Atom_isotope_number', 'Atom_type'])
                         for row in dat:
-                            if row[0] not in emptyValue and row[1] not in emptyValue:
+                            if row[0] not in EMPTY_VALUE and row[1] not in EMPTY_VALUE:
                                 t = f'{row[0]}{row[1].title()} chemical shifts'
                                 if t in datum_counter:
                                     datum_counter[t] += 1
@@ -18593,7 +18593,7 @@ class NmrDpValidation:
                             if 'Combination_ID' in lp.tags and 'Member_ID' in lp.tags:
                                 dat = lp.get_tag(['Combination_ID', 'Member_ID'])
                                 for row in dat:
-                                    if row[0] in emptyValue and row[1] in emptyValue:
+                                    if row[0] in EMPTY_VALUE and row[1] in EMPTY_VALUE:
                                         datum_counter['distance constraints'] += 1
                                     else:
                                         datum_counter['ambiguous distance constraints'] += 1

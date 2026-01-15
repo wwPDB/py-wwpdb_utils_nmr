@@ -23,78 +23,21 @@ from itertools import zip_longest
 from typing import Any, List, Tuple, Optional
 
 
-# criterion for low sequence coverage
-LOW_SEQ_COVERAGE = 0.3
+try:
+    from wwpdb.utils.nmr.NmrDpConstant import (LOW_SEQ_COVERAGE,
+                                               MIN_SEQ_COVERAGE_W_CONFLICT,
+                                               EMPTY_VALUE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               LEN_LARGE_ASYM_ID)
+except ImportError:
+    from nmr.NmrDpConstant import (LOW_SEQ_COVERAGE,
+                                   MIN_SEQ_COVERAGE_W_CONFLICT,
+                                   EMPTY_VALUE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   LEN_LARGE_ASYM_ID)
 
-
-# criterion for minimum sequence coverage when conflict occurs (NMR conventional deposition)
-MIN_SEQ_COVERAGE_W_CONFLICT = 0.95
-
-
-# empty value
-emptyValue = (None, '', '.', '?', 'null', 'None')
-
-
-# true value
-trueValue = ('true', 't', 'yes', 'y', '1')
-
-
-# taken from wwpdb.utils.align.SequenceReferenceData.py
-monDict3 = {'ALA': 'A',
-            'ARG': 'R',
-            'ASN': 'N',
-            'ASP': 'D',
-            'ASX': 'B',
-            'CYS': 'C',
-            'GLN': 'Q',
-            'GLU': 'E',
-            'GLX': 'Z',
-            'GLY': 'G',
-            'HIS': 'H',
-            'ILE': 'I',
-            'LEU': 'L',
-            'LYS': 'K',
-            'MET': 'M',
-            'PHE': 'F',
-            'PRO': 'P',
-            'SER': 'S',
-            'THR': 'T',
-            'TRP': 'W',
-            'TYR': 'Y',
-            'VAL': 'V',
-            'DA': 'A',
-            'DC': 'C',
-            'DG': 'G',
-            'DT': 'T',
-            'DU': 'U',
-            'DI': 'I',
-            'A': 'A',
-            'C': 'C',
-            'G': 'G',
-            'I': 'I',
-            'T': 'T',
-            'U': 'U'
-            }
-
-protonBeginCode = ('H', '1', '2', '3')
-pseProBeginCode = ('H', 'Q', 'M', '1', '2', '3')
-aminoProtonCode = ('H', 'HN', 'H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3', 'H1*', 'H2*', 'H3*', 'HT', 'HT%', 'HT*', 'HT#')
-carboxylCode = ('C', 'O', 'O1', 'O2', 'OT1', 'OT2', 'OXT', 'HXT')
-jcoupBbPairCode = ('N', 'H', 'CA', 'C')
-rdcBbPairCode = ('N', 'H', 'CA')
-zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
-calciumIonCode = ('CA2', 'CA2+', 'CA+2', 'ME')
-unknownResidue = ('UNK', 'DN', 'N')
-
-dnrParentCode = ('DC', 'CYT', 'DC5', 'DC3')
-chParentCode = ('C', 'RCYT', 'C5', 'C3')
-
-LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
-LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
-
-# maximum number of magnetically identifiable chain IDs
-MAX_MAG_IDENT_ASYM_ID = 2
 
 try:
 
@@ -317,14 +260,14 @@ def beautifyPolySeq(polySeq1: dict, polySeq2: dict,
     if has_auth_comp_id1:
         _a_c1 = [authCompId for seqId, authCompId
                  in zip(_polySeq1[seqIdName1], _polySeq1['auth_comp_id']) if seqId is not None and seqId > 0]
-        if _a_c1 in emptyValue:
+        if _a_c1 in EMPTY_VALUE:
             _a_c1 = _c1
     _c2 = [compId for seqId, compId
            in zip(_polySeq1[seqIdName1], _polySeq2['comp_id']) if seqId is not None and seqId > 0]
     if has_auth_comp_id2:
         _a_c2 = [authCompId for seqId, authCompId
                  in zip(_polySeq2[seqIdName1], _polySeq2['auth_comp_id']) if seqId is not None and seqId > 0]
-        if _a_c2 in emptyValue:
+        if _a_c2 in EMPTY_VALUE:
             _a_c2 = _c2
 
     gapS, gapP = [], []
@@ -537,10 +480,10 @@ def getOneLetterCodeCan(compId: str) -> str:
 
     compId = compId.upper()
 
-    if compId in monDict3:
-        return monDict3[compId]
+    if compId in MONDICT3:
+        return MONDICT3[compId]
 
-    if compId in emptyValue:
+    if compId in EMPTY_VALUE:
         return '.'
 
     return 'X'
@@ -552,10 +495,10 @@ def getOneLetterCode(compId: str) -> str:
 
     compId = compId.upper()
 
-    if compId in monDict3:
-        return monDict3[compId]
+    if compId in MONDICT3:
+        return MONDICT3[compId]
 
-    if compId in emptyValue:
+    if compId in EMPTY_VALUE:
         return '.'
 
     return f'({compId})'
@@ -775,7 +718,7 @@ def updatePolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, compId: s
     """ Update polymer sequence of the current MR file.
     """
 
-    if seqId is None or compId in emptyValue:
+    if seqId is None or compId in EMPTY_VALUE:
         return
 
     if authCompId is None:
@@ -791,14 +734,14 @@ def updatePolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, compId: s
     if seqId not in ps['seq_id']:
         ps['seq_id'].append(seqId)
         ps['comp_id'].append(compId)
-        ps['auth_comp_id'].append(compId if authCompId in emptyValue else authCompId)
+        ps['auth_comp_id'].append(compId if authCompId in EMPTY_VALUE else authCompId)
 
 
 def revertPolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, authCompId: str):
     """ Revert polymer sequence of the current MR file.
     """
 
-    if seqId is None or authCompId in emptyValue:
+    if seqId is None or authCompId in EMPTY_VALUE:
         return
 
     ps = next((ps for ps in polySeqRst if ps['chain_id'] == chainId), None)
@@ -892,7 +835,7 @@ def updatePolySeqRstFromAtomSelectionSet(polySeqRst: List[dict], atomSelectionSe
             seqId = atom['seq_id']
             compId = atom.get('comp_id', '.')
 
-            if seqId is None or compId in emptyValue:
+            if seqId is None or compId in EMPTY_VALUE:
                 continue
 
             updatePolySeqRst(polySeqRst, chainId, seqId, compId)
@@ -926,7 +869,7 @@ def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
                     _idx = _seqIds.index(seqId)
                     _compIds[_idx] = ps['comp_id'][idx]
                     _authCompIds[_idx] = ps['auth_comp_id'][idx] if 'auth_comp_id' in ps else _compIds[_idx]
-                    if _authCompIds[_idx] in emptyValue:
+                    if _authCompIds[_idx] in EMPTY_VALUE:
                         _authCompIds[_idx] = _compIds[_idx]
                     idx += 1
 
@@ -963,7 +906,7 @@ def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
                     _idx = _seqIds.index(seqId)
                     _compIds[_idx] = ps['comp_id'][idx]
                     _authCompIds[_idx] = ps['auth_comp_id'][idx] if 'auth_comp_id' in ps else _compIds[_idx]
-                    if _authCompIds[_idx] in emptyValue:
+                    if _authCompIds[_idx] in EMPTY_VALUE:
                         _authCompIds[_idx] = _compIds[_idx]
 
             _endSeqIds, _endCompIds, _endAuthCompIds = [], [], []
@@ -979,7 +922,7 @@ def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
                 else:
                     authCompId = next(item['comp_id'] for item in remapList
                                       if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)
-                if authCompId in emptyValue:
+                if authCompId in EMPTY_VALUE:
                     authCompId = compId
                 if seqId > maxSeqId:
                     _endSeqIds.append(seqId)
@@ -1219,7 +1162,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(_myAlign)
 
                     if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
-                        if any(True for comp_id in ps2['comp_id'] if comp_id in emptyValue):
+                        if any(True for comp_id in ps2['comp_id'] if comp_id in EMPTY_VALUE):
                             valid_comp_ids = set()  # 2mze: ensure that comp_id_mapping has no side effect
                             comp_id_mapping = {}
                             for comp_id, alt_comp_id in zip(ps1['comp_id'], ps1['alt_comp_id']):
@@ -2472,7 +2415,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
 
         return seqId, compId, atomId
 
-    if elemName not in protonBeginCode:
+    if elemName not in PROTON_BEGIN_CODE:
 
         item = next((item for item in mapping
                      if item['original_atom_id'] == atomId), None)
@@ -2807,7 +2750,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
 
         return atomId
 
-    if elemName not in protonBeginCode:
+    if elemName not in PROTON_BEGIN_CODE:
 
         item = next((item for item in mapping
                      if item['original_atom_id'] == atomId), None)
@@ -3423,7 +3366,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[di
 
         parent_comp_id = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
 
-        if parent_comp_id not in emptyValue:
+        if parent_comp_id not in EMPTY_VALUE:
             alt_ref_comp_id_dict[parent_comp_id] = ref_comp_id
 
     comp_ids.clear()
@@ -3858,7 +3801,7 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
             print(str(e))
             return None
 
-    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
+    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in MONDICT3]
 
     if len(nstd_residues) == 0:
         return None
@@ -3899,7 +3842,7 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
         cR_prev = CifReader(False, sys.stdout, use_cache=False)
         cR_prev.parse(loc_cif_path)
 
-        nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
+        nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in MONDICT3]
 
         if len(nstd_residues_prev) == 0:
             continue
@@ -3967,7 +3910,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     if os.path.exists(pkl_path):
         return load_from_pickle(pkl_path)
 
-    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
+    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in MONDICT3]
 
     if len(nstd_residues) == 0:
         return None
@@ -3993,7 +3936,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     cR_prev = CifReader(False, sys.stdout, use_cache=False)
     cR_prev.parse(cif_path)
 
-    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
+    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in MONDICT3]
 
     auth_seq_id = 'auth_seq_id' if cR_prev.hasItem('atom_site', 'auth_seq_id') else 'label_seq_id'
     auth_comp_id = 'auth_comp_id' if cR_prev.hasItem('atom_site', 'auth_comp_id') else 'label_comp_id'
@@ -4011,7 +3954,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
 
         for c in coord_prev:
             comp_id = c['comp_id']
-            if comp_id not in monDict3 and comp_id not in nstd_residues_prev:
+            if comp_id not in MONDICT3 and comp_id not in nstd_residues_prev:
                 nstd_residues_prev.append(comp_id)
 
         if len(nstd_residues_prev) == 0:

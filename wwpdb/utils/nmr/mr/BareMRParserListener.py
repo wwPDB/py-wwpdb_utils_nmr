@@ -21,6 +21,13 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.BareMRParser import BareMRParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -36,15 +43,15 @@ try:
                                                        resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
-                                                       getPotentialType,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
-                                           emptyValue)
+                                                       getPotentialType)
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.BareMRParser import BareMRParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -60,14 +67,7 @@ except ImportError:
                                            resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
-                                           getPotentialType,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (monDict3,
-                               emptyValue)
+                                           getPotentialType)
 
 
 # This class defines a complete listener for a parse tree produced by BareMRParser.
@@ -267,7 +267,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in monDict3.items() if v == compId)
+                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -280,7 +280,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in monDict3.items() if v == compId)
+                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -566,7 +566,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in monDict3.items() if v == compId)
+                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -579,7 +579,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in monDict3.items() if v == compId)
+                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -735,7 +735,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                            self.getCurrentRestraint())
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -764,7 +764,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                                        self.getCurrentRestraint())
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):

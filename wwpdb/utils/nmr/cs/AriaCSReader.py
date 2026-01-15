@@ -18,25 +18,25 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from typing import IO, List, Tuple, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.pk.XMLLexer import XMLLexer
     from wwpdb.utils.nmr.pk.XMLParser import XMLParser
     from wwpdb.utils.nmr.cs.AriaCSParserListener import AriaCSParserListener
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
+    from nmr.NmrDpConstant import MAX_ERROR_REPORT
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.pk.XMLLexer import XMLLexer
     from nmr.pk.XMLParser import XMLParser
     from nmr.cs.AriaCSParserListener import AriaCSParserListener
-    from nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 class AriaCSReader:

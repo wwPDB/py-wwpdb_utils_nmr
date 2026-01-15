@@ -13,53 +13,11 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
+import re
+import copy
 
-try:
-    from wwpdb.utils.nmr.nef.NEFTranslator import (altDistanceConstraintType,
-                                                   altDihedralAngleConstraintType,
-                                                   altRdcConstraintType,
-                                                   MAX_DIM_NUM_OF_SPECTRA)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       ALLOWED_AMBIGUITY_CODES,
-                                                       ALLOWED_ISOTOPE_NUMBERS,
-                                                       CS_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_RANGE,
-                                                       CS_UNCERTAINTY_RANGE,
-                                                       DIST_UNCERTAINTY_RANGE,
-                                                       ANGLE_UNCERTAINTY_RANGE,
-                                                       RDC_UNCERTAINTY_RANGE,
-                                                       CSA_RESTRAINT_RANGE,
-                                                       CCR_RESTRAINT_RANGE,
-                                                       PRE_RESTRAINT_RANGE,
-                                                       PROBABILITY_RANGE,
-                                                       WEIGHT_RANGE,
-                                                       SCALE_RANGE,
-                                                       REPRESENTATIVE_ASYM_ID)
-except ImportError:
-    from nmr.nef.NEFTranslator import (altDistanceConstraintType,
-                                       altDihedralAngleConstraintType,
-                                       altRdcConstraintType,
-                                       MAX_DIM_NUM_OF_SPECTRA)
-    from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           ALLOWED_AMBIGUITY_CODES,
-                                           ALLOWED_ISOTOPE_NUMBERS,
-                                           CS_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_RANGE,
-                                           CS_UNCERTAINTY_RANGE,
-                                           DIST_UNCERTAINTY_RANGE,
-                                           ANGLE_UNCERTAINTY_RANGE,
-                                           RDC_UNCERTAINTY_RANGE,
-                                           CSA_RESTRAINT_RANGE,
-                                           CCR_RESTRAINT_RANGE,
-                                           PRE_RESTRAINT_RANGE,
-                                           PROBABILITY_RANGE,
-                                           WEIGHT_RANGE,
-                                           SCALE_RANGE,
-                                           REPRESENTATIVE_ASYM_ID)
+from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error
+
 
 # parameter key for each input path list
 CS_FILE_PATH_LIST_KEY = 'chem_shift_file_path_list'
@@ -74,6 +32,681 @@ SUB_DIR_NAME_FOR_CACHE = 'utils_nmr'
 DEF_ENTRY_ID = 'UNNAMED'
 # initial placeholder for entry ID
 INI_ENTRY_ID = 'EXTRACT_FROM_COORD'
+
+# supported NEF dictionary version
+NEF_VERSION = '1.1'
+
+# supported NMR-STAR dictionary version
+NMR_STAR_VERSION = '3.2.6.0'
+
+# format name
+NEF_FORMAT_NAME = 'nmr_exchange_format'
+
+# NEF boolean values
+NEF_BOOLEAN_VALUES = ('true', 'false')
+
+# NMR-STAR boolean values
+STAR_BOOLEAN_VALUES = ('yes', 'no')
+
+# paramagnetic elements, except for Oxygen
+PARAMAGNETIC_ELEMENTS = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR',
+                         'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA',
+                         'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM',
+                         'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
+
+# ferromagnetic elements
+FERROMAGNETIC_ELEMENTS = ('CR', 'FE', 'CO', 'NI')
+
+# lanthanoid elements
+LANTHANOID_ELEMENTS = ('LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU')
+
+# non-metal elements
+NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'F', 'P', 'S', 'SE')
+
+# PDB compatible symbols of all elements
+ELEMENT_SYMBOLS = {k.upper(): v for k, v in NAMES_ELEMENT.items()}
+
+# limit number of spectral dimensions
+MAX_DIM_NUM_OF_SPECTRA = 16
+
+# isotope numbers of NMR observable nucleus
+ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS = {'H': [1, 2, 3],
+                                   'LI': [6],
+                                   'B': [11, 10],
+                                   'C': [13],
+                                   'N': [15, 14],
+                                   'O': [17],
+                                   'F': [19],
+                                   'NA': [23],
+                                   'SI': [29],
+                                   'P': [31],
+                                   'S': [33],
+                                   'CL': [35],
+                                   'CA': [43],
+                                   'CD': [113, 111],
+                                   'XE': [129],
+                                   'PT': [195]
+                                   }
+
+# isotope names of NMR observable nucleus
+ISOTOPE_NAMES_OF_NMR_OBS_NUCS = []
+for nuc_name, iso_nums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items():
+    for iso_num in iso_nums:
+        ISOTOPE_NAMES_OF_NMR_OBS_NUCS.append(f'{iso_num}{nuc_name}')
+ISOTOPE_NAMES_OF_NMR_OBS_NUCS = tuple(ISOTOPE_NAMES_OF_NMR_OBS_NUCS)
+
+# nucleus with half spin
+HALF_SPIN_NUCLEUS = ('H', 'C', 'N', 'P', 'F', 'CD')
+
+# allowed BMRB ambiguity codes
+ALLOWED_AMBIGUITY_CODES = (1, 2, 3, 4, 5, 6, 9)
+
+ALLOWED_ISOTOPE_NUMBERS = []
+for isotopeNums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.values():
+    ALLOWED_ISOTOPE_NUMBERS.extend(isotopeNums)
+ALLOWED_ISOTOPE_NUMBERS = tuple(ALLOWED_ISOTOPE_NUMBERS)
+
+WELL_KNOWN_ISOTOPE_NUMBERS = copy.copy(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H'])
+WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C'])
+WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N'])
+WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P'])
+WELL_KNOWN_ISOTOPE_NUMBERS = tuple(WELL_KNOWN_ISOTOPE_NUMBERS)
+
+# maximum number of rows to perform explicit redundancy check
+MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 20000
+
+# maximum number of rows to perform index order check
+MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK = 10000
+
+# maximum number of rows to be used for spectral peak list identification
+MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY = 10
+
+# data items in _Entity_deleted_atom category of NMR-STAR
+ENTITY_DELETED_ATOM_ITEMS = ('ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
+                             'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID')
+
+# alternative dictionary of constraint type
+ALT_DIST_CONSTRAINT_TYPES = {'nef': {'NOE': 'noe',
+                                     'NOE build-up': 'noe_build_up',
+                                     'noe build-up': 'noe_build_up',
+                                     'NOE buildup': 'noe_build_up',
+                                     'noe buildup': 'noe_build_up',
+                                     'NOE build up': 'noe_build_up',
+                                     'noe build up': 'noe_build_up',
+                                     'noe not seen': 'noe_not_seen',
+                                     'ROE': 'roe',
+                                     'roe build-up': 'roe_build_up',
+                                     'ROE buildup': 'roe_build_up',
+                                     'roe buildup': 'roe_build_up',
+                                     'ROE build up': 'roe_build_up',
+                                     'roe build up': 'roe_build_up',
+                                     'hydrogen bond': 'hbond',
+                                     'Hbond': 'hbond',
+                                     'HBond': 'hbond',
+                                     'H-bond': 'hbond',
+                                     'h-bond': 'hbond',
+                                     'H-Bond': 'hbond',
+                                     'Hydrogen bond': 'hbond',
+                                     'disulfide bond': 'disulfide_bond',
+                                     'Disulfide bond': 'disulfide_bond',
+                                     'S-S bond': 'disulfide_bond',
+                                     'SS bond': 'disulfide_bond',
+                                     'SS-bond': 'disulfide_bond',
+                                     'disulfide bridge': 'disulfide_bond',
+                                     'Disulfide bridge': 'disulfide_bond',
+                                     'paramagnetic relaxation': 'pre',
+                                     'PRE': 'pre',
+                                     'Paramagnetic relaxation': 'pre',
+                                     'paramagnetic relaxation enhancement': 'pre',
+                                     'Paramagnetic relaxation enhancement': 'pre',
+                                     'general distance': 'undefined',
+                                     'distance': 'undefined',
+                                     'Mutation': 'mutation',
+                                     'chemical shift perturbation': 'shift_perturbation',
+                                     'shift perturbation': 'shift_perturbation',
+                                     'chem shift perturbation': 'shift_perturbation',
+                                     'CS perturbation': 'shift_perturbation',
+                                     'csp': 'shift_perturbation',
+                                     'CSP': 'shift_perturbation'
+                                     },
+                             'nmr-star': {'noe': 'NOE',
+                                          'noe_build_up': 'NOE build-up',
+                                          'noe build-up': 'NOE build-up',
+                                          'NOE buildup': 'NOE build-up',
+                                          'noe buildup': 'NOE build-up',
+                                          'NOE build up': 'NOE build-up',
+                                          'noe build up': 'NOE build-up',
+                                          'noe_not_seen': 'NOE not seen',
+                                          'noe not seen': 'NOE not seen',
+                                          'roe': 'ROE',
+                                          'roe_build_up': 'ROE build-up',
+                                          'roe build-up': 'ROE build-up',
+                                          'ROE buildup': 'ROE build-up',
+                                          'roe buildup': 'ROE build-up',
+                                          'ROE build up': 'ROE build-up',
+                                          'roe build up': 'ROE build-up',
+                                          'hbond': 'hydrogen bond',
+                                          'Hbond': 'hydrogen bond',
+                                          'HBond': 'hydrogen bond',
+                                          'H-bond': 'hydrogen bond',
+                                          'h-bond': 'hydrogen bond',
+                                          'H-Bond': 'hydrogen bond',
+                                          'Hydrogen bond': 'hydrogen bond',
+                                          'disulfide_bond': 'disulfide bond',
+                                          'Disulfide bond': 'disulfide bond',
+                                          'S-S bond': 'disulfide bond',
+                                          'SS bond': 'disulfide bond',
+                                          'SS-bond': 'disulfide bond',
+                                          'disulfide bridge': 'disulfide bond',
+                                          'Disulfide bridge': 'disulfide bond',
+                                          'PRE': 'paramagnetic relaxation',
+                                          'pre': 'paramagnetic relaxation',
+                                          'Paramagnetic relaxation': 'paramagnetic relaxation',
+                                          'paramagnetic relaxation enhancement': 'paramagnetic relaxation',
+                                          'Paramagnetic relaxation enhancement': 'paramagnetic relaxation',
+                                          'Mutation': 'mutation',
+                                          'unknown': 'general distance',
+                                          'undefined': 'general distance',
+                                          'shift_perturbation': 'chemical shift perturbation',
+                                          'shift perturbation': 'chemical shift perturbation',
+                                          'chem shift perturbation': 'chemical shift perturbation',
+                                          'CS perturbation': 'chemical shift perturbation',
+                                          'csp': 'chemical shift perturbation',
+                                          'CSP': 'chemical shift perturbation'
+                                          }
+                             }
+
+ALT_DIHED_CONSTRAINT_TYPES = {'nef': {'J-couplings': 'jcoupling',
+                                      'j-couplings': 'jcoupling',
+                                      'J couplings': 'jcoupling',
+                                      'j couplings': 'jcoupling',
+                                      'Jcouplings': 'jcoupling',
+                                      'jcouplings': 'jcoupling',
+                                      'J-coupling': 'jcoupling',
+                                      'j-coupling': 'jcoupling',
+                                      'J coupling': 'jcoupling',
+                                      'j coupling': 'jcoupling',
+                                      'Jcoupling': 'jcoupling',
+                                      'chemical shift': 'chemical_shift',
+                                      'Chemical shift': 'chemical_shift',
+                                      'Chemical_shift': 'chemical_shift',
+                                      'chemical shifts': 'chemical_shift',
+                                      'Chemical shifts': 'chemical_shift',
+                                      'Chemical_shifts': 'chemical_shift',
+                                      'backbone chemical shifts': 'chemical_shift',
+                                      'Backbone chemical shifts': 'chemical_shift',
+                                      'Mainchain chemical shifts': 'chemical_shift',
+                                      'mainchain chemical shifts': 'chemical_shift',
+                                      'Main chain chemical shifts': 'chemical_shift',
+                                      'main chain chemical shifts': 'chemical_shift',
+                                      'bb chemical shifts': 'chemical_shift',
+                                      'BB chemical shifts': 'chemical_shift',
+                                      'backbone chemical shift': 'chemical_shift',
+                                      'Backbone chemical shift': 'chemical_shift',
+                                      'Mainchain chemical shift': 'chemical_shift',
+                                      'mainchain chemical shift': 'chemical_shift',
+                                      'Main chain chemical shift': 'chemical_shift',
+                                      'main chain chemical shift': 'chemical_shift',
+                                      'bb chemical shift': 'chemical_shift',
+                                      'BB chemical shift': 'chemical_shift',
+                                      'backbone chem shifts': 'chemical_shift',
+                                      'Backbone chem shifts': 'chemical_shift',
+                                      'Mainchain chem shifts': 'chemical_shift',
+                                      'mainchain chem shifts': 'chemical_shift',
+                                      'Main chain chem shifts': 'chemical_shift',
+                                      'main chain chem shifts': 'chemical_shift',
+                                      'bb chem shifts': 'chemical_shift',
+                                      'BB chem shifts': 'chemical_shift',
+                                      'backbone chem shift': 'chemical_shift',
+                                      'Backbone chem shift': 'chemical_shift',
+                                      'Mainchain chem shift': 'chemical_shift',
+                                      'mainchain chem shift': 'chemical_shift',
+                                      'Main chain chem shift': 'chemical_shift',
+                                      'main chain chem shift': 'chemical_shift',
+                                      'bb chem shift': 'chemical_shift',
+                                      'BB chem shift': 'chemical_shift',
+                                      'backbone cs': 'chemical_shift',
+                                      'Backbone cs': 'chemical_shift',
+                                      'Mainchain cs': 'chemical_shift',
+                                      'mainchain cs': 'chemical_shift',
+                                      'Main chain cs': 'chemical_shift',
+                                      'main chain cs': 'chemical_shift',
+                                      'bb cs': 'chemical_shift',
+                                      'BB cs': 'chemical_shift',
+                                      'backbone CS': 'chemical_shift',
+                                      'Backbone CS': 'chemical_shift',
+                                      'Mainchain CS': 'chemical_shift',
+                                      'mainchain CS': 'chemical_shift',
+                                      'Main chain CS': 'chemical_shift',
+                                      'main chain CS': 'chemical_shift',
+                                      'bb CS': 'chemical_shift',
+                                      'BB CS': 'chemical_shift',
+                                      'TALOS': 'chemical_shift',
+                                      'talos': 'chemical_shift',
+                                      'TALOS+': 'chemical_shift',
+                                      'talos+': 'chemical_shift',
+                                      'TALOS-N': 'chemical_shift',
+                                      'talos-n': 'chemical_shift'
+                                      },
+                              'nmr-star': {'jcoupling': 'J-couplings',
+                                           'Jcoupling': 'J-couplings',
+                                           'jcouplings': 'J-couplings',
+                                           'Jcouplings': 'J-couplings',
+                                           'j-couplings': 'J-couplings',
+                                           'J couplings': 'J-couplings',
+                                           'j couplings': 'J-couplings',
+                                           'J-coupling': 'J-couplings',
+                                           'j-coupling': 'J-couplings',
+                                           'J coupling': 'J-couplings',
+                                           'j coupling': 'J-couplings',
+                                           'chemical_shift': 'backbone chemical shifts',
+                                           'Chemical_shift': 'backbone chemical shifts',
+                                           'chemical_shifts': 'backbone chemical shifts',
+                                           'Chemical_shifts': 'backbone chemical shifts',
+                                           'chemical shift': 'backbone chemical shifts',
+                                           'Chemical shift': 'backbone chemical shifts',
+                                           'chemical shifts': 'backbone chemical shifts',
+                                           'Chemical shifts': 'backbone chemical shifts',
+                                           'Backbone chemical shifts': 'backbone chemical shifts',
+                                           'Mainchain chemical shifts': 'backbone chemical shifts',
+                                           'mainchain chemical shifts': 'backbone chemical shifts',
+                                           'Main chain chemical shifts': 'backbone chemical shifts',
+                                           'main chain chemical shifts': 'backbone chemical shifts',
+                                           'bb chemical shifts': 'backbone chemical shifts',
+                                           'BB chemical shifts': 'backbone chemical shifts',
+                                           'backbone chemical shift': 'backbone chemical shifts',
+                                           'Backbone chemical shift': 'backbone chemical shifts',
+                                           'Mainchain chemical shift': 'backbone chemical shifts',
+                                           'mainchain chemical shift': 'backbone chemical shifts',
+                                           'Main chain chemical shift': 'backbone chemical shifts',
+                                           'main chain chemical shift': 'backbone chemical shifts',
+                                           'bb chemical shift': 'backbone chemical shifts',
+                                           'BB chemical shift': 'backbone chemical shifts',
+                                           'backbone chem shifts': 'backbone chemical shifts',
+                                           'Backbone chem shifts': 'backbone chemical shifts',
+                                           'Mainchain chem shifts': 'backbone chemical shifts',
+                                           'mainchain chem shifts': 'backbone chemical shifts',
+                                           'Main chain chem shifts': 'backbone chemical shifts',
+                                           'main chain chem shifts': 'backbone chemical shifts',
+                                           'bb chem shifts': 'backbone chemical shifts',
+                                           'BB chem shifts': 'backbone chemical shifts',
+                                           'backbone chem shift': 'backbone chemical shifts',
+                                           'Backbone chem shift': 'backbone chemical shifts',
+                                           'Mainchain chem shift': 'backbone chemical shifts',
+                                           'mainchain chem shift': 'backbone chemical shifts',
+                                           'Main chain chem shift': 'backbone chemical shifts',
+                                           'main chain chem shift': 'backbone chemical shifts',
+                                           'bb chem shift': 'backbone chemical shifts',
+                                           'BB chem shift': 'backbone chemical shifts',
+                                           'backbone cs': 'backbone chemical shifts',
+                                           'Backbone cs': 'backbone chemical shifts',
+                                           'Mainchain cs': 'backbone chemical shifts',
+                                           'mainchain cs': 'backbone chemical shifts',
+                                           'Main chain cs': 'backbone chemical shifts',
+                                           'main chain cs': 'backbone chemical shifts',
+                                           'bb cs': 'backbone chemical shifts',
+                                           'BB cs': 'backbone chemical shifts',
+                                           'backbone CS': 'backbone chemical shifts',
+                                           'Backbone CS': 'backbone chemical shifts',
+                                           'Mainchain CS': 'backbone chemical shifts',
+                                           'mainchain CS': 'backbone chemical shifts',
+                                           'Main chain CS': 'backbone chemical shifts',
+                                           'main chain CS': 'backbone chemical shifts',
+                                           'bb CS': 'backbone chemical shifts',
+                                           'BB CS': 'backbone chemical shifts',
+                                           'TALOS': 'backbone chemical shifts',
+                                           'talos': 'backbone chemical shifts',
+                                           'TALOS+': 'backbone chemical shifts',
+                                           'talos+': 'backbone chemical shifts',
+                                           'TALOS-N': 'backbone chemical shifts',
+                                           'talos-n': 'backbone chemical shifts'
+                                           }
+                              }
+
+ALT_RDC_CONSTRAINT_TYPES = {'nef': {'RDC': 'measured',
+                                    'rdc': 'measured'
+                                    },
+                            'nmr-star': {'rdc': 'RDC',
+                                         'measured': 'RDC'
+                                         }
+                            }
+
+# ignored residues from chemical shift statistics
+CS_STAT_IGNORED_LIG_CODE = ('N9K',)
+
+# criterion for minor chemical shift statistics
+CS_STAT_AA_THRESHOLD = 0.1
+CS_STAT_NA_THRESHOLD = 0.25
+CS_STAT_MAX_COUNT_THRESHOLD = 10
+
+# criterion for low sequence coverage
+LOW_SEQ_COVERAGE = 0.3
+
+# criterion for minimum sequence coverage when conflict occurs (NMR conventional deposition)
+MIN_SEQ_COVERAGE_W_CONFLICT = 0.95
+
+# empty value
+EMPTY_VALUE = (None, '', '.', '?', 'null', 'None')
+
+# true value
+TRUE_VALUE = ('true', 't', 'yes', 'y', '1')
+
+# taken from wwpdb.utils.align.SequenceReferenceData.py
+MONDICT3 = {'ALA': 'A',
+            'ARG': 'R',
+            'ASN': 'N',
+            'ASP': 'D',
+            'ASX': 'B',
+            'CYS': 'C',
+            'GLN': 'Q',
+            'GLU': 'E',
+            'GLX': 'Z',
+            'GLY': 'G',
+            'HIS': 'H',
+            'ILE': 'I',
+            'LEU': 'L',
+            'LYS': 'K',
+            'MET': 'M',
+            'PHE': 'F',
+            'PRO': 'P',
+            'SER': 'S',
+            'THR': 'T',
+            'TRP': 'W',
+            'TYR': 'Y',
+            'VAL': 'V',
+            'DA': 'A',
+            'DC': 'C',
+            'DG': 'G',
+            'DT': 'T',
+            'DU': 'U',
+            'DI': 'I',
+            'A': 'A',
+            'C': 'C',
+            'G': 'G',
+            'I': 'I',
+            'T': 'T',
+            'U': 'U'
+            }
+
+PROTON_BEGIN_CODE = ('H', '1', '2', '3')
+PSE_PRO_BEGIN_CODE = ('H', 'Q', 'M', '1', '2', '3')
+AMINO_PROTON_CODE = ('H', 'HN', 'H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3', 'H1*', 'H2*', 'H3*', 'HT', 'HT%', 'HT*', 'HT#')
+CARBOXYL_CODE = ('C', 'O', 'O1', 'O2', 'OT1', 'OT2', 'OXT', 'HXT')
+JCOUP_BB_PAIR_CODE = ('N', 'H', 'CA', 'C')
+RDC_BB_PAIR_CODE = ('N', 'H', 'CA')
+ZINC_ION_CODE = ('ZN', 'ME', 'Z1', 'Z2')
+CALCIUM_ION_CODE = ('CA2', 'CA2+', 'CA+2', 'ME')
+UNKNOWN_RESIDUE = ('UNK', 'DN', 'N')
+
+RESERVED_LIG_CODE = ('LIG', 'DRG', 'INH')
+DNR_PARENT_CODE = ('DC', 'CYT', 'DC5', 'DC3')
+CH_PARENT_CODE = ('C', 'RCYT', 'C5', 'C3')
+
+CCD_ID_PAT = re.compile(r'(\w{1,3}|\w{5})')
+
+LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
+LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
+LEN_MAJOR_ASYM_ID = 26
+
+# maximum number of magnetically identifiable chain IDs
+MAX_MAG_IDENT_ASYM_ID = 2
+
+MAX_ERROR_REPORT = 1
+MAX_ERR_LINE_NUM = 20
+
+REPRESENTATIVE_MODEL_ID = 1
+REPRESENTATIVE_ASYM_ID = 'A'
+REPRESENTATIVE_ALT_ID = 'A'
+
+MAX_PREF_LABEL_SCHEME_COUNT = 100
+
+MAX_OFFSET_ATTEMPT = 1000
+
+MAX_ALLOWED_EXT_SEQ = 2
+
+MIN_EXT_SEQ_FOR_ATOM_SEL_ERR = 12
+
+UNREAL_AUTH_SEQ_NUM = -10000
+
+DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
+DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
+
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -420.0, 'max_inclusive': 420.0}  # 2n96, 5o4d, (400) 6gbm (420)
+ANGLE_RESTRAINT_ERROR = {'min_exclusive': -450.0, 'max_exclusive': 450.0}
+
+RDC_RESTRAINT_RANGE = {'min_inclusive': -150.0, 'max_inclusive': 150.0}
+RDC_RESTRAINT_ERROR = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
+
+CS_RESTRAINT_RANGE = {'min_inclusive': -300.0, 'max_inclusive': 300.0}
+CS_RESTRAINT_ERROR = {'min_exclusive': -999.0, 'max_exclusive': 999.0}
+
+CSA_RESTRAINT_RANGE = {'min_inclusive': -300.0, 'max_inclusive': 300.0}
+CSA_RESTRAINT_ERROR = {'min_exclusive': -999.0, 'max_exclusive': 999.0}
+
+PCS_RESTRAINT_RANGE = {'min_inclusive': -20.0, 'max_inclusive': 20.0}
+PCS_RESTRAINT_ERROR = {'min_exclusive': -40.0, 'max_exclusive': 40.0}
+
+CCR_RESTRAINT_RANGE = {'min_inclusive': -10.0, 'max_inclusive': 10.0}
+CCR_RESTRAINT_ERROR = {'min_exclusive': -20.0, 'max_exclusive': 20.0}
+
+PRE_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 5000.0}  # 2mp0 (5000)
+PRE_RESTRAINT_ERROR = {'min_exclusive': -5.0, 'max_exclusive': 10000.0}
+
+T1T2_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 20.0}
+T1T2_RESTRAINT_ERROR = {'min_exclusive': -0.05, 'max_exclusive': 100.0}
+
+CS_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
+
+DIST_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
+
+ANGLE_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 90.0}
+
+RDC_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
+
+WEIGHT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
+
+SCALE_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
+
+PROBABILITY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 1.0}
+
+DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
+DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
+
+DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
+DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
+
+ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
+ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
+
+ANGLE_ERROR_MIN = ANGLE_RESTRAINT_ERROR['min_exclusive']
+ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
+
+RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
+RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
+
+RDC_ERROR_MIN = RDC_RESTRAINT_ERROR['min_exclusive']
+RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
+
+CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
+CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
+
+CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
+CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
+
+CSA_RANGE_MIN = CSA_RESTRAINT_RANGE['min_inclusive']
+CSA_RANGE_MAX = CSA_RESTRAINT_RANGE['max_inclusive']
+
+CSA_ERROR_MIN = CSA_RESTRAINT_ERROR['min_exclusive']
+CSA_ERROR_MAX = CSA_RESTRAINT_ERROR['max_exclusive']
+
+PCS_RANGE_MIN = PCS_RESTRAINT_RANGE['min_inclusive']
+PCS_RANGE_MAX = PCS_RESTRAINT_RANGE['max_inclusive']
+
+PCS_ERROR_MIN = PCS_RESTRAINT_ERROR['min_exclusive']
+PCS_ERROR_MAX = PCS_RESTRAINT_ERROR['max_exclusive']
+
+CCR_RANGE_MIN = CCR_RESTRAINT_RANGE['min_inclusive']
+CCR_RANGE_MAX = CCR_RESTRAINT_RANGE['max_inclusive']
+
+CCR_ERROR_MIN = CCR_RESTRAINT_ERROR['min_exclusive']
+CCR_ERROR_MAX = CCR_RESTRAINT_ERROR['max_exclusive']
+
+PRE_RANGE_MIN = PRE_RESTRAINT_RANGE['min_inclusive']
+PRE_RANGE_MAX = PRE_RESTRAINT_RANGE['max_inclusive']
+
+PRE_ERROR_MIN = PRE_RESTRAINT_ERROR['min_exclusive']
+PRE_ERROR_MAX = PRE_RESTRAINT_ERROR['max_exclusive']
+
+T1T2_RANGE_MIN = T1T2_RESTRAINT_RANGE['min_inclusive']
+T1T2_RANGE_MAX = T1T2_RESTRAINT_RANGE['max_inclusive']
+
+T1T2_ERROR_MIN = T1T2_RESTRAINT_ERROR['min_exclusive']
+T1T2_ERROR_MAX = T1T2_RESTRAINT_ERROR['max_exclusive']
+
+WEIGHT_RANGE_MIN = WEIGHT_RANGE['min_inclusive']
+WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
+
+DIST_AMBIG_LOW = 1.0
+DIST_AMBIG_BND = 4.0
+DIST_AMBIG_MED = 6.0
+DIST_AMBIG_UP = 12.0
+DIST_AMBIG_UNCERT = 0.05
+
+CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
+
+DIST_UNCERT_MAX = DIST_UNCERTAINTY_RANGE['max_inclusive']
+
+ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
+
+RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
+
+THRESHOLD_FOR_CIRCULAR_SHIFT = 355.0
+
+PLANE_LIKE_LOWER_LIMIT = -10.0
+PLANE_LIKE_UPPER_LIMIT = 10.0
+
+# @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
+KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
+                          'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
+                          'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; modified CYANA definition [O C N (H or CD for Proline residue)]
+                          'CHI1': ['N', 'CA', re.compile(r'CB1?'), re.compile(r'^[COS]G1?$')],  # DIV: [N, CA, CB1, CG1]
+                          'CHI2': ['CA', 'CB', re.compile(r'^CG1?$'), re.compile(r'^[CNOS]D1?$')],
+                          'CHI3': ['CB', 'CG', re.compile(r'^[CS]D$'), re.compile(r'^[CNO]E1?|N$')],
+                          'CHI4': ['CG', 'CD', re.compile(r'^[CN]E$'), re.compile(r'^[CN]Z$')],
+                          'CHI5': ['CD', 'NE', 'CZ', 'NH1'],
+                          'CHI21': ['CA', 'CB', re.compile(r'^[CO]G1$'), re.compile(r'^CD1|HG11?$')],  # ILE: (CG1, CD1), THR: (OG1, HG1), VAL: (CD1, HG11)
+                          'CHI22': ['CA', 'CB', 'CG2', 'HG21'],  # ILE or THR or VAL
+                          'CHI31': ['CB', re.compile(r'^CG1?$'), 'CD1', 'HD11'],  # ILE: CG1, LEU: CG
+                          'CHI32': ['CB', 'CG', re.compile(r'^[CO]D2$'), re.compile(r'^HD21?$')],  # ASP: (OD2, HD2), LEU: (CD2, HD21)
+                          'CHI42': ['CG', 'CD', 'OE2', 'HE2'],  # GLU
+                          'ALPHA': ["O3'", 'P', "O5'", "C5'"],  # i-1, i, i, i
+                          'BETA': ['P', "O5'", "C5'", "C4'"],
+                          'GAMMA': ["O5'", "C5'", "C4'", "C3'"],
+                          'DELTA': ["C5'", "C4'", "C3'", "O3'"],
+                          'EPSILON': ["C4'", "C3'", "O3'", 'P'],  # i, i, i, i+1
+                          'ZETA': ["C3'", "O3'", 'P', "O5'"],  # i, i, i+1, i+1
+                          # aka. CHIN (nucleic CHI angle)
+                          'CHI': {'Y': ["O4'", "C1'", 'N1', 'C2'],  # for pyrimidines (i.e. C, T, U) N1/3
+                                  'R': ["O4'", "C1'", 'N9', 'C4']  # for purines (i.e. G, A) N1/3/7/9
+                                  },
+                          'ETA': ["C4'", 'P', "C4'", 'P'],  # i-1, i, i, i+1
+                          'THETA': ['P', "C4'", 'P', "C4'"],  # i, i, i+1, i+1
+                          "ETA'": ["C1'", 'P', "C1'", 'P'],  # i-1, i, i, i+1
+                          "THETA'": ['P', "C1'", 'P', "C1'"],  # i, i, i+1, i+1
+                          'NU0': ["C4'", "O4'", "C1'", "C2'"],
+                          'NU1': ["O4'", "C1'", "C2'", "C3'"],
+                          'NU2': ["C1'", "C2'", "C3'", "C4'"],
+                          'NU3': ["C2'", "C3'", "C4'", "O4'"],
+                          'NU4': ["C3'", "C4'", "O4'", "C1'"],
+                          'TAU0': ["C4'", "O4'", "C1'", "C2'"],  # identical to NU0
+                          'TAU1': ["O4'", "C1'", "C2'", "C3'"],  # identical to NU1
+                          'TAU2': ["C1'", "C2'", "C3'", "C4'"],  # identical to NU2
+                          'TAU3': ["C2'", "C3'", "C4'", "O4'"],  # identical to NU3
+                          'TAU4': ["C3'", "C4'", "O4'", "C1'"],  # identical to NU4
+                          'PPA': ["C1'", "C2'", "C3'", "C4'", "O4'"]  # phase angle of pseudorotation made up from five NU[0-4] dihedral angles
+                          }
+
+# @see: http://dx.doi.org/10.1107/S0907444909001905
+KNOWN_ANGLE_CARBO_ATOM_NAMES = {'PHI': [re.compile(r'^H1|O5$'), 'C1', re.compile(r'^O[14]$'), re.compile(r'^C[46]$')],
+                                'PSI': ['C1', re.compile(r'^O[14]$'), re.compile(r'^C[46]$'), re.compile(r'^H4|C[35]$')],
+                                'OMEGA': [re.compile(r'^O[14]$'), 'C6', 'C5', re.compile('^H5|C4|O5$')]}
+
+KNOWN_ANGLE_NAMES = KNOWN_ANGLE_ATOM_NAMES.keys()
+
+KNOWN_ANGLE_SEQ_OFFSET = {'PHI': [-1, 0, 0, 0],  # i-1, i, i, i
+                          'PSI': [0, 0, 0, 1],  # i, i, i, i+1
+                          'OMEGA': [0, 0, 1, 1],  # i, i, i+1, i+1; modified CYANA definition [O C N (H or CD for Proline residue)]
+                          'CHI1': [0] * 4,
+                          'CHI2': [0] * 4,
+                          'CHI3': [0] * 4,
+                          'CHI4': [0] * 4,
+                          'CHI5': [0] * 4,
+                          'CHI21': [0] * 4,  # ILE: (CG1, CD1), THR: (OG1, HG1), VAL: (CD1, HG11)
+                          'CHI22': [0] * 4,  # ILE or THR or VAL
+                          'CHI31': [0] * 4,  # ILE: CG1, LEU: CG
+                          'CHI32': [0] * 4,  # ASP: (OD2, HD2), LEU: (CD2, HD21)
+                          'CHI42': [0] * 4,  # GLU
+                          'ALPHA': [-1, 0, 0, 0],  # i-1, i, i, i
+                          'BETA': [0] * 4,
+                          'GAMMA': [0] * 4,
+                          'DELTA': [0] * 4,
+                          'EPSILON': [0, 0, 0, 1],  # i, i, i, i+1
+                          'ZETA': [0, 0, 1, 1],  # i, i, i+1, i+1
+                          # aka. CHIN (nucleic CHI angle)
+                          'CHI': {'Y': [0] * 4,  # for pyrimidines (i.e. C, T, U) N1/3
+                                  'R': [0] * 4  # for purines (i.e. G, A) N1/3/7/9
+                                  },
+                          'ETA': [-1, 0, 0, 1],  # i-1, i, i, i+1
+                          'THETA': [0, 0, 1, 1],  # i, i, i+1, i+1
+                          "ETA'": [-1, 0, 0, 1],  # i-1, i, i, i+1
+                          "THETA'": [0, 0, 1, 1],  # i, i, i+1, i+1
+                          'NU0': [0] * 4,
+                          'NU1': [0] * 4,
+                          'NU2': [0] * 4,
+                          'NU3': [0] * 4,
+                          'NU4': [0] * 4,
+                          'TAU0': [0] * 4,  # identical to NU0
+                          'TAU1': [0] * 4,  # identical to NU1
+                          'TAU2': [0] * 4,  # identical to NU2
+                          'TAU3': [0] * 4,  # identical to NU3
+                          'TAU4': [0] * 4,  # identical to NU4
+                          'PPA': [0] * 5  # phase angle of pseudorotation made up from five NU[0-4] dihedral angles
+                          }
+
+KNOWN_ANGLE_CARBO_SEQ_OFFSET = {'PHI': [0, 0, 0, -1],  # i, i, i, i-n; for n > 0
+                                'PSI': [0, 0, -1, -1],  # i, i, i-n, i-n; for n > 0
+                                'OMEGA': [0, -1, -1, -1]  # i, i-n, i-n, i-n; for n > 0
+                                }
+
+XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
+
+XPLOR_ORIGIN_AXIS_COLS = (0, 1, 2, 3)
+
+XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'NAQ', 'NS1', 'ON', 'OS', 'OS1', 'OAH', 'SLC', 'GD')
+
+NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 'THR', 'HIS',
+                               'ILE', 'LEU', 'MET', 'R1A', '3X9')
+
+HEME_LIKE_RES_NAMES = ('HEM', 'HEB', 'HEC', 'MH0')
+
+LEGACY_PDB_RECORDS = ('HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
+                      'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
+                      'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
+                      'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
+                      'HELIX ', 'SHEET ', 'TURN',
+                      'SSBOND', 'LINK ', 'CISPEP',
+                      'SITE ',
+                      'CRYST1', 'ORIGX1', 'ORIGX2', 'ORIGX3', 'SCALE1', 'SCALE2', 'SCALE3',
+                      'MTRIX1', 'MTRIX2', 'MTRIX3',
+                      'MODEL ', 'ATOM ', 'ANISOU', 'TER ', 'HETATM', 'ENDMDL',
+                      'CONECT',
+                      'MASTER')
+
+LEGACY_PDB_RECORDS_WO_REMARK = [record for record in LEGACY_PDB_RECORDS if record != 'REMARK']
+LEGACY_PDB_RECORDS_WO_REMARK = tuple(LEGACY_PDB_RECORDS_WO_REMARK)
+
+CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
 
 # defined workflow operations
 WORKFLOW_OPS = ('nmr-nef-consistency-check',
@@ -333,6 +966,8 @@ VICINITY_PARAMAGNETIC = 8.0
 RMSD_NOT_SUPERIMPOSED = 2.0
 # criterion for detection of exactly overlaid models
 RMSD_OVERLAID_EXACTLY = 0.01
+# criterion for detection for domain recognition in RMSD value
+RMSD_CUTOFF_FOR_DOMAIN = 3.5
 
 # criterion for covalent bond length
 CUTOFF_BOND_LENGTH = 3.5
@@ -3561,7 +4196,7 @@ SF_TAG_PREFIXES = {'nef': {'entry_info': '_nef_nmr_meta_data',
                                 }
                    }
 
-altPotentialType = {'?': 'undefined'}
+ALT_POTENTIAL_TYPE = {'?': 'undefined'}
 
 # saveframe tag items
 SF_TAG_ITEMS = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
@@ -3589,13 +4224,13 @@ SF_TAG_ITEMS = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'm
                                                      'square-well-parabolic-linear', 'upper-bound-parabolic',
                                                      'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                      'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                            'enum-alt': altPotentialType},
+                                            'enum-alt': ALT_POTENTIAL_TYPE},
                                            {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                             'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe',
                                                      'roe_build_up', 'hbond', 'disulfide_bond', 'pre',
                                                      'symmetry', 'mutation', 'shift_perturbation',
                                                      'undefined', 'unknown'),
-                                            'enum-alt': altDistanceConstraintType['nef']}
+                                            'enum-alt': ALT_DIST_CONSTRAINT_TYPES['nef']}
                                            ],
                         'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                             {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
@@ -3603,10 +4238,10 @@ SF_TAG_ITEMS = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'm
                                              'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                       'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                       'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                             'enum-alt': altPotentialType},
+                                             'enum-alt': ALT_POTENTIAL_TYPE},
                                             {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                              'enum': ('jcoupling', 'chemical_shift', 'undefined', 'unknown'),
-                                             'enum-alt': altDihedralAngleConstraintType['nef']}
+                                             'enum-alt': ALT_DIHED_CONSTRAINT_TYPES['nef']}
                                             ],
                         'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                           {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
@@ -3614,10 +4249,10 @@ SF_TAG_ITEMS = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'm
                                            'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                     'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                     'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                           'enum-alt': altPotentialType},
+                                           'enum-alt': ALT_POTENTIAL_TYPE},
                                           {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                            'enum': ('measured', 'undefined', 'unknown'),
-                                           'enum-alt': altRdcConstraintType['nef']},
+                                           'enum-alt': ALT_RDC_CONSTRAINT_TYPES['nef']},
                                           {'name': 'tensor_magnitude', 'type': 'float', 'mandatory': False},
                                           {'name': 'tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
                                           {'name': 'tensor_chain_code', 'type': 'str', 'mandatory': False},
@@ -3707,35 +4342,35 @@ SF_TAG_ITEMS = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'm
                                                           'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation',
                                                           'symmetry', 'general distance', 'mutation', 'chemical shift perturbation',
                                                           'undefined', 'unknown'),
-                                                 'enum-alt': altDistanceConstraintType['nmr-star']},
+                                                 'enum-alt': ALT_DIST_CONSTRAINT_TYPES['nmr-star']},
                                                 {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                  'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic',
                                                           'square-well-parabolic-linear', 'upper-bound-parabolic',
                                                           'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                           'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                 'enum-alt': altPotentialType}
+                                                 'enum-alt': ALT_POTENTIAL_TYPE}
                                                 ],
                              'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
                                                   'enum': ('J-couplings', 'backbone chemical shifts', 'undefined', 'unknown'),
-                                                  'enum-alt': altDihedralAngleConstraintType['nmr-star']},
+                                                  'enum-alt': ALT_DIHED_CONSTRAINT_TYPES['nmr-star']},
                                                  {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                   'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                            'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                            'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                  'enum-alt': altPotentialType}
+                                                  'enum-alt': ALT_POTENTIAL_TYPE}
                                                  ],
                              'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
                                                 'enum': ('RDC', 'undefined', 'unknown'),
-                                                'enum-alt': altRdcConstraintType['nmr-star']},
+                                                'enum-alt': ALT_RDC_CONSTRAINT_TYPES['nmr-star']},
                                                {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                 'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                          'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                          'lower-bound-parabolic-linear', 'undefined', 'unknown'),
-                                                'enum-alt': altPotentialType},
+                                                'enum-alt': ALT_POTENTIAL_TYPE},
                                                {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
                                                {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
                                                {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
@@ -5142,3 +5777,2202 @@ ITEM_NAMES_IN_RDC_LOOP = {'nef': {'combination_id': 'restraint_combination_id',
 CS_LIST_SF_TAG_NAME = {'nef': 'chemical_shift_list',
                        'nmr-star': 'Chemical_shift_list'
                        }
+
+NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
+                            'dihed_restraint': '_Torsion_angle_constraint_list',
+                            'rdc_restraint': '_RDC_constraint_list',
+                            'noepk_restraint': '_Homonucl_NOE_list',
+                            'jcoup_restraint': '_J_three_bond_constraint_list',
+                            'rdc_raw_data': '_RDC_list',
+                            'csa_restraint': '_Chem_shift_anisotropy',
+                            'ddc_restraint': '_Dipolar_coupling_list',
+                            'hvycs_restraint': '_CA_CB_constraint_list',
+                            'procs_restraint': '_H_chem_shift_constraint_list',
+                            'csp_restraint': '_Chem_shift_perturbation_list',
+                            'auto_relax_restraint': '_Auto_relaxation_list',
+                            'heteronucl_noe_data': '_Heteronucl_NOE_list',
+                            'heteronucl_t1_data': '_Heteronucl_T1_list',
+                            'heteronucl_t2_data': '_Heteronucl_T2_list',
+                            'heteronucl_t1r_data': '_Heteronucl_T1rho_list',
+                            'order_param_data': '_Order_parameter_list',
+                            'ph_titr_data': '_PH_titration_list',
+                            'ph_param_data': '_PH_param_list',
+                            'coupling_const_data': '_Coupling_constant_list',
+                            'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
+                            'ccr_dd_restraint': '_Cross_correlation_DD_list',
+                            'fchiral_restraint': '_Floating_chirality_assign',
+                            'saxs_restraint': '_SAXS_constraint_list',
+                            'other_restraint': '_Other_data_type_list',
+                            'spectral_peak': '_Spectral_peak_list',
+                            'chem_shift': '_Assigned_chem_shift_list'
+                            }
+
+NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
+                          'dihed_restraint': 'torsion_angle_constraints',
+                          'rdc_restraint': 'RDC_constraints',
+                          'noepk_restraint': 'homonucl_NOEs',
+                          'jcoup_restraint': 'J_three_bond_constraints',
+                          'rdc_raw_data': 'RDCs',
+                          'csa_restraint': 'chem_shift_anisotropy',
+                          'ddc_restraint': 'dipolar_couplings',
+                          'hvycs_restraint': 'CA_CB_chem_shift_constraints',
+                          'procs_restraint': 'H_chem_shift_constraints',
+                          'csp_restraint': 'chem_shift_perturbation',
+                          'auto_relax_restraint': 'auto_relaxation',
+                          'heteronucl_noe_data': 'heteronucl_NOEs',
+                          'heteronucl_t1_data': 'heteronucl_T1_relaxation',
+                          'heteronucl_t2_data': 'heteronucl_T2_relaxation',
+                          'heteronucl_t1r_data': 'heteronucl_T1rho_relaxation',
+                          'order_param_data': 'order_parameters',
+                          'ph_titr_data': 'pH_titration',
+                          'ph_param_data': 'pH_param_list',
+                          'coupling_const_data': 'coupling_constants',
+                          'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
+                          'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
+                          'fchiral_restraint': 'floating_chiral_stereo_assign',
+                          'saxs_restraint': 'saxs_constraints',
+                          'other_restraint': 'other_data_types',
+                          'spectral_peak': 'spectral_peak_list',
+                          'chem_shift': 'assigned_chemical_shifts'
+                          }
+
+NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                             'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up',
+                                                      'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation',
+                                                      'symmetry', 'general distance', 'mutation', 'chemical shift perturbation',
+                                                      'undefined', 'unknown')},
+                                            {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                             'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic',
+                                                      'square-well-parabolic-linear', 'upper-bound-parabolic',
+                                                      'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                      'lower-bound-parabolic-linear', 'undefined', 'unknown')},
+                                            {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
+                         'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                              'enum': ('J-couplings', 'backbone chemical shifts', 'undefined', 'unknown')},
+                                             {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                              'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
+                                                       'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                       'lower-bound-parabolic-linear', 'undefined', 'unknown')},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                            'enum': ('RDC', 'undefined', 'unknown')},
+                                           {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                            'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
+                                                     'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
+                                                     'lower-bound-parabolic-linear', 'undefined', 'unknown')},
+                                           {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
+                                           {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
+                                           {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Tensor_auth_seq_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Tensor_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'noepk_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Homonuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
+                                              'enum': ('peak volume', 'peak height', 'contour count', 'na')},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'int', 'mandatory': True},  # allows to have software-native id starting from zero
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'jcoup_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'rdc_raw_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                           'enforce-non-zero': True},
+                                          {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                          {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                          {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                          ],
+                         'csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                            'enforce-non-zero': True},
+                                           {'name': 'Val_units', 'type': 'enum', 'mandatory': False,
+                                            'enum': ('ppm', 'ppb')},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'ddc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                            'enforce-non-zero': True},
+                                           {'name': 'Scaling_factor', 'type': 'positive-float', 'mandatory': False},
+                                           {'name': 'Fitting_procedure', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'hvycs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Units', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'procs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Units', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'csp_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Type', 'type': 'enum', 'mandatory': False,
+                                            'enum': ('macromolecular binding', 'ligand binding', 'ligand fragment binding', 'paramagnetic ligand binding')},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'auto_relax_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                  {'name': 'Temp_calibration_method', 'type': 'enum', 'mandatory': False,
+                                                   'enum': ('methanol', 'monoethylene glycol', 'no calibration applied')},
+                                                  {'name': 'Temp_control_method', 'type': 'enum', 'mandatory': False,
+                                                   'enum': ('single scan interleaving', 'temperature compensation block',
+                                                            'single scan interleaving and temperature compensation block',
+                                                            'no temperature control applied')},
+                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                   'enforce-non-zero': True},
+                                                  {'name': 'Exact_field_strength', 'type': 'positive-float', 'mandatory': False,
+                                                   'enforce-non-zero': True},
+                                                  {'name': 'Common_relaxation_type_name', 'type': 'enum', 'mandatory': False,
+                                                   'enum': ('R1', 'R2', 'R1rho', 'ZQ relaxation', 'longitudinal spin order',
+                                                            'single quantum antiphase', 'DQ relaxation')},
+                                                  {'name': 'Relaxation_coherence_type', 'type': 'enum', 'mandatory': True,
+                                                   'enum': ('Iz', 'Sz', '(I+)+(I-)', '(S+)+(S-)', 'I+', 'I-', 'S+', 'S-',
+                                                            '(I+S-)+(I-S+)', 'I-S+', 'I+S-', 'IzSz', '((I+)+(I-))Sz', 'Iz((S+)+(S-))',
+                                                            'I+Sz', 'I-Sz', 'IzS+', 'IzS-', '(I+S+)+(I-S-)', 'I+S+', 'I-S-')},
+                                                  {'name': 'Relaxation_val_units', 'type': 'enum', 'mandatory': True,
+                                                   'enum': ('s-1', 'ms-1', 'us-1', 'ns-1', 'ps-1')},
+                                                  {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
+                                                   'enum': ('s-1', 'ms-1', 'us-1')},
+                                                  {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
+                                                   'enforce-non-zero': True},
+                                                  {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                  ],
+                         'heteronucl_noe_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                  'enforce-non-zero': True},
+                                                 {'name': 'Heteronuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
+                                                  'enum': ('peak height', 'peak integral', 'contour count', 'relative intensities', 'na')},
+                                                 {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                 ],
+                         'heteronucl_t1_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                 'enforce-non-zero': True},
+                                                {'name': 'T1_coherence_type', 'type': 'enum', 'mandatory': True,
+                                                 'enum': ('Iz', 'Sz', 'na')},
+                                                {'name': 'T1_val_units', 'type': 'enum', 'mandatory': True,
+                                                 'enum': ('s', 's-1', 'ms', 'ms-1')},
+                                                {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                ],
+                         'heteronucl_t2_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                {'name': 'Temp_calibration_method', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('methanol', 'monoethylene glycol', 'no calibration applied')},
+                                                {'name': 'Temp_control_method', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('single scan interleaving', 'temperature compensation block',
+                                                          'single scan interleaving and temperature compensation block',
+                                                          'no temperature control applied')},
+                                                {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                 'enforce-non-zero': True},
+                                                {'name': 'T2_coherence_type', 'type': 'enum', 'mandatory': True,
+                                                 'enum': ('I(+,-)', 'S(+,-)', 'na')},
+                                                {'name': 'T2_val_units', 'type': 'enum', 'mandatory': True,
+                                                 'enum': ('s', 's-1', 'ms', 'ms-1')},
+                                                {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('s-1', 'ms-1', 'us-1')},
+                                                {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                ],
+                         'heteronucl_t1r_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Temp_calibration_method', 'type': 'enum', 'mandatory': False,
+                                                  'enum': ('methanol', 'monoethylene glycol', 'no calibration applied')},
+                                                 {'name': 'Temp_control_method', 'type': 'enum', 'mandatory': False,
+                                                  'enum': ('single scan interleaving', 'temperature compensation block',
+                                                           'single scan interleaving and temperature compensation block',
+                                                           'no temperature control applied')},
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                  'enforce-non-zero': True},
+                                                 {'name': 'T1rho_coherence_type', 'type': 'enum', 'mandatory': True,
+                                                  'enum': ('I(+,-)', 'S(+,-)', 'na')},
+                                                 {'name': 'T1rho_val_units', 'type': 'enum', 'mandatory': True,
+                                                  'enum': ('s', 's-1', 'ms', 'ms-1')},
+                                                 {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
+                                                  'enum': ('s-1', 'ms-1', 'us-1')},
+                                                 {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                 ],
+                         'order_param_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                              {'name': 'Tau_e_val_units', 'type': 'enum', 'mandatory': False,
+                                               'enum': ('s', 'ms', 'us', 'ns', 'ps')},
+                                              {'name': 'Tau_f_val_units', 'type': 'enum', 'mandatory': False,
+                                               'enum': ('s', 'ms', 'us', 'ns', 'ps')},
+                                              {'name': 'Tau_s_val_units', 'type': 'enum', 'mandatory': False,
+                                               'enum': ('s', 'ms', 'us', 'ns', 'ps')},
+                                              {'name': 'Rex_val_units', 'type': 'enum', 'mandatory': False,
+                                               'enum': ('s-1', 'ms-1', 'us-1')},
+                                              {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
+                                               'enforce-non-zero': True},
+                                              {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                         'ph_titr_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Expt_observed_param', 'type': 'enum', 'mandatory': True,
+                                           'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
+                                          {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                          {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                          {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                          ],
+                         'ph_param_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Observed_NMR_param', 'type': 'enum', 'mandatory': True,
+                                            'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
+                                           {'name': 'PH_titration_list_ID', 'type': 'positive-int', 'mandatory': True,
+                                            'default': '1'},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'coupling_const_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                  'enforce-non-zero': True},
+                                                 {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                 ],
+                         'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                  'enforce-non-zero': True},
+                                                 {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
+                                                  'enum': ('s-1', 'ms-1', 'us-1')},
+                                                 {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                 ],
+                         'ccr_dd_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                              {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                               'enforce-non-zero': True},
+                                              {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
+                                               'enum': ('s-1', 'ms-1', 'us-1')},
+                                              {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                         'fchiral_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                               {'name': 'Stereo_count', 'type': 'int', 'mandatory': False},
+                                               {'name': 'Stereo_assigned_count', 'type': 'int', 'mandatory': True},
+                                               {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                               {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                               ],
+                         'saxs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
+                         'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Definition', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                         'spectral_peak': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
+                                            'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
+                                            'enforce-enum': True},
+                                           {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'int', 'mandatory': True},  # allows to have software-native id starting from zero
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                         'chem_shift': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                        {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                        {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                        {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                        {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                        {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                        ]
+                         }
+
+NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
+                          'dihed_restraint': '_Torsion_angle_constraint',
+                          'rdc_restraint': '_RDC_constraint',
+                          'noepk_restraint': '_Homonucl_NOE',
+                          'jcoup_restraint': '_J_three_bond_constraint',
+                          'rdc_raw_data': '_RDC',
+                          'csa_restraint': '_CS_anisotropy',
+                          'ddc_restraint': '_Dipolar_coupling',
+                          'hvycs_restraint': '_CA_CB_constraint',
+                          'procs_restraint': '_H_chem_shift_constraint',
+                          'csp_restraint': '_Chem_shift_perturbation',
+                          'auto_relax_restraint': '_Auto_relaxation',
+                          'heteronucl_noe_data': '_Heteronucl_NOE',
+                          'heteronucl_t1_data': '_T1',
+                          'heteronucl_t2_data': '_T2',
+                          'heteronucl_t1r_data': '_T1rho',
+                          'order_param_data': '_Order_param',
+                          'ph_titr_data': '_PH_titr_result',
+                          'ph_param_data': '_PH_param',
+                          'coupling_const_data': '_Coupling_constant',
+                          'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
+                          'ccr_dd_restraint': '_Cross_correlation_DD',
+                          'fchiral_restraint': '_Floating_chirality',
+                          'saxs_restraint': '_SAXS_constraint',
+                          'other_restraint': '_Other_data',
+                          'spectral_peak': '_Peak_row_format',
+                          'chem_shift': '_Atom_chem_shift'
+                          }
+
+NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                            {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                            {'name': 'Atom_ID_1', 'type': 'str'},
+                                            {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                            {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                            {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                            {'name': 'Atom_ID_2', 'type': 'str'}
+                                            ],
+                         'dihed_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                             {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                             {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                             {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_1', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                             {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                             {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_2', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                             {'name': 'Entity_ID_3', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_3', 'type': 'int', 'default-from': 'Seq_ID_3'},
+                                             {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_3', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                             {'name': 'Entity_ID_4', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_4', 'type': 'int', 'default-from': 'Seq_ID_4'},
+                                             {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_4', 'type': 'str'}
+                                             ],
+                         'rdc_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                           {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                           {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                           {'name': 'Atom_ID_1', 'type': 'str'},
+                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                           {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                           {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                           {'name': 'Atom_ID_2', 'type': 'str'}
+                                           ],
+                         'noepk_restraint': [{'name': 'ID', 'type': 'int', 'auto-increment': True},  # allows to have software-native id starting from zero
+                                             {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                             {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                             {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_1', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                             {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                             {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_2', 'type': 'str'}
+                                             ],
+                         'jcoup_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                             {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                             {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                             {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_1', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                             {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                             {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_2', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                             {'name': 'Entity_ID_3', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_3', 'type': 'int', 'default-from': 'Seq_ID_3'},
+                                             {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_3', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                             {'name': 'Entity_ID_4', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_4', 'type': 'int', 'default-from': 'Seq_ID_4'},
+                                             {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_4', 'type': 'str'}
+                                             ],
+                         'rdc_raw_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                          {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                          {'name': 'Atom_ID_1', 'type': 'str'},
+                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                          {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                          {'name': 'Atom_ID_2', 'type': 'str'}
+                                          ],
+                         'csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                           {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                           {'name': 'Entity_ID', 'type': 'positive-int'},
+                                           {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                           {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                           {'name': 'Atom_ID', 'type': 'str'}
+                                           ],
+                         'ddc_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                           {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                           {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                           {'name': 'Atom_ID_1', 'type': 'str'},
+                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                           {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                           {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                           {'name': 'Atom_ID_2', 'type': 'str'}
+                                           ],
+                         'hvycs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                             {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                             {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                             {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_1', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                             {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                             {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_2', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_3'},
+                                             {'name': 'Entity_ID_3', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_3', 'type': 'int', 'default-from': 'Seq_ID_3'},
+                                             {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_3', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_4'},
+                                             {'name': 'Entity_ID_4', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_4', 'type': 'int', 'default-from': 'Seq_ID_4'},
+                                             {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_4', 'type': 'str'},
+                                             {'name': 'Entity_assembly_ID_5', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_5'},
+                                             {'name': 'Entity_ID_5', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID_5', 'type': 'int', 'default-from': 'Seq_ID_5'},
+                                             {'name': 'Comp_ID_5', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID_5', 'type': 'str'}
+                                             ],
+                         'procs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                             {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
+                                             {'name': 'Entity_ID', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                             {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID', 'type': 'str'}
+                                             ],
+                         'csp_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                           {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                           {'name': 'Entity_ID', 'type': 'positive-int'},
+                                           {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                           {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                           {'name': 'Atom_ID', 'type': 'str'}
+                                           ],
+                         'auto_relax_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                  {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                  {'name': 'Entity_ID', 'type': 'positive-int'},
+                                                  {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                  {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                  {'name': 'Atom_ID', 'type': 'str'}
+                                                  ],
+                         'heteronucl_noe_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                                 {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                                 {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                 {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Atom_ID_1', 'type': 'str'},
+                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                                 {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                                 {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                 {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Atom_ID_2', 'type': 'str'}
+                                                 ],
+                         'heteronucl_t1_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                {'name': 'Entity_ID', 'type': 'positive-int'},
+                                                {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                {'name': 'Atom_ID', 'type': 'str'}
+                                                ],
+                         'heteronucl_t2_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                {'name': 'Entity_ID', 'type': 'positive-int'},
+                                                {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                {'name': 'Atom_ID', 'type': 'str'}
+                                                ],
+                         'heteronucl_t1r_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                 {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Entity_ID', 'type': 'positive-int'},
+                                                 {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                                 {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Atom_ID', 'type': 'str'}
+                                                 ],
+                         'order_param_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                              {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Entity_ID', 'type': 'positive-int'},
+                                              {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                              {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                              {'name': 'Atom_ID', 'type': 'str'}
+                                              ],
+                         'ph_titr_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                          {'name': 'Atm_obs_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Atm_obs_entity_ID', 'type': 'positive-int'},
+                                          {'name': 'Atm_obs_comp_index_ID', 'type': 'int', 'default-from': 'Atm_obs_seq_ID'},
+                                          {'name': 'Atm_obs_comp_ID', 'type': 'str', 'uppercase': True},
+                                          {'name': 'Atm_obs_atom_ID', 'type': 'str'},
+                                          {'name': 'Atm_titr_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Atm_titr_entity_ID', 'type': 'positive-int'},
+                                          {'name': 'Atm_titr_comp_index_ID', 'type': 'int', 'default-from': 'Atm_titr_seq_ID'},
+                                          {'name': 'Atm_titr_comp_ID', 'type': 'str', 'uppercase': True},
+                                          {'name': 'Atm_titr_atom_ID', 'type': 'str'}
+                                          ],
+                         'ph_param_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True}
+                                           ],
+                         'coupling_const_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                                 {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                 {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Atom_ID_1', 'type': 'str'},
+                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                                 {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                 {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Atom_ID_2', 'type': 'str'}
+                                                 ],
+                         'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                 {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Dipole_entity_ID_1', 'type': 'positive-int'},
+                                                 {'name': 'Dipole_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_seq_ID_1'},
+                                                 {'name': 'Dipole_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Dipole_atom_ID_1', 'type': 'str'},
+                                                 {'name': 'Dipole_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Dipole_entity_ID_2', 'type': 'positive-int'},
+                                                 {'name': 'Dipole_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_seq_ID_2'},
+                                                 {'name': 'Dipole_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Dipole_atom_ID_2', 'type': 'str'},
+                                                 {'name': 'CSA_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'CSA_entity_ID_1', 'type': 'positive-int'},
+                                                 {'name': 'CSA_comp_index_ID_1', 'type': 'int', 'default-from': 'CSA_seq_ID_1'},
+                                                 {'name': 'CSA_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'CSA_atom_ID_1', 'type': 'str'},
+                                                 {'name': 'CSA_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'CSA_entity_ID_2', 'type': 'positive-int'},
+                                                 {'name': 'CSA_comp_index_ID_2', 'type': 'int', 'default-from': 'CSA_seq_ID_2'},
+                                                 {'name': 'CSA_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'CSA_atom_ID_2', 'type': 'str'}
+                                                 ],
+                         'ccr_dd_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                              {'name': 'Dipole_1_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Dipole_1 entity_ID_1', 'type': 'positive-int'},
+                                              {'name': 'Dipole_1_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_1_seq_ID_1'},
+                                              {'name': 'Dipole_1_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                              {'name': 'Dipole_1_atom_ID_1', 'type': 'str'},
+                                              {'name': 'Dipole_1_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Dipole_1_entity_ID_2', 'type': 'positive-int'},
+                                              {'name': 'Dipole_1_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_1_seq_ID_2'},
+                                              {'name': 'Dipole_1_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                              {'name': 'Dipole_1_atom_ID_2', 'type': 'str'},
+                                              {'name': 'Dipole_2_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Dipole_2_entity_ID_1', 'type': 'positive-int'},
+                                              {'name': 'Dipole_2_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_2_seq_ID_1'},
+                                              {'name': 'Dipole_2_comp_ID_1', 'type': 'str', 'uppercase': True},
+                                              {'name': 'Dipole_2_atom_ID_1', 'type': 'str'},
+                                              {'name': 'Dipole_2_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                              {'name': 'Dipole_2_entity_ID_2', 'type': 'positive-int'},
+                                              # NOTICE: 'Dipole_2_comp_index_ID_2' is inferred from NMR-STAR Dictionary
+                                              {'name': 'Dipole_2_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_2_seq_ID_2'},
+                                              {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
+                                              {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
+                                              ],
+                         'fchiral_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                               {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_1'},
+                                               {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                               {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                               {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                               {'name': 'Atom_ID_1', 'type': 'str'},
+                                               {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID_2'},
+                                               {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                               {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                               {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                               {'name': 'Atom_ID_2', 'type': 'str'}
+                                               ],
+                         'saxs_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                            {'name': 'Q_value', 'type': 'positive-float'}
+                                            ],
+                         'other_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                             {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                             {'name': 'Entity_ID', 'type': 'positive-int'},
+                                             {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
+                                             {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                             {'name': 'Atom_ID', 'type': 'str'}
+                                             ],
+                         'spectral_peak': [{'name': 'ID', 'type': 'int', 'auto-increment': True}],  # allows to have software-native id starting from zero
+                         'chem_shift': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                        {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
+                                        {'name': 'Entity_ID', 'type': 'positive-int'},
+                                        {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                        {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                        {'name': 'Atom_ID', 'type': 'str'},
+                                        {'name': 'Occupancy', 'type': 'positive-float', 'default': '.'}
+                                        ]
+                         }
+
+NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                             {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                              'enforce-non-zero': True},
+                                             {'name': 'Member_ID', 'type': 'positive-int', 'mandatory': False,
+                                              'enforce-non-zero': True},
+                                             {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
+                                              'enum': ('OR', 'AND'),
+                                              'enforce-enum': True},
+                                             {'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                              'clear-bad-pattern': True,
+                                              'range': DIST_RESTRAINT_RANGE,
+                                              'group': {'member-with': ['Lower_linear_limit',
+                                                                        'Upper_linear_limit',
+                                                                        'Distance_lower_bound_val',
+                                                                        'Distance_upper_bound_val'],
+                                                        'coexist-with': None,
+                                                        'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
+                                                        'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
+                                             {'name': 'Target_val_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                              'clear-bad-pattern': True,
+                                              'range': DIST_UNCERTAINTY_RANGE},
+                                             {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                              'clear-bad-pattern': True,
+                                              'range': DIST_RESTRAINT_RANGE,
+                                              'group': {'member-with': ['Target_val',
+                                                                        'Upper_linear_limit',
+                                                                        'Distance_lower_bound_val',
+                                                                        'Distance_upper_bound_val'],
+                                                        'coexist-with': None,  # ['Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                        'smaller-than': None,
+                                                        'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
+                                             {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False,
+                                              'group-mandatory': True, 'void-zero': True,
+                                              'clear-bad-pattern': True,
+                                              'range': DIST_RESTRAINT_RANGE,
+                                              'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
+                                                        'coexist-with': None,  # ['Distance_upper_bound_val'],
+                                                        'smaller-than': ['Lower_linear_limit'],
+                                                        'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
+                                             {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False,
+                                              'group-mandatory': True, 'void-zero': True,
+                                              'clear-bad-pattern': True,
+                                              'range': DIST_RESTRAINT_RANGE,
+                                              'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
+                                                        'coexist-with': None,  # ['Distance_lower_bound_val'],
+                                                        'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
+                                                        'larger-than': ['Upper_linear_limit']}},
+                                             {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                              'clear-bad-pattern': True,
+                                              'range': DIST_RESTRAINT_RANGE,
+                                              'group': {'member-with': ['Target_val',
+                                                                        'Lower_linear_limit',
+                                                                        'Distance_lower_bound_val',
+                                                                        'Distance_upper_bound_val'],
+                                                        'coexist-with': None,  # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                        'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                        'larger-than': None}},
+                                             {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
+                                              'range': WEIGHT_RANGE},
+                                             # 'enforce-non-zero': True},
+                                             {'name': 'Distance_val', 'type': 'range-float', 'mandatory': False,
+                                                      'range': DIST_RESTRAINT_RANGE},
+                                             {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                             {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                             {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                              'default': '1', 'default-from': 'parent'},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                          'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                              {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                               'enforce-non-zero': True},
+                                              {'name': 'Torsion_angle_name', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': ANGLE_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Angle_lower_linear_limit',
+                                                                         'Angle_upper_linear_limit',
+                                                                         'Angle_lower_bound_val',
+                                                                         'Angle_upper_bound_val'],
+                                                         'coexist-with': None,
+                                                         'smaller-than': None,  # (DAOTHER-8442) ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
+                                                         'larger-than': None,  # (DAOTHER-8442) ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
+                                                         'circular-shift': 360.0}},
+                                              {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'clear-bad-pattern': True,
+                                               'range': ANGLE_UNCERTAINTY_RANGE},
+                                              {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': ANGLE_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit',
+                                                                         'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                         'coexist-with': None,  # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                         'smaller-than': None,
+                                                         'larger-than': ['Angle_lower_bound_val'],
+                                                         # (DAOTHER-8442) ['Angle_lower_bound_val', 'Angle_upper_bound', 'Angle_upper_linear_limit'],
+                                                         'circular-shift': 360.0}},
+                                              {'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': ANGLE_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
+                                                                         'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
+                                                         'coexist-with': None,  # ['Angle_upper_bound_val'],
+                                                         'smaller-than': ['Angle_lower_linear_limit'],
+                                                         'larger-than': None,  # (DAOTHER-8442) ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
+                                                         'circular-shift': 360.0}},
+                                              {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': ANGLE_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
+                                                                         'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
+                                                         'coexist-with': None,  # ['Angle_lower_bound_val'],
+                                                         'smaller-than': None,  # (DAOTHER-8442) ['Angle_lower_bound_val', 'Angle_upper_linear_limit'],
+                                                         'larger-than': ['Angle_upper_linear_limit'],
+                                                         'circular-shift': 360.0}},
+                                              {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': ANGLE_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
+                                                                         'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                         'coexist-with': None,  # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                         'smaller-than': ['Angle_upper_bound_val'],
+                                                         # (DAOTHER-8442) ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                         'larger-than': None,
+                                                         'circular-shift': 360.0}},
+                                              {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
+                                               'range': WEIGHT_RANGE},
+                                              # 'enforce-non-zero': True},
+                                              {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_name_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_name_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                          'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                            {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                             'enforce-non-zero': True},
+                                            {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                       'coexist-with': None,
+                                                       'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
+                                                       'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
+                                            {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_UNCERTAINTY_RANGE},
+                                            {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                       'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                       'smaller-than': None,
+                                                       'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
+                                            {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
+                                                       'coexist-with': None,  # ['RDC_upper_bound'],
+                                                       'smaller-than': ['RDC_lower_linear_limit'],
+                                                       'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
+                                            {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
+                                                       'coexist-with': None,  # ['RDC_lower_bound'],
+                                                       'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
+                                                       'larger-than': ['RDC_upper_linear_limit']}},
+                                            {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                       'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                       'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                       'larger-than': None}},
+                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
+                                             'range': WEIGHT_RANGE},
+                                            # 'enforce-non-zero': True},
+                                            {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE},
+                                            {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_UNCERTAINTY_RANGE},
+                                            {'name': 'RDC_val_scale_factor', 'type': 'range-float', 'mandatory': False,
+                                             'range': SCALE_RANGE,
+                                             'enforce-non-zero': True},
+                                            {'name': 'RDC_distant_dependent', 'type': 'bool', 'mandatory': False},
+                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_name_1', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_name_2', 'type': 'str', 'mandatory': False},
+                                            {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
+                          'noepk_restraint': [{'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'group': {'member-with': ['Val_min', 'Val_max'],
+                                                         'coexist-with': None,
+                                                         'smaller-than': None,
+                                                         'larger-than': None}},
+                                              {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'clear-bad-pattern': True,
+                                               'range': {'min_inclusive': 0.0}},
+                                              {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'group': {'member-with': ['Val', 'Val_max'],
+                                                         'coexist-with': None,
+                                                         'smaller-than': None,
+                                                         'larger-than': ['Val_max']}},
+                                              {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'group': {'member-with': ['Val', 'Val_min'],
+                                                         'coexist-with': None,
+                                                         'smaller-than': ['Val_min'],
+                                                         'larger-than': None}},
+                                              {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Homonucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                          'jcoup_restraint': [{'name': 'Coupling_constant_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': RDC_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Coupling_constant_lower_bound', 'Coupling_constant_upper_bound'],
+                                                         'coexist-with': None,
+                                                         'smaller-than': None,
+                                                         'larger-than': None}},
+                                              {'name': 'Coupling_constant_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'clear-bad-pattern': True,
+                                               'range': {'min_inclusive': 0.0}},
+                                              {'name': 'Coupling_constant_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': RDC_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Coupling_constant_upper_bound'],
+                                                         'coexist-with': None,
+                                                         'smaller-than': None,
+                                                         'larger-than': ['Coupling_constant_upper_bound']}},
+                                              {'name': 'Coupling_constant_upper_bound', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': RDC_RESTRAINT_RANGE,
+                                               'group': {'member-with': ['Coupling_constant_lower_bound'],
+                                                         'coexist-with': None,
+                                                         'smaller-than': ['Coupling_constant_lower_bound'],
+                                                         'larger-than': None}},
+                                              {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'J_three_bond_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                          'rdc_raw_data': [{'name': 'RDC_code', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                            'enum': ALLOWED_AMBIGUITY_CODES,
+                                            'enforce-enum': True},
+                                           {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                            'enum': ALLOWED_AMBIGUITY_CODES,
+                                            'enforce-enum': True},
+                                           {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                            'clear-bad-pattern': True,
+                                            'group': {'member-with': ['Val_min', 'Val_max'],
+                                                      'coexist-with': None,
+                                                      'smaller-than': None,
+                                                      'larger-than': None}},
+                                           {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                            'clear-bad-pattern': True,
+                                            'range': {'min_inclusive': 0.0}},
+                                           {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                            'clear-bad-pattern': True,
+                                            'group': {'member-with': ['Val', 'Val_max'],
+                                                      'coexist-with': None,
+                                                      'smaller-than': None,
+                                                      'larger-than': ['Val_max']}},
+                                           {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                            'clear-bad-pattern': True,
+                                            'group': {'member-with': ['Val', 'Val_min'],
+                                                      'coexist-with': None,
+                                                      'smaller-than': ['Val_min'],
+                                                      'larger-than': None}},
+                                           {'name': 'Val_bond_length', 'type': 'range-float', 'mandatory': False,
+                                            'range': DIST_RESTRAINT_RANGE},
+                                           {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                           {'name': 'RDC_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                            'default': '1', 'default-from': 'parent'},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                          'csa_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                             'enforce-enum': True},
+                                            {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                             'enforce-enum': True},
+                                            {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': CSA_RESTRAINT_RANGE},
+                                            {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                             'clear-bad-pattern': True,
+                                             'range': {'min_inclusive': 0.0}},
+                                            {'name': 'Principal_value_sigma_11_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': CSA_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_value_sigma_22_val', 'Principal_value_sigma_33_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Principal_value_sigma_22_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': CSA_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_value_sigma_11_val', 'Principal_value_sigma_33_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Principal_value_sigma_33_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': CSA_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_value_sigma_11_val', 'Principal_value_sigma_22_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Principal_Euler_angle_alpha_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': ANGLE_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_Euler_angle_beta_val', 'Principal_Euler_angle_gamma_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Principal_Euler_angle_beta_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': ANGLE_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_gamma_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Principal_Euler_angle_gamma_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': ANGLE_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_beta_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Bond_length', 'type': 'range-float', 'mandatory': False,
+                                             'range': DIST_RESTRAINT_RANGE},
+                                            {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                            {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Chem_shift_anisotropy_ID', 'type': 'pointer-index', 'mandatory': True,
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
+                          'ddc_restraint': [{'name': 'Dipolar_coupling_code', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                             'enforce-enum': True},
+                                            {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                             'enforce-enum': True},
+                                            {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                             'enum': ALLOWED_AMBIGUITY_CODES,
+                                             'enforce-enum': True},
+                                            {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                             'enforce-enum': True},
+                                            {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                             'enforce-enum': True},
+                                            {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                             'enum': ALLOWED_AMBIGUITY_CODES,
+                                             'enforce-enum': True},
+                                            {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Val_min', 'Val_max'],
+                                                       'coexist-with': None,
+                                                       'smaller-than': None,
+                                                       'larger-than': None}},
+                                            {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                             'clear-bad-pattern': True,
+                                             'range': {'min_inclusive': 0.0}},
+                                            {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Val_max'],
+                                                       'coexist-with': None,
+                                                       'smaller-than': None,
+                                                       'larger-than': ['Val_max']}},
+                                            {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                             'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Val_min'],
+                                                       'coexist-with': None,
+                                                       'smaller-than': ['Val_min'],
+                                                       'larger-than': None}},
+                                            {'name': 'Principal_Euler_angle_alpha_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': ANGLE_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_Euler_angle_beta_val', 'Principal_Euler_angle_gamma_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Principal_Euler_angle_beta_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': ANGLE_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_gamma_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Principal_Euler_angle_gamma_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
+                                             'range': ANGLE_RESTRAINT_RANGE,
+                                             'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_beta_val'],
+                                                       'coexist-with': None}},
+                                            {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Dipolar_coupling_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
+                          'hvycs_restraint': [{'name': 'CA_chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                               'clear-bad-pattern': True,
+                                               'range': CS_RESTRAINT_RANGE},
+                                              {'name': 'CA_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'clear-bad-pattern': True,
+                                               'range': CS_UNCERTAINTY_RANGE},
+                                              {'name': 'CB_chem_shift_val', 'type': 'range-float', 'mandatory': False,
+                                               'clear-bad-pattern': True,
+                                               'range': CS_RESTRAINT_RANGE},
+                                              {'name': 'CB_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'clear-bad-pattern': True,
+                                               'range': CS_UNCERTAINTY_RANGE},
+                                              {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_asym_ID_5', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID_5', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID_5', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID_5', 'type': 'str', 'mandatory': False},
+                                              {'name': 'CA_CB_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                          'procs_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                               'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                               'enforce-enum': True},
+                                              {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                               'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                               'enforce-enum': True},
+                                              {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                               'remove-bad-pattern': True,
+                                               'range': CS_RESTRAINT_RANGE},
+                                              {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'clear-bad-pattern': True,
+                                               'range': CS_UNCERTAINTY_RANGE},
+                                              {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                              {'name': 'H_chem_shift_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                          'csp_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                             'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                             'enforce-enum': True},
+                                            {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                             'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                             'enforce-enum': True},
+                                            {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': False,
+                                             'clear-bad-pattern': True,
+                                             'range': CS_RESTRAINT_RANGE},
+                                            {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                             'clear-bad-pattern': True,
+                                             'range': CS_UNCERTAINTY_RANGE},
+                                            {'name': 'Difference_chem_shift_val', 'type': 'range-float', 'mandatory': False,
+                                             'clear-bad-pattern': True,
+                                             'range': CS_RESTRAINT_RANGE},
+                                            {'name': 'Difference_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                             'clear-bad-pattern': True,
+                                             'range': CS_UNCERTAINTY_RANGE},
+                                            {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                            {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Chem_shift_perturbation_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
+                          'auto_relax_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                    'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                    'enforce-enum': True},
+                                                   {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                    'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                    'enforce-enum': True},
+                                                   {'name': 'Auto_relaxation_val', 'type': 'range-float', 'mandatory': True,
+                                                    'remove-bad-pattern': True,
+                                                    'range': PRE_RESTRAINT_RANGE},
+                                                   {'name': 'Auto_relaxation_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                    'clear-bad-pattern': True,
+                                                    'range': PRE_RESTRAINT_RANGE},
+                                                   {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
+                                                    'clear-bad-pattern': True,
+                                                    'range': PRE_RESTRAINT_RANGE},
+                                                   {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                    'clear-bad-pattern': True,
+                                                    'range': PRE_RESTRAINT_RANGE},
+                                                   {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                   {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                   {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                   {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                   {'name': 'Auto_relaxation_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                    'default': '1', 'default-from': 'parent'},
+                                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                   ],
+                          'heteronucl_noe_data': [{'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Val', 'type': 'float', 'mandatory': True,
+                                                   'remove-bad-pattern': True},
+                                                  {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'clear-bad-pattern': True,
+                                                   'range': {'min_inclusive': 0.0}},
+                                                  {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Heteronucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                   'default': '1', 'default-from': 'parent'},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                  ],
+                          'heteronucl_t1_data': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                  'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                  'enforce-enum': True},
+                                                 {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                  'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                  'enforce-enum': True},
+                                                 {'name': 'Val', 'type': 'float', 'mandatory': True,
+                                                  'remove-bad-pattern': True},
+                                                 {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                  'clear-bad-pattern': True,
+                                                  'range': {'min_inclusive': 0.0}},
+                                                 {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                 {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Heteronucl_T1_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                  'default': '1', 'default-from': 'parent'},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                 ],
+                          'heteronucl_t2_data': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                  'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                  'enforce-enum': True},
+                                                 {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                  'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                  'enforce-enum': True},
+                                                 {'name': 'T2_val', 'type': 'float', 'mandatory': True,
+                                                  'remove-bad-pattern': True},
+                                                 {'name': 'T2_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                  'clear-bad-pattern': True,
+                                                  'range': {'min_inclusive': 0.0}},
+                                                 {'name': 'Rex_val', 'type': 'float', 'mandatory': False,
+                                                  'clear-bad-pattern': True},
+                                                 {'name': 'Rex_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                  'clear-bad-pattern': True,
+                                                  'range': {'min_inclusive': 0.0}},
+                                                 {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                 {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Heteronucl_T2_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                  'default': '1', 'default-from': 'parent'},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                 ],
+                          'heteronucl_t1r_data': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'T1rho_val', 'type': 'float', 'mandatory': True,
+                                                   'remove-bad-pattern': True},
+                                                  {'name': 'T1rho_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'clear-bad-pattern': True,
+                                                   'range': {'min_inclusive': 0.0}},
+                                                  {'name': 'Rex_val', 'type': 'float', 'mandatory': False,
+                                                   'clear-bad-pattern': True},
+                                                  {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'clear-bad-pattern': True,
+                                                   'range': {'min_inclusive': 0.0}},
+                                                  {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Heteronucl_T1rho_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                   'default': '1', 'default-from': 'parent'},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                  ],
+                          'order_param_data': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                'enforce-enum': True},
+                                               {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                'enforce-enum': True},
+                                               {'name': 'Order_param_val', 'type': 'range-float', 'mandatory': True,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Order_param_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Tau_e_val', 'type': 'positive-float', 'mandatory': False,
+                                                'clear-bad-pattern': True},
+                                               {'name': 'Tau_e_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                                'clear-bad-pattern': True},
+                                               {'name': 'Tau_f_val', 'type': 'positive-float', 'mandatory': False,
+                                                'clear-bad-pattern': True},
+                                               {'name': 'Tau_f_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                                'clear-bad-pattern': True},
+                                               {'name': 'Tau_s_val', 'type': 'positive-float', 'mandatory': False,
+                                                'clear-bad-pattern': True},
+                                               {'name': 'Tau_s_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                                'clear-bad-pattern': True},
+                                               {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PRE_RESTRAINT_RANGE},
+                                               {'name': 'Rex_val_fit_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                'clear-bad-pattern': True,
+                                                'range': PRE_RESTRAINT_RANGE},
+                                               {'name': 'Model_free_sum_squared_errs', 'type': 'positive-float', 'mandatory': False,
+                                                'clear-bad-pattern': True},
+                                               {'name': 'Model_fit', 'type': 'enum', 'mandatory': False,
+                                                'enum': ('Rex', 'S2', 'S2, te', 'S2, Rex', 'S2, te, Rex', 'S2f, S2, ts', 'S2f, S2s, ts',
+                                                         'S2f, tf, S2, ts', 'S2f, tf, S2s, ts', 'S2f, S2, ts, Rex', 'S2f, S2s, ts, Rex',
+                                                         'S2f, tf, S2, ts, Rex', 'S2f, tf, S2s, ts, Rex', 'na')},
+                                               {'name': 'Sf2_val', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Sf2_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Ss2_val', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Ss2_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'SH2_val', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'SH2_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'SN2_val', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'SN2_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                'clear-bad-pattern': True,
+                                                'range': PROBABILITY_RANGE},
+                                               {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                               {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Order_parameter_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                'default': '1', 'default-from': 'parent'},
+                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                               ],
+                          'ph_titr_data': [{'name': 'Atm_obs_atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atm_obs_atom_ID',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_obs_atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atm_obs_atom_ID',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_titr_atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atm_titr_atom_ID',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_titr_atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atm_titr_atom_ID',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Hill_coeff_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Hill_coeff_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'High_PH_param_fit_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'High_PH_param_fit_val_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Low_PH_param_fit_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Low_PH_param_fit_val_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PKa_val', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PKa_val_fit_err', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PHmid_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PHmid_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Atm_obs_auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'PH_titration_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                            'default': '1', 'default-from': 'parent'},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                          'ph_param_data': [{'name': 'PH_titr_result_ID', 'type': 'positive-int', 'mandatory': True},
+                                            {'name': 'PH_val', 'type': 'positive-float', 'mandatory': True},
+                                            {'name': 'PH_val_err', 'type': 'positive-float', 'mandatory': False},
+                                            {'name': 'Observed_NMR_param_val', 'type': 'positive-float', 'mandatory': True},
+                                            {'name': 'Observed_NMR_param_val_err', 'type': 'positive-float', 'mandatory': False},
+                                            {'name': 'PH_param_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
+                          'coupling_const_data': [{'name': 'Code', 'type': 'str', 'mandatory': True},
+                                                  {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                                   'enum': ALLOWED_AMBIGUITY_CODES,
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                                   'enum': ALLOWED_AMBIGUITY_CODES,
+                                                   'enforce-enum': True},
+                                                  {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                   'clear-bad-pattern': True,
+                                                   'group': {'member-with': ['Val_min', 'Val_max'],
+                                                             'coexist-with': None,
+                                                             'smaller-than': None,
+                                                             'larger-than': None}},
+                                                  {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'clear-bad-pattern': True,
+                                                   'range': {'min_inclusive': 0.0}},
+                                                  {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                   'clear-bad-pattern': True,
+                                                   'group': {'member-with': ['Val', 'Val_max'],
+                                                             'coexist-with': None,
+                                                             'smaller-than': None,
+                                                             'larger-than': ['Val_max']}},
+                                                  {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                   'clear-bad-pattern': True,
+                                                   'group': {'member-with': ['Val', 'Val_min'],
+                                                             'coexist-with': None,
+                                                             'smaller-than': ['Val_min'],
+                                                             'larger-than': None}},
+                                                  {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Coupling_constant_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                  ],
+                          'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Dipole_atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Dipole_atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_2',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Dipole_atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_atom_ID_2',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'CSA_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'CSA_atom_ID_1',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'CSA_atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'CSA_atom_ID_1',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'CSA_atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'CSA_atom_ID_2',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'CSA_atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'CSA_atom_ID_2',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                   'remove-bad-pattern': True,
+                                                   'range': CCR_RESTRAINT_RANGE},
+                                                  {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'clear-bad-pattern': True,
+                                                   'range': CCR_RESTRAINT_RANGE},
+                                                  {'name': 'Dipole_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Dipole_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Dipole_auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Dipole_auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Dipole_auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Dipole_auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Dipole_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Dipole_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'CSA_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'CSA_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'CSA_auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'CSA_auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'CSA_auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'CSA_auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'CSA_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'CSA_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Cross_correlation_D_CSA_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                   'default': '1', 'default-from': 'parent'},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                  ],
+                          'ccr_dd_restraint': [{'name': 'Dipole_1_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_1',
+                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                'enforce-enum': True},
+                                               {'name': 'Dipole_1_atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_1',
+                                                'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                'enforce-enum': True},
+                                               {'name': 'Dipole_1_atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_2',
+                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                'enforce-enum': True},
+                                               {'name': 'Dipole_1_atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_1_atom_ID_2',
+                                                'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                'enforce-enum': True},
+                                               {'name': 'Dipole_2_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_2_atom_ID_1',
+                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                'enforce-enum': True},
+                                               {'name': 'Dipole_2_atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_2_atom_ID_1',
+                                                'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                'enforce-enum': True},
+                                               {'name': 'Dipole_2_atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_2_atom_ID_2',
+                                                'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                'enforce-enum': True},
+                                               {'name': 'Dipole_2_atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Dipole_2_atom_ID_2',
+                                                'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                'enforce-enum': True},
+                                               {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                'remove-bad-pattern': True,
+                                                'range': CCR_RESTRAINT_RANGE},
+                                               {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                'clear-bad-pattern': True,
+                                                'range': CCR_RESTRAINT_RANGE},
+                                               {'name': 'Dipole_1_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_1_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                               {'name': 'Dipole_1_auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_1_auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_1_auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_1_auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                               {'name': 'Dipole_1_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_1_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_2_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_2_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                               {'name': 'Dipole_2_auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_2_auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_2_auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_2_auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                               {'name': 'Dipole_2_auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Dipole_2_auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                               {'name': 'Cross_correlation_DD_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                'default': '1', 'default-from': 'parent'},
+                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                               ],
+                          'fchiral_restraint': [{'name': 'Stereospecific_assignment_code', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Floating_chirality_assign_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                ],
+                          'saxs_restraint': [{'name': 'Intensity_val', 'type': 'float', 'mandatory': True,
+                                              'remove-bad-pattern': True},
+                                             {'name': 'Intensity_val_err', 'type': 'float', 'mandatory': True,
+                                              'clear-bad-pattern': True},
+                                             {'name': 'Weight_val', 'type': 'range-float', 'mandatory': False,
+                                              'range': WEIGHT_RANGE},
+                                             {'name': 'SAXS_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                              'default': '1', 'default-from': 'parent'},
+                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                             ],
+                          'other_restraint': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                               'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                               'enforce-enum': True},
+                                              {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                               'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                               'enforce-enum': True},
+                                              {'name': 'Val', 'type': 'float', 'mandatory': True,
+                                               'remove-bad-pattern': True},
+                                              {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                               'clear-bad-pattern': True,
+                                               'range': {'min_inclusive': 0.0}},
+                                              {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                              {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                              {'name': 'Other_data_type_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                               'default': '1', 'default-from': 'parent'},
+                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                              ],
+                          'peak2d': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                     {'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_1', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_1', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_2', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_2', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_2', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Volume', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                      'range': WEIGHT_RANGE},
+                                     {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                      'default': '1', 'default-from': 'parent'},
+                                     {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                     ],
+                          'peak3d': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                     {'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_1', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_1', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_2', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_2', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_2', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_3', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_3', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_3', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_3', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_3', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_3', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_3', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Volume', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                      'range': WEIGHT_RANGE},
+                                     {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                      'default': '1', 'default-from': 'parent'},
+                                     {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                     ],
+                          'peak4d': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                     {'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_1', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_1', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_2', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_2', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_2', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_3', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_3', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_3', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_3', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_3', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_3', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_3', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_4', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_4', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_4', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_4', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_4', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_4', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_4', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_4', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_4', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_4', 'type': 'positive-int', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_4', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Volume', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                      'range': WEIGHT_RANGE},
+                                     {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                      'default': '1', 'default-from': 'parent'},
+                                     {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                     ],
+                          'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                          'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                          'enforce-enum': True},
+                                         {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                          'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                          'enforce-enum': True},
+                                         {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                          'remove-bad-pattern': True,
+                                          'range': CS_RESTRAINT_RANGE},
+                                         {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                          'clear-bad-pattern': True,
+                                          'range': CS_UNCERTAINTY_RANGE},
+                                         {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
+                                          'enum': ALLOWED_AMBIGUITY_CODES,
+                                          'enforce-enum': True},
+                                         {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False,
+                                          'enforce-non-zero': True},
+                                         {'name': 'Seq_ID', 'type': 'int', 'mandatory': False},
+                                         {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                         {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                         {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                         {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                         {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                         {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                          'default': '1', 'default-from': 'parent'},
+                                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                         ]
+                          }
+
+NMR_STAR_LP_DATA_ITEMS_INS_CODE = {'dist_restraint': copy.copy(NMR_STAR_LP_DATA_ITEMS['dist_restraint'][:-2]),
+                                   'dihed_restraint': copy.copy(NMR_STAR_LP_DATA_ITEMS['dihed_restraint'][:-2]),
+                                   'rdc_restraint': copy.copy(NMR_STAR_LP_DATA_ITEMS['rdc_restraint'][:-2])
+                                   }
+
+NMR_STAR_LP_DATA_ITEMS_INS_CODE['dist_restraint'].extend([{'name': 'PDB_ins_code_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'PDB_ins_code_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                           'default': '1', 'default-from': 'parent'},
+                                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                          ])
+
+NMR_STAR_LP_DATA_ITEMS_INS_CODE['dihed_restraint'].extend([{'name': 'PDB_ins_code_1', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'PDB_ins_code_2', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'PDB_ins_code_3', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'PDB_ins_code_4', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                            'default': '1', 'default-from': 'parent'},
+                                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                           ])
+
+NMR_STAR_LP_DATA_ITEMS_INS_CODE['rdc_restraint'].extend([{'name': 'PDB_ins_code_1', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'PDB_ins_code_2', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                         ])
+
+NMR_STAR_ALT_LP_CATEGORIES = {'spectral_peak': ['_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
+                              }
+
+NMR_STAR_ALT_LP_KEY_ITEMS = {'spectral_peak': {'_Peak': [
+                                               {'name': 'ID', 'type': 'int'}],
+                                               '_Peak_general_char': [
+                                               {'name': 'Peak_ID', 'type': 'int'}],
+                                               '_Peak_char': [
+                                               {'name': 'Peak_ID', 'type': 'int'},
+                                               {'name': 'Spectral_dim_ID', 'type': 'positive-int'}],
+                                               '_Assigned_peak_chem_shift': [
+                                               {'name': 'Peak_ID', 'type': 'int'},
+                                               {'name': 'Spectral_dim_ID', 'type': 'positive-int'}]
+                                               }
+                             }
+
+NMR_STAR_ALT_LP_DATA_ITEMS = {'spectral_peak': {'_Peak': [
+                                                {'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                                {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                                 'range': WEIGHT_RANGE},
+                                                {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
+                                                '_Peak_general_char': [
+                                                {'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
+                                                {'name': 'Intensity_val_err', 'type': 'float', 'mandatory': False},
+                                                {'name': 'Measurement_method', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('absolute height', 'height', 'relative height', 'volume', 'number of contours', 'integration')},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
+                                                '_Peak_char': [
+                                                {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                 'range': CS_RESTRAINT_RANGE},
+                                                {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                 'range': CS_UNCERTAINTY_RANGE},
+                                                {'name': 'Line_width_val', 'type': 'positive-float', 'mandatory': False},
+                                                {'name': 'Line_width_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                {'name': 'Coupling_pattern', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('d', 'dd', 'ddd', 'dm', 'dt', 'hxt', 'hpt', 'm', 'q', 'qd', 'qn', 's', 'sxt', 't', 'td', 'LR', '1JCH')},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
+                                                '_Assigned_peak_chem_shift': [
+                                                {'name': 'Set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                {'name': 'Magnetization_linkage_ID', 'type': 'positive-int', 'mandatory': False},
+                                                {'name': 'Val', 'type': 'range-float', 'mandatory': False,
+                                                 'range': CS_RESTRAINT_RANGE},
+                                                {'name': 'Contribution_fractional_val', 'type': 'range-float', 'mandatory': False,
+                                                 'range': WEIGHT_RANGE},
+                                                {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                                 'range': WEIGHT_RANGE},
+                                                {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
+                                                {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'mandatory': False},
+                                                {'name': 'Entity_ID', 'type': 'positive-int'},
+                                                {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
+                                                {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                                {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
+                                                 'enum': ALLOWED_AMBIGUITY_CODES},
+                                                {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                {'name': 'Auth_entity_ID', 'type': 'str', 'mandatory': False},  # NOTICE: '_Assigned_peak_chem_shift.Auth_asym_ID' does not exist
+                                                {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}]}}
+
+NMR_STAR_AUX_LP_CATEGORIES = {'dist_restraint': ['_Gen_dist_constraint_software_param'],
+                              'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer']
+                              }
+
+NMR_STAR_AUX_LP_KEY_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_param': [
+                                                {'name': 'Software_ID', 'type': 'int'},
+                                                {'name': 'Type', 'type': 'str'}]
+                                                },
+                             'spectral_peak': {'_Spectral_dim': [
+                                               {'name': 'ID', 'type': 'int', 'auto-increment': True}  # allows to have software-native id starting from zero
+                                               ],
+                                               '_Spectral_dim_transfer': [
+                                               {'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},
+                                               {'name': 'Spectral_dim_ID_2', 'type': 'positive-int'}]
+                                               }
+                             }
+
+NMR_STAR_AUX_LP_DATA_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_param': [
+                                                 {'name': 'Value', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Range', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                  'default': '1', 'default-from': 'parent'},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}]
+                                                 },
+                              'spectral_peak': {'_Spectral_dim': [
+                                                {'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
+                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                 'enforce-enum': True},
+                                                {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True,
+                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                 'enforce-enum': True},
+                                                {'name': 'Axis_code', 'type': 'str'},
+                                                {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
+                                                 'enforce-non-zero': True},
+                                                {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('aliased', 'folded', 'not observed')},
+                                                {'name': 'Spectral_region', 'type': 'str', 'mandatory': True},
+                                                {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
+                                                 'enforce-non-zero': True},
+                                                {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True, 'default': 'Hz',
+                                                 'enum': ('ppm', 'Hz'),
+                                                 'enforce-enum': True},
+                                                {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
+                                                {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
+                                                {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
+                                                {'name': 'Center_frequency_offset', 'type': 'float', 'mandatory': False},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
+                                                '_Spectral_dim_transfer': [
+                                                {'name': 'Type', 'type': 'enum', 'mandatory': True,
+                                                 'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate',
+                                                          'through-space', 'through-space?'),
+                                                 'enforce-enum': True},
+                                                {'name': 'Indirect', 'type': 'bool', 'mandatory': False},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}]
+                                                }
+                              }
+
+CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                    ]
+
+AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                        {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
+                        ]
+
+ATOM_NAME_DATA_ITEMS = [{'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
+                        ]
+
+AUTH_ATOM_CARTN_DATA_ITEMS = CARTN_DATA_ITEMS
+AUTH_ATOM_CARTN_DATA_ITEMS.extend(AUTH_ATOM_DATA_ITEMS)
+
+PTNR1_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                              {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                              {'name': 'ptnr1_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                              {'name': 'ptnr1_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
+                              ]
+
+PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                              {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                              {'name': 'ptnr2_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                              {'name': 'ptnr2_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
+                              ]
+
+REMEDIATE_BACKBONE_ANGLE_NAME_PAT = re.compile(r'pseudo (PHI|PSI|OMEGA) \(0, (0|1|\-1), (0|1|\-1), 0\)')
+
+SPECTRAL_DIM_TEMPLATE = {'axis_code': None,
+                         'spectrometer_frequency': None,
+                         'under_sampling_type': None,
+                         'atom_type': None,
+                         'atom_isotope_number': None,
+                         'spectral_region': None,
+                         # 'magnetization_linkage_id': None,  not required for _Peak_row_format loop
+                         'sweep_width': None,
+                         'sweep_width_units': 'Hz',
+                         'value_first_point': None,
+                         'absolute_peak_positions': None,
+                         'acquisition': None,
+                         'center_frequency_offset': None,
+                         # 'encoding_code': None,  not required for _Peak_row_format loop
+                         # 'encoded_reduced_dimension_id': None  not required for _Peak_row_format loop
+                         }
+
+ASSIGNMENT_SEPARATOR_PAT = re.compile(r'[^0-9A-Za-z\'\"]+')
+ASSIGNMENT_RESID_PAT = re.compile(r'[0-9]+')
+ASSIGNMENT_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
+
+C_CARBONYL_CENTER_MAX_TOR = 190
+C_CARBONYL_CENTER_MAX = 180
+C_CARBONYL_CENTER_MIN = 170
+
+C_AROMATIC_CENTER_MAX = 133
+C_AROMATIC_CENTER_MIN = 128
+C_AROMATIC_CENTER_MIN_TOR = 123
+
+N_AMIDE_CENTER_MAX = C_AROMATIC_CENTER_MIN
+N_AMIDE_CENTER_MIN = 115
+
+C_ALL_CENTER_MAX = 90
+C_ALL_CENTER_MIN = 60
+
+C_ALIPHATIC_CENTER_MAX = C_ALL_CENTER_MIN
+C_ALIPHATIC_CENTER_MIN = 30
+
+C_METHYL_CENTER_MAX = C_ALIPHATIC_CENTER_MIN
+C_METHYL_CENTER_MIN = 10
+
+HN_AROMATIC_CENTER_MAX = 9
+HN_AROMATIC_CENTER_MIN = 6
+
+H_IMIDE_CENTER_MAX = 15
+H_IMIDE_CENTER_MIN = 10
+
+H_ALL_CENTER_MAX = HN_AROMATIC_CENTER_MIN
+H_ALL_CENTER_MIN = 4
+
+H_ALIPHATIC_CENTER_MAX = H_ALL_CENTER_MIN
+H_ALIPHATIC_CENTER_MIN = 2
+
+H_METHYL_CENTER_MAX = H_ALIPHATIC_CENTER_MIN
+H_METHYL_CENTER_MIN = 0
+
+MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER = 0.2
+
+PROTEIN_RELATED_WORDS = ('protein', 'peptide', 'amino', 'n-term', 'c-term', 'domain', 'enzyme', 'ase')
+DNA_RELATED_WORDS = ('dna', 'deoxyribonucleotide', 'nucleotide', "5'-", "3'-")
+RNA_RELATED_WORDS = ('rna', 'ribonucleotide', 'nucleotide', "5'-", "3'-")
+
+ALLOWED_THIOL_STATES = ('all disulfide bound', 'all other bound', 'all free', 'not present', 'not available', 'unknown', 'not reported',
+                        'free and disulfide bound', 'free and other bound', 'free disulfide and other bound', 'disulfide and other bound')

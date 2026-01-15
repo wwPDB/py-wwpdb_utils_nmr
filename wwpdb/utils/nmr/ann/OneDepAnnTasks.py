@@ -24,19 +24,19 @@ from typing import IO, List
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           getScoreOfSeqAlign)
-    from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+    from wwpdb.utils.nmr.NmrDpConstant import EMPTY_VALUE
+    from wwpdb.utils.nmr.AlignUtil import getScoreOfSeqAlign
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag,
                                               retrieve_symbolic_labels)
+    from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 except ImportError:
-    from nmr.AlignUtil import (emptyValue,
-                               getScoreOfSeqAlign)
-    from nmr.io.mmCIFUtil import mmCIFUtil
+    from nmr.NmrDpConstant import EMPTY_VALUE
+    from nmr.AlignUtil import getScoreOfSeqAlign
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag,
                                   retrieve_symbolic_labels)
+    from nmr.io.mmCIFUtil import mmCIFUtil
 
 
 NMR_SOFTWERE_LIST = ('3D-DART', '3DNA', '4D-CHAINS', '4DSPOT', 'ABACUS', 'ACME', 'ADAPT-NMR', 'AGNuS', 'ALMOST',
@@ -90,14 +90,14 @@ NMR_SOFTWERE_LIST = ('3D-DART', '3DNA', '4D-CHAINS', '4DSPOT', 'ABACUS', 'ACME',
                      'XVNMR', 'XwinNMR', 'XSSP', 'xyza2pipe', 'YARIA', 'YARM', 'YASAP', 'YASARA')
 
 
-range_value_pattern = re.compile(r'^(.+)\s*-\s*(.+)$')
+RANGE_VALUE_PAT = re.compile(r'^(.+)\s*-\s*(.+)$')
 
 
 def get_nmr_software(name: str) -> str:
     """ Return enumeration value for NMR software.
     """
 
-    if name in emptyValue or name in NMR_SOFTWERE_LIST:
+    if name in EMPTY_VALUE or name in NMR_SOFTWERE_LIST:
         return name
 
     _name = name.lower()
@@ -1322,8 +1322,16 @@ class OneDepAnnTasks:
                     new_flag = False
 
                 if page == 'software' and bmrb_annotation:
-                    if len(master_entry.get_saveframes_by_category(sf_category)) > 0:
-                        continue
+                    software_vendor = {}
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        s_name = get_first_sf_tag(sf, 'Name').lower()
+                        try:
+                            lp = sf.get_loop('_Vendor')
+                            dat = lp.get_tag(['Name'])
+                            if len(dat) == 1 and len(dat[0]) <= 80:
+                                software_vendor[s_name] = dat[0]
+                        except KeyError:
+                            pass
 
                 if new_flag:
                     if sf_category in self.__sfCategoryList:
@@ -1391,7 +1399,7 @@ class OneDepAnnTasks:
                                         sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
                                     except KeyError:
                                         pass
-                                    if sf_framecode in emptyValue or sf_framecode.isdigit() or sf_framecode in sf_framecodes or ' ' in sf_framecode:
+                                    if sf_framecode in EMPTY_VALUE or sf_framecode.isdigit() or sf_framecode in sf_framecodes or ' ' in sf_framecode:
                                         sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
                                     sf_framecodes.append(sf_framecode)
                                     if sf is None:
@@ -1440,15 +1448,15 @@ class OneDepAnnTasks:
 
                                     for tag_map in sf_tag_maps:
                                         if tag_map[0] == cif_category and tag_map[1] in row and tag_map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
-                                            if row[tag_map[1]] in emptyValue:
+                                            if row[tag_map[1]] in EMPTY_VALUE:
                                                 _id = get_first_sf_tag(sf, tag_map[3])
                                                 if isinstance(_id, int) or len(_id) > 0:
                                                     continue
-                                            if new_flag or tag_map[1] not in emptyValue:
+                                            if new_flag or tag_map[1] not in EMPTY_VALUE:
                                                 set_sf_tag(sf, tag_map[3], row[tag_map[1]])
                                             else:
                                                 _val = get_first_sf_tag(sf, tag_map[3])
-                                                if _val in emptyValue:
+                                                if _val in EMPTY_VALUE:
                                                     set_sf_tag(sf, tag_map[3], row[tag_map[1]])
                                             has_uniq_sf_tag = True
 
@@ -1465,7 +1473,7 @@ class OneDepAnnTasks:
                                             continue
                                         parent_sf_tag_prefix = f'_{def_sf_tag[:-6]}'
                                         parent_list_id = get_first_sf_tag(sf, f'{parent_sf_tag_prefix[1:]}_ID')
-                                        if parent_list_id in emptyValue:
+                                        if parent_list_id in EMPTY_VALUE:
                                             sf.add_tag(def_sf_tag, '.')
                                             continue
                                         try:
@@ -1489,7 +1497,7 @@ class OneDepAnnTasks:
                     # prevent duplication of spectral peak list
                     if sf_category == 'spectral_peak_list':
                         data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                        if data_file_name not in emptyValue:
+                        if data_file_name not in EMPTY_VALUE:
                             if len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
                                 sf = master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)[0]
                                 has_uniq_sf_tag = False
@@ -1595,7 +1603,7 @@ class OneDepAnnTasks:
                                         for _type in ['ionic_strength', 'pH', 'pressure', 'temperature']:
                                             if _type in row:
                                                 _val = row[_type]
-                                                if _val in emptyValue:
+                                                if _val in EMPTY_VALUE:
                                                     continue
                                                 _row = [None] * len(lp.tags)
                                                 if lp_list_id_col != -1:
@@ -1635,12 +1643,15 @@ class OneDepAnnTasks:
                                                     col = lp.tags.index(tag)
                                                     if map_code != -22:
                                                         _row[col] = row[cif_tag]
+                                                        if page == 'software' and bmrb_annotation and lp_category == '__Vendor' and tag == 'Name'\
+                                                           and len(_row[col]) > 80 and get_first_sf_tag(sf, 'Name').lower() in software_vendor:
+                                                            _row[col] = software_vendor[get_first_sf_tag(sf, 'Name').lower()]
                                                         has_uniq_lp_row = True
                                                     else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
                                                         if cif_tag.endswith('range'):
-                                                            if row[cif_tag] not in emptyValue:
+                                                            if row[cif_tag] not in EMPTY_VALUE:
                                                                 try:
-                                                                    g = range_value_pattern.search(row[cif_tag]).groups()
+                                                                    g = RANGE_VALUE_PAT.search(row[cif_tag]).groups()
                                                                     if tag.endswith('max'):
                                                                         _max = g[1]
                                                                         try:
@@ -1681,9 +1692,9 @@ class OneDepAnnTasks:
                                                         _row[col] = row[cif_tag]
                                                     else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
                                                         if cif_tag.endswith('range'):
-                                                            if row[cif_tag] not in emptyValue:
+                                                            if row[cif_tag] not in EMPTY_VALUE:
                                                                 try:
-                                                                    g = range_value_pattern.search(row[cif_tag]).groups()
+                                                                    g = RANGE_VALUE_PAT.search(row[cif_tag]).groups()
                                                                     if tag.endswith('max'):
                                                                         _max = g[1]
                                                                         try:
@@ -1710,7 +1721,7 @@ class OneDepAnnTasks:
                                         # _NMR_spectrometer_view.NMR_spectrometer_list_ID, _Experiment.Experiment_list_ID
                                         if list_id_tag in lp.tags:
                                             lp_list_id_col = lp.tags.index(list_id_tag)
-                                            if _row[lp_list_id_col] in emptyValue:
+                                            if _row[lp_list_id_col] in EMPTY_VALUE:
                                                 _row[lp_list_id_col] = str(list_id_dict[list_id])
 
                                         lp.add_data(_row)
@@ -1750,7 +1761,7 @@ class OneDepAnnTasks:
                         sw_id_col = lp.tags.index('Software_ID')
                         for idx, row in enumerate(lp):
                             sw_id = row[sw_id_col]
-                            if sw_id in emptyValue:
+                            if sw_id in EMPTY_VALUE:
                                 continue
                             if isinstance(sw_id, int):
                                 sw_id = str(sw_id)
@@ -1762,7 +1773,7 @@ class OneDepAnnTasks:
                         sw_id_col = lp.tags.index('Software_ID')
                         for idx, row in enumerate(lp):
                             sw_id = row[sw_id_col]
-                            if sw_id in emptyValue:
+                            if sw_id in EMPTY_VALUE:
                                 continue
                             if isinstance(sw_id, int):
                                 sw_id = str(sw_id)
@@ -1776,7 +1787,7 @@ class OneDepAnnTasks:
                         for idx, row in enumerate(lp):
                             sw_id = row[sw_id_col]
                             sw_name = row[sw_name_col]
-                            if sw_name in emptyValue:
+                            if sw_name in EMPTY_VALUE:
                                 continue
                             if isinstance(sw_id, int):
                                 sw_id = str(sw_id)
@@ -1813,7 +1824,7 @@ class OneDepAnnTasks:
 
                     for sf in master_entry.get_saveframes_by_category(pk_list_sf_category):
                         exp_id = get_first_sf_tag(sf, 'Experiment_ID')
-                        if exp_id in emptyValue:
+                        if exp_id in EMPTY_VALUE:
                             continue
                         if isinstance(exp_id, str):
                             exp_id = int(exp_id)
@@ -2090,8 +2101,8 @@ class OneDepAnnTasks:
                                                     max_lp_item = next((lp_tag for lp_tag in _lp_tags if lp_tag.endswith('max')), None)
                                                     min_lp_item = next((lp_tag for lp_tag in _lp_tags if lp_tag.endswith('min')), None)
                                                     if None not in (max_lp_item, min_lp_item)\
-                                                       and row[_lp_tags.index(max_lp_item)] not in emptyValue\
-                                                       and row[_lp_tags.index(max_lp_item)] not in emptyValue:
+                                                       and row[_lp_tags.index(max_lp_item)] not in EMPTY_VALUE\
+                                                       and row[_lp_tags.index(max_lp_item)] not in EMPTY_VALUE:
                                                         _row[idx] = f'{row[_lp_tags.index(min_lp_item)]}-{row[_lp_tags.index(max_lp_item)]}'
                                             _row = replace_none(_row)
                                             cifObj.appendRow(self.__entryId, cif_category, _row)

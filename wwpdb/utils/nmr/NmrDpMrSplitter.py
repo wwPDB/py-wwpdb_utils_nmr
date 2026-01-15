@@ -28,26 +28,32 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,
                                                AR_FILE_PATH_LIST_KEY,
                                                MR_MAX_SPACER_LINES,
-                                               READABLE_FILE_TYPE)
+                                               READABLE_FILE_TYPE,
+                                               MONDICT3,
+                                               PROTON_BEGIN_CODE,
+                                               MAX_DIM_NUM_OF_SPECTRA,
+                                               HALF_SPIN_NUCLEUS,
+                                               CS_ERROR_MIN,
+                                               CS_ERROR_MAX,
+                                               CS_RANGE_MIN,
+                                               CS_RANGE_MAX,
+                                               DIST_RANGE_MIN,
+                                               DIST_RANGE_MAX,
+                                               ANGLE_RANGE_MIN,
+                                               ANGLE_RANGE_MAX,
+                                               RDC_RANGE_MIN,
+                                               RDC_RANGE_MAX,
+                                               WEIGHT_RANGE_MIN,
+                                               WEIGHT_RANGE_MAX,
+                                               KNOWN_ANGLE_NAMES,
+                                               CYANA_MR_FILE_EXTS)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
-                                           protonBeginCode,
-                                           getRestraintFormatName,
+    from wwpdb.utils.nmr.AlignUtil import (getRestraintFormatName,
                                            getRestraintFormatNames)
     from wwpdb.utils.nmr.NmrVrptUtility import uncompress_gzip_file
-    from wwpdb.utils.nmr.nef.NEFTranslator import MAX_DIM_NUM_OF_SPECTRA
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        startsWithPdbRecord,
-                                                       getRestraintName,
-                                                       HALF_SPIN_NUCLEUS,
-                                                       CS_RESTRAINT_ERROR,
-                                                       CS_RESTRAINT_RANGE,
-                                                       DIST_RESTRAINT_RANGE,
-                                                       ANGLE_RESTRAINT_RANGE,
-                                                       RDC_RESTRAINT_RANGE,
-                                                       WEIGHT_RANGE,
-                                                       KNOWN_ANGLE_NAMES,
-                                                       CYANA_MR_FILE_EXTS)
+                                                       getRestraintName)
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
@@ -86,26 +92,32 @@ except ImportError:
     from nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,
                                    AR_FILE_PATH_LIST_KEY,
                                    MR_MAX_SPACER_LINES,
-                                   READABLE_FILE_TYPE)
+                                   READABLE_FILE_TYPE,
+                                   MONDICT3,
+                                   PROTON_BEGIN_CODE,
+                                   MAX_DIM_NUM_OF_SPECTRA,
+                                   HALF_SPIN_NUCLEUS,
+                                   CS_ERROR_MIN,
+                                   CS_ERROR_MAX,
+                                   CS_RANGE_MIN,
+                                   CS_RANGE_MAX,
+                                   DIST_RANGE_MIN,
+                                   DIST_RANGE_MAX,
+                                   ANGLE_RANGE_MIN,
+                                   ANGLE_RANGE_MAX,
+                                   RDC_RANGE_MIN,
+                                   RDC_RANGE_MAX,
+                                   WEIGHT_RANGE_MIN,
+                                   WEIGHT_RANGE_MAX,
+                                   KNOWN_ANGLE_NAMES,
+                                   CYANA_MR_FILE_EXTS)
     from nmr.NmrDpRegistry import NmrDpRegistry
-    from nmr.AlignUtil import (monDict3,
-                               protonBeginCode,
-                               getRestraintFormatName,
+    from nmr.AlignUtil import (getRestraintFormatName,
                                getRestraintFormatNames)
     from nmr.NmrVrptUtility import uncompress_gzip_file
-    from nmr.nef.NEFTranslator import MAX_DIM_NUM_OF_SPECTRA
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            startsWithPdbRecord,
-                                           getRestraintName,
-                                           HALF_SPIN_NUCLEUS,
-                                           CS_RESTRAINT_ERROR,
-                                           CS_RESTRAINT_RANGE,
-                                           DIST_RESTRAINT_RANGE,
-                                           ANGLE_RESTRAINT_RANGE,
-                                           RDC_RESTRAINT_RANGE,
-                                           WEIGHT_RANGE,
-                                           KNOWN_ANGLE_NAMES,
-                                           CYANA_MR_FILE_EXTS)
+                                           getRestraintName)
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AriaMRReader import AriaMRReader
@@ -140,25 +152,6 @@ except ImportError:
     from nmr.pk.XeasyPKReader import XeasyPKReader
     from nmr.pk.XeasyPROTReader import XeasyPROTReader
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
-
-
-CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
-CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
-
-CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
-CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
-
-DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
-DIST_RANGE_MAX = DIST_RESTRAINT_RANGE['max_inclusive']
-
-ANGLE_RANGE_MIN = ANGLE_RESTRAINT_RANGE['min_inclusive']
-ANGLE_RANGE_MAX = ANGLE_RESTRAINT_RANGE['max_inclusive']
-
-RDC_RANGE_MIN = RDC_RESTRAINT_RANGE['min_inclusive']
-RDC_RANGE_MAX = RDC_RESTRAINT_RANGE['max_inclusive']
-
-WEIGHT_RANGE_MIN = WEIGHT_RANGE['min_inclusive']
-WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
 
 
 mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
@@ -1216,7 +1209,7 @@ class NmrDpMrSplitter:
                                     has_rdc_restraint = True
 
                                 elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like or has_hbond_restraint)\
-                                        and names[0][0] in hbond_da_atom_types and names[1][0] in protonBeginCode and names[2][0] in hbond_da_atom_types:
+                                        and names[0][0] in hbond_da_atom_types and names[1][0] in PROTON_BEGIN_CODE and names[2][0] in hbond_da_atom_types:
                                     has_hbond_restraint = True
 
                                 atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
@@ -1545,8 +1538,8 @@ class NmrDpMrSplitter:
                 atom_like_names_oth = self.__reg.csStat.getAtomLikeNameSet(1)
                 cs_atom_like_names_oth = list(filter(is_half_spin_nuclei, atom_like_names_oth))  # DAOTHER-7491
 
-                one_letter_codes = monDict3.values()
-                three_letter_codes = monDict3.keys()
+                one_letter_codes = MONDICT3.values()
+                three_letter_codes = MONDICT3.keys()
 
                 prohibited_col = set()
 
@@ -3240,7 +3233,7 @@ class NmrDpMrSplitter:
                             len_col = len(col)
                             if len_col == 10:
                                 original_comp_id = col[5].upper()
-                                if original_comp_id not in monDict3:  # extract non-standard residues
+                                if original_comp_id not in MONDICT3:  # extract non-standard residues
                                     try:
                                         atom_map = {'auth_atom_id': col[1],
                                                     'auth_comp_id': col[2],
@@ -3271,7 +3264,7 @@ class NmrDpMrSplitter:
 
                                     if len(col[4]) > 4 and len_col == 8:
                                         orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[4])
-                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id.upper() not in monDict3:
+                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id.upper() not in MONDICT3:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': auth_comp_id,
                                                         'auth_seq_id': auth_seq_id,
@@ -3281,7 +3274,7 @@ class NmrDpMrSplitter:
                                             if atom_map not in self.__reg.mr_atom_name_mapping:
                                                 self.__reg.mr_atom_name_mapping.append(atom_map)
                                     elif len_col == 9:
-                                        if auth_comp_id is not None and col[4] not in monDict3:
+                                        if auth_comp_id is not None and col[4] not in MONDICT3:
                                             try:
                                                 atom_map = {'auth_atom_id': col[1],
                                                             'auth_comp_id': auth_comp_id,
@@ -3295,7 +3288,7 @@ class NmrDpMrSplitter:
                                                 pass
                                 elif len(col[5]) > 4 and len_col == 9:
                                     orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[5])
-                                    if orig_comp_id is not None and orig_comp_id.upper() not in monDict3:
+                                    if orig_comp_id is not None and orig_comp_id.upper() not in MONDICT3:
                                         try:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': col[2],
@@ -4309,14 +4302,14 @@ class NmrDpMrSplitter:
                                     is_seq = False
                                     break
                                 if len_seq == 2:
-                                    if (translateToStdResName(seq[0], ccU=self.__reg.ccU) in monDict3 and seq[1].isdigit())\
-                                       or (translateToStdResName(seq[1], ccU=self.__reg.ccU) in monDict3 and seq[0].isdigit()):
+                                    if (translateToStdResName(seq[0], ccU=self.__reg.ccU) in MONDICT3 and seq[1].isdigit())\
+                                       or (translateToStdResName(seq[1], ccU=self.__reg.ccU) in MONDICT3 and seq[0].isdigit()):
                                         is_seq = True
                                     else:
                                         is_seq = False
                                         break
                                 elif len_seq == 1:
-                                    if seq[0] in monDict3:
+                                    if seq[0] in MONDICT3:
                                         is_seq = True
                                     else:
                                         is_seq = False

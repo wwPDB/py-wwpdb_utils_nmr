@@ -64,17 +64,27 @@ from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
 
 from sklearn.cluster import DBSCAN
-from rmsd.calculate_rmsd import (NAMES_ELEMENT, centroid, check_reflections, rmsd,  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
+from rmsd.calculate_rmsd import (centroid, check_reflections, rmsd,  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
                                  kabsch_rmsd, quaternion_rmsd,
                                  reorder_hungarian, reorder_brute, reorder_distance,
                                  quaternion_rotate)
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           deepcopy)
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               ELEMENT_SYMBOLS,
+                                               LEN_MAJOR_ASYM_ID,
+                                               RMSD_OVERLAID_EXACTLY,
+                                               RMSD_CUTOFF_FOR_DOMAIN,
+                                               CARTN_DATA_ITEMS)
+    from wwpdb.utils.nmr.AlignUtil import deepcopy
 except ImportError:
-    from nmr.AlignUtil import (emptyValue,
-                               deepcopy)
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   ELEMENT_SYMBOLS,
+                                   LEN_MAJOR_ASYM_ID,
+                                   RMSD_OVERLAID_EXACTLY,
+                                   RMSD_CUTOFF_FOR_DOMAIN,
+                                   CARTN_DATA_ITEMS)
+    from nmr.AlignUtil import deepcopy
 
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None
@@ -88,15 +98,6 @@ USE_REFLECTIONS = False
 # (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept
 USE_REFLECTIONS_KEEP_STEREO = False
 REORDER = False
-
-LEN_MAJOR_ASYM_ID = 26
-
-SYMBOLS_ELEMENT = {k.upper(): v for k, v in NAMES_ELEMENT.items()}
-
-CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                    ]
 
 
 def M(axis: list, theta: float) -> list:
@@ -134,7 +135,7 @@ def get_coordinates(p: list) -> [list, list]:
     for a in p:
         V.append(to_np_array(a))
 
-    atoms = [SYMBOLS_ELEMENT[a['element']] for a in p]
+    atoms = [ELEMENT_SYMBOLS[a['element']] for a in p]
 
     V = np.asarray(V)
     atoms = np.asarray(atoms)
@@ -324,12 +325,12 @@ class CifReader:
         assert self.__min_monomers_for_domain > 6  # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
 
         # criterion for cutoff RMSD value
-        self.__rmsd_cutoff = 3.5
+        self.__rmsd_cutoff = RMSD_CUTOFF_FOR_DOMAIN
 
         self.__d_cutoff = self.__rmsd_cutoff ** 2
 
         # criterion for detection of exactly overlaid models
-        self.__rmsd_overlaid_exactly = 0.01
+        self.__rmsd_overlaid_exactly = RMSD_OVERLAID_EXACTLY
 
     def parse(self, filePath: str, dirPath: Optional[str] = None) -> bool:
         """ Parse CIF file, and set internal active datablock if possible.
@@ -679,8 +680,8 @@ class CifReader:
                 for filterItem in filterItems:
                     name = filterItem['name']
                     val = row[fcolDict[name]]
-                    if val in emptyValue:
-                        if 'value' in filterItem and filterItem['value'] not in emptyValue:
+                    if val in EMPTY_VALUE:
+                        if 'value' in filterItem and filterItem['value'] not in EMPTY_VALUE:
                             keep = False
                             break
                     else:
@@ -753,7 +754,7 @@ class CifReader:
                 tD = {}
                 for dataItem in dataItems:
                     val = row[colDict[dataItem['name']]]
-                    if val in emptyValue:
+                    if val in EMPTY_VALUE:
                         if 'default-from' in dataItem and dataItem['default-from'] in colDict:
                             val = row[colDict[dataItem['default-from']]]
                         else:
@@ -851,7 +852,7 @@ class CifReader:
         for row in rowList:
             for j in range(lenKeyItems):
                 itCol = itDict[keyNames[j]]
-                if itCol < len(row) and row[itCol] in emptyValue:
+                if itCol < len(row) and row[itCol] in EMPTY_VALUE:
                     if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
                         if catName == 'pdbx_poly_seq_scheme':
                             if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
@@ -861,27 +862,27 @@ class CifReader:
                                     if c not in unmapSeqIds:
                                         unmapSeqIds[c], unmapAuthSeqIds[c] = [], []
                                     compId = row[altDict['comp_id']]
-                                    if compId in emptyValue or not compId[0].isalnum():  # DAOTHER-9694
+                                    if compId in EMPTY_VALUE or not compId[0].isalnum():  # DAOTHER-9694
                                         continue
                                     unmapSeqIds[c].append((row[altDict['seq_id']], compId))
                                     unmapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
                                 if _rowList is None:
                                     _rowList = deepcopy(rowList)
                         continue
-                    if 'default' not in keyItems[j]:  # or keyItems[j]['default'] not in emptyValue:
+                    if 'default' not in keyItems[j]:  # or keyItems[j]['default'] not in EMPTY_VALUE:
                         raise ValueError(f"{keyNames[j]} must not be empty.")
 
         # DAOTHER-9674
         if catName == 'pdbx_poly_seq_scheme' and 'auth_comp_id' in altDict:
             for row in rowList:
-                if row[altDict['auth_comp_id']] not in emptyValue:
+                if row[altDict['auth_comp_id']] not in EMPTY_VALUE:
                     c = row[altDict['chain_id']]
                     etype = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
                     if etype is not None and 'polypeptide' not in etype:
                         if c not in mapAuthSeqIds:
                             mapAuthSeqIds[c] = []
                         compId = row[altDict['comp_id']]
-                        if compId in emptyValue or not compId[0].isalnum():  # DAOTHER-9694
+                        if compId in EMPTY_VALUE or not compId[0].isalnum():  # DAOTHER-9694
                             continue
                         mapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
 
@@ -902,7 +903,7 @@ class CifReader:
                     skip = False
                     for j in range(lenKeyItems):
                         itCol = itDict[keyNames[j]]
-                        if itCol < len(row) and row[itCol] in emptyValue:
+                        if itCol < len(row) and row[itCol] in EMPTY_VALUE:
                             if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
                                 if catName == 'pdbx_poly_seq_scheme':
                                     if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
@@ -917,7 +918,7 @@ class CifReader:
         for row in rowList:
             for j in range(lenKeyItems):
                 itCol = itDict[keyNames[j]]
-                if itCol < len(row) and row[itCol] in emptyValue:
+                if itCol < len(row) and row[itCol] in EMPTY_VALUE:
                     if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
                         if catName == 'pdbx_poly_seq_scheme':
                             if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
@@ -1011,7 +1012,7 @@ class CifReader:
                 for s in seqDict[c]:
                     row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
                     if row is not None:
-                        if row[auth_seq_id_col] not in emptyValue:
+                        if row[auth_seq_id_col] not in EMPTY_VALUE:
                             try:
                                 _s = int(row[auth_seq_id_col])
                             except ValueError:
@@ -1165,9 +1166,9 @@ class CifReader:
                 ent['seq_id'] = seqDict[c]
                 ent['comp_id'] = compDict[c]
                 if c in insCodeDict:
-                    if any(True for ic in insCodeDict[c] if ic not in emptyValue):
+                    if any(True for ic in insCodeDict[c] if ic not in EMPTY_VALUE):
                         ent['ins_code'] = insCodeDict[c]
-                    if any(True for s in labelSeqDict[c] if s not in emptyValue):
+                    if any(True for s in labelSeqDict[c] if s not in EMPTY_VALUE):
                         if c in labelSeqDict and all(isinstance(s, int) for s in labelSeqDict[c]):
                             ent['auth_seq_id'] = authSeqDict[c] if authScheme else seqDict[c]
                             ent['label_seq_id'] = labelSeqDict[c]
@@ -1194,7 +1195,7 @@ class CifReader:
                                             and int(row[auth_seq_id_col]) == s and row[ins_code_col] == ic), None)
                                 if row is not None:
                                     comp_id = row[auth_comp_id_col]
-                                    if comp_id not in emptyValue:
+                                    if comp_id not in EMPTY_VALUE:
                                         ent['auth_comp_id'].append(comp_id)
                                     else:
                                         ent['auth_comp_id'].append('.')
@@ -1206,7 +1207,7 @@ class CifReader:
                                             and int(row[auth_seq_id_col]) == s), None)
                                 if row is not None:
                                     comp_id = row[auth_comp_id_col]
-                                    if comp_id not in emptyValue:
+                                    if comp_id not in EMPTY_VALUE:
                                         ent['auth_comp_id'].append(comp_id)
                                     else:
                                         ent['auth_comp_id'].append('.')
@@ -1218,7 +1219,7 @@ class CifReader:
                                         and int(row[seq_id_col]) == s), None)
                             if row is not None:
                                 comp_id = row[auth_comp_id_col]
-                                if comp_id not in emptyValue:
+                                if comp_id not in EMPTY_VALUE:
                                     ent['auth_comp_id'].append(comp_id)
                                 else:
                                     ent['auth_comp_id'].append('.')
@@ -1236,7 +1237,7 @@ class CifReader:
                                             and int(row[auth_seq_id_col]) == s and row[ins_code_col] == ic), None)
                                 if row is not None:
                                     comp_id = row[alt_comp_id_col]
-                                    if comp_id not in emptyValue:
+                                    if comp_id not in EMPTY_VALUE:
                                         ent['alt_comp_id'].append(comp_id)
                                     else:
                                         ent['alt_comp_id'].append('.')
@@ -1248,7 +1249,7 @@ class CifReader:
                                             and int(row[auth_seq_id_col]) == s), None)
                                 if row is not None:
                                     comp_id = row[alt_comp_id_col]
-                                    if comp_id not in emptyValue:
+                                    if comp_id not in EMPTY_VALUE:
                                         ent['alt_comp_id'].append(comp_id)
                                     else:
                                         ent['alt_comp_id'].append('.')
@@ -1260,7 +1261,7 @@ class CifReader:
                                         and int(row[seq_id_col]) == s), None)
                             if row is not None:
                                 comp_id = row[alt_comp_id_col]
-                                if comp_id not in emptyValue:
+                                if comp_id not in EMPTY_VALUE:
                                     ent['alt_comp_id'].append(comp_id)
                                 else:
                                     ent['alt_comp_id'].append('.')

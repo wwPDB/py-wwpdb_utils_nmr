@@ -23,6 +23,22 @@ from operator import itemgetter
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               DIST_AMBIG_LOW,
+                                               DIST_AMBIG_UP,
+                                               CARTN_DATA_ITEMS,
+                                               AUTH_ATOM_DATA_ITEMS,
+                                               ATOM_NAME_DATA_ITEMS,
+                                               AUTH_ATOM_CARTN_DATA_ITEMS,
+                                               PTNR1_AUTH_ATOM_DATA_ITEMS,
+                                               PTNR2_AUTH_ATOM_DATA_ITEMS,
+                                               NMR_STAR_LP_KEY_ITEMS)
+    from wwpdb.utils.nmr.AlignUtil import deepcopy
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CharmmMRParser import CharmmMRParser
     from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
@@ -42,24 +58,24 @@ try:
                                                        resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
-                                                       getPotentialType,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       DIST_AMBIG_LOW,
-                                                       DIST_AMBIG_UP,
-                                                       CARTN_DATA_ITEMS,
-                                                       AUTH_ATOM_DATA_ITEMS,
-                                                       ATOM_NAME_DATA_ITEMS,
-                                                       AUTH_ATOM_CARTN_DATA_ITEMS,
-                                                       PTNR1_AUTH_ATOM_DATA_ITEMS,
-                                                       PTNR2_AUTH_ATOM_DATA_ITEMS,
-                                                       NMR_STAR_LP_KEY_ITEMS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           deepcopy)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
-                                                distance)
+                                                       getPotentialType)
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   DIST_AMBIG_LOW,
+                                   DIST_AMBIG_UP,
+                                   CARTN_DATA_ITEMS,
+                                   AUTH_ATOM_DATA_ITEMS,
+                                   ATOM_NAME_DATA_ITEMS,
+                                   AUTH_ATOM_CARTN_DATA_ITEMS,
+                                   PTNR1_AUTH_ATOM_DATA_ITEMS,
+                                   PTNR2_AUTH_ATOM_DATA_ITEMS,
+                                   NMR_STAR_LP_KEY_ITEMS)
+    from nmr.AlignUtil import deepcopy
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.CharmmMRParser import CharmmMRParser
     from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
@@ -78,23 +94,7 @@ except ImportError:
                                            resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
-                                           getPotentialType,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           DIST_AMBIG_LOW,
-                                           DIST_AMBIG_UP,
-                                           CARTN_DATA_ITEMS,
-                                           AUTH_ATOM_DATA_ITEMS,
-                                           ATOM_NAME_DATA_ITEMS,
-                                           AUTH_ATOM_CARTN_DATA_ITEMS,
-                                           PTNR1_AUTH_ATOM_DATA_ITEMS,
-                                           PTNR2_AUTH_ATOM_DATA_ITEMS,
-                                           NMR_STAR_LP_KEY_ITEMS)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (emptyValue,
-                               deepcopy)
-    from nmr.NmrVrptUtility import (to_np_array,
-                                    distance)
+                                           getPotentialType)
 
 
 # This class defines a complete listener for a parse tree produced by CharmmMRParser.
@@ -397,7 +397,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                                            self.getCurrentRestraint())
                         self.f.append(err)
 
-                    if angleName in emptyValue and atomSelTotal != 4:
+                    if angleName in EMPTY_VALUE and atomSelTotal != 4:
                         continue
 
                     fixedAngleName = angleName
@@ -427,7 +427,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                                        self.getCurrentRestraint())
                     self.f.append(err)
 
-                if angleName in emptyValue and atomSelTotal != 4:
+                if angleName in EMPTY_VALUE and atomSelTotal != 4:
                     continue
 
                 if isinstance(combinationId, int):

@@ -20,25 +20,25 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID,
+                                               ASSIGNMENT_SEPARATOR_PAT)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.XeasyPKParser import XeasyPKParser
-    from wwpdb.utils.nmr.pk.BasePKParserListener import (BasePKParserListener,
-                                                         PEAK_ASSIGNMENT_SEPARATOR_PAT)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
+    from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID,
+                                   ASSIGNMENT_SEPARATOR_PAT)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.XeasyPKParser import XeasyPKParser
-    from nmr.pk.BasePKParserListener import (BasePKParserListener,
-                                             PEAK_ASSIGNMENT_SEPARATOR_PAT)
-    from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
-    from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import emptyValue
+    from nmr.pk.BasePKParserListener import BasePKParserListener
 
 
 # This class defines a complete listener for a parse tree produced by XeasyPKParser.
@@ -123,7 +123,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.num_of_dim = max(self.num_of_dim, _dim_id)
         if ctx.Simple_name_IN():
             _axis_code = str(ctx.Simple_name_IN())
-            if _axis_code not in emptyValue:
+            if _axis_code not in EMPTY_VALUE:
                 self.__labels[_dim_id] = _axis_code
 
     # Exit a parse tree produced by XeasyPKParser#iname.
@@ -139,10 +139,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             for _dim_id, _axis_code in enumerate(_axis_codes, start=1):
                 if _dim_id not in self.__labels:
-                    if _axis_code not in emptyValue:
+                    if _axis_code not in EMPTY_VALUE:
                         self.__labels[_dim_id] = _axis_code
                 if _dim_id not in self.__axis_order:
-                    if _axis_code not in emptyValue:
+                    if _axis_code not in EMPTY_VALUE:
                         self.__axis_order[_dim_id] = _axis_code
 
     # Exit a parse tree produced by XeasyPKParser#cyana_format.
@@ -159,7 +159,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.num_of_dim = max(self.num_of_dim, _dim_id)
                 if _dim_id not in self.__labels:
                     _axis_code = str(ctx.Simple_name_SP(_dim_id))
-                    if _axis_code not in emptyValue:
+                    if _axis_code not in EMPTY_VALUE:
                         self.__labels[_dim_id] = _axis_code
                 _dim_id += 1
 
@@ -634,7 +634,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if '/' in __last_comment:
             for last_comment in __last_comment.split('/'):
-                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:
@@ -651,7 +651,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if not has_split and '|' in __last_comment:
             for last_comment in __last_comment.split('|'):
-                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:
@@ -668,7 +668,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if not has_split and ',' in __last_comment:
             for last_comment in __last_comment.split(','):
-                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:

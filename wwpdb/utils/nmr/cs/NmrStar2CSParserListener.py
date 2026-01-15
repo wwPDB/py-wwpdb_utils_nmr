@@ -18,15 +18,17 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               MONDICT3)
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.cs.NmrStar2CSParser import NmrStar2CSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue, monDict3)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   MONDICT3)
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.cs.NmrStar2CSParser import NmrStar2CSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
-    from nmr.AlignUtil import (emptyValue, monDict3)
-    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by NmrStar2CSParser.
@@ -111,13 +113,13 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
             self.compIdSet = set()
 
             def is_data(array: list) -> bool:
-                return not any(True for d in array if d in emptyValue)
+                return not any(True for d in array if d in EMPTY_VALUE)
 
             for ps in self.polySeq:
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
 
             for compId in self.compIdSet:
-                if compId in monDict3:
+                if compId in MONDICT3:
                     if len(compId) == 3:
                         self.polyPeptide = True
                     elif len(compId) == 2 and compId.startswith('D'):

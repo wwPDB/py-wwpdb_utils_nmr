@@ -32,10 +32,10 @@ try:
                                                CONSIST_KEY_ITEMS,
                                                PK_DATA_ITEMS,
                                                AUX_KEY_ITEMS,
-                                               AUX_DATA_ITEMS)
+                                               AUX_DATA_ITEMS,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID)
 except ImportError:
     from nmr.NmrDpConstant import (INI_ENTRY_ID,
                                    RMSD_NOT_SUPERIMPOSED,
@@ -47,10 +47,10 @@ except ImportError:
                                    CONSIST_KEY_ITEMS,
                                    PK_DATA_ITEMS,
                                    AUX_KEY_ITEMS,
-                                   AUX_DATA_ITEMS)
+                                   AUX_DATA_ITEMS,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ALT_ID)
     from nmr.NmrDpReport import NmrDpReport
-    from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID)
 
 
 default_subtype_data_dict = {'entry_info': [],

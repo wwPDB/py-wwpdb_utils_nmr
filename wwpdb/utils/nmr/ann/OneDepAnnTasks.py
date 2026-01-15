@@ -1643,7 +1643,8 @@ class OneDepAnnTasks:
                                                     col = lp.tags.index(tag)
                                                     if map_code != -22:
                                                         _row[col] = row[cif_tag]
-                                                        if page == 'software' and bmrb_annotation and lp_category == '__Vendor' and tag == 'Name'\
+                                                        # replace too long value of _pdbx_nmr_software.authors if possible
+                                                        if page == 'software' and bmrb_annotation and lp_category == '_Vendor' and tag == 'Name'\
                                                            and len(_row[col]) > 80 and get_first_sf_tag(sf, 'Name').lower() in software_vendor:
                                                             _row[col] = software_vendor[get_first_sf_tag(sf, 'Name').lower()]
                                                         has_uniq_lp_row = True

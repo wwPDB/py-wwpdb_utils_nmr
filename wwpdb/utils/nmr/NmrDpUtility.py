@@ -895,8 +895,6 @@ class NmrDpUtility:
                 self.__reg.outputParamDict[name] = value
             elif type == 'file':
                 self.__reg.outputParamDict[name] = os.path.abspath(value)
-            elif type == 'file_list':
-                self.__reg.outputParamDict[name] = [os.path.abspath(f) for f in value]
             else:
                 raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type}.")
 

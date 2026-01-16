@@ -30,6 +30,7 @@ NMR_CIF_FILE_PATH_KEY = 'nmr_cif_file_path'
 NMRIF_FILE_PATH_KEY = 'nmrif_file_path'
 NEXT_NEF_FILE_PATH_KEY = 'nef_file_path'
 NEXT_STAR_FILE_PATH_KEY = 'nmr-star_file_path'
+AVS_LETTER_FILE_PATH_KEY = 'avs_letter_path'
 RETURN_LETTER_PATH_KEY = 'return_letter_path'
 
 # supported input param names for NmrDpUtility class
@@ -38,14 +39,15 @@ DP_INPUT_PARAM_KEYS = ('remediation', 'internal', 'bmrb_only', 'bmrb_id', 'merge
                        'check_mandatory_tag', 'check_auth_seq', 'validation_server', 'conversion_server',
                        'transl_pseudo_name', 'tolerant_seq_align', 'fix_format_issue', 'excl_missing_data',
                        'cmpl_missing_data', 'trust_pdbx_nmr_ens', 'rmsd_not_superimposed', 'rmsd_overlaid_exactly',
-                       'dep_sys_name', 'avs_letter_path', 'elec_dep_hash_code', 'update_related_entries')  # used only for BMRB internal annotation
+                       'dep_sys_name', 'elec_dep_hash_code', 'update_related_entries')  # used only for BMRB internal annotation
 
 # supported input file names for NmrDpUtility class
 DP_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
                       ALT_MODEL_FILE_PATH_KEY,
                       REPORT_FILE_PATH_KEY,
                       NMR_CIF_FILE_PATH_KEY,
-                      NMRIF_FILE_PATH_KEY)
+                      NMRIF_FILE_PATH_KEY,
+                      AVS_LETTER_FILE_PATH_KEY)  # used only for BMRB internal annotation
 
 # supported input file_list names for NmrDpUtility class
 DP_INPUT_FILE_LIST_KEYS = (CS_FILE_PATH_LIST_KEY,

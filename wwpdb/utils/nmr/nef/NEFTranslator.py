@@ -1378,10 +1378,10 @@ class NEFTranslator:
         """ Clear cache.
         """
 
-        self.__cachedDictForValidStarAtomInXplor = {}
-        self.__cachedDictForValidStarAtom = {}
-        self.__cachedDictForStarAtom = {}
-        self.__cachedDictForNefAtom = {}
+        self.__cachedDictForValidStarAtomInXplor.clear()
+        self.__cachedDictForValidStarAtom.clear()
+        self.__cachedDictForStarAtom.clear()
+        self.__cachedDictForNefAtom.clear()
 
         self.validate_comp_atom.cache_clear()
         self.get_group.cache_clear()

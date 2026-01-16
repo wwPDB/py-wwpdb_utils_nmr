@@ -20,10 +20,17 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 
 
 # parameter key for each input path list
+MODEL_FILE_PATH_KEY = 'coordinate_file_path'
+ALT_MODEL_FILE_PATH_KEY = 'proc_coord_file_path'
 CS_FILE_PATH_LIST_KEY = 'chem_shift_file_path_list'
 MR_FILE_PATH_LIST_KEY = 'restraint_file_path_list'
 AR_FILE_PATH_LIST_KEY = 'atypical_restraint_file_path_list'
 AC_FILE_PATH_LIST_KEY = 'atypical_chem_shift_file_path_list'
+REPORT_FILE_PATH_KEY = 'report_file_path'
+NMR_CIF_FILE_PATH_KEY = 'nmr_cif_file_path'
+NMRIF_FILE_PATH_KEY = 'nmrif_file_path'
+NEXT_NEF_FILE_PATH_KEY = 'nef_file_path'
+NEXT_STAR_FILE_PATH_KEY = 'nmr-star_file_path'
 
 # sub-directory name for cache files
 SUB_DIR_NAME_FOR_CACHE = 'utils_nmr'

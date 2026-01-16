@@ -89,6 +89,7 @@ The argument **name** should be chosen from effective names shown in a table bel
 name|type|description
 ----|--------------|-----------
 `nmr_cif_file_path`|`file`|Set CIF formatted NMR-STAR unified data file. Effective in `nmr-nef2cif-deposit`, `nmr-str2cif-deposit`, and `nmr-str2cif-annotate` workflow operations.
+`nef_file_path`|`file`|Set NEF unified data file. Effective in `nmr-str2nef-release` workflow operations.
 `nmr-star_file_path`|`file`|Set NMR-STAR unified data file. Effective in `nmr-nef2str-deposit`, and `nmr-nef2cif-deposit` workflow operations.
 `nmrif_file_path`|`file`|Set CIF formatted NMR metadata (aka. NMRIF) file path. NOTE: used only for OneDep workflows (`nmr-cs-mr-merge`, `nmr-str2str-deposit`, and `nmr-str2cif-deposit`, `nmr-nef2str-deposit`, `nmr-nef2cif-deposit`)
 `report_file_path`|`file`|Set auxiliary report file path when setLog() is occupied for the previous main task.
@@ -109,7 +110,7 @@ workflow operation|role|primary output file(s) and its file path API
 `nmr-nef2cif-deposit`|Convert NEF file to NMR-STAR and generate CIF formatted NMR-STAR file for OneDep system|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 `nmr-str2str-deposit`|Convert NMR-STAR file|NMR-STAR file: **setDestination(file_path)**
 `nmr-str2cif-deposit`|Convert NMR-STAR file and generate CIF formatted NMR-STAR file for OneDep system|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
-`nmr-str2nef-release`|Convert NMR-STAR file to NEF file for OneDep release module.|NEF file: **setDestination(file_path)**
+`nmr-str2nef-release`|Convert NMR-STAR file to NEF file for OneDep release module.|NMR-STAR file: **setDestination(file_path)**,<br />NEF file: **addOutput('`nef_file_path`', '`file`', file_path)**
 `nmr-cs-nef-consistency-check`|**Deprecated.**|Report file: **addOutput('`report_file_path`', '`file`', file_path)**
 `nmr-cs-str-consistency-check`|**Deprecated.**|Report file: **addOutput('`report_file_path`', '`file`', file_path)**
 `nmr-cs-mr-merge`|Combine assigned chemical shifts and NMR restraints. Optionally, validate spectral peak lists and insert them as raw text data using `_Spectral_peak_list.Text_data` tag, otherwise convert them using regular NMR-STAR loops and tags|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**

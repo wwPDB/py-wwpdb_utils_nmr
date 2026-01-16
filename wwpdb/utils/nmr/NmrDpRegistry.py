@@ -189,10 +189,10 @@ class NmrDpRegistry:
     # data processing report
     report: NmrDpReport = None
 
-    # CCD accessing utility
+    # ChemCompUtil
     ccU = None
 
-    # BMRB chemical shift statistics
+    # BMRBChemShiftStat
     csStat = None
 
     # CifToNmrStar
@@ -201,16 +201,16 @@ class NmrDpRegistry:
     # NEFTranslator
     nefT = None
 
-    # placeholder for NmrDpMrSplitter
+    # NmrDpMrSplitter
     dpS = None
 
-    # placeholder for NmrDpFirstAid
+    # NmrDpFirstAid
     dpA = None
 
-    # plaecholder for NmrDpValidation
+    # NmrDpValidation
     dpV = None
 
-    # placeholder for NmrDpRemediation
+    # NmrDpRemediation
     dpR = None
 
     # current size of file path list for star formatted data files
@@ -289,11 +289,14 @@ class NmrDpRegistry:
     # contents of savefram tags
     sf_tag_data: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_SUBTYPE_DATA))
 
-    # Pairwise align
+    # PairwiseAlign
     pA = None
 
+    # CifReader
+    cR = None
+
     # experimental method
-    exptl_method: str = ''
+    exptl_method: str = None
     # whether solid-state NMR is applied to symmetric samples such as fibrils
     symmetric: str = None
     # whether nmr chain is cyclic polymer or not
@@ -312,11 +315,8 @@ class NmrDpRegistry:
     # item tag names of 'atom_site' category of the coordinates
     coord_atom_site_tags: List[str] = None
 
-    # CIF reader
-    cR = None
-
-    # ParserListerUtil.coordAssemblyChecker()
-    caC = None
+    # ParserListerUtil.coordAssemblyChecker
+    caC: dict = None
 
     # coordinate properties cache
     cpC: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_COORD_PROPERTIES))

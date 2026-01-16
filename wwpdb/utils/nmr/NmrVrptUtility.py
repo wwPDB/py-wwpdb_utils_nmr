@@ -36,7 +36,9 @@ from typing import Any, IO, List, Tuple, Optional
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
+    from wwpdb.utils.nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
+                                               NMR_CIF_FILE_PATH_KEY,
+                                               SUB_DIR_NAME_FOR_CACHE,
                                                LARGE_ASYM_ID,
                                                LEN_MAJOR_ASYM_ID,
                                                EMPTY_VALUE,
@@ -55,7 +57,9 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        getDistConstraintType)
 except ImportError:
-    from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
+    from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
+                                   NMR_CIF_FILE_PATH_KEY,
+                                   SUB_DIR_NAME_FOR_CACHE,
                                    LARGE_ASYM_ID,
                                    LEN_MAJOR_ASYM_ID,
                                    EMPTY_VALUE,
@@ -836,9 +840,9 @@ class NmrVrptUtility:
 
         if not self.__checkCoordInputSource():
 
-            if 'coordinate_file_path' in self.__inputParamDict:
+            if MODEL_FILE_PATH_KEY in self.__inputParamDict:
 
-                err = f"No such {self.__inputParamDict['coordinate_file_path']!r} file."
+                err = f"No such {self.__inputParamDict[MODEL_FILE_PATH_KEY]!r} file."
 
                 if self.__verbose:
                     self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
@@ -959,9 +963,9 @@ class NmrVrptUtility:
         if self.__cifPath is not None:
             return True
 
-        if 'coordinate_file_path' in self.__inputParamDict:
+        if MODEL_FILE_PATH_KEY in self.__inputParamDict:
 
-            fPath = self.__inputParamDict['coordinate_file_path']
+            fPath = self.__inputParamDict[MODEL_FILE_PATH_KEY]
 
             if fPath.endswith('.gz'):
 
@@ -1035,9 +1039,9 @@ class NmrVrptUtility:
 
         if not self.__checkNmrDataInputSource():
 
-            if 'nmr_cif_file_path' in self.__inputParamDict:
+            if NMR_CIF_FILE_PATH_KEY in self.__inputParamDict:
 
-                err = f"No such {self.__inputParamDict['nmr_cif_file_path']!r} file."
+                err = f"No such {self.__inputParamDict[NMR_CIF_FILE_PATH_KEY]!r} file."
 
                 if self.__verbose:
                     self.__log.write(f"+{self.__class_name__}.__parseNmrData() ++ Error  - {err}\n")
@@ -1053,9 +1057,9 @@ class NmrVrptUtility:
         if self.__nmrDataPath is not None:
             return True
 
-        if 'nmr_cif_file_path' in self.__inputParamDict:
+        if NMR_CIF_FILE_PATH_KEY in self.__inputParamDict:
 
-            fPath = self.__inputParamDict['nmr_cif_file_path']
+            fPath = self.__inputParamDict[NMR_CIF_FILE_PATH_KEY]
 
             if fPath.endswith('.gz'):
 

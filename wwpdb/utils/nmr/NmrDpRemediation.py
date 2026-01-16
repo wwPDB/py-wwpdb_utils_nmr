@@ -17922,10 +17922,6 @@ class NmrDpRemediation:
             except ImportError:
                 return False
 
-        ann = BMRBjAnnTasks(self.__reg.verbose, self.__reg.log,
-                            self.__reg.inputParamDict, self.__reg.outputParamDict,
-                            self.__reg.sf_category_list, self.__reg.entry_id, self.__reg.bmrb_id,
-                            self.__reg.sail_flag, self.__reg.recvd_nmr_data, self.__reg.report,
-                            ccU=self.__reg.ccU, csStat=self.__reg.csStat, c2S=self.__reg.c2S)
+        ann = BMRBjAnnTasks(self.__reg)
 
         return ann.perform(self.__reg.star_data[0])

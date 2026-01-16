@@ -13,18 +13,16 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.1"
 
-import sys
 # import csv
 import pynmrstar
 import re
 import collections
 
-from typing import IO, List
-
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import EMPTY_VALUE
+    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.AlignUtil import getScoreOfSeqAlign
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag,
@@ -32,12 +30,143 @@ try:
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 except ImportError:
     from nmr.NmrDpConstant import EMPTY_VALUE
+    from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.AlignUtil import getScoreOfSeqAlign
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag,
                                   retrieve_symbolic_labels)
     from nmr.io.mmCIFUtil import mmCIFUtil
 
+
+# derived from wwpdb.apps.deposit.depui.constant.REQUIREMENTS
+CIF_PAGES = ('nmrsample',
+             'nmrdatacollection',
+             'nmrsoftware',
+             'nmrchemshiftreference',
+             'nmrchemshiftconnection',
+             'nmrconstraints',
+             'nmrspectralpeaklist',
+             'nmrrefinement')
+
+CIF_REQUIREMENTS = {'nmrsample': ['pdbx_nmr_sample_details',
+                                  'pdbx_nmr_exptl_sample',
+                                  'pdbx_nmr_exptl_sample_conditions'],
+                    'nmrdatacollection': ['pdbx_nmr_spectrometer',
+                                          'pdbx_nmr_exptl',
+                                          'pdbx_nmr_sample_details',
+                                          'pdbx_nmr_exptl_sample_conditions'],
+                    'nmrsoftware': ['pdbx_nmr_software',
+                                    'pdbx_nmr_software_task'],
+                    'nmrchemshiftreference': ['pdbx_nmr_chem_shift_reference',
+                                              'pdbx_nmr_chem_shift_ref'],
+                    'nmrchemshiftconnection': ['pdbx_nmr_assigned_chem_shift_list',
+                                               'pdbx_nmr_chem_shift_experiment',
+                                               'pdbx_nmr_chem_shift_reference',
+                                               'pdbx_nmr_systematic_chem_shift_offset',
+                                               'pdbx_nmr_chem_shift_software',
+                                               'pdbx_nmr_software',
+                                               'pdbx_nmr_exptl',
+                                               'pdbx_nmr_sample_details',
+                                               'pdbx_nmr_exptl_sample_conditions'],
+                    'nmrconstraints': ['pdbx_nmr_constraint_file'],
+                    'nmrspectralpeaklist': ['pdbx_nmr_spectral_peak_list',
+                                            'pdbx_nmr_spectral_dim',
+                                            'pdbx_nmr_spectral_peak_software',
+                                            'pdbx_nmr_exptl',
+                                            'pdbx_nmr_sample_details',
+                                            'pdbx_nmr_software'],
+                    'nmrrefinement': ['pdbx_nmr_ensemble',
+                                      'pdbx_nmr_representative',
+                                      'pdbx_nmr_refine',
+                                      'pdbx_nmr_software',
+                                      'pdbx_initial_refinement_model']
+                    }
+
+NMRIF_PAGES = ('sample',
+               'spectrometer',
+               'experiment',
+               'software',
+               'chem_shift_ref',
+               'chem_shift',
+               'constraint',
+               'spectral_peak',
+               'refinement')
+
+NMRIF_SF_CATEGORIES = {'sample': ['sample',
+                                  'sample_conditions'],
+                       'spectrometer': ['NMR_spectrometer_list',
+                                        'NMR_spectrometer'],
+                       'experiment': ['experiment_list'],
+                       'software': ['software'],
+                       'chem_shift_ref': ['chem_shift_reference'],
+                       'chem_shift': ['assigned_chemical_shifts'],
+                       'constraint': ['constraint_statistics'],
+                       'spectral_peak': ['spectral_peak_list'],
+                       'refinement': ['conformer_statistics',
+                                      'conformer_family_coord_set']
+                       }
+
+NMRIF_SF_TAG_PREFIXES = {'sample': ['_Sample',
+                                    '_Sample_condition_list'],
+                         'spectrometer': ['_NMR_spectrometer_list',
+                                          '_NMR_spectrometer'],
+                         'experiment': ['_Experiment_list'],
+                         'software': ['_Software'],
+                         'chem_shift_ref': ['_Chem_shift_reference'],
+                         'chem_shift': ['_Assigned_chem_shift_list'],
+                         'constraint': ['_Constraint_stat_list'],
+                         'spectral_peak': ['_Spectral_peak_list'],
+                         'refinement': ['_Conformer_stat_list',
+                                        '_Conformer_family_coord_set']
+                         }
+
+NMRIF_SF_NEW_FLAG = {'sample': [True,
+                                True],
+                     'spectrometer': [True,
+                                      True],
+                     'experiment': [True],
+                     'software': [True],
+                     'chem_shift_ref': [True],
+                     'chem_shift': [False],
+                     'constraint': [False],
+                     'spectral_peak': [False],
+                     'refinement': [True,
+                                    True]
+                     }
+
+NMRIF_LP_CATEGORIES = {'sample': {'_Sample': ['_Sample_component'],
+                                  '_Sample_condition_list': ['_Sample_condition_variable']
+                                  },
+                       'spectrometer': {'_NMR_spectrometer_list': ['_NMR_spectrometer_view']},
+                       'experiment': {'_Experiment_list': ['_Experiment']},
+                       'software': {'_Software': ['_Vendor',
+                                                  '_Task']},
+                       'chem_shift_ref': {'_Chem_shift_reference': ['_Chem_shift_ref']},
+                       'chem_shift': {'_Assigned_chem_shift_list': ['_Chem_shift_experiment',
+                                                                    '_Systematic_chem_shift_offset',
+                                                                    '_Chem_shift_software']},
+                       'constraint': {'_Constraint_stat_list': ['_Constraint_file']},
+                       'spectral_peak': {'_Spectral_peak_list': ['_Spectral_dim',
+                                                                 '_Spectral_peak_software']},
+                       'refinement': {'_Conformer_family_coord_set': ['_Conformer_family_refinement',
+                                                                      '_Conformer_family_software']}
+                       }
+
+NMRIF_LP_NEW_FLAG = {'sample': {'_Sample': [True],
+                                '_Sample_condition_list': [True]},
+                     'spectrometer': {'_NMR_spectrometer_list': [True]},
+                     'experiment': {'_Experiment_list': [True]},
+                     'software': {'_Software': [True,
+                                                True]},
+                     'chem_shift_ref': {'_Chem_shift_reference': [True]},
+                     'chem_shift': {'_Assigned_chem_shift_list': [True,
+                                                                  True,
+                                                                  True]},
+                     'constraint': {'_Constraint_stat_list': [False]},
+                     'spectral_peak': {'_Spectral_peak_list': [False]},
+                     'refinement': {'_Conformer_family_coord_set': [True,
+                                                                    True]}
+                     }
 
 NMR_SOFTWERE_LIST = ('3D-DART', '3DNA', '4D-CHAINS', '4DSPOT', 'ABACUS', 'ACME', 'ADAPT-NMR', 'AGNuS', 'ALMOST',
                      'Amber', 'AmberTools', 'AMIX', 'AnalysisAssign', 'ANATOLIA', 'Anglesearch', 'ANSIG',
@@ -141,19 +270,8 @@ class OneDepAnnTasks:
     """
     __slots__ = ('__class_name__',
                  '__version__',
-                 '__verbose',
-                 '__log',
-                 '__sfCategoryList',
-                 '__entryId',
-                 '__cifPages',
-                 '__cifRequirements',
-                 '__nmrIfCategories',
-                 '__pages',
-                 '__sfCategory',
-                 '__sfTagPrefix',
-                 '__sfNewFlag',
-                 '__lpCategory',
-                 '__lpNewFlag',
+                 '__reg',
+                 '__cifCategorySet',
                  '__sfTagMap',
                  '__uniqSfTagMap',
                  '__uniqSfCatMap',
@@ -164,143 +282,27 @@ class OneDepAnnTasks:
                  '__defLpTag',
                  '__allowedSfTags')
 
-    def __init__(self, verbose: bool, log: IO,
-                 sfCategoryList: List[str], entryId: str):
+    def __init__(self, registry: NmrDpRegistry):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__verbose = verbose
-        self.__log = log
+        self.__reg = registry
 
-        self.__sfCategoryList = sfCategoryList
-        self.__entryId = entryId
-
-        # derived from wwpdb.apps.deposit.depui.constant.REQUIREMENTS
-        self.__cifPages = ['nmrsample',
-                           'nmrdatacollection',
-                           'nmrsoftware',
-                           'nmrchemshiftreference',
-                           'nmrchemshiftconnection',
-                           'nmrconstraints',
-                           'nmrspectralpeaklist',
-                           'nmrrefinement']
-
-        self.__cifRequirements = {'nmrsample': ['pdbx_nmr_sample_details',
-                                                'pdbx_nmr_exptl_sample',
-                                                'pdbx_nmr_exptl_sample_conditions'],
-                                  'nmrdatacollection': ['pdbx_nmr_spectrometer',
-                                                        'pdbx_nmr_exptl',
-                                                        'pdbx_nmr_sample_details',
-                                                        'pdbx_nmr_exptl_sample_conditions'],
-                                  'nmrsoftware': ['pdbx_nmr_software',
-                                                  'pdbx_nmr_software_task'],
-                                  'nmrchemshiftreference': ['pdbx_nmr_chem_shift_reference',
-                                                            'pdbx_nmr_chem_shift_ref'],
-                                  'nmrchemshiftconnection': ['pdbx_nmr_assigned_chem_shift_list',
-                                                             'pdbx_nmr_chem_shift_experiment',
-                                                             'pdbx_nmr_chem_shift_reference',
-                                                             'pdbx_nmr_systematic_chem_shift_offset',
-                                                             'pdbx_nmr_chem_shift_software',
-                                                             'pdbx_nmr_software',
-                                                             'pdbx_nmr_exptl',
-                                                             'pdbx_nmr_sample_details',
-                                                             'pdbx_nmr_exptl_sample_conditions'],
-                                  'nmrconstraints': ['pdbx_nmr_constraint_file'],
-                                  'nmrspectralpeaklist': ['pdbx_nmr_spectral_peak_list',
-                                                          'pdbx_nmr_spectral_dim',
-                                                          'pdbx_nmr_spectral_peak_software',
-                                                          'pdbx_nmr_exptl',
-                                                          'pdbx_nmr_sample_details',
-                                                          'pdbx_nmr_software'],
-                                  'nmrrefinement': ['pdbx_nmr_ensemble',
-                                                    'pdbx_nmr_representative',
-                                                    'pdbx_nmr_refine',
-                                                    'pdbx_nmr_software',
-                                                    'pdbx_initial_refinement_model']
-                                  }
-
-        self.__nmrIfCategories = set()
-        for catList in self.__cifRequirements.values():
+        self.__cifCategorySet = set()
+        for catList in CIF_REQUIREMENTS.values():
             for cat in catList:
-                self.__nmrIfCategories.add(cat)
-
-        self.__pages = ('sample',
-                        'spectrometer',
-                        'experiment',
-                        'software',
-                        'chem_shift_ref',
-                        'chem_shift',
-                        'constraint',
-                        'spectral_peak',
-                        'refinement')
-
-        self.__sfCategory = {'sample': ['sample', 'sample_conditions'],
-                             'spectrometer': ['NMR_spectrometer_list', 'NMR_spectrometer'],
-                             'experiment': ['experiment_list'],
-                             'software': ['software'],
-                             'chem_shift_ref': ['chem_shift_reference'],
-                             'chem_shift': ['assigned_chemical_shifts'],
-                             'constraint': ['constraint_statistics'],
-                             'spectral_peak': ['spectral_peak_list'],
-                             'refinement': ['conformer_statistics', 'conformer_family_coord_set']
-                             }
-
-        self.__sfTagPrefix = {'sample': ['_Sample', '_Sample_condition_list'],
-                              'spectrometer': ['_NMR_spectrometer_list', '_NMR_spectrometer'],
-                              'experiment': ['_Experiment_list'],
-                              'software': ['_Software'],
-                              'chem_shift_ref': ['_Chem_shift_reference'],
-                              'chem_shift': ['_Assigned_chem_shift_list'],
-                              'constraint': ['_Constraint_stat_list'],
-                              'spectral_peak': ['_Spectral_peak_list'],
-                              'refinement': ['_Conformer_stat_list', '_Conformer_family_coord_set']
-                              }
-
-        self.__sfNewFlag = {'sample': [True, True],
-                            'spectrometer': [True, True],
-                            'experiment': [True],
-                            'software': [True],
-                            'chem_shift_ref': [True],
-                            'chem_shift': [False],
-                            'constraint': [False],
-                            'spectral_peak': [False],
-                            'refinement': [True, True]
-                            }
-
-        self.__lpCategory = {'sample': {'_Sample': ['_Sample_component'],
-                                        '_Sample_condition_list': ['_Sample_condition_variable']},
-                             'spectrometer': {'_NMR_spectrometer_list': ['_NMR_spectrometer_view']},
-                             'experiment': {'_Experiment_list': ['_Experiment']},
-                             'software': {'_Software': ['_Vendor', '_Task']},
-                             'chem_shift_ref': {'_Chem_shift_reference': ['_Chem_shift_ref']},
-                             'chem_shift': {'_Assigned_chem_shift_list': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset', '_Chem_shift_software']},
-                             'constraint': {'_Constraint_stat_list': ['_Constraint_file']},
-                             'spectral_peak': {'_Spectral_peak_list': ['_Spectral_dim', '_Spectral_peak_software']},
-                             'refinement': {'_Conformer_family_coord_set': ['_Conformer_family_refinement', '_Conformer_family_software']}
-                             }
-
-        self.__lpNewFlag = {'sample': {'_Sample': [True],
-                                       '_Sample_condition_list': [True]},
-                            'spectrometer': {'_NMR_spectrometer_list': [True]},
-                            'experiment': {'_Experiment_list': [True]},
-                            'software': {'_Software': [True, True]},
-                            'chem_shift_ref': {'_Chem_shift_reference': [True]},
-                            'chem_shift': {'_Assigned_chem_shift_list': [True, True, True]},
-                            'constraint': {'_Constraint_stat_list': [False]},
-                            'spectral_peak': {'_Spectral_peak_list': [False]},
-                            'refinement': {'_Conformer_family_coord_set': [True, True]}
-                            }
+                self.__cifCategorySet.add(cat)
 
         # tagmap.csv is derived from onedep2bmrb @see https://github.com/bmrb-io/onedep2bmrb/blob/master/testfiles/tagmap.csv
 
         sfCatList = []
-        for v in self.__sfTagPrefix.values():
+        for v in NMRIF_SF_TAG_PREFIXES.values():
             sfCatList.extend(v)
 
         sfCatList = [c[1:] for c in sfCatList]
 
         lpCatList = []
-        for v in self.__lpCategory.values():
+        for v in NMRIF_LP_CATEGORIES.values():
             for _v in v.values():
                 lpCatList.extend(_v)
 
@@ -310,7 +312,7 @@ class OneDepAnnTasks:
         #
         # self.__sfTagMap = []
         # for tag_map in self.tagMap:
-        #     if tag_map[2] in sfCatList and tag_map[0] in self.__nmrIfCategories:
+        #     if tag_map[2] in sfCatList and tag_map[0] in self.__cifCategorySet:
         #         if tag_map not in self.__sfTagMap:
         #             print(f'                           ({tag_map[0]!r}, {tag_map[1]!r}, {"_" + tag_map[2]!r}, {tag_map[3]!r}, '
         #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
@@ -429,8 +431,8 @@ class OneDepAnnTasks:
             cif_category, sf_tag_prefix = tag_map[0], tag_map[2]
             if cif_category not in self.__uniqSfCatMap:
                 sf_category = None
-                for page in self.__pages:
-                    for _sf_tag_prefix, _sf_category in zip(self.__sfTagPrefix[page], self.__sfCategory[page]):
+                for page in NMRIF_PAGES:
+                    for _sf_tag_prefix, _sf_category in zip(NMRIF_SF_TAG_PREFIXES[page], NMRIF_SF_CATEGORIES[page]):
                         if _sf_tag_prefix == sf_tag_prefix:
                             sf_category = _sf_category
                             break
@@ -449,7 +451,7 @@ class OneDepAnnTasks:
         # """
         # self.__lpTagMap = []
         # for tag_map in self.tagMap:
-        #     if tag_map[2] in lpCatList and tag_map[0] in self.__nmrIfCategories:
+        #     if tag_map[2] in lpCatList and tag_map[0] in self.__cifCategorySet:
         #         if tag_map not in self.__lpTagMap:
         #             print(f'                           ({tag_map[0]!r}, {tag_map[1]!r}, {"_" + tag_map[2]!r}, {tag_map[3]!r}, '
         #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
@@ -582,8 +584,8 @@ class OneDepAnnTasks:
         for cif_category, v in self.__uniqLpCatMap.items():
             lp_categories = [_v[0] for _v in collections.Counter(v).most_common()]
             sf_tag_prefix = None
-            for page in self.__pages:
-                for _sf_tag_prefix, _lp_categories in self.__lpCategory[page].items():
+            for page in NMRIF_PAGES:
+                for _sf_tag_prefix, _lp_categories in NMRIF_LP_CATEGORIES[page].items():
                     if lp_categories[0] in _lp_categories:
                         sf_tag_prefix = _sf_tag_prefix
                         break
@@ -608,11 +610,11 @@ class OneDepAnnTasks:
         #     if tag.startswith('_') and '.' in tag:
         #         category, item = tag.split('.')
         #         is_sf_tag_prefix = is_lp_category = False
-        #         for page in self.__pages:
-        #             if category in self.__sfTagPrefix[page]:
+        #         for page in NMRIF_PAGES:
+        #             if category in NMRIF_SF_TAG_PREFIXES[page]:
         #                 is_sf_tag_prefix = True
         #                 break
-        #             for v in self.__lpCategory[page].values():
+        #             for v in NMRIF_LP_CATEGORIES[page].values():
         #                 if category in v:
         #                     is_lp_category = True
         #                     break
@@ -1284,7 +1286,7 @@ class OneDepAnnTasks:
     #         data_map = list(map(list, zip(*data))) if transpose else data
     #
     #     except Exception as e:
-    #         self.__log.write(f"+{self.__class_name__}.load_csv_data() ++ Error  - {str(e)}\n")
+    #         self.__reg.log.write(f"+{self.__class_name__}.load_csv_data() ++ Error  - {str(e)}\n")
     #
     #     return data_map
     # """
@@ -1296,9 +1298,9 @@ class OneDepAnnTasks:
         if not isinstance(master_entry, pynmrstar.Entry):
             return False
 
-        for page in self.__pages:
+        for page in NMRIF_PAGES:
 
-            for sf_category, sf_tag_prefix, new_flag in zip(self.__sfCategory[page], self.__sfTagPrefix[page], self.__sfNewFlag[page]):
+            for sf_category, sf_tag_prefix, new_flag in zip(NMRIF_SF_CATEGORIES[page], NMRIF_SF_TAG_PREFIXES[page], NMRIF_SF_NEW_FLAG[page]):
 
                 cif_categories = set(tag_map[0] for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix)
                 if len(cif_categories) == 0:
@@ -1313,8 +1315,8 @@ class OneDepAnnTasks:
                     if nmrif.hasCategory(cif_category) and nmrif.getRowLength(cif_category) > 0:
                         has_cif_category = True
                         break
-                    if self.__verbose:
-                        self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} saveframe category does not exist in NMRIF\n")
+                    if self.__reg.verbose:
+                        self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} saveframe category does not exist in NMRIF\n")
                 if not has_cif_category:
                     continue
 
@@ -1334,15 +1336,15 @@ class OneDepAnnTasks:
                             pass
 
                 if new_flag:
-                    if sf_category in self.__sfCategoryList:
+                    if sf_category in self.__reg.sf_category_list:
                         if sf_category in ('sample', 'sample_conditions'):
                             continue
                         for sf in master_entry.get_saveframes_by_category(sf_category):
                             del master_entry[sf]
 
-                elif sf_category not in self.__sfCategoryList:
-                    if self.__verbose:
-                        self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_category!r} category does not exist in NMR data\n")
+                elif sf_category not in self.__reg.sf_category_list:
+                    if self.__reg.verbose:
+                        self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_category!r} category does not exist in NMR data\n")
                     continue
 
                 sf_tag_maps = [tag_map for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix]
@@ -1366,8 +1368,8 @@ class OneDepAnnTasks:
 
                 if len(list_ids) == 0:
                     if not insert_one:
-                        if self.__verbose:
-                            self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_id_map[0]}.{sf_id_map[1]} is not set in NMRIF\n")
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_id_map[0]}.{sf_id_map[1]} is not set in NMRIF\n")
                         continue
                     list_ids.append(1)
 
@@ -1444,7 +1446,7 @@ class OneDepAnnTasks:
                                                             sf.add_tag('Name', sf_name)
                                                         reset = True
 
-                                        set_sf_tag(sf, 'Entry_ID', self.__entryId)
+                                        set_sf_tag(sf, 'Entry_ID', self.__reg.entry_id)
 
                                     for tag_map in sf_tag_maps:
                                         if tag_map[0] == cif_category and tag_map[1] in row and tag_map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
@@ -1507,21 +1509,21 @@ class OneDepAnnTasks:
 
                     # prevent overwrite of chemical shift
                     if sf_category == 'assigned_chemical_shifts':
-                        if sf_category in self.__sfCategoryList:
+                        if sf_category in self.__reg.sf_category_list:
                             has_uniq_sf_tag = False
 
-                    if page not in self.__lpCategory or sf_tag_prefix not in self.__lpCategory[page]:
+                    if page not in NMRIF_LP_CATEGORIES or sf_tag_prefix not in NMRIF_LP_CATEGORIES[page]:
                         if reset and has_uniq_sf_tag:
                             master_entry.add_saveframe(sf)
                         else:
-                            if self.__verbose:
-                                self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - Could not identify loop category for {sf_category!r}\n")
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - Could not identify loop category for {sf_category!r}\n")
                         continue
 
                     if reset and has_uniq_sf_tag:
                         master_entry.add_saveframe(sf)
 
-                    for lp_category, new_flag in zip(self.__lpCategory[page][sf_tag_prefix], self.__lpNewFlag[page][sf_tag_prefix]):
+                    for lp_category, new_flag in zip(NMRIF_LP_CATEGORIES[page][sf_tag_prefix], NMRIF_LP_NEW_FLAG[page][sf_tag_prefix]):
                         reset = new_flag
                         lp = None
 
@@ -1533,8 +1535,8 @@ class OneDepAnnTasks:
 
                         for cif_category in cif_categories:
                             if not nmrif.hasCategory(cif_category) or nmrif.getRowLength(cif_category) == 0:
-                                if self.__verbose:
-                                    self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} loop category does not exist in NMRIF\n")
+                                if self.__reg.verbose:
+                                    self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} loop category does not exist in NMRIF\n")
 
                         list_id_tag = f'{sf_tag_prefix[1:]}_ID'
                         lp_list_id_tag = lp_tag_dict[list_id_tag][0] if list_id_tag in lp_tag_dict else None
@@ -1572,7 +1574,7 @@ class OneDepAnnTasks:
                                                     if tag not in lp.tags:
                                                         lp.add_tag(tag)
                                                         for _row in lp.data:
-                                                            _row.append('.' if tag != 'Entry_ID' else self.__entryId)
+                                                            _row.append('.' if tag != 'Entry_ID' else self.__reg.entry_id)
 
                                                 for def_lp_tag in def_lp_tags:
                                                     if def_lp_tag not in lp.tags:
@@ -1609,7 +1611,7 @@ class OneDepAnnTasks:
                                                 if lp_list_id_col != -1:
                                                     _row[lp_list_id_col] = str(list_id_dict[list_id])
                                                 if entry_id_col != -1:
-                                                    _row[entry_id_col] = self.__entryId
+                                                    _row[entry_id_col] = self.__reg.entry_id
                                                 if type_col != -1:
                                                     _row[type_col] = _type.replace('_', ' ')  # ionic_strength (NMRIF) -> ionic strength (NMR-STAR)
                                                 if val_col != -1:
@@ -1638,7 +1640,7 @@ class OneDepAnnTasks:
                                                     _row[col] = str(list_id_dict[list_id])
                                                 elif tag == 'Enry_ID':
                                                     col = lp.tags.index('Entry_ID')
-                                                    _row[col] = self.__entryId
+                                                    _row[col] = self.__reg.entry_id
                                                 elif cif_tag in row:
                                                     col = lp.tags.index(tag)
                                                     if map_code != -22:
@@ -1686,7 +1688,7 @@ class OneDepAnnTasks:
                                                     _row[col] = str(list_id_dict[list_id])
                                                 elif tag == 'Enry_ID':
                                                     col = lp.tags.index('Entry_ID')
-                                                    _row[col] = self.__entryId
+                                                    _row[col] = self.__reg.entry_id
                                                 elif cif_tag in row:
                                                     col = lp.tags.index(tag)
                                                     if map_code != -22:
@@ -1810,7 +1812,7 @@ class OneDepAnnTasks:
         # resolve through-space?
         pk_list_sf_category = 'spectral_peak_list'
         exp_list_sf_category = 'experiment_list'
-        if pk_list_sf_category in self.__sfCategoryList and exp_list_sf_category in self.__sfCategoryList:
+        if pk_list_sf_category in self.__reg.sf_category_list and exp_list_sf_category in self.__reg.sf_category_list:
             exp_list_sf = master_entry.get_saveframes_by_category(exp_list_sf_category)[0]
             exp_lp_category = '_Experiment'
             try:
@@ -1855,9 +1857,9 @@ class OneDepAnnTasks:
 
         allowed_sf_tags = set(self.__allowedSfTags)
 
-        for page in self.__pages:
+        for page in NMRIF_PAGES:
 
-            for sf_category, sf_tag_prefix in zip(self.__sfCategory[page], self.__sfTagPrefix[page]):
+            for sf_category, sf_tag_prefix in zip(NMRIF_SF_CATEGORIES[page], NMRIF_SF_TAG_PREFIXES[page]):
 
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     sf_tags = set(f'{sf_tag_prefix}.{tag[0]}' for tag in sf.tags)
@@ -1883,23 +1885,23 @@ class OneDepAnnTasks:
                     array[idx] = str(val)
             return array
 
-        cifObj = mmCIFUtil(self.__verbose, self.__log)
+        cifObj = mmCIFUtil(self.__reg.verbose, self.__reg.log)
 
-        cifObj.addDataBlock(self.__entryId)
+        cifObj.addDataBlock(self.__reg.entry_id)
 
         if not isinstance(master_entry, pynmrstar.Entry):
 
             if cR is None:
                 return False
 
-            for cif_category in self.__nmrIfCategories:
+            for cif_category in self.__cifCategorySet:
 
                 if cR.hasCategory(cif_category):
                     row_list = cR.getRowList(cif_category)
                     if len(row_list) > 0:
                         item_tags = cR.getAttributeList(cif_category)
-                        cifObj.addCategory(self.__entryId, cif_category, item_tags)
-                        cifObj.appendRowList(self.__entryId, cif_category, row_list)
+                        cifObj.addCategory(self.__reg.entry_id, cif_category, item_tags)
+                        cifObj.appendRowList(self.__reg.entry_id, cif_category, row_list)
 
             try:
                 cifObj.writeToFile(file_path)
@@ -1910,7 +1912,7 @@ class OneDepAnnTasks:
 
         for cif_category, (sf_category, sf_tag_prefix) in self.__uniqSfCatMap.items():
 
-            if sf_category in self.__sfCategoryList:
+            if sf_category in self.__reg.sf_category_list:
                 sf_tag_maps = [tag_map for tag_map in self.__uniqSfTagMap if tag_map[0] == cif_category and tag_map[2] == sf_tag_prefix]
                 sf_tags = [tag_map[3] for tag_map in sf_tag_maps]
                 sf_map_code = [tag_map[4] for tag_map in sf_tag_maps]
@@ -1930,7 +1932,7 @@ class OneDepAnnTasks:
                 if -11 not in sf_map_code:
 
                     if has_uniq_sf_tags:
-                        cifObj.addCategory(self.__entryId, cif_category, sf_cif_tags)
+                        cifObj.addCategory(self.__reg.entry_id, cif_category, sf_cif_tags)
 
                     for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                         tag_values = [get_first_sf_tag(sf, sf_tag, '?') for sf_tag in sf_tags]
@@ -1939,7 +1941,7 @@ class OneDepAnnTasks:
                             tag_values[sf_tags.index('ID')] = list_id
                         if has_uniq_sf_tags:
                             tag_values = replace_none(tag_values, '?')
-                            cifObj.appendRow(self.__entryId, sf_cif_category, tag_values)
+                            cifObj.appendRow(self.__reg.entry_id, sf_cif_category, tag_values)
 
                         if len(lp_cat_map) > 0:
                             list_id_tag = f'{sf_tag_prefix[1:]}_ID'
@@ -1966,8 +1968,8 @@ class OneDepAnnTasks:
 
                                     if -22 not in lp_map_codes:
 
-                                        if cif_category not in cifObj.getCategoryNameList(self.__entryId):
-                                            cifObj.addCategory(self.__entryId, cif_category, lp_cif_tags)
+                                        if cif_category not in cifObj.getCategoryNameList(self.__reg.entry_id):
+                                            cifObj.addCategory(self.__reg.entry_id, cif_category, lp_cif_tags)
 
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
@@ -2005,7 +2007,7 @@ class OneDepAnnTasks:
                                                         if _tag_map is not None:
                                                             _row[lp_cif_tags.index(tag_map[1])] = row[lp_tags.index(tag_map[3])]
                                                 _row = replace_none(_row)
-                                                cifObj.appendRow(self.__entryId, cif_category, _row)
+                                                cifObj.appendRow(self.__reg.entry_id, cif_category, _row)
 
                                         else:
                                             _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
@@ -2045,7 +2047,7 @@ class OneDepAnnTasks:
                                                         if _tag_map is not None:
                                                             _row[lp_cif_tags.index(tag_map[1])] = row[_lp_tags.index(tag_map[3])]
                                                 _row = replace_none(_row)
-                                                cifObj.appendRow(self.__entryId, cif_category, _row)
+                                                cifObj.appendRow(self.__reg.entry_id, cif_category, _row)
 
                                     elif any(cif_item.endswith('range') for cif_item in lp_cif_tags)\
                                             and any(lp_item.endswith('max') for lp_item in lp_tags)\
@@ -2054,8 +2056,8 @@ class OneDepAnnTasks:
                                         lp_cif_tags = sorted(list(set(lp_cif_tags)))
                                         lp_tags = list(set(lp_tags))
 
-                                        if cif_category not in cifObj.getCategoryNameList(self.__entryId):
-                                            cifObj.addCategory(self.__entryId, cif_category, lp_cif_tags)
+                                        if cif_category not in cifObj.getCategoryNameList(self.__reg.entry_id):
+                                            cifObj.addCategory(self.__reg.entry_id, cif_category, lp_cif_tags)
 
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
@@ -2106,15 +2108,15 @@ class OneDepAnnTasks:
                                                        and row[_lp_tags.index(max_lp_item)] not in EMPTY_VALUE:
                                                         _row[idx] = f'{row[_lp_tags.index(min_lp_item)]}-{row[_lp_tags.index(max_lp_item)]}'
                                             _row = replace_none(_row)
-                                            cifObj.appendRow(self.__entryId, cif_category, _row)
+                                            cifObj.appendRow(self.__reg.entry_id, cif_category, _row)
 
                                     elif any(lp_item == 'Type' for lp_item in lp_tags) and any(lp_item == 'Val' for lp_item in lp_tags):
 
                                         lp_cif_tags = sorted(list(set(lp_cif_tags)))
                                         lp_tags = list(set(lp_tags))
 
-                                        if cif_category not in cifObj.getCategoryNameList(self.__entryId):
-                                            cifObj.addCategory(self.__entryId, cif_category, lp_cif_tags)
+                                        if cif_category not in cifObj.getCategoryNameList(self.__reg.entry_id):
+                                            cifObj.addCategory(self.__reg.entry_id, cif_category, lp_cif_tags)
 
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
@@ -2173,7 +2175,7 @@ class OneDepAnnTasks:
                                                 if f'{_type}_units' in lp_cif_tags:
                                                     row[lp_cif_tags.index(f'{_type}_units')] = _val_units
                                         row = replace_none(row)
-                                        cifObj.appendRow(self.__entryId, cif_category, row)
+                                        cifObj.appendRow(self.__reg.entry_id, cif_category, row)
 
                                 else:
 
@@ -2204,8 +2206,8 @@ class OneDepAnnTasks:
                                         continue
 
                                     if len(lp_cif_tags) > 0:
-                                        if cif_category not in cifObj.getCategoryNameList(self.__entryId):
-                                            cifObj.addCategory(self.__entryId, cif_category, lp_cif_tags)
+                                        if cif_category not in cifObj.getCategoryNameList(self.__reg.entry_id):
+                                            cifObj.addCategory(self.__reg.entry_id, cif_category, lp_cif_tags)
 
                                         row = ['.'] * len(lp_cif_tags)
 
@@ -2286,7 +2288,7 @@ class OneDepAnnTasks:
                                                     break
 
                                         row = replace_none(row)
-                                        cifObj.appendRow(self.__entryId, cif_category, row)
+                                        cifObj.appendRow(self.__reg.entry_id, cif_category, row)
 
                 else:
 
@@ -2295,7 +2297,7 @@ class OneDepAnnTasks:
                         if has_uniq_sf_tags:
 
                             sf_cif_tags = [tag_map[1] for tag_map in sf_tag_maps]
-                            cifObj.addCategory(self.__entryId, cif_category, sf_cif_tags)
+                            cifObj.addCategory(self.__reg.entry_id, cif_category, sf_cif_tags)
 
                             for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                                 tag_values = [get_first_sf_tag(sf, sf_tag, '?') for sf_tag in sf_tags]
@@ -2305,7 +2307,7 @@ class OneDepAnnTasks:
                                 if sf_tag_prefix == '_Software' and 'Name' in sf_tags:
                                     tag_values[sf_tags.index('Name')] = get_nmr_software(tag_values[sf_tags.index('Name')])
                                 tag_values = replace_none(tag_values, '?')
-                                cifObj.appendRow(self.__entryId, sf_cif_category, tag_values)
+                                cifObj.appendRow(self.__reg.entry_id, sf_cif_category, tag_values)
 
                         continue
 
@@ -2318,7 +2320,7 @@ class OneDepAnnTasks:
                             lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
                             sf_lp_cif_tags.extend(lp_cif_tags)
 
-                    cifObj.addCategory(self.__entryId, sf_cif_category, sf_lp_cif_tags)
+                    cifObj.addCategory(self.__reg.entry_id, sf_cif_category, sf_lp_cif_tags)
 
                     for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                         tag_values = [get_first_sf_tag(sf, sf_tag, '?') for sf_tag in sf_tags]
@@ -2366,23 +2368,23 @@ class OneDepAnnTasks:
                                     break
 
                         _row = replace_none(_row, '?')
-                        cifObj.appendRow(self.__entryId, sf_cif_category, _row)
+                        cifObj.appendRow(self.__reg.entry_id, sf_cif_category, _row)
 
         # merge categories of model file as secondary source of NMRIF
         if cR is not None:
-            primary_categories = cifObj.getCategoryNameList(self.__entryId)
+            primary_categories = cifObj.getCategoryNameList(self.__reg.entry_id)
             secondary_categories = cR.getCategoryNameList()
 
             target_categories = []
-            for cif_page in self.__cifPages:
+            for cif_page in CIF_PAGES:
                 # safe merge
-                if not any(cif_category in primary_categories for cif_category in self.__cifRequirements[cif_page]):
-                    for cif_category in self.__cifRequirements[cif_page]:
+                if not any(cif_category in primary_categories for cif_category in CIF_REQUIREMENTS[cif_page]):
+                    for cif_category in CIF_REQUIREMENTS[cif_page]:
                         if cif_category in secondary_categories and cif_category not in target_categories:
                             target_categories.append(cif_category)
                 # unsafe merge (cherry picking because of cross-page category such as pdbx_nmr_software)
                 else:
-                    for cif_category in self.__cifRequirements[cif_page]:
+                    for cif_category in CIF_REQUIREMENTS[cif_page]:
                         if cif_category not in primary_categories and cif_category in secondary_categories\
                            and cif_category not in target_categories:
                             target_categories.append(cif_category)
@@ -2391,8 +2393,8 @@ class OneDepAnnTasks:
                 for cif_category in target_categories:
                     row_list = cR.getRowList(cif_category)
                     if len(row_list) > 0:
-                        cifObj.addCategory(self.__entryId, cif_category, cR.getAttributeList(cif_category))
-                        cifObj.appendRowList(self.__entryId, cif_category, row_list)
+                        cifObj.addCategory(self.__reg.entry_id, cif_category, cR.getAttributeList(cif_category))
+                        cifObj.appendRowList(self.__reg.entry_id, cif_category, row_list)
 
         try:
             cifObj.writeToFile(file_path)
@@ -2400,7 +2402,3 @@ class OneDepAnnTasks:
             return False
 
         return True
-
-
-if __name__ == "__main__":
-    ann = OneDepAnnTasks(False, sys.stderr, None, None)

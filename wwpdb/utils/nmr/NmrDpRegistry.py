@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from typing import IO, List, Union
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (INI_ENTRY_ID,
+    from wwpdb.utils.nmr.NmrDpConstant import (INITIAL_ENTRY_ID,
                                                RMSD_NOT_SUPERIMPOSED,
                                                RMSD_OVERLAID_EXACTLY,
                                                CS_ANOMALOUS_ERROR_SCALED_BY_SIGMA,
@@ -34,10 +34,12 @@ try:
                                                AUX_KEY_ITEMS,
                                                AUX_DATA_ITEMS,
                                                REPRESENTATIVE_MODEL_ID,
-                                               REPRESENTATIVE_ALT_ID)
+                                               REPRESENTATIVE_ALT_ID,
+                                               DEFAULT_SUBTYPE_DATA,
+                                               DEFAULT_COORD_PROPERTIES)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 except ImportError:
-    from nmr.NmrDpConstant import (INI_ENTRY_ID,
+    from nmr.NmrDpConstant import (INITIAL_ENTRY_ID,
                                    RMSD_NOT_SUPERIMPOSED,
                                    RMSD_OVERLAID_EXACTLY,
                                    CS_ANOMALOUS_ERROR_SCALED_BY_SIGMA,
@@ -49,52 +51,10 @@ except ImportError:
                                    AUX_KEY_ITEMS,
                                    AUX_DATA_ITEMS,
                                    REPRESENTATIVE_MODEL_ID,
-                                   REPRESENTATIVE_ALT_ID)
+                                   REPRESENTATIVE_ALT_ID,
+                                   DEFAULT_SUBTYPE_DATA,
+                                   DEFAULT_COORD_PROPERTIES)
     from nmr.NmrDpReport import NmrDpReport
-
-
-default_subtype_data_dict = {'entry_info': [],
-                             'poly_seq': [],
-                             'entity': [],
-                             'chem_shift': [],
-                             'chem_shift_ref': [],
-                             'dist_restraint': [],
-                             'dihed_restraint': [],
-                             'rdc_restraint': [],
-                             'spectral_peak': [],
-                             'spectral_peak_alt': [],
-                             'noepk_restraint': [],
-                             'jcoup_restraint': [],
-                             'rdc_raw_data': [],
-                             'csa_restraint': [],
-                             'ddc_restraint': [],
-                             'hvycs_restraint': [],
-                             'procs_restraint': [],
-                             'csp_restraint': [],
-                             'auto_relax_restraint': [],
-                             'heteronucl_noe_data': [],
-                             'heteronucl_t1_data': [],
-                             'heteronucl_t2_data': [],
-                             'heteronucl_t1r_data': [],
-                             'order_param_data': [],
-                             'ph_titr_data': [],
-                             'ph_param_data': [],
-                             'coupling_const_data': [],
-                             'ccr_d_csa_restraint': [],
-                             'ccr_dd_restraint': [],
-                             'fchiral_restraint': [],
-                             'saxs_restraint': [],
-                             'other_restraint': []
-                             }
-
-
-default_coord_properties = {'tautomer': {},
-                            'rotamer': {},
-                            'near_ring': {},
-                            'near_para_ferro': {},
-                            'bond_length': {},
-                            'tautomer_per_model': []
-                            }
 
 
 @dataclass
@@ -167,7 +127,7 @@ class NmrDpRegistry:
     has_legacy_sf_issue: bool = False
 
     # current entry_id, to be replaced
-    entry_id: str = INI_ENTRY_ID
+    entry_id: str = INITIAL_ENTRY_ID
     # bmrb id (internal use only)
     bmrb_id: str = None
     # current assembly name
@@ -323,11 +283,11 @@ class NmrDpRegistry:
     aux_data_items: dict = field(default_factory=lambda: AUX_DATA_ITEMS)
 
     # main contents of loops
-    lp_data: dict = field(default_factory=lambda: copy.deepcopy(default_subtype_data_dict))
+    lp_data: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_SUBTYPE_DATA))
     # auxiliary contents of loops
-    aux_data: dict = field(default_factory=lambda: copy.deepcopy(default_subtype_data_dict))
+    aux_data: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_SUBTYPE_DATA))
     # contents of savefram tags
-    sf_tag_data: dict = field(default_factory=lambda: copy.deepcopy(default_subtype_data_dict))
+    sf_tag_data: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_SUBTYPE_DATA))
 
     # Pairwise align
     pA = None
@@ -359,7 +319,7 @@ class NmrDpRegistry:
     caC = None
 
     # coordinate properties cache
-    cpC: dict = field(default_factory=lambda: copy.deepcopy(default_coord_properties))
+    cpC: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_COORD_PROPERTIES))
     # hash code of coordinate properties cache
     cpcHashCode: str = None
 

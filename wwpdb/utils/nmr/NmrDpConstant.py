@@ -18,8 +18,7 @@ import copy
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error
 
-
-# parameter key for each input path list
+# supported parameter keys as input/output file path(s) for NmrDpUtility class
 MODEL_FILE_PATH_KEY = 'coordinate_file_path'
 ALT_MODEL_FILE_PATH_KEY = 'proc_coord_file_path'
 CS_FILE_PATH_LIST_KEY = 'chem_shift_file_path_list'
@@ -31,6 +30,79 @@ NMR_CIF_FILE_PATH_KEY = 'nmr_cif_file_path'
 NMRIF_FILE_PATH_KEY = 'nmrif_file_path'
 NEXT_NEF_FILE_PATH_KEY = 'nef_file_path'
 NEXT_STAR_FILE_PATH_KEY = 'nmr-star_file_path'
+
+# supported input param names for NmrDpUtility class
+DP_INPUT_PARAM_KEYS = ('remediation', 'internal', 'bmrb_only', 'bmrb_id', 'merge_any_pk_as_is', 'enforce_peak_row_format',
+                       'nonblk_anomalous_cs', 'nonblk_bad_nterm', 'update_poly_seq', 'resolve_conflict',
+                       'check_mandatory_tag', 'check_auth_seq', 'validation_server', 'conversion_server',
+                       'transl_pseudo_name', 'tolerant_seq_align', 'fix_format_issue', 'excl_missing_data',
+                       'cmpl_missing_data', 'trust_pdbx_nmr_ens', 'rmsd_not_superimposed', 'rmsd_overlaid_exactly')
+
+# supported input file names for NmrDpUtility class
+DP_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
+                      ALT_MODEL_FILE_PATH_KEY,
+                      REPORT_FILE_PATH_KEY,
+                      NMR_CIF_FILE_PATH_KEY,
+                      NMRIF_FILE_PATH_KEY)
+
+# supported input file_list names for NmrDpUtility class
+DP_INPUT_FILE_LIST_KEYS = (CS_FILE_PATH_LIST_KEY,
+                           MR_FILE_PATH_LIST_KEY)
+
+# supported input file_dict_list names for NmrDpUtility class
+DP_INPUT_FILE_DICT_KEYS = (CS_FILE_PATH_LIST_KEY,
+                           MR_FILE_PATH_LIST_KEY,
+                           AR_FILE_PATH_LIST_KEY,
+                           AC_FILE_PATH_LIST_KEY)
+
+# supported output param names for NmrDpUtility class
+DP_OUTPUT_PARAM_KEYS = ('entry_id', 'retain_original', 'leave_intl_note', 'reduced_atom_notation',
+                        'insert_entry_id_to_loops')  # add 'insert_entry_id_to_loops' for backward compatibility
+
+# supported output file names for NmrDpUtility class
+DP_OUTPUT_FILE_KEYS = (REPORT_FILE_PATH_KEY,
+                       NMR_CIF_FILE_PATH_KEY,
+                       NMRIF_FILE_PATH_KEY,
+                       NEXT_NEF_FILE_PATH_KEY,
+                       NEXT_STAR_FILE_PATH_KEY)
+
+# support workflow operations of NmrDpUtility class
+DP_WORKFLOW_OPS = ('nmr-nef-consistency-check',
+                   'nmr-str-consistency-check',
+                   'nmr-nef2str-deposit',
+                   'nmr-nef2cif-deposit',
+                   'nmr-str2str-deposit',
+                   'nmr-str2cif-deposit',
+                   'nmr-str2nef-release',
+                   'nmr-cs-nef-consistency-check',
+                   'nmr-cs-str-consistency-check',
+                   'nmr-cs-mr-merge',
+                   'nmr-str2cif-annotate',
+                   'nmr-if-merge-deposit',
+                   'nmr-str-replace-cs')
+
+# additional parameter keys for NmrVrptUtility class
+NMR_STR_FILE_PATH_KEY = NEXT_STAR_FILE_PATH_KEY
+RESULT_PKL_FILE_PATH_KEY = 'result_pickle_file_path'
+CIF_READER_OBJ_KEY = 'coord_cif_reader_object'
+NMR_CIF_READER_OBJ_KEY = 'nmr_cif_reader_object'
+PYNMRSTAR_OBJ_KEY = 'pynmrstar_object'
+
+# supported output param names for NmrVrptUtility class
+VRPT_INPUT_PARAM_KEYS = (CIF_READER_OBJ_KEY,
+                         NMR_CIF_READER_OBJ_KEY,
+                         PYNMRSTAR_OBJ_KEY)
+
+# supported input file names for NmrVrptUtility class
+VRPT_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
+                        NMR_CIF_FILE_PATH_KEY,
+                        NMR_STR_FILE_PATH_KEY)
+
+# supported output file names for NmrVrptUtility class
+VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,)
+
+# support workflow operations of NmrVrptUtility class
+VRPT_WORKFLOW_OPS = ('nmr-restraint-validation',)
 
 # sub-directory name for cache files
 SUB_DIR_NAME_FOR_CACHE = 'utils_nmr'

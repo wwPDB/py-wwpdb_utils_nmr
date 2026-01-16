@@ -75,7 +75,8 @@ try:
                                                DIST_AMBIG_BND,
                                                DIST_AMBIG_UP,
                                                CARTN_DATA_ITEMS,
-                                               REMEDIATE_BACKBONE_ANGLE_NAME_PAT)
+                                               REMEDIATE_BACKBONE_ANGLE_NAME_PAT,
+                                               DEFAULT_LIST_ID_COUNTER)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            letterToDigit,
                                            alignPolymerSequence,
@@ -123,7 +124,8 @@ except ImportError:
                                    DIST_AMBIG_BND,
                                    DIST_AMBIG_UP,
                                    CARTN_DATA_ITEMS,
-                                   REMEDIATE_BACKBONE_ANGLE_NAME_PAT)
+                                   REMEDIATE_BACKBONE_ANGLE_NAME_PAT,
+                                   DEFAULT_LIST_ID_COUNTER)
     from nmr.AlignUtil import (deepcopy,
                                letterToDigit,
                                alignPolymerSequence,
@@ -6019,34 +6021,7 @@ def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
     """
 
     if len(listIdCounter) == 0:
-        listIdCounter = {'dist_restraint': 0,
-                         'dihed_restraint': 0,
-                         'rdc_restraint': 0,
-                         'noepk_restraint': 0,
-                         'jcoup_restraint': 0,
-                         'rdc_raw_data': 0,
-                         'csa_restraint': 0,
-                         'ddc_restraint': 0,
-                         'hvycs_restraint': 0,
-                         'procs_restraint': 0,
-                         'csp_restraint': 0,
-                         'auto_relax_restraint': 0,
-                         'heteronucl_noe_data': 0,
-                         'heteronucl_t1_data': 0,
-                         'heteronucl_t2_data': 0,
-                         'heteronucl_t1r_data': 0,
-                         'order_param_data': 0,
-                         'ph_titr_data': 0,
-                         'ph_param_data': 0,
-                         'coupling_const_data': 0,
-                         'ccr_d_csa_restraint': 0,
-                         'ccr_dd_restraint': 0,
-                         'fchiral_restraint': 0,
-                         'saxs_restraint': 0,
-                         'other_restraint': 0,
-                         'spectral_peak': 0,
-                         'chem_shift': 0
-                         }
+        listIdCounter = copy.copy(DEFAULT_LIST_ID_COUNTER)
 
     contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'
 
@@ -6070,34 +6045,7 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
     """
 
     if len(listIdCounter) == 0:
-        listIdCounter = {'dist_restraint': 0,
-                         'dihed_restraint': 0,
-                         'rdc_restraint': 0,
-                         'noepk_restraint': 0,
-                         'jcoup_restraint': 0,
-                         'rdc_raw_data': 0,
-                         'csa_restraint': 0,
-                         'ddc_restraint': 0,
-                         'hvycs_restraint': 0,
-                         'procs_restraint': 0,
-                         'csp_restraint': 0,
-                         'auto_relax_restraint': 0,
-                         'heteronucl_noe_data': 0,
-                         'heteronucl_t1_data': 0,
-                         'heteronucl_t2_data': 0,
-                         'heteronucl_t1r_data': 0,
-                         'order_param_data': 0,
-                         'ph_titr_data': 0,
-                         'ph_param_data': 0,
-                         'coupling_const_data': 0,
-                         'ccr_d_csa_restraint': 0,
-                         'ccr_dd_restraint': 0,
-                         'fchiral_restraint': 0,
-                         'saxs_restraint': 0,
-                         'other_restraint': 0,
-                         'spectral_peak': 0,
-                         'chem_shift': 0
-                         }
+        listIdCounter = copy.copy(DEFAULT_LIST_ID_COUNTER)
 
     contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'
 

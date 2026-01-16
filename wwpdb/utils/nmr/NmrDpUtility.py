@@ -259,13 +259,20 @@ from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
+    from wwpdb.utils.nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
+                                               ALT_MODEL_FILE_PATH_KEY,
+                                               CS_FILE_PATH_LIST_KEY,
                                                MR_FILE_PATH_LIST_KEY,
                                                AR_FILE_PATH_LIST_KEY,
                                                AC_FILE_PATH_LIST_KEY,
+                                               REPORT_FILE_PATH_KEY,
+                                               NMR_CIF_FILE_PATH_KEY,
+                                               NMRIF_FILE_PATH_KEY,
+                                               NEXT_NEF_FILE_PATH_KEY,
+                                               NEXT_STAR_FILE_PATH_KEY,
                                                SUB_DIR_NAME_FOR_CACHE,
-                                               DEF_ENTRY_ID,
-                                               INI_ENTRY_ID,
+                                               DEFAULT_ENTRY_ID,
+                                               INITIAL_ENTRY_ID,
                                                WORKFLOW_OPS,
                                                NMR_CONTENT_SUBTYPES,
                                                MR_CONTENT_SUBTYPES,
@@ -328,9 +335,9 @@ try:
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID,
-                                               SPECTRAL_DIM_TEMPLATE)
-    from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
-                                               default_coord_properties)
+                                               SPECTRAL_DIM_TEMPLATE,
+                                               DEFAULT_COORD_PROPERTIES)
+    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
     from wwpdb.utils.nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                                  detect_bom,
@@ -383,13 +390,20 @@ try:
     from wwpdb.utils.nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from wwpdb.utils.nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 except ImportError:
-    from nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
+    from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
+                                   ALT_MODEL_FILE_PATH_KEY,
+                                   CS_FILE_PATH_LIST_KEY,
                                    MR_FILE_PATH_LIST_KEY,
                                    AR_FILE_PATH_LIST_KEY,
                                    AC_FILE_PATH_LIST_KEY,
+                                   REPORT_FILE_PATH_KEY,
+                                   NMR_CIF_FILE_PATH_KEY,
+                                   NMRIF_FILE_PATH_KEY,
+                                   NEXT_NEF_FILE_PATH_KEY,
+                                   NEXT_STAR_FILE_PATH_KEY,
                                    SUB_DIR_NAME_FOR_CACHE,
-                                   DEF_ENTRY_ID,
-                                   INI_ENTRY_ID,
+                                   DEFAULT_ENTRY_ID,
+                                   INITIAL_ENTRY_ID,
                                    WORKFLOW_OPS,
                                    NMR_CONTENT_SUBTYPES,
                                    MR_CONTENT_SUBTYPES,
@@ -452,9 +466,9 @@ except ImportError:
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID,
-                                   SPECTRAL_DIM_TEMPLATE)
-    from nmr.NmrDpRegistry import (NmrDpRegistry,
-                                   default_coord_properties)
+                                   SPECTRAL_DIM_TEMPLATE,
+                                   DEFAULT_COORD_PROPERTIES)
+    from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpFirstAid import NmrDpFirstAid
     from nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                      detect_bom,
@@ -1026,10 +1040,10 @@ class NmrDpUtility:
             raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Unknown workflow operation {op}.")
 
         if 'cif' in op:
-            if 'nmr_cif_file_path' not in self.__reg.outputParamDict:
-                raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
+            if NMR_CIF_FILE_PATH_KEY not in self.__reg.outputParamDict:
+                raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Could not find {NMR_CIF_FILE_PATH_KEY!r} output parameter.")
             if self.__reg.dstPath is None:
-                self.__reg.dstPath = self.__reg.outputParamDict['nmr_cif_file_path'] + '.tmp'
+                self.__reg.dstPath = self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY] + '.tmp'
                 self.__dstPath__ = copy.copy(self.__reg.dstPath)
                 self.__tmpPath = self.__dstPath__
 
@@ -1388,8 +1402,8 @@ class NmrDpUtility:
 
         self.__reg.report = NmrDpReport(self.__reg.verbose, self.__reg.log)
 
-        if 'report_file_path' in self.__reg.inputParamDict:
-            fPath = self.__reg.inputParamDict['report_file_path']
+        if REPORT_FILE_PATH_KEY in self.__reg.inputParamDict:
+            fPath = self.__reg.inputParamDict[REPORT_FILE_PATH_KEY]
 
             if os.access(fPath, os.F_OK) and os.path.getsize(fPath) > 0:
                 self.__report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
@@ -1839,9 +1853,9 @@ class NmrDpUtility:
                         input_source.setItemValue('original_file_name', acs['original_file_name'])
                     input_source.setItemValue('ignore_error', False if 'ignore_error' not in acs else acs['ignore_error'])
 
-            if self.__reg.bmrb_only and self.__reg.internal_mode and 'nmr_cif_file_path' in self.__reg.inputParamDict:
+            if self.__reg.bmrb_only and self.__reg.internal_mode and NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict:
 
-                nmr_cif = self.__reg.inputParamDict['nmr_cif_file_path']
+                nmr_cif = self.__reg.inputParamDict[NMR_CIF_FILE_PATH_KEY]
 
                 _nmr_cif = nmr_cif + '.cif2str'
                 if self.__reg.c2S.convert(nmr_cif, _nmr_cif):
@@ -6018,10 +6032,10 @@ class NmrDpUtility:
         """ Extract NMR metadata of NMR-STAR file (as primary source) and model file (as secondary source) to NMRIF file, if possible.
         """
 
-        if 'nmrif_file_path' not in self.__reg.outputParamDict:
+        if NMRIF_FILE_PATH_KEY not in self.__reg.outputParamDict:
             return False
 
-        if os.path.exists(self.__reg.outputParamDict['nmrif_file_path']):
+        if os.path.exists(self.__reg.outputParamDict[NMRIF_FILE_PATH_KEY]):
             return False
 
         if len(self.__reg.star_data) == 0 or not isinstance(self.__reg.star_data[0], pynmrstar.Entry):
@@ -6039,11 +6053,7 @@ class NmrDpUtility:
 
         self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(master_entry)
 
-        ann = BMRBAnnTasks(self.__reg.verbose, self.__reg.log,
-                           self.__reg.sf_category_list, self.__reg.entry_id,
-                           self.__reg.annotation_mode, self.__reg.internal_mode, self.__reg.enforce_peak_row_format,
-                           self.__reg.sail_flag, self.__reg.report,
-                           ccU=self.__reg.ccU, csStat=self.__reg.csStat, c2S=self.__reg.c2S)
+        ann = BMRBAnnTasks(self.__reg)
 
         if not self.__reg.internal_mode and self.__reg.report.getInputSourceIdOfCoord() >= 0 and self.__reg.cR.hasCategory('database_2'):
 
@@ -6065,19 +6075,18 @@ class NmrDpUtility:
 
         ann.perform(master_entry)
 
-        ann = OneDepAnnTasks(self.__reg.verbose, self.__reg.log,
-                             self.__reg.sf_category_list, self.__reg.entry_id)
+        ann = OneDepAnnTasks(self.__reg)
 
-        return ann.extract(master_entry, self.__reg.cR, self.__reg.outputParamDict['nmrif_file_path'])
+        return ann.extract(master_entry, self.__reg.cR, self.__reg.outputParamDict[NMRIF_FILE_PATH_KEY])
 
     def __extractToNmrIfFromModel__(self) -> bool:
         """ Extract NMR metadata of the model file to NMRIF file, if possible.
         """
 
-        if 'nmrif_file_path' not in self.__reg.outputParamDict:
+        if NMRIF_FILE_PATH_KEY not in self.__reg.outputParamDict:
             return False
 
-        if os.path.exists(self.__reg.outputParamDict['nmrif_file_path']):
+        if os.path.exists(self.__reg.outputParamDict[NMRIF_FILE_PATH_KEY]):
             return False
 
         src_id = self.__reg.report.getInputSourceIdOfCoord()
@@ -6085,10 +6094,9 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        ann = OneDepAnnTasks(self.__reg.verbose, self.__reg.log,
-                             self.__reg.sf_category_list, self.__reg.entry_id)
+        ann = OneDepAnnTasks(self.__reg)
 
-        return ann.extract(None, self.__reg.cR, self.__reg.outputParamDict['nmrif_file_path'])
+        return ann.extract(None, self.__reg.cR, self.__reg.outputParamDict[NMRIF_FILE_PATH_KEY])
 
     def __remediateCsLoop__(self) -> bool:
         """ Remediate assigned chemical shift loop based on coordinates.
@@ -7783,7 +7791,7 @@ class NmrDpUtility:
             self.__reg.coordPropCachePath = os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}{hash_code_ext}_coord_prop.pkl")
 
             self.__reg.caC = load_from_pickle(self.__reg.asmChkCachePath)
-            self.__reg.cpC = load_from_pickle(self.__reg.coordPropCachePath, default=copy.copy(default_coord_properties))
+            self.__reg.cpC = load_from_pickle(self.__reg.coordPropCachePath, default=copy.copy(DEFAULT_COORD_PROPERTIES))
             self.__reg.cpcHashCode = hash(str(self.__reg.cpC))
 
             # DAOTHER-8817
@@ -7901,7 +7909,7 @@ class NmrDpUtility:
                                                    show_comments=(self.__reg.bmrb_only and self.__reg.internal_mode),
                                                    skip_empty_loops=True, skip_empty_tags=False)
 
-                        if 'nmr_cif_file_path' in self.__reg.outputParamDict:
+                        if NMR_CIF_FILE_PATH_KEY in self.__reg.outputParamDict:
 
                             try:
 
@@ -7915,7 +7923,7 @@ class NmrDpUtility:
 
                                     eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__reg.internal_mode else 0
                                     abandon_symbolic_labels(containerList)
-                                    myIo.writeFile(self.__reg.outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
+                                    myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], containerList=containerList[eff_block_id:])
 
                             except Exception as e:
                                 self.__reg.log.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {str(e)}\n")
@@ -8068,7 +8076,7 @@ class NmrDpUtility:
                                                show_comments=(self.__reg.bmrb_only and self.__reg.internal_mode),
                                                skip_empty_loops=True, skip_empty_tags=False)
 
-                    if 'nmr_cif_file_path' in self.__reg.outputParamDict:
+                    if NMR_CIF_FILE_PATH_KEY in self.__reg.outputParamDict:
 
                         try:
 
@@ -8082,7 +8090,7 @@ class NmrDpUtility:
 
                                 eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__reg.internal_mode else 0
                                 abandon_symbolic_labels(containerList)
-                                myIo.writeFile(self.__reg.outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
+                                myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], containerList=containerList[eff_block_id:])
 
                         except Exception as e:
                             self.__reg.log.write(f"+{self.__class_name__}.__validateStrPk() ++ Error  - {str(e)}\n")
@@ -8403,8 +8411,8 @@ class NmrDpUtility:
 
             return True
 
-        if self.__reg.entry_id == INI_ENTRY_ID:
-            self.__reg.entry_id = DEF_ENTRY_ID
+        if self.__reg.entry_id == INITIAL_ENTRY_ID:
+            self.__reg.entry_id = DEFAULT_ENTRY_ID
 
         return False
 
@@ -8419,9 +8427,9 @@ class NmrDpUtility:
 
         if not self.__parseCoordFilePath():
 
-            if 'coordinate_file_path' in self.__reg.inputParamDict:
+            if MODEL_FILE_PATH_KEY in self.__reg.inputParamDict:
 
-                err = f"No such {self.__reg.inputParamDict['coordinate_file_path']!r} file."
+                err = f"No such {self.__reg.inputParamDict[MODEL_FILE_PATH_KEY]!r} file."
 
                 self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + err)
 
@@ -8454,11 +8462,11 @@ class NmrDpUtility:
 
                 return False
 
-            if self.__reg.entry_id == INI_ENTRY_ID:
+            if self.__reg.entry_id == INITIAL_ENTRY_ID:
                 entry = self.__reg.cR.getDictList('entry')
 
                 if len(entry) == 0 or ('id' not in entry[0]):
-                    self.__reg.entry_id = DEF_ENTRY_ID
+                    self.__reg.entry_id = DEFAULT_ENTRY_ID
                 else:
                     self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
@@ -9033,7 +9041,7 @@ class NmrDpUtility:
 
                         return False
 
-                self.__reg.inputParamDict['coordinate_file_path'] = dstCifPath
+                self.__reg.inputParamDict[MODEL_FILE_PATH_KEY] = dstCifPath
                 self.__reg.cifPath = None
                 self.__reg.cifChecked = False
 
@@ -9061,9 +9069,9 @@ class NmrDpUtility:
 
         self.__cifHashCode = None
 
-        if 'coordinate_file_path' in self.__reg.inputParamDict:
+        if MODEL_FILE_PATH_KEY in self.__reg.inputParamDict:
 
-            fPath = self.__reg.inputParamDict['coordinate_file_path']
+            fPath = self.__reg.inputParamDict[MODEL_FILE_PATH_KEY]
 
             if fPath.endswith('.gz'):
 
@@ -9106,9 +9114,9 @@ class NmrDpUtility:
                     return True
 
                 # try deposit storage if possible
-                if 'proc_coord_file_path' in self.__reg.inputParamDict:
+                if ALT_MODEL_FILE_PATH_KEY in self.__reg.inputParamDict:
 
-                    fPath = self.__reg.inputParamDict['proc_coord_file_path']
+                    fPath = self.__reg.inputParamDict[ALT_MODEL_FILE_PATH_KEY]
 
                     self.__reg.cifPath = fPath
 
@@ -9120,8 +9128,8 @@ class NmrDpUtility:
 
             finally:
                 self.__reg.caC = None
-                self.__reg.cpC = copy.deepcopy(default_coord_properties)
-                self.__reg.exptl_method = ''
+                self.__reg.cpC = copy.deepcopy(DEFAULT_COORD_PROPERTIES)
+                self.__reg.exptl_method = None
                 self.__reg.symmetric = None
                 self.__reg.is_cyclic_polymer.clear()
                 self.__reg.nmr_struct_conf.clear()
@@ -11813,13 +11821,13 @@ class NmrDpUtility:
             else:
                 self.__reg.sf_name_corrections[0] = corrections
 
-        if 'report_file_path' not in self.__reg.inputParamDict or self.__reg.annotation_mode:
+        if REPORT_FILE_PATH_KEY not in self.__reg.inputParamDict or self.__reg.annotation_mode:
             self.__initializeDpReport()
             self.__reg.dstPath = self.__dstPath__ if self.__reg.cifPath is None else self.__reg.srcPath
 
             return False
 
-        fPath = self.__reg.inputParamDict['report_file_path']
+        fPath = self.__reg.inputParamDict[REPORT_FILE_PATH_KEY]
 
         if not os.access(fPath, os.F_OK):
             raise IOError(f"+{self.__class_name__}.__retrieveDpReport() ++ Error  - Could not access to file path {fPath}.")
@@ -14585,12 +14593,12 @@ class NmrDpUtility:
                 pass
 
         if 'nef' not in self.__reg.op and ('deposit' in self.__reg.op or 'annotate' in self.__reg.op or 'replace-cs' in self.__reg.op)\
-           and 'nmr_cif_file_path' in self.__reg.outputParamDict:
+           and NMR_CIF_FILE_PATH_KEY in self.__reg.outputParamDict:
 
             if self.__reg.cifPath is None or self.__reg.submission_mode:
 
                 if self.__dstPath__ is None:
-                    self.__dstPath__ = self.__reg.outputParamDict['nmr_cif_file_path']
+                    self.__dstPath__ = self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY]
 
                 self.__reg.dpR.remediateSpectralPeakListSaveframe(master_entry)
 
@@ -14610,7 +14618,7 @@ class NmrDpUtility:
 
                     eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__reg.internal_mode else 0
                     abandon_symbolic_labels(containerList)
-                    myIo.writeFile(self.__reg.outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
+                    myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], containerList=containerList[eff_block_id:])
 
             except Exception as e:
                 self.__reg.log.write(f"+{self.__class_name__}.__depositNmrData() ++ Error  - {str(e)}\n")
@@ -15005,7 +15013,7 @@ class NmrDpUtility:
         except Exception:
             return False
 
-        if 'nmr_cif_file_path' in self.__reg.outputParamDict:
+        if NMR_CIF_FILE_PATH_KEY in self.__reg.outputParamDict:
 
             try:
 
@@ -15019,7 +15027,7 @@ class NmrDpUtility:
 
                     eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__reg.internal_mode else 0
                     abandon_symbolic_labels(containerList)
-                    myIo.writeFile(self.__reg.outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
+                    myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], containerList=containerList[eff_block_id:])
 
                     return True
 
@@ -15238,10 +15246,10 @@ class NmrDpUtility:
         file_name = os.path.basename(self.__reg.dstPath)
         file_type = input_source_dic['file_type']
 
-        if 'nmr-star_file_path' not in self.__reg.outputParamDict:
-            raise KeyError(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
+        if NEXT_STAR_FILE_PATH_KEY not in self.__reg.outputParamDict:
+            raise KeyError(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - Could not find {NEXT_STAR_FILE_PATH_KEY!r} output parameter.")
 
-        fPath = self.__reg.outputParamDict['nmr-star_file_path']
+        fPath = self.__reg.outputParamDict[NEXT_STAR_FILE_PATH_KEY]
 
         try:
 
@@ -15274,7 +15282,7 @@ class NmrDpUtility:
 
         if is_valid:
 
-            if 'deposit' in self.__reg.op and 'nmr_cif_file_path' in self.__reg.outputParamDict:
+            if 'deposit' in self.__reg.op and NMR_CIF_FILE_PATH_KEY in self.__reg.outputParamDict:
 
                 try:
 
@@ -15288,7 +15296,7 @@ class NmrDpUtility:
 
                         eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__reg.internal_mode else 0
                         abandon_symbolic_labels(containerList)
-                        myIo.writeFile(self.__reg.outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
+                        myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], containerList=containerList[eff_block_id:])
 
                 except Exception as e:
                     self.__reg.log.write(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - {str(e)}\n")
@@ -15324,11 +15332,11 @@ class NmrDpUtility:
 
         try:
 
-            self.__reg.srcPath = self.__reg.outputParamDict['nmr-star_file_path']
+            self.__reg.srcPath = self.__reg.outputParamDict[NEXT_STAR_FILE_PATH_KEY]
             self.__reg.dstPath = self.__reg.srcPath
-            self.__logPath = self.__reg.outputParamDict.get('report_file_path')
+            self.__logPath = self.__reg.outputParamDict.get(REPORT_FILE_PATH_KEY)
             if self.__logPath is not None:
-                self.addInput('report_file_path', self.__logPath, type='file')
+                self.addInput(REPORT_FILE_PATH_KEY, self.__logPath, type='file')
             self.__reg.op = 'nmr-str-consistency-check'
 
             # reset cache dictionaries
@@ -15345,7 +15353,8 @@ class NmrDpUtility:
             return True
 
         except Exception:
-            raise KeyError(f"+{self.__class_name__}.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
+            raise KeyError(f"+{self.__class_name__}.__initReousrceForNef2Str() ++ Error  - "
+                           f"Could not find {NEXT_STAR_FILE_PATH_KEY!r} or {REPORT_FILE_PATH_KEY!r} output parameter.")
 
         return False
 
@@ -15365,10 +15374,10 @@ class NmrDpUtility:
         file_name = os.path.basename(self.__reg.dstPath)
         file_type = input_source_dic['file_type']
 
-        if 'nef_file_path' not in self.__reg.outputParamDict:
-            raise KeyError(f"+{self.__class_name__}.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
+        if NEXT_NEF_FILE_PATH_KEY not in self.__reg.outputParamDict:
+            raise KeyError(f"+{self.__class_name__}.__translateStr2Nef() ++ Error  - Could not find {NEXT_NEF_FILE_PATH_KEY!r} output parameter.")
 
-        fPath = self.__reg.outputParamDict['nef_file_path']
+        fPath = self.__reg.outputParamDict[NEXT_NEF_FILE_PATH_KEY]
 
         try:
 
@@ -15430,11 +15439,11 @@ class NmrDpUtility:
 
         try:
 
-            self.__reg.srcPath = self.__reg.outputParamDict['nef_file_path']
+            self.__reg.srcPath = self.__reg.outputParamDict[NEXT_NEF_FILE_PATH_KEY]
             self.__reg.dstPath = self.__reg.srcPath
-            self.__logPath = self.__reg.outputParamDict.get('report_file_path')
+            self.__logPath = self.__reg.outputParamDict.get(REPORT_FILE_PATH_KEY)
             if self.__logPath is not None:
-                self.addInput('report_file_path', self.__logPath, type='file')
+                self.addInput(REPORT_FILE_PATH_KEY, self.__logPath, type='file')
             self.__reg.op = 'nmr-nef-consistency-check'
 
             # reset cache dictionaries
@@ -15451,7 +15460,8 @@ class NmrDpUtility:
             return True
 
         except Exception:
-            raise KeyError(f"+{self.__class_name__}.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
+            raise KeyError(f"+{self.__class_name__}.__initReousrceForStr2Nef() ++ Error  - "
+                           f"Could not find {NEXT_NEF_FILE_PATH_KEY!r} or {REPORT_FILE_PATH_KEY!r} output parameter.")
 
         return False
 
@@ -15459,9 +15469,9 @@ class NmrDpUtility:
         """ Parse NMRIF file.
         """
 
-        if 'nmrif_file_path' not in self.__reg.inputParamDict:
+        if NMRIF_FILE_PATH_KEY not in self.__reg.inputParamDict:
 
-            err = f"No such {self.__reg.inputParamDict['nmrif_file_path']!r} file."
+            err = f"No such {self.__reg.inputParamDict[NMRIF_FILE_PATH_KEY]!r} file."
 
             self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseNmrIf() ++ Error  - " + err)
 
@@ -15473,7 +15483,7 @@ class NmrDpUtility:
         if self.__nmrIfR is not None:
             return True
 
-        fPath = self.__reg.inputParamDict['nmrif_file_path']
+        fPath = self.__reg.inputParamDict[NMRIF_FILE_PATH_KEY]
 
         self.__nmrIfR = CifReader(self.__reg.verbose, self.__reg.log)
 
@@ -15507,8 +15517,7 @@ class NmrDpUtility:
             if len(entry) > 0 and 'id' in entry[0]:
                 self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')
 
-        ann = OneDepAnnTasks(self.__reg.verbose, self.__reg.log,
-                             self.__reg.sf_category_list, self.__reg.entry_id)
+        ann = OneDepAnnTasks(self.__reg)
 
         return ann.merge(master_entry, self.__reg.cR, self.__reg.bmrb_only and self.__reg.internal_mode)
 
@@ -15532,8 +15541,7 @@ class NmrDpUtility:
             if len(entry) > 0 and 'id' in entry[0]:
                 self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')
 
-        ann = OneDepAnnTasks(self.__reg.verbose, self.__reg.log,
-                             self.__reg.sf_category_list, self.__reg.entry_id)
+        ann = OneDepAnnTasks(self.__reg)
 
         return ann.merge(master_entry, self.__nmrIfR, self.__reg.bmrb_only and self.__reg.internal_mode)
 
@@ -15557,11 +15565,7 @@ class NmrDpUtility:
             if len(entry) > 0 and 'id' in entry[0]:
                 self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')
 
-        ann = BMRBAnnTasks(self.__reg.verbose, self.__reg.log,
-                           self.__reg.sf_category_list, self.__reg.entry_id,
-                           self.__reg.annotation_mode, self.__reg.internal_mode, self.__reg.enforce_peak_row_format,
-                           self.__reg.sail_flag, self.__reg.report,
-                           ccU=self.__reg.ccU, csStat=self.__reg.csStat, c2S=self.__reg.c2S)
+        ann = BMRBAnnTasks(self.__reg)
 
         if self.__reg.report.getInputSourceIdOfCoord() >= 0 and self.__reg.cR.hasCategory('database_2'):
 

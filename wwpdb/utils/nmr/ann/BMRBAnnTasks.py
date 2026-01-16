@@ -18,7 +18,7 @@ import pynmrstar
 import itertools
 
 from operator import itemgetter
-from typing import IO, List, Optional
+from typing import Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -34,12 +34,9 @@ try:
                                                DNA_RELATED_WORDS,
                                                RNA_RELATED_WORDS,
                                                ALLOWED_THIOL_STATES)
-    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.AlignUtil import getOneLetterCodeCan
-    from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
-                                              get_first_sf_tag,
+    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                                        roundString,
@@ -58,16 +55,22 @@ except ImportError:
                                    DNA_RELATED_WORDS,
                                    RNA_RELATED_WORDS,
                                    ALLOWED_THIOL_STATES)
-    from nmr.NmrDpReport import NmrDpReport
-    from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.AlignUtil import getOneLetterCodeCan
-    from nmr.CifToNmrStar import (CifToNmrStar,
-                                  get_first_sf_tag,
+    from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
     from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                            roundString,
                                            retrieveOriginalFileName)
+
+
+DEFAULT_SF_LABEL_TAGS = ('_Assigned_chem_shift_list.Sample_condition_list_label',
+                         '_Assigned_chem_shift_list.Chem_shift_reference_label',
+                         '_Spectral_peak_list.Sample_label',
+                         '_Spectral_peak_list.Sample_condition_list_label',
+                         '_Conformer_stat_list.Conf_family_coord_set_label',
+                         '_Conformer_stat_list.Representative_conformer_label',
+                         '_Conformer_family_coord_set.Sample_condition_list_label')
 
 
 class BMRBAnnTasks:
@@ -75,63 +78,20 @@ class BMRBAnnTasks:
     """
     __slots__ = ('__class_name__',
                  '__version__',
-                 '__verbose',
-                 '__log',
-                 '__sfCategoryList',
-                 '__entryId',
-                 '__annotationMode',
-                 '__internalMode',
-                 '__enforcePeakRowFormat',
-                 '__sailFlag',
-                 '__report',
-                 '__ccU',
-                 '__csStat',
-                 '__c2S',
+                 '__reg',
                  '__derivedEntryId',
                  '__derivedEntryTitle',
                  '__defSfLabelTag')
 
-    def __init__(self, verbose: bool, log: IO,
-                 sfCategoryList: List[str], entryId: str,
-                 annotationMode: bool, internalMode: bool, enforcePeakRowFormat: bool, sailFlag: bool, report: NmrDpReport,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
-                 c2S: Optional[CifToNmrStar] = None):
+    def __init__(self, registry: NmrDpRegistry):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__verbose = verbose
-        self.__log = log
-
-        self.__sfCategoryList = sfCategoryList
-        self.__entryId = entryId
-
-        self.__annotationMode = annotationMode
-        self.__internalMode = internalMode
-        self.__enforcePeakRowFormat = enforcePeakRowFormat
-        self.__sailFlag = sailFlag
-        self.__report = report
-
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
-
-        # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
-
-        # CifToNmrStar
-        self.__c2S = CifToNmrStar(log) if c2S is None else c2S
+        self.__reg = registry
 
         # provenance information to be included in _Related_entries loop if it is not exists
         self.__derivedEntryId = None
         self.__derivedEntryTitle = None
-
-        self.__defSfLabelTag = ['_Assigned_chem_shift_list.Sample_condition_list_label',
-                                '_Assigned_chem_shift_list.Chem_shift_reference_label',
-                                '_Spectral_peak_list.Sample_label',
-                                '_Spectral_peak_list.Sample_condition_list_label',
-                                '_Conformer_stat_list.Conf_family_coord_set_label',
-                                '_Conformer_stat_list.Representative_conformer_label',
-                                '_Conformer_family_coord_set.Sample_condition_list_label'
-                                ]
 
     def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]):
         """ Set provenance information.
@@ -168,12 +128,12 @@ class BMRBAnnTasks:
 
         int_sf = None
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             int_sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
         sf_category = 'entry_information'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             ent_sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
             lp_category = '_Contact_person'
@@ -236,7 +196,7 @@ class BMRBAnnTasks:
             except KeyError:
                 pass
 
-            if not self.__internalMode and self.__derivedEntryId not in EMPTY_VALUE:
+            if not self.__reg.internal_mode and self.__derivedEntryId not in EMPTY_VALUE:
 
                 lp_category = '_Related_entries'
 
@@ -263,7 +223,7 @@ class BMRBAnnTasks:
                             row[lp.tags.index('Database_accession_code')] = self.__derivedEntryId
                             if self.__derivedEntryTitle not in EMPTY_VALUE:
                                 row[lp.tags.index('Relationship')] = self.__derivedEntryTitle
-                            row[lp.tags.index('Entry_ID')] = self.__entryId
+                            row[lp.tags.index('Entry_ID')] = self.__reg.entry_id
 
                             lp.add_data(row)
 
@@ -278,7 +238,7 @@ class BMRBAnnTasks:
                     #
                     # lp.add_tag(tags)
                     #
-                    # lp.add_data(['BMRB', self.__derivedEntryId, self.__derivedEntryTitle, self.__entryId])
+                    # lp.add_data(['BMRB', self.__derivedEntryId, self.__derivedEntryTitle, self.__reg.entry_id])
                     #
                     # ent_sf.add_loop(lp)
                     pass
@@ -287,7 +247,7 @@ class BMRBAnnTasks:
 
         sf_category = 'citations'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
 
             for sf in master_entry.get_saveframes_by_category(sf_category):
 
@@ -311,7 +271,7 @@ class BMRBAnnTasks:
 
         sf_category = 'experiment_list'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category(sf_category):
 
                 lp_category = '_Experiment'
@@ -375,7 +335,7 @@ class BMRBAnnTasks:
 
         sf_category = 'sample'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 smpl_id = get_first_sf_tag(sf, 'ID')
                 if not isinstance(smpl_id, int):
@@ -384,11 +344,11 @@ class BMRBAnnTasks:
                         set_sf_tag(sf, 'ID', smpl_id)
                     else:
                         smpl_id = int(smpl_id)
-                    self.__c2S.set_local_sf_id(sf, smpl_id)
+                    self.__reg.c2S.set_local_sf_id(sf, smpl_id)
 
         sf_category = 'chem_shift_reference'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 cs_ref_id = get_first_sf_tag(sf, 'ID')
                 if not isinstance(cs_ref_id, int):
@@ -397,14 +357,14 @@ class BMRBAnnTasks:
                         set_sf_tag(sf, 'ID', cs_ref_id)
                     else:
                         cs_ref_id = int(cs_ref_id)
-                    self.__c2S.set_local_sf_id(sf, cs_ref_id)
+                    self.__reg.c2S.set_local_sf_id(sf, cs_ref_id)
 
                 isotope_nums[cs_ref_id] = set()
                 cs_ref_sf_framecode[cs_ref_id] = get_first_sf_tag(sf, 'Sf_framecode')
 
         sf_category = 'sample_conditions'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 smpl_cond_list_id = get_first_sf_tag(sf, 'ID')
                 if not isinstance(smpl_cond_list_id, int):
@@ -413,7 +373,7 @@ class BMRBAnnTasks:
                         set_sf_tag(sf, 'ID', smpl_cond_list_id)
                     else:
                         smpl_cond_list_id = int(smpl_cond_list_id)
-                    self.__c2S.set_local_sf_id(sf, smpl_cond_list_id)
+                    self.__reg.c2S.set_local_sf_id(sf, smpl_cond_list_id)
 
                 smpl_cond_sf_framecode[smpl_cond_list_id] = get_first_sf_tag(sf, 'Sf_framecode')
 
@@ -424,9 +384,9 @@ class BMRBAnnTasks:
 
         sf_category = 'assigned_chemical_shifts'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for list_id, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
-                self.__c2S.set_local_sf_id(sf, list_id)
+                self.__reg.c2S.set_local_sf_id(sf, list_id)
                 cs_ref_id = get_first_sf_tag(sf, 'Chem_shift_reference_ID')
                 if not isinstance(cs_ref_id, int):
                     if len(cs_ref_id) == 0 or cs_ref_id in EMPTY_VALUE or not cs_ref_id.isdigit():
@@ -466,7 +426,7 @@ class BMRBAnnTasks:
 
                 exp_list_sf_category = 'experiment_list'
 
-                if exp_list_sf_category in self.__sfCategoryList:
+                if exp_list_sf_category in self.__reg.sf_category_list:
                     exp_list_sf = master_entry.get_saveframes_by_category(exp_list_sf_category)[0]
 
                     exp_lp_category = '_Experiment'
@@ -554,7 +514,7 @@ class BMRBAnnTasks:
 
                                     for exp in exp_list:
                                         row = exp
-                                        row.extend([self.__entryId, cs_list_id])
+                                        row.extend([self.__reg.entry_id, cs_list_id])
                                         lp.add_data(row)
 
                                     lp.sort_rows('Experiment_ID')
@@ -567,7 +527,7 @@ class BMRBAnnTasks:
 
                     lp = sf.get_loop(lp_category)
 
-                    if self.__report.getInputSourceIdOfCoord() < 0:
+                    if self.__reg.report.getInputSourceIdOfCoord() < 0:
 
                         try:
 
@@ -727,7 +687,7 @@ class BMRBAnnTasks:
                             dat = lp.get_tag(tags)
 
                             # wo coordinates (bmrbdep)
-                            if self.__report.getInputSourceIdOfCoord() < 0:
+                            if self.__reg.report.getInputSourceIdOfCoord() < 0:
 
                                 for idx, row in enumerate(dat):
                                     comp_id = row[0]
@@ -735,7 +695,7 @@ class BMRBAnnTasks:
                                     ambig_code = row[2]
                                     ambig_set_id = row[3]
 
-                                    _ambig_code = 1 if self.__sailFlag else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                    _ambig_code = 1 if self.__reg.sail_flag else self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                                     checked = _ambig_code != 1
 
@@ -764,7 +724,7 @@ class BMRBAnnTasks:
                                     atom_id = row[1]
                                     ambig_code = row[2]
 
-                                    _ambig_code = 1 if self.__sailFlag else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                    _ambig_code = 1 if self.__reg.sail_flag else self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                                     checked = _ambig_code != 1
 
@@ -794,7 +754,7 @@ class BMRBAnnTasks:
 
         assembly_id = assembly_label = '.'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             asm_sf = master_entry.get_saveframes_by_category(sf_category)[0]
             try:
                 assembly_id = int(get_first_sf_tag(asm_sf, 'ID'))
@@ -808,7 +768,7 @@ class BMRBAnnTasks:
         entity_dict = {}
         polymer_common_types, non_polymer_types, nstd_monomers = [], [], []
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 try:
                     entity_id = int(get_first_sf_tag(sf, 'ID'))
@@ -903,7 +863,7 @@ class BMRBAnnTasks:
                         dat = lp.get_tag(['ID', 'Comp_ID'])
 
                         for row in dat:
-                            _row = ['.', row[1], row[0], row[0], self.__entryId, entity_id]
+                            _row = ['.', row[1], row[0], row[0], self.__reg.entry_id, entity_id]
                             _lp.add_data(_row)
 
                         sf.add_loop(_lp)
@@ -1048,7 +1008,7 @@ class BMRBAnnTasks:
 
                     _sf_category = 'natural_source'
                     gene_mnemonic = []
-                    if _sf_category in self.__sfCategoryList:
+                    if _sf_category in self.__reg.sf_category_list:
                         for _sf in master_entry.get_saveframes_by_category(_sf_category):
 
                             _lp_category = '_Entity_natural_src'
@@ -1138,7 +1098,7 @@ class BMRBAnnTasks:
 
         sf_category = 'NMR_spectrometer_list'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
 
             for sf in master_entry.get_saveframes_by_category(sf_category):
 
@@ -1188,7 +1148,7 @@ class BMRBAnnTasks:
 
         sf_category = 'experiment_list'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
 
             for sf in master_entry.get_saveframes_by_category(sf_category):
 
@@ -1229,7 +1189,7 @@ class BMRBAnnTasks:
                     sf = pynmrstar.Saveframe.from_scratch(sf_framecode, '_NMR_spectrometer')
                     sf.add_tag('Sf_category', 'NMR_spectrometer')
                     sf.add_tag('Sf_framecode', sf_framecode)
-                    sf.add_tag('Entry_ID', self.__entryId)
+                    sf.add_tag('Entry_ID', self.__reg.entry_id)
                     sf.add_tag('ID', spectrometer_id)
                     sf.add_tag('Name', spectrometer['label'])
                     sf.add_tag('Details', spectrometer['details'] if 'details' in spectrometer else '.')
@@ -1246,7 +1206,7 @@ class BMRBAnnTasks:
 
         pH = ionic_strength = None
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category(sf_category):
 
                 lp_category = '_Sample_condition_variable'
@@ -1436,7 +1396,7 @@ class BMRBAnnTasks:
                     return True
             return False
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             sf_list = master_entry.get_saveframes_by_category(sf_category)
             is_single_sample_loop = len(sf_list) == 1
             for sf in sf_list:
@@ -1813,7 +1773,7 @@ class BMRBAnnTasks:
                                 row[concentration_val_col] = '?'
                                 row[concentration_val_units_col] = 'mM'
                                 row[sample_id_col] = sample_id
-                                row[entry_id_col] = self.__entryId
+                                row[entry_id_col] = self.__reg.entry_id
 
                                 has_mand_concentration_val = False
                                 cur_id += 1
@@ -1918,7 +1878,7 @@ class BMRBAnnTasks:
                         row[concentration_val_col] = solvent_system[solvent]
                         row[concentration_val_units_col] = '%'
                         row[sample_id_col] = sample_id
-                        row[entry_id_col] = self.__entryId
+                        row[entry_id_col] = self.__reg.entry_id
                         if not has_mand_concentration_val:
                             row[id_col] = len(lp) + 1
                         lp.add_data(row)
@@ -2171,7 +2131,7 @@ class BMRBAnnTasks:
 
         # resolve duplication of spectral peak lists
 
-        if sf_category in self.__sfCategoryList and self.__internalMode:
+        if sf_category in self.__reg.sf_category_list and self.__reg.internal_mode:
 
             update_sf_name = {}
 
@@ -2461,7 +2421,7 @@ class BMRBAnnTasks:
 
                     if sp_info[idx1]['num_of_dim'] != sp_info[idx2]['num_of_dim']\
                        or sp_info[idx1]['spectral_dim'] != sp_info[idx2]['spectral_dim']\
-                       or (not self.__enforcePeakRowFormat and sp_info[idx1]['size'] != sp_info[idx2]['size']):
+                       or (not self.__reg.enforce_peak_row_format and sp_info[idx1]['size'] != sp_info[idx2]['size']):
                         continue
 
                     if not all(sig1['position'] == sig2['position']
@@ -2576,13 +2536,13 @@ class BMRBAnnTasks:
                     warn = f'There are equivalent NMR spectral peak lists, {res_sf_framecode!r} vs {sf_framecode!r}. '\
                         f'For the sake of simplicity, saveframe {sf_framecode!r} derived from {file_name!r} was ignored.'
 
-                    self.__report.warning.appendDescription('redundant_mr_data',
-                                                            {'file_name': file_name,
-                                                             'sf_framecode': sf_framecode,
-                                                             'description': warn})
+                    self.__reg.report.warning.appendDescription('redundant_mr_data',
+                                                                {'file_name': file_name,
+                                                                 'sf_framecode': sf_framecode,
+                                                                 'description': warn})
 
-                    if self.__verbose:
-                        self.__log.write(f"+{self.__class_name__}.perform() ++ Warning  - {warn}\n")
+                    if self.__reg.verbose:
+                        self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {warn}\n")
 
                     master_entry.remove_saveframe(sf_framecode)
 
@@ -2599,12 +2559,12 @@ class BMRBAnnTasks:
                 count = 0
                 for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                     set_sf_tag(sf, 'ID', idx)
-                    self.__c2S.set_local_sf_id(sf, idx)
+                    self.__reg.c2S.set_local_sf_id(sf, idx)
                     count += 1
 
                 _sf_category = 'entry_information'
 
-                if _sf_category in self.__sfCategoryList:
+                if _sf_category in self.__reg.sf_category_list:
                     ent_sf = master_entry.get_saveframes_by_category(_sf_category)[0]
 
                     _lp_category = '_Data_set'
@@ -2634,7 +2594,7 @@ class BMRBAnnTasks:
 
         count = len(master_entry.get_saveframes_by_category(sf_category))
         if count > 0:
-            input_source = self.__report.input_sources[0]
+            input_source = self.__reg.report.input_sources[0]
             input_source_dic = input_source.get()
 
             if isinstance(input_source_dic['content_subtype'], dict):
@@ -2642,7 +2602,7 @@ class BMRBAnnTasks:
 
         # update sample and sample_condition of spectral peak list saveframe
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category(sf_category):
 
                 if any(True for t in sf.tags if t[0] == 'Chem_shift_reference_ID'):
@@ -2651,7 +2611,7 @@ class BMRBAnnTasks:
                     if chem_shift_ref_id in EMPTY_VALUE:
                         _sf_category = 'chem_shift_reference'
 
-                        if _sf_category in self.__sfCategoryList:
+                        if _sf_category in self.__reg.sf_category_list:
                             _sf = master_entry.get_saveframes_by_category(_sf_category)[0]
 
                             set_sf_tag(sf, 'Chem_shift_reference_ID', get_first_sf_tag(_sf, 'ID'))
@@ -2663,7 +2623,7 @@ class BMRBAnnTasks:
 
                     _sf_category = 'experiment_list'
 
-                    if _sf_category in self.__sfCategoryList:
+                    if _sf_category in self.__reg.sf_category_list:
                         _sf = master_entry.get_saveframes_by_category(_sf_category)[0]
 
                         _lp_category = '_Experiment'
@@ -2720,7 +2680,7 @@ class BMRBAnnTasks:
 
         sf_category = 'chem_shift_reference'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 try:
                     cs_ref_id = int(get_first_sf_tag(sf, 'ID'))
@@ -2907,7 +2867,7 @@ class BMRBAnnTasks:
                                 else:
                                     row[2], row[3], row[11], row[12] = '?', '?', '?', '?'
 
-                                row[-2], row[-1] = self.__entryId, cs_ref_id
+                                row[-2], row[-1] = self.__reg.entry_id, cs_ref_id
 
                                 lp.add_data(row)
 
@@ -2923,7 +2883,7 @@ class BMRBAnnTasks:
                 _sf = pynmrstar.Saveframe.from_scratch(sf_framecode, '_Chem_shift_reference')
                 _sf.add_tag('Sf_category', 'chem_shift_reference')
                 _sf.add_tag('Sf_framecode', sf_framecode)
-                _sf.add_tag('Entry_ID', self.__entryId)
+                _sf.add_tag('Entry_ID', self.__reg.entry_id)
                 _sf.add_tag('ID', cs_ref_id)
                 _sf.add_tag('Name', '.')
                 _sf.add_tag('Proton_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
@@ -2988,7 +2948,7 @@ class BMRBAnnTasks:
                         else:
                             row[2], row[3], row[11], row[12] = '?', '?', '?', '?'
 
-                        row[-2], row[-1] = self.__entryId, cs_ref_id
+                        row[-2], row[-1] = self.__reg.entry_id, cs_ref_id
 
                         lp.add_data(row)
 
@@ -2998,7 +2958,7 @@ class BMRBAnnTasks:
 
         sf_category = 'experiment_list'
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__reg.sf_category_list:
             sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
             lp_category = '_Experiment'
@@ -3024,7 +2984,7 @@ class BMRBAnnTasks:
 
                     _sf_category = 'assigned_chemical_shifts'
 
-                    if _sf_category in self.__sfCategoryList:
+                    if _sf_category in self.__reg.sf_category_list:
                         for _sf in master_entry.get_saveframes_by_category(_sf_category):
 
                             _lp_category = '_Chem_shift_experiment'
@@ -3044,7 +3004,7 @@ class BMRBAnnTasks:
 
                     _sf_category = 'spectral_peak_list'
 
-                    if _sf_category in self.__sfCategoryList:
+                    if _sf_category in self.__reg.sf_category_list:
                         for _sf in master_entry.get_saveframes_by_category(_sf_category):
                             exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
 
@@ -3060,7 +3020,7 @@ class BMRBAnnTasks:
 
                 _sf_category = 'spectral_peak_list'
 
-                if _sf_category in self.__sfCategoryList:
+                if _sf_category in self.__reg.sf_category_list:
 
                     for _sf in master_entry.get_saveframes_by_category(_sf_category):
                         exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
@@ -3258,82 +3218,82 @@ class BMRBAnnTasks:
         # section 5: polymer residues and ligands
 
         if int_sf is not None:
-            if 'assigned_chemical_shifts' in self.__sfCategoryList:
+            if 'assigned_chemical_shifts' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Assigned_chem_shifts', 'yes')
-            if 'general_distance_constraints' in self.__sfCategoryList\
-               or 'torsion_angle_constraints' in self.__sfCategoryList\
-               or 'RDC_constraints' in self.__sfCategoryList:
+            if 'general_distance_constraints' in self.__reg.sf_category_list\
+               or 'torsion_angle_constraints' in self.__reg.sf_category_list\
+               or 'RDC_constraints' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Constraints', 'yes')
-            if 'coupling_constant' in self.__sfCategoryList\
-               or 'J_three_bond_constraints' in self.__sfCategoryList:
+            if 'coupling_constant' in self.__reg.sf_category_list\
+               or 'J_three_bond_constraints' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Coupling_constants', 'yes')
-            if 'chem_shift_isotope_effect' in self.__sfCategoryList:
+            if 'chem_shift_isotope_effect' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Chem_shift_isotope_effect', 'yes')
-            if 'chem_shift_perturbation' in self.__sfCategoryList:
+            if 'chem_shift_perturbation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Chem_shift_perturbation', 'yes')
-            if 'auto_relaxation' in self.__sfCategoryList:
+            if 'auto_relaxation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Auto_relaxation', 'yes')
-            if 'tensor' in self.__sfCategoryList:
+            if 'tensor' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Tensor', 'yes')
-            if 'general_distance_constraints' in self.__sfCategoryList:
+            if 'general_distance_constraints' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Interatomic_distance', 'yes')
-            if 'chem_shift_anisotropy' in self.__sfCategoryList:
+            if 'chem_shift_anisotropy' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Chem_shift_anisotropy', 'yes')
-            if 'heteronucl_NOEs' in self.__sfCategoryList:
+            if 'heteronucl_NOEs' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Heteronucl_NOEs', 'yes')
-            if 'heteronucl_T1_relaxation' in self.__sfCategoryList:
+            if 'heteronucl_T1_relaxation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Heteronucl_T1_relaxation', 'yes')
-            if 'heteronucl_T2_relaxation' in self.__sfCategoryList:
+            if 'heteronucl_T2_relaxation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Heteronucl_T2_relaxation', 'yes')
-            if 'heteronucl_T1rho_relaxation' in self.__sfCategoryList:
+            if 'heteronucl_T1rho_relaxation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Heteronucl_T1rho_relaxation', 'yes')
-            if 'order_parameters' in self.__sfCategoryList:
+            if 'order_parameters' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Order_parameters', 'yes')
-            if 'RDC_constraints' in self.__sfCategoryList\
-               or 'RDCs' in self.__sfCategoryList:
+            if 'RDC_constraints' in self.__reg.sf_category_list\
+               or 'RDCs' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Residual_dipolar_couplings', 'yes')
-            if 'H_exch_rates' in self.__sfCategoryList:
+            if 'H_exch_rates' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'H_exchange_rate', 'yes')
-            if 'H_exch_protection_factors' in self.__sfCategoryList:
+            if 'H_exch_protection_factors' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'H_exchange_protection_factors', 'yes')
-            if 'chemical_rates' in self.__sfCategoryList:
+            if 'chemical_rates' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Chem_rate_constants', 'yes')
-            if 'spectral_peak_list' in self.__sfCategoryList:
+            if 'spectral_peak_list' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Spectral_peak_lists', 'yes')
-            if 'dipolar_couplings' in self.__sfCategoryList:
+            if 'dipolar_couplings' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Dipole_dipole_couplings', 'yes')
-            if 'homonucl_NOEs' in self.__sfCategoryList:
+            if 'homonucl_NOEs' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Homonucl_NOEs', 'yes')
-            if 'dipole_dipole_relaxation' in self.__sfCategoryList:
+            if 'dipole_dipole_relaxation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Dipole_dipole_relaxation', 'yes')
-            if 'dipole_dipole_cross_correlations' in self.__sfCategoryList:
+            if 'dipole_dipole_cross_correlations' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'DD_cross_correlation', 'yes')
-            if 'dipole_CSA_cross_correlations' in self.__sfCategoryList:
+            if 'dipole_CSA_cross_correlations' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Dipole_CSA_cross_correlation', 'yes')
-            if 'binding_constants' in self.__sfCategoryList:
+            if 'binding_constants' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Binding_constants', 'yes')
-            if 'pKa_value_data_set' in self.__sfCategoryList\
-               or 'pH_NMR_param_list' in self.__sfCategoryList:
+            if 'pKa_value_data_set' in self.__reg.sf_category_list\
+               or 'pH_NMR_param_list' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'PKa_value_data_set', 'yes')
-            if 'D_H_fractionation_factors' in self.__sfCategoryList:
+            if 'D_H_fractionation_factors' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'D_H_fractionation_factors', 'yes')
-            if 'theoretical_chem_shifts' in self.__sfCategoryList:
+            if 'theoretical_chem_shifts' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Theoretical_chem_shifts', 'yes')
-            if 'theoretical_coupling_constants' in self.__sfCategoryList:
+            if 'theoretical_coupling_constants' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Theoretical_coupling_constants', 'yes')
-            if 'theoretical_heteronucl_NOEs' in self.__sfCategoryList:
+            if 'theoretical_heteronucl_NOEs' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Theoretical_heteronucl_NOEs', 'yes')
-            if 'theoretical_heteronucl_T1_relaxation' in self.__sfCategoryList:
+            if 'theoretical_heteronucl_T1_relaxation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Theoretical_T1_relaxation', 'yes')
-            if 'theoretical_heteronucl_T2_relaxation' in self.__sfCategoryList:
+            if 'theoretical_heteronucl_T2_relaxation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Theoretical_T2_relaxation', 'yes')
-            if 'theoretical_auto_relaxation' in self.__sfCategoryList:
+            if 'theoretical_auto_relaxation' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Theoretical_auto_relaxation', 'yes')
-            if 'theoretical_dipole_dipole_cross_correlations' in self.__sfCategoryList:
+            if 'theoretical_dipole_dipole_cross_correlations' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Theoretical_DD_cross_correlation', 'yes')
-            if 'spectral_density_values' in self.__sfCategoryList:
+            if 'spectral_density_values' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Spectral_density_values', 'yes')
-            if 'other_data_types' in self.__sfCategoryList:
+            if 'other_data_types' in self.__reg.sf_category_list:
                 set_sf_tag(int_sf, 'Other_kind_of_data', 'yes')
 
         if has_non_polymer or has_nstd_monomer:
@@ -3344,7 +3304,7 @@ class BMRBAnnTasks:
                     set_sf_tag(int_sf, 'Ligands', 'yes')
 
                 # wo coordinates (bmrbdep)
-                if self.__report.getInputSourceIdOfCoord() < 0:
+                if self.__reg.report.getInputSourceIdOfCoord() < 0:
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         try:
@@ -3369,7 +3329,7 @@ class BMRBAnnTasks:
 
         total_cys_in_assembly = 0
 
-        if 'assembly' in self.__sfCategoryList:
+        if 'assembly' in self.__reg.sf_category_list:
 
             lp_category = '_Entity_assembly'
 
@@ -3516,7 +3476,7 @@ class BMRBAnnTasks:
 
         for sf in master_entry.frame_list:
             sf_tag_prefix = sf.tag_prefix
-            label_tags = [sf_tag.split('.')[1] for sf_tag in self.__defSfLabelTag if sf_tag.startswith(f'{sf_tag_prefix}.') and sf_tag.endswith('_label')]
+            label_tags = [sf_tag.split('.')[1] for sf_tag in DEFAULT_SF_LABEL_TAGS if sf_tag.startswith(f'{sf_tag_prefix}.') and sf_tag.endswith('_label')]
             if len(label_tags) == 0:
                 continue
             for label_tag in label_tags:
@@ -3542,9 +3502,9 @@ class BMRBAnnTasks:
                             set_sf_tag(sf, label_tag, '?')
 
         # cleanup
-        if not self.__annotationMode:
-            self.__c2S.cleanup_str(master_entry)
-            self.__c2S.set_entry_id(master_entry, self.__entryId)
-            self.__c2S.normalize_str(master_entry)
+        if not self.__reg.annotation_mode:
+            self.__reg.c2S.cleanup_str(master_entry)
+            self.__reg.c2S.set_entry_id(master_entry, self.__reg.entry_id)
+            self.__reg.c2S.normalize_str(master_entry)
 
         return True

@@ -32,6 +32,7 @@ try:
                                                MR_FILE_PATH_LIST_KEY,
                                                AR_FILE_PATH_LIST_KEY,
                                                AC_FILE_PATH_LIST_KEY,
+                                               NMR_CIF_FILE_PATH_KEY,
                                                NMR_CONTENT_SUBTYPES,
                                                READABLE_FILE_TYPE,
                                                SF_CATEGORIES,
@@ -109,7 +110,8 @@ try:
                                                C_ALIPHATIC_CENTER_MAX,
                                                C_ALIPHATIC_CENTER_MIN,
                                                C_METHYL_CENTER_MAX,
-                                               C_METHYL_CENTER_MIN)
+                                               C_METHYL_CENTER_MIN,
+                                               DEFAULT_DATUM_COUNTER)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpMrSplitter import (detect_bom,
                                                  convert_codec,
@@ -149,6 +151,7 @@ except ImportError:
                                    MR_FILE_PATH_LIST_KEY,
                                    AR_FILE_PATH_LIST_KEY,
                                    AC_FILE_PATH_LIST_KEY,
+                                   NMR_CIF_FILE_PATH_KEY,
                                    NMR_CONTENT_SUBTYPES,
                                    READABLE_FILE_TYPE,
                                    SF_CATEGORIES,
@@ -226,7 +229,8 @@ except ImportError:
                                    C_ALIPHATIC_CENTER_MAX,
                                    C_ALIPHATIC_CENTER_MIN,
                                    C_METHYL_CENTER_MAX,
-                                   C_METHYL_CENTER_MIN)
+                                   C_METHYL_CENTER_MIN,
+                                   DEFAULT_DATUM_COUNTER)
     from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpMrSplitter import (detect_bom,
                                      convert_codec,
@@ -928,7 +932,7 @@ class NmrDpValidation:
                         csPath = _csPath
 
                     allow_empty = self.__reg.bmrb_only and self.__reg.internal_mode\
-                        and ('nmr_cif_file_path' in self.__reg.inputParamDict
+                        and (NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict
                              or (csListId == 1 and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1))
 
                     is_valid, message = self.__reg.nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts
@@ -1155,7 +1159,7 @@ class NmrDpValidation:
                         pass
 
                 allow_empty = self.__reg.bmrb_only and self.__reg.internal_mode\
-                    and ('nmr_cif_file_path' in self.__reg.inputParamDict
+                    and (NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict
                          or (csListId == 0 and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1))
 
                 is_valid, message = self.__reg.nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts
@@ -18483,69 +18487,7 @@ class NmrDpValidation:
 
         file_type = 'nmr-star'
 
-        datum_counter = {'1H chemical shifts': 0,
-                         '2H chemical shifts': 0,
-                         '3H chemical shifts': 0,
-                         '13C chemical shifts': 0,
-                         '15N chemical shifts': 0,
-                         '31P chemical shifts': 0,
-                         '111Cd chemical shifts': 0,
-                         '113Cd chemical shifts': 0,
-                         '19F chemical shifts': 0,
-                         '6Li chemical shifts': 0,
-                         '10B chemical shifts': 0,
-                         '11B chemical shifts': 0,
-                         '17O chemical shifts': 0,
-                         '23Na chemical shifts': 0,
-                         '29Si chemical shifts': 0,
-                         '35Cl chemical shifts': 0,
-                         '129Xe chemical shifts': 0,
-                         '195Pt chemical shifts': 0,
-                         'theoretical 1H chemical shifts': 0,
-                         'theoretical 13C chemical shifts': 0,
-                         'theoretical 15N chemical shifts': 0,
-                         'chemical rates': 0,
-                         'coupling constants': 0,
-                         'theoretical coupling constants': 0,
-                         'chemical shift isotope effects': 0,
-                         'chemical shift perturbation values': 0,
-                         'T1 relaxation values': 0,
-                         'theoretical T1 relaxation values': 0,
-                         'T1rho relaxation values': 0,
-                         'T2 relaxation values': 0,
-                         'theoretical T2 relaxation values': 0,
-                         'dipole-dipole relaxation values': 0,
-                         'dipole-dipole cross correlation relaxation values': 0,
-                         'theoretical dipole-dipole cross-correlation values': 0,
-                         'chemical shift anisotropy values': 0,
-                         'chemical shift anisotropy tensor values': 0,
-                         'quadrupolar couplings': 0,
-                         'theoretical chemical shifts': 0,
-                         'chemical shift tensors': 0,
-                         'residual dipolar couplings': 0,
-                         'dipolar coupling values': 0,
-                         'dipolar coupling tensor values': 0,
-                         'heteronuclear NOE values': 0,
-                         'theoretical heteronuclear NOE values': 0,
-                         'homonuclear NOE values': 0,
-                         'order parameters': 0,
-                         'spectral density values': 0,
-                         'H exchange rates': 0,
-                         'H exchange protection factors': 0,
-                         'pKa values': 0,
-                         'pH NMR parameter values': 0,
-                         'binding constants': 0,
-                         'D/H fractionation factors': 0,
-                         'bond orientation values': 0,
-                         'deduced secondary structure values': 0,
-                         'deduced hydrogen bonds': 0,
-                         'distance constraints': 0,
-                         'ambiguous distance constraints': 0,
-                         'hydrogen bond distance constraints': 0,
-                         'torsion angle constraints': 0,
-                         'chemical shift constraints': 0,
-                         'symmetry constraints': 0
-                         }
+        datum_counter = copy.copy(DEFAULT_DATUM_COUNTER)
 
         def get_loop_size(content_subtype):
             sf_category = SF_CATEGORIES[file_type][content_subtype]

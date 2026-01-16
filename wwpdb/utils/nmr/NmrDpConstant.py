@@ -20,18 +20,25 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 
 
 # parameter key for each input path list
+MODEL_FILE_PATH_KEY = 'coordinate_file_path'
+ALT_MODEL_FILE_PATH_KEY = 'proc_coord_file_path'
 CS_FILE_PATH_LIST_KEY = 'chem_shift_file_path_list'
 MR_FILE_PATH_LIST_KEY = 'restraint_file_path_list'
 AR_FILE_PATH_LIST_KEY = 'atypical_restraint_file_path_list'
 AC_FILE_PATH_LIST_KEY = 'atypical_chem_shift_file_path_list'
+REPORT_FILE_PATH_KEY = 'report_file_path'
+NMR_CIF_FILE_PATH_KEY = 'nmr_cif_file_path'
+NMRIF_FILE_PATH_KEY = 'nmrif_file_path'
+NEXT_NEF_FILE_PATH_KEY = 'nef_file_path'
+NEXT_STAR_FILE_PATH_KEY = 'nmr-star_file_path'
 
 # sub-directory name for cache files
 SUB_DIR_NAME_FOR_CACHE = 'utils_nmr'
 
 # default entry ID
-DEF_ENTRY_ID = 'UNNAMED'
+DEFAULT_ENTRY_ID = 'UNNAMED'
 # initial placeholder for entry ID
-INI_ENTRY_ID = 'EXTRACT_FROM_COORD'
+INITIAL_ENTRY_ID = 'EXTRACT_FROM_COORD'
 
 # supported NEF dictionary version
 NEF_VERSION = '1.1'
@@ -797,8 +804,7 @@ WORKFLOW_OPS = ('nmr-nef-consistency-check',
                 'nmr-cs-mr-merge',
                 'nmr-str2cif-annotate',
                 'nmr-if-merge-deposit',
-                'nmr-str-replace-cs'
-                )
+                'nmr-str-replace-cs')
 
 # NMR content types
 NMR_CONTENT_SUBTYPES = ('entry_info',
@@ -832,8 +838,7 @@ NMR_CONTENT_SUBTYPES = ('entry_info',
                         'ccr_dd_restraint',
                         'fchiral_restraint',
                         'saxs_restraint',
-                        'other_restraint'
-                        )
+                        'other_restraint')
 
 MR_CONTENT_SUBTYPES = ['dist_restraint',
                        'dihed_restraint',
@@ -8005,6 +8010,141 @@ SPECTRAL_DIM_TEMPLATE = {'axis_code': None,
                          # 'encoded_reduced_dimension_id': None  not required for _Peak_row_format loop
                          }
 
+DEFAULT_DATUM_COUNTER = {'1H chemical shifts': 0,
+                         '2H chemical shifts': 0,
+                         '3H chemical shifts': 0,
+                         '13C chemical shifts': 0,
+                         '15N chemical shifts': 0,
+                         '31P chemical shifts': 0,
+                         '111Cd chemical shifts': 0,
+                         '113Cd chemical shifts': 0,
+                         '19F chemical shifts': 0,
+                         '6Li chemical shifts': 0,
+                         '10B chemical shifts': 0,
+                         '11B chemical shifts': 0,
+                         '17O chemical shifts': 0,
+                         '23Na chemical shifts': 0,
+                         '29Si chemical shifts': 0,
+                         '35Cl chemical shifts': 0,
+                         '129Xe chemical shifts': 0,
+                         '195Pt chemical shifts': 0,
+                         'theoretical 1H chemical shifts': 0,
+                         'theoretical 13C chemical shifts': 0,
+                         'theoretical 15N chemical shifts': 0,
+                         'chemical rates': 0,
+                         'coupling constants': 0,
+                         'theoretical coupling constants': 0,
+                         'chemical shift isotope effects': 0,
+                         'chemical shift perturbation values': 0,
+                         'T1 relaxation values': 0,
+                         'theoretical T1 relaxation values': 0,
+                         'T1rho relaxation values': 0,
+                         'T2 relaxation values': 0,
+                         'theoretical T2 relaxation values': 0,
+                         'dipole-dipole relaxation values': 0,
+                         'dipole-dipole cross correlation relaxation values': 0,
+                         'theoretical dipole-dipole cross-correlation values': 0,
+                         'chemical shift anisotropy values': 0,
+                         'chemical shift anisotropy tensor values': 0,
+                         'quadrupolar couplings': 0,
+                         'theoretical chemical shifts': 0,
+                         'chemical shift tensors': 0,
+                         'residual dipolar couplings': 0,
+                         'dipolar coupling values': 0,
+                         'dipolar coupling tensor values': 0,
+                         'heteronuclear NOE values': 0,
+                         'theoretical heteronuclear NOE values': 0,
+                         'homonuclear NOE values': 0,
+                         'order parameters': 0,
+                         'spectral density values': 0,
+                         'H exchange rates': 0,
+                         'H exchange protection factors': 0,
+                         'pKa values': 0,
+                         'pH NMR parameter values': 0,
+                         'binding constants': 0,
+                         'D/H fractionation factors': 0,
+                         'bond orientation values': 0,
+                         'deduced secondary structure values': 0,
+                         'deduced hydrogen bonds': 0,
+                         'distance constraints': 0,
+                         'ambiguous distance constraints': 0,
+                         'hydrogen bond distance constraints': 0,
+                         'torsion angle constraints': 0,
+                         'chemical shift constraints': 0,
+                         'symmetry constraints': 0
+                         }
+
+DEFAULT_LIST_ID_COUNTER = {'dist_restraint': 0,
+                           'dihed_restraint': 0,
+                           'rdc_restraint': 0,
+                           'noepk_restraint': 0,
+                           'jcoup_restraint': 0,
+                           'rdc_raw_data': 0,
+                           'csa_restraint': 0,
+                           'ddc_restraint': 0,
+                           'hvycs_restraint': 0,
+                           'procs_restraint': 0,
+                           'csp_restraint': 0,
+                           'auto_relax_restraint': 0,
+                           'heteronucl_noe_data': 0,
+                           'heteronucl_t1_data': 0,
+                           'heteronucl_t2_data': 0,
+                           'heteronucl_t1r_data': 0,
+                           'order_param_data': 0,
+                           'ph_titr_data': 0,
+                           'ph_param_data': 0,
+                           'coupling_const_data': 0,
+                           'ccr_d_csa_restraint': 0,
+                           'ccr_dd_restraint': 0,
+                           'fchiral_restraint': 0,
+                           'saxs_restraint': 0,
+                           'other_restraint': 0,
+                           'spectral_peak': 0,
+                           'chem_shift': 0
+                           }
+
+DEFAULT_SUBTYPE_DATA = {'entry_info': [],
+                        'poly_seq': [],
+                        'entity': [],
+                        'chem_shift': [],
+                        'chem_shift_ref': [],
+                        'dist_restraint': [],
+                        'dihed_restraint': [],
+                        'rdc_restraint': [],
+                        'spectral_peak': [],
+                        'spectral_peak_alt': [],
+                        'noepk_restraint': [],
+                        'jcoup_restraint': [],
+                        'rdc_raw_data': [],
+                        'csa_restraint': [],
+                        'ddc_restraint': [],
+                        'hvycs_restraint': [],
+                        'procs_restraint': [],
+                        'csp_restraint': [],
+                        'auto_relax_restraint': [],
+                        'heteronucl_noe_data': [],
+                        'heteronucl_t1_data': [],
+                        'heteronucl_t2_data': [],
+                        'heteronucl_t1r_data': [],
+                        'order_param_data': [],
+                        'ph_titr_data': [],
+                        'ph_param_data': [],
+                        'coupling_const_data': [],
+                        'ccr_d_csa_restraint': [],
+                        'ccr_dd_restraint': [],
+                        'fchiral_restraint': [],
+                        'saxs_restraint': [],
+                        'other_restraint': []
+                        }
+
+DEFAULT_COORD_PROPERTIES = {'tautomer': {},
+                            'rotamer': {},
+                            'near_ring': {},
+                            'near_para_ferro': {},
+                            'bond_length': {},
+                            'tautomer_per_model': []
+                            }
+
 ASSIGNMENT_SEPARATOR_PAT = re.compile(r'[^0-9A-Za-z\'\"]+')
 ASSIGNMENT_RESID_PAT = re.compile(r'[0-9]+')
 ASSIGNMENT_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
@@ -8053,4 +8193,4 @@ RNA_RELATED_WORDS = ('rna', 'ribonucleotide', 'nucleotide', "5'-", "3'-")
 ALLOWED_THIOL_STATES = ('all disulfide bound', 'all other bound', 'all free', 'not present', 'not available', 'unknown', 'not reported',
                         'free and disulfide bound', 'free and other bound', 'free disulfide and other bound', 'disulfide and other bound')
 
-UNIDENTIFIED_TAX_ID = (32644, 1780429)
+UNIDENTIFIED_TAX_ID = (32644, 1780429)  # used only in BMRB internal annotation

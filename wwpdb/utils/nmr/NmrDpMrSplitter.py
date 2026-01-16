@@ -188,10 +188,6 @@ except ImportError:
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 
 
-GROMACS_COMMENT_PAT = re.compile(r'\s*;+[^0-9]?(.*)')
-CYANA_UNSET_INFO_PAT = re.compile(r'\s*unset\s+info.*')
-CYANA_PRINT_PAT = re.compile(r'\s*print\s+\".*\".*')
-
 SEL_MR_FILE_HEADER_PAT = re.compile(r'^# Restraints file \((\S+)\): (\S+)\s*')
 SEL_PK_FILE_HEADER_PAT = re.compile(r'^# Peak list file \((\S+)\): (\S+)\s*')
 SEL_CS_FILE_HEADER_PAT = re.compile(r'^# Chemical shifts file \((\S+)\): (\S+)\s*')
@@ -206,7 +202,15 @@ AMBER_RST_PAT = re.compile(r'\s*&[Rr][Ss][Tt].*')
 AMBER_END_PAT = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
 AMBER_MISSING_END_ERR_MSG = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 AMBER_EXTRA_END_ERR_MSG_PAT = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
-AMBER_EXPECTING_COMMAN_PAT = re.compile("expecting \\{.*Comma.*\\}")  # NOTICE: depends on ANTLR v4 and AmberMRLexer.g4
+AMBER_EXPECTING_COMMA_PAT = re.compile("expecting \\{.*Comma.*\\}")  # NOTICE: depends on ANTLR v4 and AmberMRLexer.g4
+
+CYANA_UNSET_INFO_PAT = re.compile(r'\s*unset\s+info.*')
+CYANA_PRINT_PAT = re.compile(r'\s*print\s+\".*\".*')
+
+GROMACS_COMMENT_PAT = re.compile(r'\s*;+[^0-9]?(.*)')
+GROMACS_TAG_PAT = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
+
+SPARKY_ASSIGNMENT_PAT = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*')
 
 XPLOR_ANY_ASSI_PAT = re.compile(r'[Aa][Ss][Ss][Ii][Gg]?[Nn]?')
 XPLOR_ANY_REST_PAT = re.compile(r'[Rr][Ee][Ss][Tt][Rr]?[Aa]?[Ii]?[Nn]?[Tt]?[Ss]?')
@@ -225,14 +229,10 @@ XPLOR_EXPECTNIG_SYMBOL_PAT = re.compile("expecting \\{.*Symbol_name.*\\}")  # NO
 XPLOR_EXPECTING_EQU_OP_PAT = re.compile("expecting \\{.*Equ_op.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 XPLOR_EXPECTING_SEGID_PAT = re.compile("expecting \\{.*SegIdentifier.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 
-GROMACS_TAG_PAT = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
-
-POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT = re.compile(r'\s*([13])$')
-
-SPARKY_ASSIGNMENT_PAT = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*')
-
 DEEP_L_PARENS_PAT = re.compile(r'.*\(\s*\(\s*\(\s*\(.*')
 DEEP_R_PARENS_PAT = re.compile(r'.*\)\s*\)\s*\)\s*\).*')
+
+POTENTIAL_TYPO_FOR_COMMENT_OUT_PAT = re.compile(r'\s*([13])$')
 
 COMMENT_CODE_MIXED_SET = {'#', '!'}
 
@@ -5656,7 +5656,7 @@ class NmrDpMrSplitter:
             and not err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
 
         amber_missing_comma_before = (amber_file_type and err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
-                                      and bool(AMBER_EXPECTING_COMMAN_PAT.search(err_message)))
+                                      and bool(AMBER_EXPECTING_COMMA_PAT.search(err_message)))
 
         if (xplor_missing_end or xplor_ends_wo_statement
                 or xplor_l_paren_wo_assi or xplor_00_origin
@@ -5814,7 +5814,7 @@ class NmrDpMrSplitter:
                     test_line = err_input[0:code_index]
 
                     if len(test_line.strip()) > 0:
-                        typo_for_comment_out = bool(POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT.match(test_line))
+                        typo_for_comment_out = bool(POTENTIAL_TYPO_FOR_COMMENT_OUT_PAT.match(test_line))
 
                         if reader is None:
                             reader = self.getSimpleFileReader(file_type, False)
@@ -5836,7 +5836,7 @@ class NmrDpMrSplitter:
                                     for line in ifh:
                                         if k == offset:
                                             if typo_for_comment_out:
-                                                g = POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT.search(test_line).groups()
+                                                g = POTENTIAL_TYPO_FOR_COMMENT_OUT_PAT.search(test_line).groups()
                                                 if g[0] == '1':
                                                     test_line = re.sub(r'1', '!', test_line)
                                                 else:
@@ -6365,7 +6365,7 @@ class NmrDpMrSplitter:
         self.__reg.strip_mr_error_message.append(err_desc)
 
         if self.__reg.mr_debug:
-            self.__reg.log.write('PEEL-MR\n')
+            self.__reg.log.write('STRIP-MR\n')
 
         reader = self.getSimpleFileReader(file_type, False)
 
@@ -6436,7 +6436,7 @@ class NmrDpMrSplitter:
             if COMMENT_PAT.match(test_line):
 
                 if self.__reg.mr_debug:
-                    self.__reg.log.write('PEEL-MR-EXIT #1\n')
+                    self.__reg.log.write('STRIP-MR-EXIT #1\n')
 
                 return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset) | corrected
 
@@ -6455,7 +6455,7 @@ class NmrDpMrSplitter:
                 if not _has_lexer_error and not _has_parser_error:
 
                     if self.__reg.mr_debug:
-                        self.__reg.log.write('PEEL-MR-EXIT #2\n')
+                        self.__reg.log.write('STRIP-MR-EXIT #2\n')
 
                     return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset) | corrected
 
@@ -6466,7 +6466,7 @@ class NmrDpMrSplitter:
             if has_lexer_error or not has_parser_error:
 
                 if self.__reg.mr_debug:
-                    self.__reg.log.write('PEEL-MR-EXIT #3\n')
+                    self.__reg.log.write('STRIP-MR-EXIT #3\n')
 
                 return False | corrected
 
@@ -6618,7 +6618,7 @@ class NmrDpMrSplitter:
 
             if j3 > 0:
                 if self.__reg.mr_debug:
-                    self.__reg.log.write('PEEL-MR-EXIT #5\n')
+                    self.__reg.log.write('STRIP-MR-EXIT #5\n')
 
                 return False | corrected
 
@@ -6629,7 +6629,7 @@ class NmrDpMrSplitter:
                 os.rename(div_ext_file, div_ext_file.replace('dst-div_ext.mr', '_ext.mr'))  # shrink div_ext file name
 
                 if self.__reg.mr_debug:
-                    self.__reg.log.write('PEEL-MR-EXIT #6\n')
+                    self.__reg.log.write('STRIP-MR-EXIT #6\n')
 
                 return True
 
@@ -6674,7 +6674,7 @@ class NmrDpMrSplitter:
                         os.remove(div_try_file)
 
                     if self.__reg.mr_debug:
-                        self.__reg.log.write('PEEL-MR-EXIT #7\n')
+                        self.__reg.log.write('STRIP-MR-EXIT #7\n')
 
                     return False | corrected  # not split MR file because of the lexer errors to be handled by manual
 
@@ -6687,7 +6687,7 @@ class NmrDpMrSplitter:
             os.remove(div_try_file)
 
             if self.__reg.mr_debug:
-                self.__reg.log.write('PEEL-MR-EXIT #8\n')
+                self.__reg.log.write('STRIP-MR-EXIT #8\n')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -6697,7 +6697,7 @@ class NmrDpMrSplitter:
             os.remove(div_try_file)
 
             if self.__reg.mr_debug:
-                self.__reg.log.write('PEEL-MR-EXIT #9\n')
+                self.__reg.log.write('STRIP-MR-EXIT #9\n')
 
             return False | corrected
 
@@ -6745,7 +6745,7 @@ class NmrDpMrSplitter:
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
         if self.__reg.mr_debug:
-            self.__reg.log.write('PEEL-MR-DONE\n')
+            self.__reg.log.write('STRIP-MR-DONE\n')
 
         return True
 
@@ -6867,7 +6867,7 @@ class NmrDpMrSplitter:
             and not err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
 
         amber_missing_comma_before = (amber_file_type and err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
-                                      and bool(AMBER_EXPECTING_COMMAN_PAT.search(err_message)))
+                                      and bool(AMBER_EXPECTING_COMMA_PAT.search(err_message)))
 
         if (xplor_missing_end or xplor_ends_wo_statement
                 or xplor_l_paren_wo_assi or xplor_00_origin
@@ -6979,7 +6979,7 @@ class NmrDpMrSplitter:
                     test_line = err_input[0:code_index]
 
                     if len(test_line.strip()) > 0:
-                        typo_for_comment_out = bool(POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT.match(test_line))
+                        typo_for_comment_out = bool(POTENTIAL_TYPO_FOR_COMMENT_OUT_PAT.match(test_line))
 
                         if reader is None:
                             reader = self.getSimpleFileReader(file_type, False)
@@ -7001,7 +7001,7 @@ class NmrDpMrSplitter:
                                     for line in ifh:
                                         if k == offset:
                                             if typo_for_comment_out:
-                                                g = POTENTIAL_TYPE_FOR_COMMENT_OUT_PAT.search(test_line).groups()
+                                                g = POTENTIAL_TYPO_FOR_COMMENT_OUT_PAT.search(test_line).groups()
                                                 if g[0] == '1':
                                                     test_line = re.sub(r'1', '!', test_line)
                                                 else:

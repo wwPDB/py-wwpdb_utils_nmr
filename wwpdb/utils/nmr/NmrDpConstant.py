@@ -30,13 +30,15 @@ NMR_CIF_FILE_PATH_KEY = 'nmr_cif_file_path'
 NMRIF_FILE_PATH_KEY = 'nmrif_file_path'
 NEXT_NEF_FILE_PATH_KEY = 'nef_file_path'
 NEXT_STAR_FILE_PATH_KEY = 'nmr-star_file_path'
+RETURN_LETTER_PATH_KEY = 'return_letter_path'
 
 # supported input param names for NmrDpUtility class
 DP_INPUT_PARAM_KEYS = ('remediation', 'internal', 'bmrb_only', 'bmrb_id', 'merge_any_pk_as_is', 'enforce_peak_row_format',
                        'nonblk_anomalous_cs', 'nonblk_bad_nterm', 'update_poly_seq', 'resolve_conflict',
                        'check_mandatory_tag', 'check_auth_seq', 'validation_server', 'conversion_server',
                        'transl_pseudo_name', 'tolerant_seq_align', 'fix_format_issue', 'excl_missing_data',
-                       'cmpl_missing_data', 'trust_pdbx_nmr_ens', 'rmsd_not_superimposed', 'rmsd_overlaid_exactly')
+                       'cmpl_missing_data', 'trust_pdbx_nmr_ens', 'rmsd_not_superimposed', 'rmsd_overlaid_exactly',
+                       'dep_sys_name', 'avs_letter_path', 'elec_dep_hash_code', 'update_related_entries')  # used only for BMRB internal annotation
 
 # supported input file names for NmrDpUtility class
 DP_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
@@ -64,7 +66,8 @@ DP_OUTPUT_FILE_KEYS = (REPORT_FILE_PATH_KEY,
                        NMR_CIF_FILE_PATH_KEY,
                        NMRIF_FILE_PATH_KEY,
                        NEXT_NEF_FILE_PATH_KEY,
-                       NEXT_STAR_FILE_PATH_KEY)
+                       NEXT_STAR_FILE_PATH_KEY,
+                       RETURN_LETTER_PATH_KEY)  # used only for BMRB internal annotation
 
 # support workflow operations of NmrDpUtility class
 DP_WORKFLOW_OPS = ('nmr-nef-consistency-check',
@@ -82,7 +85,7 @@ DP_WORKFLOW_OPS = ('nmr-nef-consistency-check',
                    'nmr-str-replace-cs')
 
 # additional parameter keys for NmrVrptUtility class
-NMR_STR_FILE_PATH_KEY = NEXT_STAR_FILE_PATH_KEY
+NMR_STR_FILE_PATH_KEY = 'nmr_str_file_path'
 RESULT_PKL_FILE_PATH_KEY = 'result_pickle_file_path'
 CIF_READER_OBJ_KEY = 'coord_cif_reader_object'
 NMR_CIF_READER_OBJ_KEY = 'nmr_cif_reader_object'

@@ -32,6 +32,7 @@ try:
                                                MR_FILE_PATH_LIST_KEY,
                                                AR_FILE_PATH_LIST_KEY,
                                                AC_FILE_PATH_LIST_KEY,
+                                               NMR_CIF_FILE_PATH_KEY,
                                                NMR_CONTENT_SUBTYPES,
                                                READABLE_FILE_TYPE,
                                                SF_CATEGORIES,
@@ -150,6 +151,7 @@ except ImportError:
                                    MR_FILE_PATH_LIST_KEY,
                                    AR_FILE_PATH_LIST_KEY,
                                    AC_FILE_PATH_LIST_KEY,
+                                   NMR_CIF_FILE_PATH_KEY,
                                    NMR_CONTENT_SUBTYPES,
                                    READABLE_FILE_TYPE,
                                    SF_CATEGORIES,
@@ -930,7 +932,7 @@ class NmrDpValidation:
                         csPath = _csPath
 
                     allow_empty = self.__reg.bmrb_only and self.__reg.internal_mode\
-                        and ('nmr_cif_file_path' in self.__reg.inputParamDict
+                        and (NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict
                              or (csListId == 1 and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1))
 
                     is_valid, message = self.__reg.nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts
@@ -1157,7 +1159,7 @@ class NmrDpValidation:
                         pass
 
                 allow_empty = self.__reg.bmrb_only and self.__reg.internal_mode\
-                    and ('nmr_cif_file_path' in self.__reg.inputParamDict
+                    and (NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict
                          or (csListId == 0 and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1))
 
                 is_valid, message = self.__reg.nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts

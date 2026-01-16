@@ -264,8 +264,8 @@ try:
                                                AR_FILE_PATH_LIST_KEY,
                                                AC_FILE_PATH_LIST_KEY,
                                                SUB_DIR_NAME_FOR_CACHE,
-                                               DEF_ENTRY_ID,
-                                               INI_ENTRY_ID,
+                                               DEFAULT_ENTRY_ID,
+                                               INITIAL_ENTRY_ID,
                                                WORKFLOW_OPS,
                                                NMR_CONTENT_SUBTYPES,
                                                MR_CONTENT_SUBTYPES,
@@ -328,9 +328,9 @@ try:
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID,
-                                               SPECTRAL_DIM_TEMPLATE)
-    from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
-                                               default_coord_properties)
+                                               SPECTRAL_DIM_TEMPLATE,
+                                               DEFAULT_COORD_PROPERTIES)
+    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
     from wwpdb.utils.nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                                  detect_bom,
@@ -388,8 +388,8 @@ except ImportError:
                                    AR_FILE_PATH_LIST_KEY,
                                    AC_FILE_PATH_LIST_KEY,
                                    SUB_DIR_NAME_FOR_CACHE,
-                                   DEF_ENTRY_ID,
-                                   INI_ENTRY_ID,
+                                   DEFAULT_ENTRY_ID,
+                                   INITIAL_ENTRY_ID,
                                    WORKFLOW_OPS,
                                    NMR_CONTENT_SUBTYPES,
                                    MR_CONTENT_SUBTYPES,
@@ -452,9 +452,9 @@ except ImportError:
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID,
-                                   SPECTRAL_DIM_TEMPLATE)
-    from nmr.NmrDpRegistry import (NmrDpRegistry,
-                                   default_coord_properties)
+                                   SPECTRAL_DIM_TEMPLATE,
+                                   DEFAULT_COORD_PROPERTIES)
+    from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.NmrDpFirstAid import NmrDpFirstAid
     from nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                      detect_bom,
@@ -6039,11 +6039,7 @@ class NmrDpUtility:
 
         self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(master_entry)
 
-        ann = BMRBAnnTasks(self.__reg.verbose, self.__reg.log,
-                           self.__reg.sf_category_list, self.__reg.entry_id,
-                           self.__reg.annotation_mode, self.__reg.internal_mode, self.__reg.enforce_peak_row_format,
-                           self.__reg.sail_flag, self.__reg.report,
-                           ccU=self.__reg.ccU, csStat=self.__reg.csStat, c2S=self.__reg.c2S)
+        ann = BMRBAnnTasks(self.__reg)
 
         if not self.__reg.internal_mode and self.__reg.report.getInputSourceIdOfCoord() >= 0 and self.__reg.cR.hasCategory('database_2'):
 
@@ -6065,8 +6061,7 @@ class NmrDpUtility:
 
         ann.perform(master_entry)
 
-        ann = OneDepAnnTasks(self.__reg.verbose, self.__reg.log,
-                             self.__reg.sf_category_list, self.__reg.entry_id)
+        ann = OneDepAnnTasks(self.__reg)
 
         return ann.extract(master_entry, self.__reg.cR, self.__reg.outputParamDict['nmrif_file_path'])
 
@@ -6085,8 +6080,7 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        ann = OneDepAnnTasks(self.__reg.verbose, self.__reg.log,
-                             self.__reg.sf_category_list, self.__reg.entry_id)
+        ann = OneDepAnnTasks(self.__reg)
 
         return ann.extract(None, self.__reg.cR, self.__reg.outputParamDict['nmrif_file_path'])
 
@@ -7783,7 +7777,7 @@ class NmrDpUtility:
             self.__reg.coordPropCachePath = os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}{hash_code_ext}_coord_prop.pkl")
 
             self.__reg.caC = load_from_pickle(self.__reg.asmChkCachePath)
-            self.__reg.cpC = load_from_pickle(self.__reg.coordPropCachePath, default=copy.copy(default_coord_properties))
+            self.__reg.cpC = load_from_pickle(self.__reg.coordPropCachePath, default=copy.copy(DEFAULT_COORD_PROPERTIES))
             self.__reg.cpcHashCode = hash(str(self.__reg.cpC))
 
             # DAOTHER-8817
@@ -8403,8 +8397,8 @@ class NmrDpUtility:
 
             return True
 
-        if self.__reg.entry_id == INI_ENTRY_ID:
-            self.__reg.entry_id = DEF_ENTRY_ID
+        if self.__reg.entry_id == INITIAL_ENTRY_ID:
+            self.__reg.entry_id = DEFAULT_ENTRY_ID
 
         return False
 
@@ -8454,11 +8448,11 @@ class NmrDpUtility:
 
                 return False
 
-            if self.__reg.entry_id == INI_ENTRY_ID:
+            if self.__reg.entry_id == INITIAL_ENTRY_ID:
                 entry = self.__reg.cR.getDictList('entry')
 
                 if len(entry) == 0 or ('id' not in entry[0]):
-                    self.__reg.entry_id = DEF_ENTRY_ID
+                    self.__reg.entry_id = DEFAULT_ENTRY_ID
                 else:
                     self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
@@ -9120,7 +9114,7 @@ class NmrDpUtility:
 
             finally:
                 self.__reg.caC = None
-                self.__reg.cpC = copy.deepcopy(default_coord_properties)
+                self.__reg.cpC = copy.deepcopy(DEFAULT_COORD_PROPERTIES)
                 self.__reg.exptl_method = ''
                 self.__reg.symmetric = None
                 self.__reg.is_cyclic_polymer.clear()
@@ -15507,8 +15501,7 @@ class NmrDpUtility:
             if len(entry) > 0 and 'id' in entry[0]:
                 self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')
 
-        ann = OneDepAnnTasks(self.__reg.verbose, self.__reg.log,
-                             self.__reg.sf_category_list, self.__reg.entry_id)
+        ann = OneDepAnnTasks(self.__reg)
 
         return ann.merge(master_entry, self.__reg.cR, self.__reg.bmrb_only and self.__reg.internal_mode)
 
@@ -15532,8 +15525,7 @@ class NmrDpUtility:
             if len(entry) > 0 and 'id' in entry[0]:
                 self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')
 
-        ann = OneDepAnnTasks(self.__reg.verbose, self.__reg.log,
-                             self.__reg.sf_category_list, self.__reg.entry_id)
+        ann = OneDepAnnTasks(self.__reg)
 
         return ann.merge(master_entry, self.__nmrIfR, self.__reg.bmrb_only and self.__reg.internal_mode)
 
@@ -15557,11 +15549,7 @@ class NmrDpUtility:
             if len(entry) > 0 and 'id' in entry[0]:
                 self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')
 
-        ann = BMRBAnnTasks(self.__reg.verbose, self.__reg.log,
-                           self.__reg.sf_category_list, self.__reg.entry_id,
-                           self.__reg.annotation_mode, self.__reg.internal_mode, self.__reg.enforce_peak_row_format,
-                           self.__reg.sail_flag, self.__reg.report,
-                           ccU=self.__reg.ccU, csStat=self.__reg.csStat, c2S=self.__reg.c2S)
+        ann = BMRBAnnTasks(self.__reg)
 
         if self.__reg.report.getInputSourceIdOfCoord() >= 0 and self.__reg.cR.hasCategory('database_2'):
 

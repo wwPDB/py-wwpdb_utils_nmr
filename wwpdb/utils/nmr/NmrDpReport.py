@@ -144,6 +144,9 @@ except ImportError:
     from nmr.CifToNmrStar import get_value_safe
 
 
+STATUS_CODES = ('OK', 'Error', 'Warning')
+
+
 class NmrDpReport:
     """ Wrapper class for data processing report of NMR data.
     """
@@ -153,7 +156,6 @@ class NmrDpReport:
                  '__log',
                  '__immutable',
                  '__report',
-                 'status_codes',
                  'input_sources',
                  'sequence_alignment',
                  'chain_assignment',
@@ -185,8 +187,6 @@ class NmrDpReport:
                          'warning': None,
                          'corrected_warning': None
                          }
-
-        self.status_codes = ('OK', 'Error', 'Warning')
 
         self.input_sources = [NmrDpReportInputSource(self.__verbose, self.__log)]
         self.sequence_alignment = NmrDpReportSequenceAlignment(self.__verbose, self.__log)
@@ -1452,7 +1452,7 @@ class NmrDpReport:
         """ Set processing status.
         """
 
-        if status in self.status_codes:
+        if status in STATUS_CODES:
             self.__report['information']['status'] = status
         else:
             if self.__verbose:

@@ -38,6 +38,15 @@ from mmcif.io.IoAdapterPy import IoAdapterPy
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                                NMR_CIF_FILE_PATH_KEY,
+                                               NMR_STR_FILE_PATH_KEY,
+                                               RESULT_PKL_FILE_PATH_KEY,
+                                               CIF_READER_OBJ_KEY,
+                                               NMR_CIF_READER_OBJ_KEY,
+                                               PYNMRSTAR_OBJ_KEY,
+                                               VRPT_INPUT_PARAM_KEYS,
+                                               VRPT_INPUT_FILE_KEYS,
+                                               VRPT_OUTPUT_FILE_KEYS,
+                                               VRPT_WORKFLOW_OPS,
                                                SUB_DIR_NAME_FOR_CACHE,
                                                LARGE_ASYM_ID,
                                                LEN_MAJOR_ASYM_ID,
@@ -59,6 +68,15 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                    NMR_CIF_FILE_PATH_KEY,
+                                   NMR_STR_FILE_PATH_KEY,
+                                   RESULT_PKL_FILE_PATH_KEY,
+                                   CIF_READER_OBJ_KEY,
+                                   NMR_CIF_READER_OBJ_KEY,
+                                   PYNMRSTAR_OBJ_KEY,
+                                   VRPT_INPUT_PARAM_KEYS,
+                                   VRPT_INPUT_FILE_KEYS,
+                                   VRPT_OUTPUT_FILE_KEYS,
+                                   VRPT_WORKFLOW_OPS,
                                    SUB_DIR_NAME_FOR_CACHE,
                                    LARGE_ASYM_ID,
                                    LEN_MAJOR_ASYM_ID,
@@ -578,7 +596,6 @@ class NmrVrptUtility:
                  '__rdcRestViolCombKeyDict',
                  '__results',
                  '__has_prev_results',
-                 '__workFlowOps',
                  '__procTasksDict')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
@@ -698,9 +715,6 @@ class NmrVrptUtility:
         # whether the previous results have been retrieved
         self.__has_prev_results = False
 
-        # list of known workflow operations
-        self.__workFlowOps = ('nmr-restraint-validation',)
-
         __checkTasks = [self.__parseCoordinate,
                         self.__parseNmrData,
                         self.__checkPreviousResultsIfAvailable,
@@ -760,11 +774,15 @@ class NmrVrptUtility:
         try:
 
             if type == 'param':
+                if name not in VRPT_INPUT_PARAM_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input param {name!r}.")
                 self.__inputParamDict[name] = value
             elif type == 'file':
+                if name not in VRPT_INPUT_FILE_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input file {name!r}.")
                 self.__inputParamDict[name] = os.path.abspath(value)
             else:
-                raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type}.")
+                raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type!r}.")
 
         except Exception as e:
             raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e))
@@ -775,14 +793,14 @@ class NmrVrptUtility:
 
         try:
 
-            if type == 'param':
-                self.__outputParamDict[name] = value
-            elif type == 'file':
+            if type == 'file':
+                if name not in VRPT_OUTPUT_FILE_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output file {name!r}.")
                 self.__outputParamDict[name] = os.path.abspath(value)
-                if name == 'result_pickle_file_path':
+                if name == RESULT_PKL_FILE_PATH_KEY:
                     self.__use_cache = True
             else:
-                raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type}.")
+                raise KeyError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type!r}.")
 
         except Exception as e:
             raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e))
@@ -791,11 +809,11 @@ class NmrVrptUtility:
         """ Perform a series of tasks for a given workflow operation.
         """
 
+        if op not in VRPT_WORKFLOW_OPS:
+            raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Unknown workflow operation {op!r}.")
+
         if self.__verbose:
             self.__log.write(f"+{self.__class_name__}.op() starting op {op}, use_cache {self.__use_cache}\n")
-
-        if op not in self.__workFlowOps:
-            raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Unknown workflow operation {op}.")
 
         if op in self.__procTasksDict:
 
@@ -1011,9 +1029,9 @@ class NmrVrptUtility:
             except Exception:
                 pass
 
-        if 'coord_cif_reader_object' in self.__inputParamDict:
+        if CIF_READER_OBJ_KEY in self.__inputParamDict:
 
-            self.__cR = self.__inputParamDict['coord_cif_reader_object']
+            self.__cR = self.__inputParamDict[CIF_READER_OBJ_KEY]
 
             self.__cifPath = self.__cR.getFilePath()
 
@@ -1094,9 +1112,9 @@ class NmrVrptUtility:
             except Exception:
                 pass
 
-        if 'nmr_cif_reader_object' in self.__inputParamDict:
+        if NMR_CIF_READER_OBJ_KEY in self.__inputParamDict:
 
-            self.__rR = self.__inputParamDict['nmr_cif_reader_object']
+            self.__rR = self.__inputParamDict[NMR_CIF_READER_OBJ_KEY]
 
             self.__nmrDataPath = self.__rR.getFilePath()
 
@@ -1108,9 +1126,9 @@ class NmrVrptUtility:
         def get_tempfile_name(suffix: str = ''):
             return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # pylint: disable=protected-access
 
-        if 'nmr_str_file_path' in self.__inputParamDict:
+        if NMR_STR_FILE_PATH_KEY in self.__inputParamDict:
 
-            fPath = self.__inputParamDict['nmr_str_file_path']
+            fPath = self.__inputParamDict[NMR_STR_FILE_PATH_KEY]
 
             _fPath = get_tempfile_name('.str2cif')
 
@@ -1147,9 +1165,9 @@ class NmrVrptUtility:
                 except OSError:
                     pass
 
-        if 'pynmrstar_object' in self.__inputParamDict:
+        if PYNMRSTAR_OBJ_KEY in self.__inputParamDict:
 
-            master_entry = self.__inputParamDict['pynmrstar_object']
+            master_entry = self.__inputParamDict[PYNMRSTAR_OBJ_KEY]
 
             _fPath = get_tempfile_name('.str')
             __fPath = _fPath + '.str2cif'
@@ -3375,8 +3393,8 @@ class NmrVrptUtility:
                 if not os.path.exists(cache_path):
                     write_as_pickle(self.__results, cache_path)
 
-            if 'result_pickle_file_path' in self.__outputParamDict:
-                pickle_file = self.__outputParamDict['result_pickle_file_path']
+            if RESULT_PKL_FILE_PATH_KEY in self.__outputParamDict:
+                pickle_file = self.__outputParamDict[RESULT_PKL_FILE_PATH_KEY]
 
                 if cache_path is None:
                     write_as_pickle(self.__results, pickle_file)
@@ -3392,8 +3410,8 @@ class NmrVrptUtility:
                 except OSError:
                     pass
 
-        elif 'result_pickle_file_path' in self.__outputParamDict:
-            pickle_file = self.__outputParamDict['result_pickle_file_path']
+        elif RESULT_PKL_FILE_PATH_KEY in self.__outputParamDict:
+            pickle_file = self.__outputParamDict[RESULT_PKL_FILE_PATH_KEY]
 
             write_as_pickle(self.__results, pickle_file)
 

@@ -270,6 +270,13 @@ try:
                                                NMRIF_FILE_PATH_KEY,
                                                NEXT_NEF_FILE_PATH_KEY,
                                                NEXT_STAR_FILE_PATH_KEY,
+                                               DP_INPUT_PARAM_KEYS,
+                                               DP_INPUT_FILE_KEYS,
+                                               DP_INPUT_FILE_LIST_KEYS,
+                                               DP_INPUT_FILE_DICT_KEYS,
+                                               DP_OUTPUT_PARAM_KEYS,
+                                               DP_OUTPUT_FILE_KEYS,
+                                               DP_WORKFLOW_OPS,
                                                SUB_DIR_NAME_FOR_CACHE,
                                                DEFAULT_ENTRY_ID,
                                                INITIAL_ENTRY_ID,
@@ -401,6 +408,13 @@ except ImportError:
                                    NMRIF_FILE_PATH_KEY,
                                    NEXT_NEF_FILE_PATH_KEY,
                                    NEXT_STAR_FILE_PATH_KEY,
+                                   DP_INPUT_PARAM_KEYS,
+                                   DP_INPUT_FILE_KEYS,
+                                   DP_INPUT_FILE_LIST_KEYS,
+                                   DP_INPUT_FILE_DICT_KEYS,
+                                   DP_OUTPUT_PARAM_KEYS,
+                                   DP_OUTPUT_FILE_KEYS,
+                                   DP_WORKFLOW_OPS,
                                    SUB_DIR_NAME_FOR_CACHE,
                                    DEFAULT_ENTRY_ID,
                                    INITIAL_ENTRY_ID,
@@ -860,12 +874,20 @@ class NmrDpUtility:
         try:
 
             if type == 'param':
+                if name not in DP_INPUT_PARAM_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input param {name!r}.")
                 self.__reg.inputParamDict[name] = value
             elif type == 'file':
+                if name not in DP_INPUT_FILE_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input file {name!r}.")
                 self.__reg.inputParamDict[name] = os.path.abspath(value)
             elif type == 'file_list':
+                if name not in DP_INPUT_FILE_LIST_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input file_list {name!r}.")
                 self.__reg.inputParamDict[name] = [os.path.abspath(f) for f in value]
             elif type == 'file_dict_list':
+                if name not in DP_INPUT_FILE_DICT_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input file_dict_list {name!r}.")
                 if any(True for f in value if 'original_file_name' in f):
                     self.__reg.inputParamDict[name] = []
                     for f in value:
@@ -880,7 +902,7 @@ class NmrDpUtility:
                     self.__reg.inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type'],
                                                         'ignore_error': False if 'ignore_error' not in f else f['ignore_error']} for f in value]
             else:
-                raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type}.")
+                raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type!r}.")
 
         except Exception as e:
             raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e))
@@ -892,13 +914,15 @@ class NmrDpUtility:
         try:
 
             if type == 'param':
+                if name not in DP_OUTPUT_PARAM_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output param {name!r}.")
                 self.__reg.outputParamDict[name] = value
             elif type == 'file':
+                if name not in DP_OUTPUT_FILE_KEYS:
+                    raise KeyError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output file {name!r}.")
                 self.__reg.outputParamDict[name] = os.path.abspath(value)
-            elif type == 'file_list':
-                self.__reg.outputParamDict[name] = [os.path.abspath(f) for f in value]
             else:
-                raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type}.")
+                raise KeyError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type!r}.")
 
         except Exception as e:
             raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e))
@@ -906,6 +930,9 @@ class NmrDpUtility:
     def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
         """
+
+        if op not in DP_WORKFLOW_OPS:
+            raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Unknown workflow operation {op!r}.")
 
         self.__reg.rescue_mode = True
 

@@ -16,7 +16,12 @@ try:
                                                SF_ANONYMOUS_PAT,
                                                SAVE_PAT,
                                                LOOP_PAT,
-                                               STOP_PAT)
+                                               STOP_PAT,
+                                               EMPTY_VALUE,
+                                               MR_FILE_NAME_PAT,
+                                               PDB_ID_PAT,
+                                               DEP_ID_PAT,
+                                               BMRB_ID_PAT)
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
     from wwpdb.utils.nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from wwpdb.utils.nmr.io.CifReader import CifReader
@@ -27,7 +32,12 @@ except ImportError:
                                    SF_ANONYMOUS_PAT,
                                    SAVE_PAT,
                                    LOOP_PAT,
-                                   STOP_PAT)
+                                   STOP_PAT,
+                                   EMPTY_VALUE,
+                                   MR_FILE_NAME_PAT,
+                                   PDB_ID_PAT,
+                                   DEP_ID_PAT,
+                                   BMRB_ID_PAT)
     from nmr.NmrDpUtility import NmrDpUtility
     from nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from nmr.io.CifReader import CifReader
@@ -67,14 +77,8 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
         @return: Whether input file is combined NMR data file, dictionary of list of associated constraint file names for each format
     """
 
-    emptyValue = (None, '', '.', '?', 'null', 'None')
-
-    mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?[1-9]\w{3}.mr$')
     proc_mr_file_name_pattern = re.compile(r'^D_[1-9]\d{5,9}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
                                            r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
-    pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?[1-9]\w{3}$')
-    dep_id_pattern = re.compile(r'^D_[1-9]\d{5,9}$')
-    bmrb_id_pattern = re.compile(r'^(bmr)?[1-9]\d{4}$')
 
     try:
 
@@ -85,8 +89,8 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
             if sf.category == 'constraint_statistics':
                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                 entry_id = get_first_sf_tag(sf, 'Entry_ID')
-                combined = (mr_file_name_pattern.match(data_file_name) or proc_mr_file_name_pattern.match(data_file_name))\
-                    and (pdb_id_pattern.match(entry_id) or dep_id_pattern.match(entry_id) or bmrb_id_pattern.match(entry_id))
+                combined = (MR_FILE_NAME_PAT.match(data_file_name) or proc_mr_file_name_pattern.match(data_file_name))\
+                    and (PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id) or BMRB_ID_PAT.match(entry_id))
                 original_file_name = None
 
                 lp_category = '_Constraint_file'
@@ -105,10 +109,10 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
 
                 for row in dat:
 
-                    if row[0] in emptyValue:
+                    if row[0] in EMPTY_VALUE:
                         combined = False
 
-                    if row[1] not in emptyValue and row[2] not in emptyValue:
+                    if row[1] not in EMPTY_VALUE and row[2] not in EMPTY_VALUE:
                         if row[2] in ('AMBER', 'Amber'):
                             add_origina_file_name('nm-res-amb', row[1])
                         elif row[2] == 'ARIA':

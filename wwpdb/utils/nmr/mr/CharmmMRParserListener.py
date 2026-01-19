@@ -1848,7 +1848,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                 _seqId, _compId, _ = self.getRealSeqId(ps, _seqId, isPolySeq)
                                                 # _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                                                 if self.ccU.updateChemCompDict(_compId):
-                                                    leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
+                                                    leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                                      if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
 
                                                     _atomIdSelect = set()
                                                     for ccb in self.ccU.lastBonds:
@@ -1878,7 +1879,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                             continue
 
                                                         if distance(to_np_array(_neighbor[0]), origin) < 2.5:
-                                                            _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
+                                                            _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId,
+                                                                                   'comp_id': _compId, 'atom_id': _atomId})
 
                         # struct_conn category
                         _atom = self.cR.getDictListWithFilter('struct_conn',
@@ -1996,13 +1998,17 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 else:
                                     cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
                                     if cca is not None:
-                                        _origin = {'x': float(cca[self.ccU.ccaCartnX]), 'y': float(cca[self.ccU.ccaCartnY]), 'z': float(cca[self.ccU.ccaCartnZ])}
+                                        _origin = {'x': float(cca[self.ccU.ccaCartnX]),
+                                                   'y': float(cca[self.ccU.ccaCartnY]),
+                                                   'z': float(cca[self.ccU.ccaCartnZ])}
                                         origin = to_np_array(_origin)
 
                                         for _atomId in _nonBondedAtomIdSelect:
                                             _cca = next((_cca for _cca in self.ccU.lastAtomList if _cca[self.ccU.ccaAtomId] == _atomId), None)
                                             if _cca is not None:
-                                                _neighbor = {'x': float(_cca[self.ccU.ccaCartnX]), 'y': float(_cca[self.ccU.ccaCartnY]), 'z': float(_cca[self.ccU.ccaCartnZ])}
+                                                _neighbor = {'x': float(_cca[self.ccU.ccaCartnX]),
+                                                             'y': float(_cca[self.ccU.ccaCartnY]),
+                                                             'z': float(_cca[self.ccU.ccaCartnZ])}
 
                                                 if distance(to_np_array(_neighbor), origin) < 2.0:
                                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})

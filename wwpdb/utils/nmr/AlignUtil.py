@@ -27,14 +27,14 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (LOW_SEQ_COVERAGE,
                                                MIN_SEQ_COVERAGE_W_CONFLICT,
                                                EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                LEN_LARGE_ASYM_ID)
 except ImportError:
     from nmr.NmrDpConstant import (LOW_SEQ_COVERAGE,
                                    MIN_SEQ_COVERAGE_W_CONFLICT,
                                    EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    LEN_LARGE_ASYM_ID)
 
@@ -480,8 +480,8 @@ def getOneLetterCodeCan(compId: str) -> str:
 
     compId = compId.upper()
 
-    if compId in MONDICT3:
-        return MONDICT3[compId]
+    if compId in STD_MON_DICT:
+        return STD_MON_DICT[compId]
 
     if compId in EMPTY_VALUE:
         return '.'
@@ -495,8 +495,8 @@ def getOneLetterCode(compId: str) -> str:
 
     compId = compId.upper()
 
-    if compId in MONDICT3:
-        return MONDICT3[compId]
+    if compId in STD_MON_DICT:
+        return STD_MON_DICT[compId]
 
     if compId in EMPTY_VALUE:
         return '.'
@@ -3462,7 +3462,8 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[di
     return _polySeqRst, _nonPolyMapping
 
 
-def retrieveRemappedNonPoly(nonPolyRemap: dict, nonPoly: Optional[dict], chainId: Optional[str], seqId: int, compId: str) -> Tuple[Optional[str], Optional[int]]:
+def retrieveRemappedNonPoly(nonPolyRemap: dict, nonPoly: Optional[dict], chainId: Optional[str], seqId: int, compId: str
+                            ) -> Tuple[Optional[str], Optional[int]]:
     """ Retrieve seq_id from mapping dictionary based on sequence alignments.
     """
 
@@ -3801,7 +3802,7 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
             print(str(e))
             return None
 
-    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in MONDICT3]
+    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
 
     if len(nstd_residues) == 0:
         return None
@@ -3842,7 +3843,7 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
         cR_prev = CifReader(False, sys.stdout, use_cache=False)
         cR_prev.parse(loc_cif_path)
 
-        nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in MONDICT3]
+        nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
 
         if len(nstd_residues_prev) == 0:
             continue
@@ -3910,7 +3911,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     if os.path.exists(pkl_path):
         return load_from_pickle(pkl_path)
 
-    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in MONDICT3]
+    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
 
     if len(nstd_residues) == 0:
         return None
@@ -3936,7 +3937,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     cR_prev = CifReader(False, sys.stdout, use_cache=False)
     cR_prev.parse(cif_path)
 
-    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in MONDICT3]
+    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
 
     auth_seq_id = 'auth_seq_id' if cR_prev.hasItem('atom_site', 'auth_seq_id') else 'label_seq_id'
     auth_comp_id = 'auth_comp_id' if cR_prev.hasItem('atom_site', 'auth_comp_id') else 'label_comp_id'
@@ -3954,7 +3955,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
 
         for c in coord_prev:
             comp_id = c['comp_id']
-            if comp_id not in MONDICT3 and comp_id not in nstd_residues_prev:
+            if comp_id not in STD_MON_DICT and comp_id not in nstd_residues_prev:
                 nstd_residues_prev.append(comp_id)
 
         if len(nstd_residues_prev) == 0:

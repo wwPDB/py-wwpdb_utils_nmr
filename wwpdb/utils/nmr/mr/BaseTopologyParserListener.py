@@ -21,7 +21,7 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 from typing import IO, List, Optional
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+    from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                PSE_PRO_BEGIN_CODE,
                                                AMINO_PROTON_CODE,
@@ -47,7 +47,7 @@ try:
                                                        translateToStdResName,
                                                        translateToLigandName)
 except ImportError:
-    from nmr.NmrDpConstant import (MONDICT3,
+    from nmr.NmrDpConstant import (STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    PSE_PRO_BEGIN_CODE,
                                    AMINO_PROTON_CODE,
@@ -202,7 +202,8 @@ class BaseTopologyParserListener():
 
                                     if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                                  None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -265,7 +266,8 @@ class BaseTopologyParserListener():
 
                                         if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
+                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                                      None, compId, atomNum['auth_atom_id'], None, None, True)
                                         else:
                                             atomId = atomNum['auth_atom_id']
 
@@ -329,7 +331,8 @@ class BaseTopologyParserListener():
 
                                     if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                                  None, compId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -389,7 +392,8 @@ class BaseTopologyParserListener():
 
                                 if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                    and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                              None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                 else:
                                     atomId = atomNum['auth_atom_id']
 
@@ -409,7 +413,8 @@ class BaseTopologyParserListener():
 
                         if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                      None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -439,7 +444,8 @@ class BaseTopologyParserListener():
             if len(self.__seqAlign) == 0:
                 len_cif_na = sum(len(ps_cif['seq_id']) for ps_cif in polySeqModel if 'identical_chain_id' in ps_cif and len(ps_cif['seq_id']) > 3)
                 len_top_na = sum(len(ps_top['seq_id']) for ps_top in self.polySeqPrmTop
-                                 if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']))
+                                 if len(ps_top['seq_id']) > 3
+                                 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']))
                 if len_cif_na == len_top_na:
                     chainIdList = []
                     seqIdList = []
@@ -542,7 +548,8 @@ class BaseTopologyParserListener():
 
                         if self.mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                      None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -953,7 +960,7 @@ class BaseTopologyParserListener():
             if self.mrAtomNameMapping is not None:
                 for v in self.atomNumberDict.values():
                     authCompId = v['auth_comp_id']
-                    if translateToStdResName(authCompId, ccU=self.ccU) in MONDICT3:
+                    if translateToStdResName(authCompId, ccU=self.ccU) in STD_MON_DICT:
                         continue
                     seqId = v['seq_id']
                     authAtomId = v['auth_atom_id']

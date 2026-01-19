@@ -22,7 +22,7 @@ from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
@@ -46,7 +46,7 @@ try:
                                                        getPotentialType)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
@@ -267,7 +267,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -280,7 +280,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -566,7 +566,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -579,7 +579,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:

@@ -71,7 +71,7 @@ try:
                                                LARGE_ASYM_ID,
                                                LEN_MAJOR_ASYM_ID,
                                                EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                PSE_PRO_BEGIN_CODE,
                                                AMINO_PROTON_CODE,
@@ -190,7 +190,7 @@ except ImportError:
                                    LARGE_ASYM_ID,
                                    LEN_MAJOR_ASYM_ID,
                                    EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    PSE_PRO_BEGIN_CODE,
                                    AMINO_PROTON_CODE,
@@ -900,7 +900,8 @@ class NmrDpValidation:
 
                             except Exception as e:
 
-                                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.validateInputSource() ++ Error  - " + str(e))
+                                self.__reg.report.error.appendDescription('internal_error',
+                                                                          f"+{self.__class_name__}.validateInputSource() ++ Error  - " + str(e))
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() ++ Error  - {str(e)}\n")
@@ -1491,7 +1492,8 @@ class NmrDpValidation:
 
                             except Exception as e:
 
-                                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.validateInputSource() ++ Error  - " + str(e))
+                                self.__reg.report.error.appendDescription('internal_error',
+                                                                          f"+{self.__class_name__}.validateInputSource() ++ Error  - " + str(e))
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() ++ Error  - {str(e)}\n")
@@ -2228,7 +2230,8 @@ class NmrDpValidation:
                         close_contact = self.__reg.cR.getDictListWithFilter('pdbx_validate_close_contact',
                                                                             [{'name': 'dist', 'type': 'float'}
                                                                              ],
-                                                                            [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__reg.representative_model_id},
+                                                                            [{'name': 'PDB_model_num', 'type': 'int',
+                                                                              'value': self.__reg.representative_model_id},
                                                                              {'name': 'auth_asym_id_1', 'type': 'str', 'value': auth_cif_chain_id},
                                                                              {'name': 'auth_seq_id_1', 'type': 'int', 'value': auth_beg_cif_seq_id},
                                                                              {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
@@ -2407,17 +2410,23 @@ class NmrDpValidation:
 
             atom_site_1 = self.__reg.cR.getDictListWithFilter('atom_site',
                                                               data_items,
-                                                              [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id', 'type': 'str', 'value': cif_chain_id_1},
-                                                               {'name': 'label_seq_id' if label_scheme else 'auth_seq_id', 'type': 'int', 'value': cif_seq_id_1},
-                                                               {'name': 'label_atom_id' if label_scheme else 'auth_atom_id', 'type': 'str', 'value': cif_atom_id_1},
+                                                              [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id',
+                                                                'type': 'str', 'value': cif_chain_id_1},
+                                                               {'name': 'label_seq_id' if label_scheme else 'auth_seq_id',
+                                                                'type': 'int', 'value': cif_seq_id_1},
+                                                               {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
+                                                                'type': 'str', 'value': cif_atom_id_1},
                                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
             atom_site_2 = self.__reg.cR.getDictListWithFilter('atom_site',
                                                               data_items,
-                                                              [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id', 'type': 'str', 'value': cif_chain_id_2},
-                                                               {'name': 'label_seq_id' if label_scheme else 'auth_seq_id', 'type': 'int', 'value': cif_seq_id_2},
-                                                               {'name': 'label_atom_id' if label_scheme else 'auth_atom_id', 'type': 'str', 'value': cif_atom_id_2},
+                                                              [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id',
+                                                                'type': 'str', 'value': cif_chain_id_2},
+                                                               {'name': 'label_seq_id' if label_scheme else 'auth_seq_id',
+                                                                'type': 'int', 'value': cif_seq_id_2},
+                                                               {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
+                                                                'type': 'str', 'value': cif_atom_id_2},
                                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
@@ -2630,10 +2639,12 @@ class NmrDpValidation:
                     if b2[self.__reg.ccU.ccbAromaticFlag] != 'Y':
                         continue
 
-                    if b2[self.__reg.ccU.ccbAtomId1] == na_ and b2[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE and b2[self.__reg.ccU.ccbAtomId2] != na_atom_id:
+                    if b2[self.__reg.ccU.ccbAtomId1] == na_ and b2[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE\
+                            and b2[self.__reg.ccU.ccbAtomId2] != na_atom_id:
                         na__ = b2[self.__reg.ccU.ccbAtomId2]
 
-                    elif b2[self.__reg.ccU.ccbAtomId2] == na_ and b2[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE and b2[self.__reg.ccU.ccbAtomId1] != na_atom_id:
+                    elif b2[self.__reg.ccU.ccbAtomId2] == na_ and b2[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE\
+                            and b2[self.__reg.ccU.ccbAtomId1] != na_atom_id:
                         na__ = b2[self.__reg.ccU.ccbAtomId1]
 
                     else:
@@ -2644,10 +2655,12 @@ class NmrDpValidation:
                         if b3[self.__reg.ccU.ccbAromaticFlag] != 'Y':
                             continue
 
-                        if b3[self.__reg.ccU.ccbAtomId1] == na__ and b3[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE and b3[self.__reg.ccU.ccbAtomId2] != na_:
+                        if b3[self.__reg.ccU.ccbAtomId1] == na__ and b3[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE\
+                                and b3[self.__reg.ccU.ccbAtomId2] != na_:
                             na___ = b3[self.__reg.ccU.ccbAtomId2]
 
-                        elif b3[self.__reg.ccU.ccbAtomId2] == na__ and b3[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE and b3[self.__reg.ccU.ccbAtomId1] != na_:
+                        elif b3[self.__reg.ccU.ccbAtomId2] == na__ and b3[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE\
+                                and b3[self.__reg.ccU.ccbAtomId1] != na_:
                             na___ = b3[self.__reg.ccU.ccbAtomId1]
 
                         else:
@@ -2860,7 +2873,8 @@ class NmrDpValidation:
             try:
 
                 _neighbor = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                                [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                                                [{'name': 'auth_asym_id', 'type': 'str',
+                                                                  'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
                                                                  {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},  # non-polymer
                                                                  {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                                  {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
@@ -3069,7 +3083,8 @@ class NmrDpValidation:
 
                 except Exception as e:
 
-                    self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.testTautomerOfHistidinePerModel() ++ Error  - " + str(e))
+                    self.__reg.report.error.appendDescription('internal_error',
+                                                              f"+{self.__class_name__}.testTautomerOfHistidinePerModel() ++ Error  - " + str(e))
 
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.testTautomerOfHistidinePerModel() ++ Error  - {str(e)}\n")
@@ -3731,7 +3746,7 @@ class NmrDpValidation:
         if '_' in comp_id:
             comp_id = comp_id.split('_')[0]
 
-        elif comp_id not in MONDICT3 and self.__reg.ccU.updateChemCompDict(comp_id):
+        elif comp_id not in STD_MON_DICT and self.__reg.ccU.updateChemCompDict(comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__reg.ccU.lastChemCompDict:  # matches with comp_id in CCD
                 if self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in EMPTY_VALUE:
                     comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
@@ -3743,7 +3758,7 @@ class NmrDpValidation:
         if '_' in ref_comp_id:
             ref_comp_id = ref_comp_id.split('_')[0]
 
-        elif ref_comp_id not in MONDICT3 and self.__reg.ccU.updateChemCompDict(ref_comp_id):
+        elif ref_comp_id not in STD_MON_DICT and self.__reg.ccU.updateChemCompDict(ref_comp_id):
             if '_chem_comp.mon_nstd_parent_comp_id' in self.__reg.ccU.lastChemCompDict:  # matches with comp_id in CCD
                 if self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in EMPTY_VALUE:
                     ref_comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
@@ -4439,7 +4454,7 @@ class NmrDpValidation:
                 atom_ids = pair['atom_id']
 
                 # standard residue
-                if comp_id in MONDICT3:
+                if comp_id in STD_MON_DICT:
 
                     if file_type == 'nef':
 
@@ -4467,8 +4482,8 @@ class NmrDpValidation:
                                 err = f"Invalid atom name {atom_id!r} (comp_id {comp_id!r}) in a loop {lp_category}."
 
                                 self.__reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                           'description': err})
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                           'category': lp_category, 'description': err})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Error  - {err}\n")
@@ -4494,7 +4509,8 @@ class NmrDpValidation:
                                 self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
                                 continue
 
-                            _atom_id = self.__reg.nefT.get_star_atom(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__reg.ccU), leave_unmatched=False)[0]
+                            _atom_id = self.__reg.nefT.get_star_atom(comp_id,
+                                                                     translateToStdAtomName(atom_id, comp_id, ccU=self.__reg.ccU), leave_unmatched=False)[0]
                             if len(_atom_id) == 1 and atom_id != _atom_id[0]:
                                 self.__fixAtomNomenclature(comp_id, {atom_id: _atom_id[0]})
                                 continue
@@ -4515,8 +4531,8 @@ class NmrDpValidation:
                                     "according to the IUPAC atom nomenclature."
 
                                 self.__reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': warn})
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                             'category': lp_category, 'description': warn})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {warn}\n")
@@ -4526,7 +4542,8 @@ class NmrDpValidation:
                         if not self.__reg.nefT.validate_comp_atom(comp_id, atom_id_):
 
                             if self.__reg.csStat.peptideLike(comp_id) and atom_id_.startswith('H') and atom_id_.endswith('1')\
-                               and self.__reg.nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2') and self.__reg.nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3')\
+                               and self.__reg.nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2')\
+                               and self.__reg.nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3')\
                                and not content_subtype.startswith('spectral_peak'):
 
                                 _atom_id_ = atom_id_[:-1]
@@ -4538,8 +4555,8 @@ class NmrDpValidation:
                                     "according to the IUPAC atom nomenclature, respectively."
 
                                 self.__reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': warn})
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                             'category': lp_category, 'description': warn})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {warn}\n")
@@ -4572,8 +4589,8 @@ class NmrDpValidation:
                                     err = f"Unmatched atom name {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
 
                                     self.__reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': err})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {err}\n")
@@ -4585,8 +4602,8 @@ class NmrDpValidation:
                                     if self.__reg.remediation_mode and len(self.getAtomIdListInXplor(comp_id, atom_id)) > 0:
 
                                         self.__reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': err})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': err})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {err}\n")
@@ -4594,8 +4611,8 @@ class NmrDpValidation:
                                     else:
 
                                         self.__reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                   'description': err})
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                   'category': lp_category, 'description': err})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Error  - {err}\n")
@@ -4636,8 +4653,8 @@ class NmrDpValidation:
                             warn = f"Unknown atom_id {unk_atom_ids!r} (comp_id {comp_id!r}{cc_name})."
 
                             self.__reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': warn})
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                         'category': lp_category, 'description': warn})
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {warn}\n")
@@ -4681,8 +4698,8 @@ class NmrDpValidation:
                                         "according to the IUPAC atom nomenclature."
 
                                     self.__reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {warn}\n")
@@ -4696,21 +4713,21 @@ class NmrDpValidation:
 
                 try:
 
-                    peptide_only = all(len(pair['comp_id']) == 3 and pair['comp_id'] in MONDICT3 for pair in pairs)
+                    peptide_only = all(len(pair['comp_id']) == 3 and pair['comp_id'] in STD_MON_DICT for pair in pairs)
 
                     auth_pairs = self.__reg.nefT.get_star_auth_comp_atom_pair(sf, lp_category)[0]
 
                     for auth_pair in auth_pairs:
                         auth_comp_id = auth_pair['comp_id']
                         if peptide_only and len(auth_comp_id) == 1:
-                            comp_id = next((k for k, v in MONDICT3.items() if v == auth_comp_id), auth_comp_id)
+                            comp_id = next((k for k, v in STD_MON_DICT.items() if v == auth_comp_id), auth_comp_id)
                         else:
                             comp_id = auth_comp_id
                         comp_id = translateToStdResName(comp_id, ccU=self.__reg.ccU)
                         auth_atom_ids = auth_pair['atom_id']
 
                         # standard residue
-                        if comp_id in MONDICT3:
+                        if comp_id in STD_MON_DICT:
 
                             self.__reg.ccU.updateChemCompDict(comp_id)
                             ref_atom_ids = [a[self.__reg.ccU.ccaAtomId] for a in self.__reg.ccU.lastAtomList]
@@ -4751,8 +4768,8 @@ class NmrDpValidation:
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
 
                                         self.__reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {warn}\n")
@@ -4781,8 +4798,8 @@ class NmrDpValidation:
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
 
                                     self.__reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {warn}\n")
@@ -4821,8 +4838,8 @@ class NmrDpValidation:
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
 
                                         self.__reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {warn}\n")
@@ -4850,8 +4867,8 @@ class NmrDpValidation:
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
 
                                     self.__reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ Warning  - {warn}\n")
@@ -4870,8 +4887,8 @@ class NmrDpValidation:
                 except ValueError as e:
 
                     self.__reg.report.error.appendDescription('invalid_data',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                               'description': str(e).strip("'")})
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                               'category': lp_category, 'description': str(e).strip("'")})
 
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ ValueError  - {str(e)}\n")
@@ -4891,8 +4908,8 @@ class NmrDpValidation:
                             err = err[p:]
 
                             self.__reg.report.error.appendDescription('invalid_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                       'description': err})
+                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                       'category': lp_category, 'description': err})
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ ValueError  - {err}\n")
@@ -4914,8 +4931,8 @@ class NmrDpValidation:
         except LookupError as e:
 
             self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                       'description': str(e).strip("'")})
+                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                       'category': lp_category, 'description': str(e).strip("'")})
 
             self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ LookupError  - "
                                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
@@ -4923,8 +4940,8 @@ class NmrDpValidation:
         except ValueError as e:
 
             self.__reg.report.error.appendDescription('invalid_data',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                       'description': str(e).strip("'")})
+                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                       'category': lp_category, 'description': str(e).strip("'")})
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ ValueError  - {str(e)}\n")
@@ -4944,8 +4961,8 @@ class NmrDpValidation:
                     err = err[p:]
 
                     self.__reg.report.error.appendDescription('invalid_data',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                               'description': err})
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                               'category': lp_category, 'description': err})
 
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() ++ ValueError  - {err}\n")
@@ -6170,7 +6187,7 @@ class NmrDpValidation:
                 has_cs_stat = False
 
                 # non-standard residue
-                if comp_id not in MONDICT3:
+                if comp_id not in STD_MON_DICT:
 
                     if has_mr_atom_name_mapping and atom_id_[0] == 'H':
                         try:
@@ -6201,7 +6218,8 @@ class NmrDpValidation:
                     if len(cs_stats) == 0:
                         if self.__reg.ccU.updateChemCompDict(comp_id):
                             parent_comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
-                            if parent_comp_id in MONDICT3:  # DAOTHER-9198: retrieve BMRB chemical shift statittics from parent comp_id if possible (i.e. DNR -> DC)
+                            # DAOTHER-9198: retrieve BMRB chemical shift statittics from parent comp_id if possible (i.e. DNR -> DC)
+                            if parent_comp_id in STD_MON_DICT:
                                 cs_stats = self.__reg.csStat.get(parent_comp_id)
 
                     cs_stat = next((cs_stat for cs_stat in cs_stats if cs_stat['atom_id'] == atom_id_ and cs_stat['count'] > 0), None)
@@ -6232,8 +6250,8 @@ class NmrDpValidation:
                                 if self.__reg.combined_mode and not self.__reg.remediation_mode:
 
                                     self.__reg.report.error.appendDescription('invalid_data',
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                               'description': err})
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                               'category': lp_category, 'description': err})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -6241,9 +6259,10 @@ class NmrDpValidation:
                                 else:
 
                                     self.__reg.report.warning.appendDescription('conflicted_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err,
-                                                                                 'sigma': float(f"{abs(value - methyl_cs_vals[methyl_cs_key]) / max_inclusive:.2f}")})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': err,
+                                                                                 'sigma':
+                                                                                 float(f"{abs(value - methyl_cs_vals[methyl_cs_key]) / max_inclusive:.2f}")})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {err}\n")
@@ -6255,8 +6274,8 @@ class NmrDpValidation:
                                 f"to verify {full_value_name} {value} (avg {avg_value})."
 
                             self.__reg.report.warning.appendDescription('unusual_data',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': warn})
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                         'category': lp_category, 'description': warn})
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6266,11 +6285,12 @@ class NmrDpValidation:
                         if avg_value is None:
 
                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
-                                + f"] Insufficient chemical shift statistics on comp_id {comp_id}, atom_id {atom_name} is available to verify {full_value_name} {value}."
+                                + f"] Insufficient chemical shift statistics on comp_id {comp_id}, atom_id {atom_name} is available "\
+                                + f"to verify {full_value_name} {value}."
 
                             self.__reg.report.warning.appendDescription('unusual_data',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': warn})
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                         'category': lp_category, 'description': warn})
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6310,9 +6330,10 @@ class NmrDpValidation:
                                     if self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
 
                                         self.__reg.report.warning.appendDescription('anomalous_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': err,
-                                                                                     'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': err,
+                                                                                     'value': value, 'z_score': z_score,
+                                                                                     'description_alt': err_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {err}\n")
@@ -6333,9 +6354,10 @@ class NmrDpValidation:
                                     else:
 
                                         self.__reg.report.error.appendDescription('anomalous_data',
-                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                   'description': err,
-                                                                                   'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                   'category': lp_category, 'description': err,
+                                                                                   'value': value, 'z_score': z_score,
+                                                                                   'description_alt': err_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -6362,9 +6384,10 @@ class NmrDpValidation:
                                                                                     if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0
                                                                                     or na['ring_distance'] > VICINITY_AROMATIC
                                                                                     else 'unusual_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn,
-                                                                                     'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn,
+                                                                                     'value': value, 'z_score': z_score,
+                                                                                     'description_alt': warn_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6387,9 +6410,10 @@ class NmrDpValidation:
                                     else:
 
                                         self.__reg.report.error.appendDescription('anomalous_data',
-                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                   'description': warn,
-                                                                                   'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                   'category': lp_category, 'description': warn,
+                                                                                   'value': value, 'z_score': z_score,
+                                                                                   'description_alt': warn_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {warn}\n")
@@ -6409,9 +6433,10 @@ class NmrDpValidation:
                                         f"is located at a distance of {pa['distance']}Å."
 
                                     self.__reg.report.warning.appendDescription('anomalous_data' if pa['distance'] > VICINITY_PARAMAGNETIC else 'unusual_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn,
-                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score,
+                                                                                 'description_alt': warn_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6450,9 +6475,10 @@ class NmrDpValidation:
                                         warn_alt += no_reason_message
 
                                     self.__reg.report.warning.appendDescription('anomalous_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn,
-                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score,
+                                                                                 'description_alt': warn_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6468,7 +6494,8 @@ class NmrDpValidation:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} ({value} ppm, {sigma:.2f} sigma), "\
+                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
+                                            f"({value} ppm, {sigma:.2f} sigma), "\
                                             f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                             f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
                                             f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
@@ -6476,9 +6503,10 @@ class NmrDpValidation:
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
                                         self.__reg.report.warning.appendDescription('unusual_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn,
-                                                                                     'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn,
+                                                                                     'value': value, 'z_score': z_score,
+                                                                                     'description_alt': warn_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6493,16 +6521,18 @@ class NmrDpValidation:
                                             f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
 
-                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} ({value} ppm, {sigma:.2f} sigma), "\
+                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
+                                            f"({value} ppm, {sigma:.2f} sigma), "\
                                             f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                             f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
                                             f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
 
                                         self.__reg.report.warning.appendDescription('unusual_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn,
-                                                                                     'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn,
+                                                                                     'value': value, 'z_score': z_score,
+                                                                                     'description_alt': warn_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6535,9 +6565,11 @@ class NmrDpValidation:
                                 elif pa is not None:
 
                                     if pa['distance'] > VICINITY_PARAMAGNETIC:
-                                        warn += f" The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                        warn += " The nearest paramagnetic/ferromagnetic atom "\
+                                            f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
-                                        warn_alt += f" The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                        warn_alt += " The nearest paramagnetic/ferromagnetic atom "\
+                                            f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
                                     else:
                                         warn = warn_alt = None
@@ -6548,9 +6580,10 @@ class NmrDpValidation:
 
                                 if warn is not None:
                                     self.__reg.report.warning.appendDescription('unusual_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn,
-                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score,
+                                                                                 'description_alt': warn_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6562,8 +6595,8 @@ class NmrDpValidation:
                                     f"Occurrence of {atom_name} in {comp_id} is {cs_stat['norm_freq']:.1%} in BMRB archive."
 
                                 self.__reg.report.warning.appendDescription('unusual/rare_data',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': warn})
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                             'category': lp_category, 'description': warn})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6585,7 +6618,8 @@ class NmrDpValidation:
                                         + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) is not within expected range "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."
 
-                                    err_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} ({value} ppm, {sigma:.2f} sigma), "\
+                                    err_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
+                                        f"({value} ppm, {sigma:.2f} sigma), "\
                                         f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value})."
 
@@ -6599,9 +6633,10 @@ class NmrDpValidation:
                                     if self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
 
                                         self.__reg.report.warning.appendDescription('anomalous_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': err,
-                                                                                     'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': err,
+                                                                                     'value': value, 'z_score': z_score,
+                                                                                     'description_alt': err_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {err}\n")
@@ -6622,9 +6657,10 @@ class NmrDpValidation:
                                     else:
 
                                         self.__reg.report.error.appendDescription('anomalous_data',
-                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                   'description': err,
-                                                                                   'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                   'category': lp_category, 'description': err,
+                                                                                   'value': value, 'z_score': z_score,
+                                                                                   'description_alt': err_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -6638,7 +6674,8 @@ class NmrDpValidation:
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                    warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} ({value} ppm, {sigma:.2f} sigma), "\
+                                    warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
+                                        f"({value} ppm, {sigma:.2f} sigma), "\
                                         f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
                                         f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
@@ -6650,9 +6687,10 @@ class NmrDpValidation:
                                         if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0 or na['ring_distance'] > VICINITY_AROMATIC:
 
                                             self.__reg.report.warning.appendDescription('anomalous_data',
-                                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                         'description': warn,
-                                                                                         'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                         'category': lp_category, 'description': warn,
+                                                                                         'value': value, 'z_score': z_score,
+                                                                                         'description_alt': warn_alt, 'sigma': sigma})
 
                                             if self.__reg.verbose:
                                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6674,9 +6712,10 @@ class NmrDpValidation:
                                     else:
 
                                         self.__reg.report.error.appendDescription('anomalous_data',
-                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                   'description': warn,
-                                                                                   'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                   'category': lp_category, 'description': warn,
+                                                                                   'value': value, 'z_score': z_score,
+                                                                                   'description_alt': warn_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {warn}\n")
@@ -6691,16 +6730,18 @@ class NmrDpValidation:
                                             f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
 
-                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} ({value} ppm, {sigma:.2f} sigma), "\
+                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
+                                            f"({value} ppm, {sigma:.2f} sigma), "\
                                             f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                             f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
                                             f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
 
                                         self.__reg.report.warning.appendDescription('unusual_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn,
-                                                                                     'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn,
+                                                                                     'value': value, 'z_score': z_score,
+                                                                                     'description_alt': warn_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6738,9 +6779,10 @@ class NmrDpValidation:
                                         warn_alt += no_reason_message
 
                                     self.__reg.report.warning.appendDescription('anomalous_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn,
-                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score,
+                                                                                 'description_alt': warn_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6756,7 +6798,8 @@ class NmrDpValidation:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} ({value} ppm, {sigma:.2f} sigma), "\
+                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
+                                            f"({value} ppm, {sigma:.2f} sigma), "\
                                             f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                             f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
                                             f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
@@ -6764,9 +6807,10 @@ class NmrDpValidation:
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
                                         self.__reg.report.warning.appendDescription('unusual_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn,
-                                                                                     'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn,
+                                                                                     'value': value, 'z_score': z_score,
+                                                                                     'description_alt': warn_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6781,16 +6825,18 @@ class NmrDpValidation:
                                             f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
 
-                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} ({value} ppm, {sigma:.2f} sigma), "\
+                                        warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
+                                            f"({value} ppm, {sigma:.2f} sigma), "\
                                             f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                             f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
                                             f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
 
                                         self.__reg.report.warning.appendDescription('unusual_data',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn,
-                                                                                     'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn,
+                                                                                     'value': value, 'z_score': z_score,
+                                                                                     'description_alt': warn_alt, 'sigma': sigma})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6825,8 +6871,8 @@ class NmrDpValidation:
                                 if self.__reg.combined_mode and not self.__reg.remediation_mode:
 
                                     self.__reg.report.error.appendDescription('invalid_data',
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                               'description': err})
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                               'category': lp_category, 'description': err})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -6834,9 +6880,10 @@ class NmrDpValidation:
                                 else:
 
                                     self.__reg.report.warning.appendDescription('conflicted_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err,
-                                                                                 'sigma': float(f"{abs(value - methyl_cs_vals[methyl_cs_key]) / max_inclusive:.2f}")})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': err,
+                                                                                 'sigma':
+                                                                                 float(f"{abs(value - methyl_cs_vals[methyl_cs_key]) / max_inclusive:.2f}")})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {err}\n")
@@ -6848,8 +6895,8 @@ class NmrDpValidation:
                                 f"to verify {full_value_name} {value} (avg {avg_value})."
 
                             self.__reg.report.warning.appendDescription('unusual_data',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': warn})
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                         'category': lp_category, 'description': warn})
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6859,11 +6906,12 @@ class NmrDpValidation:
                         if avg_value is None:
 
                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
-                                + f"] Insufficient chemical shift statistics on comp_id {comp_id}, atom_id {atom_name} is available to verify {full_value_name} {value}."
+                                + f"] Insufficient chemical shift statistics on comp_id {comp_id}, atom_id {atom_name} "\
+                                + "is available to verify {full_value_name} {value}."
 
                             self.__reg.report.warning.appendDescription('unusual_data',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': warn})
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                         'category': lp_category, 'description': warn})
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6901,9 +6949,10 @@ class NmrDpValidation:
                                 if self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
 
                                     self.__reg.report.warning.appendDescription('anomalous_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err,
-                                                                                 'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': err,
+                                                                                 'value': value, 'z_score': z_score,
+                                                                                 'description_alt': err_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {err}\n")
@@ -6924,9 +6973,10 @@ class NmrDpValidation:
                                 else:
 
                                     self.__reg.report.error.appendDescription('anomalous_data',
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                               'description': err,
-                                                                               'value': value, 'z_score': z_score, 'description_alt': err_alt, 'sigma': sigma})
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                               'category': lp_category, 'description': err,
+                                                                               'value': value, 'z_score': z_score,
+                                                                               'description_alt': err_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -6953,9 +7003,10 @@ class NmrDpValidation:
                                                                                 if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0
                                                                                 or na['ring_distance'] > VICINITY_AROMATIC
                                                                                 else 'unusual_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn,
-                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score,
+                                                                                 'description_alt': warn_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -6978,9 +7029,10 @@ class NmrDpValidation:
                                 else:
 
                                     self.__reg.report.error.appendDescription('anomalous_data',
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                               'description': warn,
-                                                                               'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                               'category': lp_category, 'description': warn,
+                                                                               'value': value, 'z_score': z_score,
+                                                                               'description_alt': warn_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {warn}\n")
@@ -7000,9 +7052,10 @@ class NmrDpValidation:
                                     f"is located at a distance of {pa['distance']}Å."
 
                                 self.__reg.report.warning.appendDescription('anomalous_data' if pa['distance'] > VICINITY_PARAMAGNETIC else 'unusual_data',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': warn,
-                                                                             'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                             'category': lp_category, 'description': warn,
+                                                                             'value': value, 'z_score': z_score,
+                                                                             'description_alt': warn_alt, 'sigma': sigma})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -7021,7 +7074,8 @@ class NmrDpValidation:
                                             loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
                                         modified = True
 
-                        elif sigma > self.__reg.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:  # Set 5.0 to be consistent with validation report
+                        # Set 5.0 to be consistent with validation report
+                        elif sigma > self.__reg.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:
 
                             na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_)
                             pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_)
@@ -7041,9 +7095,10 @@ class NmrDpValidation:
                                     warn_alt += no_reason_message
 
                                 self.__reg.report.warning.appendDescription('anomalous_data',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': warn,
-                                                                             'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                             'category': lp_category, 'description': warn,
+                                                                             'value': value, 'z_score': z_score,
+                                                                             'description_alt': warn_alt, 'sigma': sigma})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -7067,9 +7122,10 @@ class NmrDpValidation:
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
                                     self.__reg.report.warning.appendDescription('unusual_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn,
-                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score,
+                                                                                 'description_alt': warn_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -7091,9 +7147,10 @@ class NmrDpValidation:
                                         f"is located at a distance of {pa['distance']}Å."
 
                                     self.__reg.report.warning.appendDescription('unusual_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn,
-                                                                                 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn,
+                                                                                 'value': value, 'z_score': z_score,
+                                                                                 'description_alt': warn_alt, 'sigma': sigma})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -7105,8 +7162,8 @@ class NmrDpValidation:
                                 f"Occurrence of {atom_name} in {comp_id} is {cs_stat['norm_freq']:.1%} in BMRB archive."
 
                             self.__reg.report.warning.appendDescription('unusual/rare_data',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': warn})
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                         'category': lp_category, 'description': warn})
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -7117,8 +7174,8 @@ class NmrDpValidation:
                         + f"] No chemical shift statistics is available to verify {full_value_name} {value}."
 
                     self.__reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                 'description': warn})
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                 'category': lp_category, 'description': warn})
 
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -7173,8 +7230,8 @@ class NmrDpValidation:
                                         f"(allowed ambig_code {[1, allowed_ambig_code, 4, 5, 6, 9]}) in a loop {lp_category}."
 
                                     self.__reg.report.error.appendDescription('invalid_ambiguity_code',
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                               'description': err})
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                               'category': lp_category, 'description': err})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -7204,8 +7261,8 @@ class NmrDpValidation:
                                         f"However, {ambig_code_name} {ambig_code2} of {atom_id_name} {_atom_id2} is inconsistent."
 
                                     self.__reg.report.warning.appendDescription('ambiguity_code_mismatch',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -7225,8 +7282,8 @@ class NmrDpValidation:
                             if self.__reg.remediation_mode:
 
                                 self.__reg.report.warning.appendDescription('missing_data',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': err})
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                             'category': lp_category, 'description': err})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {err}\n")
@@ -7234,8 +7291,8 @@ class NmrDpValidation:
                             else:
 
                                 self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                           'description': err})
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                           'category': lp_category, 'description': err})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ LookupError  - "
@@ -7276,8 +7333,8 @@ class NmrDpValidation:
                                         + f"] {ambig_code_name} {str(ambig_code)!r} requires other rows {ambig_desc}sharing {ambig_set_id_name} {ambig_set_id}."
 
                                     self.__reg.report.warning.appendDescription('missing_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
@@ -7304,8 +7361,8 @@ class NmrDpValidation:
                                                 + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                             self.__reg.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                       'description': err})
+                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                       'category': lp_category, 'description': err})
 
                                             if self.__reg.verbose:
                                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -7351,8 +7408,8 @@ class NmrDpValidation:
                                                     + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                                 self.__reg.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                           'description': err})
+                                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                           'category': lp_category, 'description': err})
 
                                                 if self.__reg.verbose:
                                                     self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -7387,8 +7444,8 @@ class NmrDpValidation:
                                                     + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                                 self.__reg.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                           'description': err})
+                                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                           'category': lp_category, 'description': err})
 
                                                 if self.__reg.verbose:
                                                     self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -7400,7 +7457,7 @@ class NmrDpValidation:
                                     atom_id2 = _row[atom_id_name]
                                     value2 = _row[value_name]
 
-                                    if comp_id2 not in MONDICT3:
+                                    if comp_id2 not in STD_MON_DICT:
                                         continue
 
                                     _atom_id2 = atom_id2
@@ -7441,8 +7498,8 @@ class NmrDpValidation:
                                                 + f" is different in the set that share the same ambiguity code ({_atom_id[0]!r} vs {_atom_id2[0]!r})."
 
                                             self.__reg.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                       'description': err})
+                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                       'category': lp_category, 'description': err})
 
                                             if self.__reg.verbose:
                                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -7481,8 +7538,8 @@ class NmrDpValidation:
                                                 f"by {value2 - value:.3f} (tolerance {CS_UNCERT_MAX})."
 
                                             self.__reg.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                       'description': err})
+                                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                       'category': lp_category, 'description': err})
 
                                             if self.__reg.verbose:
                                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -7493,8 +7550,8 @@ class NmrDpValidation:
                             + f"] Invalid ambiguity code {str(ambig_code)!r} (allowed ambig_code {ALLOWED_AMBIGUITY_CODES}) in a loop."
 
                         self.__reg.report.error.appendDescription('invalid_ambiguity_code',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ ValueError  - {err}\n")
@@ -8361,14 +8418,16 @@ class NmrDpValidation:
                         length_list += f"{bb['distance']} (model_id {bb['model_id']}), "
 
                     warn = "Covalent bond ("\
-                        + self.getReducedAtomNotation(chain_id_1_name, chain_id_1, seq_id_1_name, seq_id_1, comp_id_1_name, comp_id_1, atom_id_1_name, atom_id_1)\
+                        + self.getReducedAtomNotation(chain_id_1_name, chain_id_1, seq_id_1_name, seq_id_1,
+                                                      comp_id_1_name, comp_id_1, atom_id_1_name, atom_id_1)\
                         + " - "\
-                        + self.getReducedAtomNotation(chain_id_2_name, chain_id_2, seq_id_2_name, seq_id_2, comp_id_2_name, comp_id_2, atom_id_2_name, atom_id_2)\
+                        + self.getReducedAtomNotation(chain_id_2_name, chain_id_2, seq_id_2_name, seq_id_2,
+                                                      comp_id_2_name, comp_id_2, atom_id_2_name, atom_id_2)\
                         + f") is out of acceptable range, {length_list[:-2]}Å."
 
                     self.__reg.report.warning.appendDescription('anomalous_bond_length',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                 'description': warn})
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                 'category': lp_category, 'description': warn})
 
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.testCoordCovalentBond() ++ Warning  - {warn}\n")
@@ -8505,12 +8564,13 @@ class NmrDpValidation:
                                     if not self.__reg.nefT.validate_comp_atom(comp_id, atom_id_):
 
                                         warn = "Atom ("\
-                                            + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
+                                            + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id,
+                                                                          comp_id_name, comp_id, atom_id_name, atom_name)\
                                             + f", {variant_name} {_variant_!r}) did not match with chemical component dictionary (CCD)."
 
                                         self.__reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': warn})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': warn})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.textResidueVariant() ++ Warning  - {warn}\n")
@@ -8521,12 +8581,13 @@ class NmrDpValidation:
                                    and lp_category != '_Entity_deleted_atom':
 
                                     err = "Atom ("\
-                                        + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
+                                        + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id,
+                                                                      comp_id_name, comp_id, atom_id_name, atom_name)\
                                         + f", {variant_name} {_variant_!r}) is unexpectedly incorporated in the coordinates."
 
                                     self.__reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                               'description': err})
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                               'category': lp_category, 'description': err})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ Error  - {err}\n")
@@ -8539,7 +8600,8 @@ class NmrDpValidation:
                                              or 'auth_atom_id' not in coord_atom_site_)):
 
                                     err = "Atom ("\
-                                        + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
+                                        + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id,
+                                                                      comp_id_name, comp_id, atom_id_name, atom_name)\
                                         + f") which is a {variant_name} {_variant_!r} is not present in the coordinates."
 
                                     checked = False
@@ -8555,8 +8617,10 @@ class NmrDpValidation:
                                                         and cca[self.__reg.ccU.ccaCTerminalAtomFlag] == 'N')):
                                                 checked = True
                                                 err = "Atom ("\
-                                                    + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
-                                                    + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinates. Please re-upload the model file."
+                                                    + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id,
+                                                                                  comp_id_name, comp_id, atom_id_name, atom_name)\
+                                                    + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinates. "\
+                                                    + "Please re-upload the model file."
 
                                     if self.__reg.remediation_mode and checked:
                                         continue
@@ -8564,8 +8628,8 @@ class NmrDpValidation:
                                     if content_subtype.startswith('spectral_peak'):
 
                                         self.__reg.report.warning.appendDescription('hydrogen_not_instantiated' if checked else 'assigned_peak_atom_not_found',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': err})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': err})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ Warning  - {err}\n")
@@ -8573,8 +8637,8 @@ class NmrDpValidation:
                                     else:
 
                                         self.__reg.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
-                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                   'description': err})
+                                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                   'category': lp_category, 'description': err})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ Error  - {err}\n")
@@ -8618,12 +8682,13 @@ class NmrDpValidation:
                                 if not self.__reg.nefT.validate_comp_atom(comp_id, atom_id_):
 
                                     warn = "Atom ("\
-                                        + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
+                                        + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id,
+                                                                      comp_id_name, comp_id, atom_id_name, atom_name)\
                                         + ") did not match with chemical component dictionary (CCD)."
 
                                     self.__reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': warn})
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn})
 
                                     if self.__reg.verbose:
                                         self.__reg.log.write(f"+{self.__class_name__}.textResidueVariant() ++ Warning  - {warn}\n")
@@ -8639,8 +8704,8 @@ class NmrDpValidation:
                                     + ") is unexpectedly incorporated in the coordinates."
 
                                 self.__reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                           'description': err})
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                           'category': lp_category, 'description': err})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ Error  - {err}\n")
@@ -8744,15 +8809,18 @@ class NmrDpValidation:
                         poly_seq = _poly_seq_in_lp['polymer_sequence']
 
                         seq_align, _ = alignPolymerSequence(self.__reg.pA, self.__reg.caC['polymer_sequence'], poly_seq, conservative=False)
-                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['polymer_sequence'], poly_seq, seq_align)
+                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU,
+                                                                file_type, self.__reg.caC['polymer_sequence'], poly_seq, seq_align)
 
                         if self.__reg.caC['branched'] is not None:
                             br_seq_align, _ = alignPolymerSequence(self.__reg.pA, self.__reg.caC['branched'], poly_seq, conservative=False)
-                            br_chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['branched'], poly_seq, br_seq_align)
+                            br_chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU,
+                                                                       file_type, self.__reg.caC['branched'], poly_seq, br_seq_align)
 
                         if self.__reg.caC['non_polymer'] is not None:
                             np_seq_align, _ = alignPolymerSequence(self.__reg.pA, self.__reg.caC['non_polymer'], poly_seq, conservative=False)
-                            np_chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['non_polymer'], poly_seq, np_seq_align)
+                            np_chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU,
+                                                                       file_type, self.__reg.caC['non_polymer'], poly_seq, np_seq_align)
 
                 def get_auth_seq_scheme(chain_id, seq_id):
                     auth_asym_id = auth_seq_id = None
@@ -9144,7 +9212,8 @@ class NmrDpValidation:
                                         if cca is None:
                                             continue
 
-                                        __assign, _warn = assignCoordPolymerSequenceWithChainId(self.__reg.caC, self.__reg.nefT, _chain_id, _seq_id, _comp_id, _atom_id)
+                                        __assign, _warn = assignCoordPolymerSequenceWithChainId(self.__reg.caC, self.__reg.nefT,
+                                                                                                _chain_id, _seq_id, _comp_id, _atom_id)
 
                                         if len(__assign) != 1 or _warn is not None:
                                             continue
@@ -9507,7 +9576,8 @@ class NmrDpValidation:
                                     auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
                                     if auth_asym_id is not None:
                                         sa = next((sa for sa in seq_align
-                                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                                   and seq_id in sa['test_seq_id']), None)
                                         if sa is not None:
                                             _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
                                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
@@ -9529,7 +9599,8 @@ class NmrDpValidation:
                                     auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
                                     if auth_asym_id is not None:
                                         sa = next((sa for sa in br_seq_align
-                                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                                   and seq_id in sa['test_seq_id']), None)
                                         if sa is not None:
                                             _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
                                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
@@ -9539,7 +9610,8 @@ class NmrDpValidation:
                                     auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
                                     if auth_asym_id is not None:
                                         sa = next((sa for sa in np_seq_align
-                                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']), None)
+                                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                                   and seq_id in sa['test_seq_id']), None)
                                         if sa is not None:
                                             _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
                                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
@@ -9557,7 +9629,8 @@ class NmrDpValidation:
                                             entity_id = int(loop.data[idx][loop.tags.index(entity_id_name)])
                                         except ValueError:
                                             continue
-                                        k = next((k for k, v in auth_to_star_seq.items() if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                        k = next((k for k, v in auth_to_star_seq.items()
+                                                  if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                                         if k is None:
                                             continue
                                         auth_asym_id, auth_seq_id, _ = k
@@ -10004,11 +10077,13 @@ class NmrDpValidation:
                                 if torsion_angle_name_col != -1 and loop.data[idx][torsion_angle_name_col] == 'PPA':
                                     enableWarning = False
 
-                            atom_sels[d], warn = selectCoordAtoms(self.__reg.cR, self.__reg.caC, self.__reg.nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
+                            atom_sels[d], warn = selectCoordAtoms(self.__reg.cR, self.__reg.caC, self.__reg.nefT,
+                                                                  _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                   allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
                                                                   enableWarning=enableWarning,
                                                                   preferAuthAtomName=prefer_auth_atom_name,
-                                                                  representativeModelId=self.__reg.representative_model_id, representativeAltId=self.__reg.representative_alt_id,
+                                                                  representativeModelId=self.__reg.representative_model_id,
+                                                                  representativeAltId=self.__reg.representative_alt_id,
                                                                   modelNumName=model_num_name)
 
                             if warn is not None:
@@ -12148,9 +12223,9 @@ class NmrDpValidation:
                     if self.__reg.nonblk_bad_nterm\
                        and (seq_id == 1 or cif_seq_id == 1 or ((seq_key[0], seq_key[1] - 1)
                                                                if seq_key is not None else (cif_chain_id, cif_seq_id - 1)) in coord_unobs_res)\
-                       and atom_id_ in AMINO_PROTON_CODE and (cyclic or comp_id == 'PRO'
-                                                              or (atom_id_ in PROTON_BEGIN_CODE
-                                                                  or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
+                       and atom_id_ in AMINO_PROTON_CODE\
+                       and (cyclic or comp_id == 'PRO' or (atom_id_ in PROTON_BEGIN_CODE
+                                                           or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
 
                         err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "
 
@@ -12187,7 +12262,7 @@ class NmrDpValidation:
 
                     elif ca['conflict'] == 0:  # no conflict in sequenc alignment
 
-                        if comp_id in MONDICT3:
+                        if comp_id in STD_MON_DICT:
 
                             checked = coord_issue = False
                             if atom_id_[0] in PROTON_BEGIN_CODE:
@@ -12268,8 +12343,8 @@ class NmrDpValidation:
                                         item = 'atom_nomenclature_mismatch'
 
                                         self.__reg.report.warning.appendDescription(item,
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': err})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': err})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() ++ Warning  - {err}\n")
@@ -12301,8 +12376,8 @@ class NmrDpValidation:
                                             + ") is not properly instantiated in the coordinates. Please re-upload the model file."
 
                                         self.__reg.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                     'description': err})
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                     'category': lp_category, 'description': err})
 
                                         if self.__reg.verbose:
                                             self.__reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() ++ Warning  - {err}\n")
@@ -12505,7 +12580,8 @@ class NmrDpValidation:
 
             except Exception as e:
 
-                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - " + str(e))
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - {str(e)}\n")
@@ -12706,7 +12782,8 @@ class NmrDpValidation:
 
             except Exception as e:
 
-                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - " + str(e))
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - {str(e)}\n")
@@ -13400,7 +13477,8 @@ class NmrDpValidation:
             except (IndexError, ValueError):
                 pass
 
-        sf_tag_data = next((t['data'] for t in self.__reg.sf_tag_data[content_subtype] if t['file_name'] == file_name and t['sf_framecode'] == sf_framecode), None)
+        sf_tag_data = next((t['data'] for t in self.__reg.sf_tag_data[content_subtype]
+                            if t['file_name'] == file_name and t['sf_framecode'] == sf_framecode), None)
 
         ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data)}
 
@@ -13452,8 +13530,10 @@ class NmrDpValidation:
 
                         if seq_align['sequence_coverage'] < LOW_SEQ_COVERAGE and seq_align['length'] > 1 and not ambig:
                             if ('exp_type' not in ent)\
-                               or (ent['exp_type'] not in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
-                                low_seq_coverage += f"coverage {seq_align['sequence_coverage']} for chain_id {seq_align['chain_id']}, length {seq_align['length']}, "
+                               or (ent['exp_type'] not in ('disulfide bound', 'disulfide_bond',
+                                                           'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
+                                low_seq_coverage += f"coverage {seq_align['sequence_coverage']} for chain_id {seq_align['chain_id']}, "\
+                                    f"length {seq_align['length']}, "
 
                         seq_coverage.append(sc)
 
@@ -14392,7 +14472,7 @@ class NmrDpValidation:
                 has_cs_stat = False
 
                 # non-standard residue
-                if comp_id not in MONDICT3:
+                if comp_id not in STD_MON_DICT:
 
                     neighbor_comp_ids = set(_row[comp_id_name] for _row in lp_data
                                             if _row[chain_id_name] == _chain_id
@@ -15104,7 +15184,7 @@ class NmrDpValidation:
                         for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             if comp_id not in EMPTY_VALUE:
-                                if comp_id not in MONDICT3:
+                                if comp_id not in STD_MON_DICT:
                                     continue
                                 if not self.__reg.csStat.peptideLike(comp_id):
                                     continue
@@ -15112,7 +15192,7 @@ class NmrDpValidation:
                             else:
                                 _comp_id = self.__getCoordCompId(chain_id, seq_id)
                                 if _comp_id is not None:
-                                    if _comp_id not in MONDICT3:
+                                    if _comp_id not in STD_MON_DICT:
                                         continue
                                     if not self.__reg.csStat.peptideLike(_comp_id):
                                         continue
@@ -17942,14 +18022,16 @@ class NmrDpValidation:
             if aux_data is not None:
                 for sp_dim_trans in aux_data:
                     if file_type == 'nef':
-                        if sp_dim_trans['transfer_type'] == 'onebond':  # or sp_dim_trans['transfer_type'].startswith('j') or sp_dim_trans['transfer_type'].startswith('relayed'):
+                        if sp_dim_trans['transfer_type'] == 'onebond':
+                            # or sp_dim_trans['transfer_type'].startswith('j') or sp_dim_trans['transfer_type'].startswith('relayed'):
                             dim_1 = sp_dim_trans['dimension_1']
                             dim_2 = sp_dim_trans['dimension_2']
                             mag_link.append((dim_1, dim_2))
                         ent['spectral_dim_transfer'].append({'id_1': sp_dim_trans['dimension_1'], 'id_2': sp_dim_trans['dimension_2'],
                                                              'indirect': sp_dim_trans.get('is_indirect'), 'type': sp_dim_trans.get('transfer_type')})
                     else:
-                        if sp_dim_trans['Type'] == 'onebond':  # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
+                        if sp_dim_trans['Type'] == 'onebond':
+                            # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
                             dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                             dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                             mag_link.append((dim_1, dim_2))

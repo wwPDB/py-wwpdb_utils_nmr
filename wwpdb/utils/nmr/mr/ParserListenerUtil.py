@@ -38,7 +38,7 @@ from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                ELEMENT_SYMBOLS,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                PSE_PRO_BEGIN_CODE,
                                                AMINO_PROTON_CODE,
@@ -87,7 +87,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    ELEMENT_SYMBOLS,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    PSE_PRO_BEGIN_CODE,
                                    AMINO_PROTON_CODE,
@@ -349,7 +349,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                 if _atomId + '2' in _refAtomIdList and not unambig:
                     return _atomId + '%'
 
-            if lenRefCompId == 3 and refCompId in MONDICT3 and lenAtomId > 1:
+            if lenRefCompId == 3 and refCompId in STD_MON_DICT and lenAtomId > 1:
                 candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
                 if len(candidates) == 1 and len(candidates[0]) == lenAtomId + 1 and candidates[0][-1].isdigit():
                     return candidates[0]
@@ -361,7 +361,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                     if atomId.startswith('QP'):
                         if 'H' + atomId[2:] + '2' in _refAtomIdList:
                             return 'H' + atomId[2:] + '%'
-                        if refCompId in MONDICT3:  # 2n9e
+                        if refCompId in STD_MON_DICT:  # 2n9e
                             return 'H' + atomId[2:] + '%'
                     elif atomId in ('QCD', 'QCE') and isLikePheOrTyr(refCompId, ccU):  # 2js7 - peak list
                         return atomId[1:] + '%'
@@ -553,7 +553,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
             if atomId == 'QPG' and refCompId == 'OUI':
                 return 'HG1'
 
-        if lenRefCompId == 3 and refCompId in MONDICT3:
+        if lenRefCompId == 3 and refCompId in STD_MON_DICT:
             if atomId in ('O1', 'OT1'):
                 return 'O'
             if atomId == 'O2' or atomId.startswith('OT'):
@@ -1053,7 +1053,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                 if len(candidates) == 1:
                     return candidates[0]
 
-            if lenRefCompId == 3 and refCompId in MONDICT3 and lenAtomId > 1:
+            if lenRefCompId == 3 and refCompId in STD_MON_DICT and lenAtomId > 1:
                 candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
                 if len(candidates) == 1 and len(candidates[0]) == lenAtomId + 1 and candidates[0][-1].isdigit():
                     return candidates[0]
@@ -1067,7 +1067,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                             return 'H' + atomId[2:] + '%'
                         if 'H' + atomId[2:] + '2' in _refAtomIdList:
                             return 'H' + atomId[2:] + '%'
-                        if refCompId in MONDICT3:  # 2n9e
+                        if refCompId in STD_MON_DICT:  # 2n9e
                             return 'H' + atomId[2:] + '%'
                     elif atomId in ('QCD', 'QCE') and isLikePheOrTyr(refCompId, ccU):  # 2js7 - peak list
                         return atomId[1:] + '%'
@@ -1276,7 +1276,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
             if atomId == 'QPG' and refCompId == 'OUI':
                 return 'HG1'
 
-        if lenRefCompId == 3 and refCompId in MONDICT3:
+        if lenRefCompId == 3 and refCompId in STD_MON_DICT:
             if atomId in ('O1', 'OT1'):
                 return 'O'
             if atomId == 'O2' or atomId.startswith('OT'):
@@ -1522,7 +1522,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
             nh2 = ccU.getRepAminoProtons(refCompId)
             if len(nh2) == 1:
                 return nh2[0][:-1] + '%'
-        if lenAtomId > 1 and atomId[-1] not in ('%', '*', '#') and refCompId not in MONDICT3:
+        if lenAtomId > 1 and atomId[-1] not in ('%', '*', '#') and refCompId not in STD_MON_DICT:
             canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
             if len(canAtomIdList) > 0:
 
@@ -2142,12 +2142,12 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
     if lenCompId > 3:
         compId3 = compId[:3]
 
-        if compId3 in MONDICT3:
+        if compId3 in STD_MON_DICT:
             return compId3
 
         compId3 = compId[1:]  # 1e8e
 
-        if compId3 in MONDICT3 and compId[0] != 'P':  # 2lyw: PGLU -> PCA
+        if compId3 in STD_MON_DICT and compId[0] != 'P':  # 2lyw: PGLU -> PCA
             return compId3
 
     if compId[-1] in ('5', '3'):
@@ -2160,7 +2160,7 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
 
         _compId = compId[:-1]
 
-        if _compId in MONDICT3:
+        if _compId in STD_MON_DICT:
             return _compId
 
         if _compId == 'HC':
@@ -2169,16 +2169,16 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
     if compId.startswith('R') and lenCompId > 1 and compId[1] in ('A', 'C', 'G', 'U'):
         _compId = compId[1:]
 
-        if _compId in MONDICT3:
+        if _compId in STD_MON_DICT:
             return _compId
 
         if refCompId is not None and lenRefCompId == 1 and _compId[-1] in ('5', '3'):
             _compId = _compId[:-1]
 
-            if _compId in MONDICT3:
+            if _compId in STD_MON_DICT:
                 return _compId
 
-    if refCompId is not None and refCompId in MONDICT3 and lenRefCompId == 3:
+    if refCompId is not None and refCompId in STD_MON_DICT and lenRefCompId == 3:
         if lenCompId >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: ASM -> ASP + ZN, 2n6j: TYZ -> TYR
             return refCompId
         if 'Z' in compId and compId[0] == refCompId[0]:  # 2n6j: GZC, GZL -> GLU + ZN,
@@ -3307,7 +3307,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
                             typeSymbols = [c['type_symbol'] for c in coord
                                            if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
-                            coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols, 'split_comp_id': compIds}
+                            coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId, 'atom_id': atomIds,
+                                                     'type_symbol': typeSymbols, 'split_comp_id': compIds}
                             if altAuthCompId is not None:
                                 altCompIds = [c['comp_id'] for c in coord
                                               if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
@@ -3316,7 +3317,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 altAtomIds = [c['alt_atom_id'] for c in coord
                                               if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
                                 coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
-                            altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
+                            altSeqId = next((c['alt_seq_id'] for c in coord
+                                             if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                             if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
                                 if isinstance(authToLabelChain[chainId], str):
                                     _seqKey = (authToLabelChain[chainId], int(altSeqId))
@@ -3340,7 +3342,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     coordAtomSite[altKey] = coordAtomSite[seqKey]
 
                     # DAOTHER-8817
-                    if compId not in MONDICT3:
+                    if compId not in STD_MON_DICT:
 
                         if compId not in chemCompAtom:
                             chemCompAtom[compId] = atomIds
@@ -3785,7 +3787,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
                                 authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                 ext_mappings += 1
-                                if extSeq['chain_id'] not in MONDICT3:
+                                if extSeq['chain_id'] not in STD_MON_DICT:
                                     nstdMonomer = 'yes'
                                 ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
@@ -3879,7 +3881,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                             authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
                                             authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                             ext_mappings += 1
-                                            if extSeq['chain_id'] not in MONDICT3:
+                                            if extSeq['chain_id'] not in STD_MON_DICT:
                                                 nstdMonomer = 'yes'
                                             ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
@@ -3907,7 +3909,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                                'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                               'entity_desc': entityDesc, 'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
+                                                               'entity_desc': entityDesc,
+                                                               'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
                                                                'entity_copies': entityCopies, 'entity_ec': entityEC,
                                                                'entity_parent': entityParent,
                                                                'entity_mutation': entityMutation,
@@ -3955,7 +3958,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
                                     authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                     ext_mappings += 1
-                                    if extSeq['chain_id'] not in MONDICT3:
+                                    if extSeq['chain_id'] not in STD_MON_DICT:
                                         nstdMonomer = 'yes'
                                     ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
@@ -4750,11 +4753,11 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in MONDICT3 or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            if _compId in STD_MON_DICT or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
                 _atomId = atomIds[0]
                 if _atomId in EMPTY_VALUE:
                     return None
-                if _compId not in MONDICT3:
+                if _compId not in STD_MON_DICT:
                     _atomId = translateToStdAtomName(_atomId, _compId, ccU=nefT.ccU)
                 _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atomId)
                 if len(_atomId) > 0 and details is None:
@@ -4775,7 +4778,7 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in MONDICT3 or _compId == 'ACE' or not isPolySeq:  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            if _compId in STD_MON_DICT or _compId == 'ACE' or not isPolySeq:  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
                 failed = False
                 for atomId in atomIds:
                     if atomId in EMPTY_VALUE:
@@ -5379,7 +5382,7 @@ def isLikePheOrTyr(compId: str, ccU) -> bool:
     if compId in ('PHE', 'TYR'):
         return True
 
-    if compId in MONDICT3:
+    if compId in STD_MON_DICT:
         return False
 
     if ccU.updateChemCompDict(compId):
@@ -5399,7 +5402,7 @@ def isLikeHis(compId: str, ccU) -> bool:
     if compId == 'HIS':
         return True
 
-    if compId in MONDICT3:
+    if compId in STD_MON_DICT:
         return False
 
     if ccU.updateChemCompDict(compId):
@@ -6480,7 +6483,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
                 if chainId in offsetHolder and offset < offsetHolder[chainId]:
                     break
                 offsetHolder[chainId] = offset
-                if has_aux_atom and compId in MONDICT3 and auxCompId in MONDICT3:
+                if has_aux_atom and compId in STD_MON_DICT and auxCompId in STD_MON_DICT:
                     offsetHolder[f'_{chainId}'] = offset
                 atom['seq_id'] = seqId + offset
                 return starAtom
@@ -6492,7 +6495,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
                 if chainId in offsetHolder and -offset < offsetHolder[chainId]:
                     break
                 offsetHolder[chainId] = -offset
-                if has_aux_atom and compId in MONDICT3 and auxCompId in MONDICT3:
+                if has_aux_atom and compId in STD_MON_DICT and auxCompId in STD_MON_DICT:
                     offsetHolder[f'_{chainId}'] = -offset
                 atom['seq_id'] = seqId - offset
                 return starAtom
@@ -6503,13 +6506,13 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
         _auxSeqKey = next((_auxSeqKey for _auxSeqKey in authToStarSeq if auxChainId == _auxSeqKey[0] and auxSeqId == _auxSeqKey[1]), None)
 
     if _seqKey is not None and (not has_aux_atom or (has_aux_atom and _auxSeqKey is not None)):
-        if compId in EMPTY_VALUE or compId not in MONDICT3:
+        if compId in EMPTY_VALUE or compId not in STD_MON_DICT:
             starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[_seqKey]
             if compId in EMPTY_VALUE or compId != _seqKey[2]:
                 atom['comp_id'] = starAtom['comp_id'] = _seqKey[2]
             return starAtom
 
-    if offsetHolder is not None and chainId in offsetHolder and compId in MONDICT3:
+    if offsetHolder is not None and chainId in offsetHolder and compId in STD_MON_DICT:
         del offsetHolder[chainId]
 
     return None
@@ -6551,7 +6554,7 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
     _seqKey = next((_seqKey for _seqKey in authToInsCode if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
 
     if _seqKey is not None:
-        if compId in EMPTY_VALUE or compId not in MONDICT3:
+        if compId in EMPTY_VALUE or compId not in STD_MON_DICT:
             if compId in EMPTY_VALUE or compId != _seqKey[2]:
                 atom['comp_id'] = _seqKey[2]
             return authToInsCode[_seqKey]
@@ -8841,7 +8844,7 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                         chainAssign.add((chainId, seqId, cifCompId, False))
                 else:
                     _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
-                    if len(_atomId) > 0 and (details is None or compId not in MONDICT3):
+                    if len(_atomId) > 0 and (details is None or compId not in STD_MON_DICT):
                         chainAssign.add((chainId, seqId, cifCompId, False))
 
     if len(chainAssign) == 0:
@@ -8885,7 +8888,7 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                         else:
                             _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
-                            if len(_atomId) > 0 and (details is None or compId not in MONDICT3):
+                            if len(_atomId) > 0 and (details is None or compId not in STD_MON_DICT):
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
 
     if len(chainAssign) == 0 and altPolySeq is not None:
@@ -8989,7 +8992,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
         else:
             _atomId = []
             if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
-                pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in MONDICT3 else re.compile(fr'H{atomId[1:]}\S?$')
+                pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in STD_MON_DICT else re.compile(fr'H{atomId[1:]}\S?$')
                 atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
                 if len(atomIdList) > 1:
                     hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
@@ -9064,7 +9067,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
                     pass
 
         lenAtomId = len(_atomId)
-        if compId != cifCompId and compId in MONDICT3 and cifCompId in MONDICT3:
+        if compId != cifCompId and compId in STD_MON_DICT and cifCompId in STD_MON_DICT:
             multiChain = insCode = False
             if len(chainAssign) > 0:
                 chainIds = [ca[0] for ca in chainAssign]
@@ -9103,7 +9106,8 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
             if _atomSelection not in atomSelection:
                 atomSelection.append(_atomSelection)
 
-            warningMessage = testCoordAtomIdConsistency(caC, nefT.ccU, authChainId, chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
+            warningMessage = testCoordAtomIdConsistency(caC, nefT.ccU,
+                                                        authChainId, chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
             if warningMessage is not None and warningMessage.startswith('Ignorable'):
                 warningMessage = None
                 atomSelection.pop()

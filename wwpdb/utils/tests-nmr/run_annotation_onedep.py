@@ -12,12 +12,22 @@ from typing import List, Tuple, Union, Optional
 # from dateutil.parser import parse as parsedate
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (DATABLOCK_PAT,
+                                               SF_ANONYMOUS_PAT,
+                                               SAVE_PAT,
+                                               LOOP_PAT,
+                                               STOP_PAT)
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
     from wwpdb.utils.nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.nef.NEFTranslator import is_empty_loop
     auth_view = 'mock-data-combine-at-upload'
 except ImportError:
+    from nmr.NmrDpConstant import (DATABLOCK_PAT,
+                                   SF_ANONYMOUS_PAT,
+                                   SAVE_PAT,
+                                   LOOP_PAT,
+                                   STOP_PAT)
     from nmr.NmrDpUtility import NmrDpUtility
     from nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from nmr.io.CifReader import CifReader
@@ -59,12 +69,12 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
 
     emptyValue = (None, '', '.', '?', 'null', 'None')
 
-    mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
-    proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
+    mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?\d\w{3}.mr$')
+    proc_mr_file_name_pattern = re.compile(r'^D_\d{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
                                            r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
-    pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
-    dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
-    bmrb_id_pattern = re.compile(r'^(bmr)?[0-9]{5,}$')
+    pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?\d\w{3}$')
+    dep_id_pattern = re.compile(r'^D_\d{6,10}$')
+    bmrb_id_pattern = re.compile(r'^(bmr)?[1-9]\d{4}$')
 
     try:
 
@@ -140,17 +150,11 @@ class gen_auth_view_onedep:
 
         self.__auth_view = auth_view
 
-        self.__cif_name_pattern = re.compile(r'D_[0-9]+_model-(\S+)_P1.cif.V([0-9]+)$')
-        self.__mr_name_pattern = re.compile(r'D_[0-9]+_mr-(\S+)_P([0-9]+).(\S+).V([0-9]+)$')
-        self.__pk_name_pattern = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
-        self.__nmr_cif_name_pattern = re.compile(r'D_[0-9]+_nmr-data-str_P([0-9]+).cif.V([0-9]+)$')
-        self.__cs_ann_name_pattern = re.compile(r'D_[0-9]+_cs-(\S+)_P1.cif.V([0-9]+)')
-
-        self.__datablock_pattern = re.compile(r"\s*data_\S+\s*")
-        self.__sf_anonymous_pattern = re.compile(r"\s*save_\S+\s*")
-        self.__save_pattern = re.compile(r"\s*save_\s*")
-        self.__loop_pattern = re.compile(r"\s*loop_\s*")
-        self.__stop_pattern = re.compile(r"\s*stop_\s*")
+        self.__cif_name_pattern = re.compile(r'D_\d{6,10}_model-(\S+)_P1\.cif\.V(\d+)$')
+        self.__mr_name_pattern = re.compile(r'D_\d{6,10}_mr-(\S+)_P(\d+)\.(\S+)\.V(\d+)$')
+        self.__pk_name_pattern = re.compile(r'D_\d{6,10}_nmr-peaks-upload_P(\d+)\.dat\.V(\d+)$')
+        self.__nmr_cif_name_pattern = re.compile(r'D_\d{6,10}_nmr-data-str_P(\d+)\.cif\.V(\d+)$')
+        self.__cs_ann_name_pattern = re.compile(r'D_\d{6,10}_cs-(\S+)_P1\.cif\.V(\d+)')
 
         self.__amb_top_pattern = re.compile(r"^\%FLAG ATOM_NAME\s*")
         self.__amb_rst_pattern = re.compile(r"\s*\&rst\s*")
@@ -950,7 +954,7 @@ class gen_auth_view_onedep:
                 else:
                     print(f'Spectral peaks : {ar_file_path} ({ar_file_type})')
 
-    def is_star_file(self, file_path: str) -> bool:
+    def is_star_file(self, file_path: str) -> bool:  # pylint: disable=no-self-use
 
         has_datablock = False
         has_anonymous_saveframe = False
@@ -960,15 +964,15 @@ class gen_auth_view_onedep:
 
         with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
-                if self.__datablock_pattern.match(line):
+                if DATABLOCK_PAT.match(line):
                     has_datablock = True
-                elif self.__sf_anonymous_pattern.match(line):
+                elif SF_ANONYMOUS_PAT.match(line):
                     has_anonymous_saveframe = True
-                elif self.__save_pattern.match(line):
+                elif SAVE_PAT.match(line):
                     has_save = True
-                elif self.__loop_pattern.match(line):
+                elif LOOP_PAT.match(line):
                     has_loop = True
-                elif self.__stop_pattern.match(line):
+                elif STOP_PAT.match(line):
                     has_stop = True
 
         return has_datablock or has_anonymous_saveframe or has_save or has_loop or has_stop
@@ -1119,22 +1123,28 @@ class gen_auth_view_onedep:
         if report['error'] is None:
             print(f"{self.__bmrb_id}: {report['information']['status']}")
         elif 'format_issue' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"format_issue: {report['error']['format_issue'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'missing_mandatory_content' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'sequence_mismatch' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n sequence_mismatch: {report['error']['sequence_mismatch'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"sequence_mismatch: {report['error']['sequence_mismatch'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'atom_not_found' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n atom_not_found: {report['error']['atom_not_found'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"atom_not_found: {report['error']['atom_not_found'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'content_mismatch' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n content_mismatch: {report['error']['content_mismatch'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"content_mismatch: {report['error']['content_mismatch'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'internal_error' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n internal_error: {report['error']['internal_error'][0]}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"internal_error: {report['error']['internal_error'][0]}")
             os.remove(self.__annotated_star_file_path)
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}

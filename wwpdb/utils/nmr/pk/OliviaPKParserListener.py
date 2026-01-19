@@ -308,7 +308,8 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                         continue
                     assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
 
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):  # pylint: disable=unsubscriptable-object
+                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # pylint: disable=unsubscriptable-object
+                           for a in assignments):
                     assignments = [None] * self.num_of_dim
 
             except IndexError:
@@ -439,7 +440,8 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                         continue
                     assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
 
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):  # pylint: disable=unsubscriptable-object
+                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # pylint: disable=unsubscriptable-object
+                           for a in assignments):
                     assignments = [None] * self.num_of_dim
 
             except IndexError:
@@ -578,7 +580,8 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                         continue
                     assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
 
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):  # pylint: disable=unsubscriptable-object
+                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # pylint: disable=unsubscriptable-object
+                           for a in assignments):
                     assignments = [None] * self.num_of_dim
 
             except IndexError:

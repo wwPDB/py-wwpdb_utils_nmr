@@ -68,7 +68,8 @@
 # 29-Jun-2022  M. Yokochi - add 'insufficient_mr_data' warning type (NMR restraint remediation)
 # 06-Jul-2022  M. Yokochi - add 'nm-res-syb' file type for SYBYL restraint format (DAOTHER-7902, NMR restraint remediation)
 # 07-Jul-2022  M. Yokochi - add 'nmr-peaks' content type and 'nm-pea-any' file type (NMR restraint remediation)
-# 08-Jul-2022  M. Yokochi - add 'anomalous_rdc_vector' warning type for artificial RDCs for protein fibrils using solid-state NMR (NMR restraint remediation, 5w3n)
+# 08-Jul-2022  M. Yokochi - add 'anomalous_rdc_vector' warning type for artificial RDCs for protein fibrils using solid-state NMR
+#                           (NMR restraint remediation, 5w3n)
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 # 06-Sep-2022  M. Yokochi - add support for branched entity and extra restraints in NMR-STAR format (NMR restraint remediation)
 # 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (DAOTHER-8059, NMR restraint remediation)
@@ -76,7 +77,8 @@
 # 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
-# 27-Feb-2023  M. Yokochi - add getLabelSeqSchemOf(), which convert author sequence scheme to label sequence scheme of the coordinates (NMR restraint remediation)
+# 27-Feb-2023  M. Yokochi - add getLabelSeqSchemOf(), which convert author sequence scheme to label sequence scheme of the coordinates
+#                           (NMR restraint remediation)
 # 13-Dec-2023  M. Yokochi - add 'hydrogen_non_instantiated' warning (DAOTHER-8945)
 # 12-Jan-2024  M. Yokochi - getNmrSeq1LetterCodeOf() returns '.' for missing residue, instead of whitespace (DAOTHER-9065)
 # 16-Jan-2024  M. Yokochi - add 'nm-res-ari' file type for ARIA restraint format (DAOTHER-9079, NMR restraint remediation)
@@ -84,32 +86,38 @@
 # 29-Jan-2024  M. Yokochi - add 'ambiguous_dihedral_angle' warning type (NMR restraint remediation, 6sy2)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
-# 07-Nov-2024  M. Yokochi - add 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-xea', and 'nm-pea-xwi' file types for NMR spectral peak remediation
+# 07-Nov-2024  M. Yokochi - add 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-xea', and 'nm-pea-xwi' file types
+#                           for NMR spectral peak remediation
 # 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file (DAOTHER-7829, 9785, NMR data remediation)
 # 05-Dec-2024  M. Yokochi - add 'nm-aux-xea' file type for XEASY PROT (Assignment) file (NMR restraint remediation)
 # 16-Dec-2024  M. Yokochi - add 'nm-pea-vnm' file types for VNMR spectral peak list file (NMR restraint remediation)
-# 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warning (DAOTHER-8905, 9785, NMR data remediation, standalone NMR data conversion service)
+# 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warning
+#                           (DAOTHER-8905, 9785, NMR data remediation, standalone NMR data conversion service)
 # 07-Feb-2025  M. Yokochi - add 'ignore_error' in NmrDpReportInputSource class (DAOTHER-8905)
 # 18-Feb-2025  M. Yokochi - add 'nm-pea-pon' file type for PONDEROSA spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 26-Feb-2025  M. Yokochi - add 'nm-pea-ccp' file type for CCPN tabular spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 05-Mar-2025  M. Yokochi - add 'nm-pea-bar' file type for bare spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
 # 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file (DAOTHER-8905, 9785, NMR data remediation Phase 2)
-# 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', and 'nm-shi-xea' file_types (v4.4.0, DAOTHER-9785)
+# 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', and 'nm-shi-xea' file_types
+#                           (v4.4.0, DAOTHER-9785)
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
 # 24-Apr-2025  M. Yokochi - add NmrDpReportOutputStatistics class for standalone NMR data conversion service (DAOTHER-9785)
-# 25-Apr-2025  M. Yokochi - add 'unparsed_data' error to block conversion due to unparsed data with error in standalone NMR data conversion service (DAOTHER-9785)
+# 25-Apr-2025  M. Yokochi - add 'unparsed_data' error to block conversion due to unparsed data with error in standalone NMR data conversion service
+#                           (DAOTHER-9785)
 # 28-May-2025  M. Yokochi - add 'conflicted_peak_list' and 'inconsistent_peak_list' warning types (DAOTHER-10010)
 # 29-May-2025  M. Yokochi - add 'unsupported_peak_list' warning type (DAOTHER-10099)
 # 06-Aug-2025  M. Yokochi - add 'nm-res-sch' file type for SCHRODINGER/ASL restraint format (DAOTHER-7902, 10172, NMR data remediation)
 # 22-Aug-2025  M. Yokochi - add 'nm-pea-oli' file type for OLIVIA spectral peak list file (DAOTHER-8905, 9785)
 # 22-Aug-2025  M. Yokochi - add 'nm-shi-oli' file type for OLIVIA spectral peak list file (DAOTHER-9785)
-# 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for Bare PDB file acting as AMBER/CHARMM/GROMACS topology definition (DAOTHER-7829, 9785, NMR data remediation)
+# 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for Bare PDB file acting as AMBER/CHARMM/GROMACS topology definition
+#                           (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add 'nm-res-arx' file type for ARIA NOE restraint (XML) file (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file (DAOTHER-7829, 9785, NMR data remediation)
-# 20-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in ROSETTA restraints (DAOTHER-7829, 9785, NMR data remediation)
+# 20-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in ROSETTA restraints
+#                           (DAOTHER-7829, 9785, NMR data remediation)
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints (DAOTHER-7829, 9785, NMR data remediation)
 # 07-Jan-2026  M. Yokochi - update report7s status code when adding error/warning description
 ##
@@ -132,13 +140,13 @@ from typing import Any, IO, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                UNKNOWN_RESIDUE)
     from wwpdb.utils.nmr.AlignUtil import getPrettyJson
     from wwpdb.utils.nmr.CifToNmrStar import get_value_safe
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    UNKNOWN_RESIDUE)
     from nmr.AlignUtil import getPrettyJson
     from nmr.CifToNmrStar import get_value_safe
@@ -1077,8 +1085,8 @@ class NmrDpReport:
             if not fullSequence and unmappedSeqId is not None and seq_id in unmappedSeqId:
                 continue
 
-            if comp_id in MONDICT3:
-                f.append(MONDICT3[comp_id])
+            if comp_id in STD_MON_DICT:
+                f.append(STD_MON_DICT[comp_id])
             elif comp_id in EMPTY_VALUE:
                 f.append('.')
             elif comp_id in UNKNOWN_RESIDUE:
@@ -1107,8 +1115,8 @@ class NmrDpReport:
         f = []
 
         for comp_id in ps['comp_id']:
-            if comp_id in MONDICT3:
-                f.append(MONDICT3[comp_id])
+            if comp_id in STD_MON_DICT:
+                f.append(STD_MON_DICT[comp_id])
             elif comp_id in EMPTY_VALUE:
                 f.append('.')
             elif comp_id in UNKNOWN_RESIDUE:
@@ -1342,9 +1350,9 @@ class NmrDpReport:
             return None
 
         if label_scheme:
-            rmsd = [ps[rmsd_label] for ps in poly_seq if ps['seq_id'] >= cif_beg_seq_id and ps['seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
+            rmsd = [ps[rmsd_label] for ps in poly_seq if cif_beg_seq_id <= ps['seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
         else:
-            rmsd = [ps[rmsd_label] for ps in poly_seq if ps['auth_seq_id'] >= cif_beg_seq_id and ps['auth_seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
+            rmsd = [ps[rmsd_label] for ps in poly_seq if cif_beg_seq_id <= ps['auth_seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
 
         if len(rmsd) == 0:
             return None
@@ -1456,7 +1464,7 @@ class NmrDpReport:
             self.__report['information']['status'] = status
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.__setStatus() ++ Error  - Unknown status {status}\n')
+                self.__log.write(f"+{self.__class_name__}.__setStatus() ++ Error  - Unknown status {status}\n")
             raise KeyError(f"+{self.__class_name__}.__setStatus() ++ Error  - Unknown status {status}")
 
     def setError(self):
@@ -1470,8 +1478,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def setWarning(self):
         """ Set processing status Warning.
@@ -1485,8 +1493,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.setWarning() "
+                                 "++ Warning  - No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.setWarning() "
+                              "++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def clean(self):
         """ Clear errors and warnings.
@@ -1502,8 +1512,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def setDiamagnetic(self, diamagnetic: bool):
         """ Set diamagetism of molecular assembly.
@@ -1514,8 +1524,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
-            raise UserWarning(f'+{self.__class_name__}.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+                self.__log.write(f"+{self.__class_name__}.setDiamagnetic() "
+                                 "++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n")
+            raise UserWarning(f"+{self.__class_name__}.setDiamagnetic() "
+                              "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
     def setDisulfideBond(self, disulfide_bond: bool):
         """ Set whether molecular assembly has a disulfide bond at least or not.
@@ -1526,8 +1538,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
-            raise UserWarning(f'+{self.__class_name__}.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+                self.__log.write(f"+{self.__class_name__}.setDisulfideBond() "
+                                 "++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n")
+            raise UserWarning(f"+{self.__class_name__}.setDisulfideBond() "
+                              "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
     def setOtherBond(self, other_bond: bool):
         """ Set whether molecular assemble has an other bond at least or not.
@@ -1538,8 +1552,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
-            raise UserWarning(f'+{self.__class_name__}.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+                self.__log.write(f"+{self.__class_name__}.setOtherBond() "
+                                 "++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n")
+            raise UserWarning(f"+{self.__class_name__}.setOtherBond() "
+                              "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
     def setCyclicPolymer(self, cyclic_polymer: bool):
         """ Set whether molecular assemble contains a cyclic polymer or not.
@@ -1550,8 +1566,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
-            raise UserWarning(f'+{self.__class_name__}.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+                self.__log.write(f"+{self.__class_name__}.setCyclicPolymer() "
+                                 "++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n")
+            raise UserWarning(f"+{self.__class_name__}.setCyclicPolymer() "
+                              "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
     def setOutputStatistics(self, output_statistics: Any):
         """ Set output statistics.
@@ -1563,8 +1581,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setOutputStatistics() ++ Warning  - No effects on NMR data processing report because input variable is not target type\n')
-            raise UserWarning(f'+{self.__class_name__}.setOutputStatistics() ++ Warning  - No effects on NMR data processing report because input variable is not target_type')
+                self.__log.write(f"+{self.__class_name__}.setOutputStatistics() "
+                                 "++ Warning  - No effects on NMR data processing report because input variable is not target type\n")
+            raise UserWarning(f"+{self.__class_name__}.setOutputStatistics() "
+                              "++ Warning  - No effects on NMR data processing report because input variable is not target_type")
 
     def setMutable(self):
         """ Enable to mute the report.
@@ -1679,8 +1699,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.inheritFormatIssueErrors() "
+                                 "++ Warning  - No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.inheritFormatIssueErrors() "
+                              "++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def inheritPreviousErrors(self, prev_report):
         """ Inherit the previous errors.
@@ -1700,10 +1722,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.inheritPreviousNameErrors() ++ Warning  - '
-                                 'No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.inheritPreviousNameErrors() ++ Warning  - '
-                              'No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.inheritPreviousNameErrors() ++ Warning  - "
+                                 "No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.inheritPreviousNameErrors() ++ Warning  - "
+                              "No effects on NMR data processing report because the report is immutable")
 
     def inheritCorrectedFormatIssueWarnings(self, prev_report):
         """ Inherit corrected format issue warnings from the previous report (e.g. nmr-*-consistency-check workflow operation).
@@ -1730,10 +1752,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.inheritCorrectedFormatIssueWarnings() ++ Warning  - '
-                                 f'No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.inheritCorrectedFormatIssueWarnings() ++ Warning  - '
-                              'No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.inheritCorrectedFormatIssueWarnings() ++ Warning  - "
+                                 f"No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.inheritCorrectedFormatIssueWarnings() ++ Warning  - "
+                              "No effects on NMR data processing report because the report is immutable")
 
     def inheritCorrectedSaveframeNameWarnings(self, prev_report):
         """ Inherit corrected saveframe name warnings from the previous report (e.g. nmr-*-consistency-check workflow operation).
@@ -1760,10 +1782,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.inheritCorrectedSaveframeNameWarnings() ++ Warning  - '
-                                 'No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.inheritCorrectedSaveframeNameWarnings() ++ Warning  - '
-                              'No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.inheritCorrectedSaveframeNameWarnings() ++ Warning  - "
+                                 "No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.inheritCorrectedSaveframeNameWarnings() ++ Warning  - "
+                              "No effects on NMR data processing report because the report is immutable")
 
     def inheritPreviousWarnings(self, prev_report):
         """ Inherit the previous warnings.
@@ -1783,10 +1805,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.inheritPreviousNameWarnings() ++ Warning  - '
-                                 'No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.inheritPreviousNameWarnings() ++ Warning  - '
-                              'No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.inheritPreviousNameWarnings() ++ Warning  - "
+                                 "No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.inheritPreviousNameWarnings() ++ Warning  - "
+                              "No effects on NMR data processing report because the report is immutable")
 
     def setCorrectedError(self, prev_report):
         """ Initialize history of corrected errors in the previous report.
@@ -1814,7 +1836,8 @@ class NmrDpReport:
 
                     if value_list is None or\
                        not any(True for c in value_list
-                               if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
+                               if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode']
+                               and c['description'] == _c['description']):
                         tlist.append(_c)
 
                 for c in tlist:
@@ -1825,8 +1848,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setCorrectedError() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.setCorrectedError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.setCorrectedError() "
+                                 "++ Warning  - No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.setCorrectedError() "
+                              "++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def setCorrectedWarning(self, prev_report):
         """ Initialize history of corrected warnings in the previous report.
@@ -1878,8 +1903,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning(f'+{self.__class_name__}.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__log.write(f"+{self.__class_name__}.setCorrectedWarning() "
+                                 "++ Warning  - No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.setCorrectedWarning() "
+                              "++ Warning  - No effects on NMR data processing report because the report is immutable")
 
 
 class NmrDpReportInputSource:
@@ -1946,12 +1973,12 @@ class NmrDpReportInputSource:
 
             if item == 'file_type' and value not in self.file_types:
                 if self.__verbose:
-                    self.__log.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown file type {value}\n')
+                    self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown file type {value}\n")
                 raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown file type {value}")
 
             if item == 'content_type' and value not in self.content_types:
                 if self.__verbose:
-                    self.__log.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown content type {value}\n')
+                    self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content type {value}\n")
                 raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content type {value}")
 
             if item == 'content_subtype':
@@ -1960,7 +1987,7 @@ class NmrDpReportInputSource:
 
                     if key not in self.content_subtypes:
                         if self.__verbose:
-                            self.__log.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}\n')
+                            self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}\n")
                         raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}")
 
                 non_positive_keys = [key for key in value if int(value[key]) <= 0]
@@ -1976,7 +2003,7 @@ class NmrDpReportInputSource:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n')
+                self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n")
             raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
@@ -2007,13 +2034,15 @@ class NmrDpReportInputSource:
             # # should pass because reallocation of chain_id may happen
             # else:
             #     if self.__verbose:
-            #         self.__log.write(f'+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}\n')
+            #         self.__log.write(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}\n")
             #     raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}")
 
         except StopIteration:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id {chain_id}')
-            raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id {chain_id}")  # pylint: disable=raise-missing-from
+                self.__log.write(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() "
+                                 f"++ Error  - Unknown chain_id {chain_id}")
+            raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() "
+                           f"++ Error  - Unknown chain_id {chain_id}")  # pylint: disable=raise-missing-from
 
 
 class NmrDpReportSequenceAlignment:
@@ -2058,7 +2087,7 @@ class NmrDpReportSequenceAlignment:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n')
+                self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n")
             raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
@@ -2103,7 +2132,7 @@ class NmrDpReportChainAssignment:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n')
+                self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n")
             raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
@@ -2151,7 +2180,7 @@ class NmrDpReportOutputStatistics:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n')
+                self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n")
             raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
@@ -2280,7 +2309,7 @@ class NmrDpReportError:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}\n')
+                self.__log.write(f"+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}\n")
             raise KeyError(f"+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
@@ -2629,7 +2658,7 @@ class NmrDpReportWarning:
 
         else:
             if self.__verbose:
-                self.__log.write(f'+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}\n')
+                self.__log.write(f"+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}\n")
             raise KeyError(f"+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:

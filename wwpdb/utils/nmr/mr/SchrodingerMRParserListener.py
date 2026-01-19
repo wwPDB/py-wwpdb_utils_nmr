@@ -25,7 +25,7 @@ from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
@@ -62,7 +62,7 @@ try:
                                                        getDstFuncForHBond)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
@@ -2107,9 +2107,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
                 if len(self.factor['comp_id']) == 0:
                     if len(compIds) > 0:
-                        self.factor['comp_id'] = [next(k for k, v in MONDICT3.items() if v == compId)
+                        self.factor['comp_id'] = [next(k for k, v in STD_MON_DICT.items() if v == compId)
                                                   for compId in compIds
-                                                  if any(True for _v in MONDICT3.values() if _v == compId)]
+                                                  if any(True for _v in STD_MON_DICT.values() if _v == compId)]
                     else:
                         del self.factor['comp_id']
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"

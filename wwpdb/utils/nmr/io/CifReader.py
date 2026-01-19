@@ -19,7 +19,8 @@
 # 20-Nov-2020 - my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 # 29-Jun-2021 - my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
 # 14-Jan-2022 - my  - precise RMSD calculation with domain and medoid model identification (DAOTHER-4060, 7544)
-# 02-Feb-2022 - my  - add 'abs-int', 'abs-float', 'range-int', 'range-abs-int', 'range-abs-float' as filter item types and 'not_equal_to' range filter (NMR restraint remediation)
+# 02-Feb-2022 - my  - add 'abs-int', 'abs-float', 'range-int', 'range-abs-int', 'range-abs-float'
+#                     as filter item types and 'not_equal_to' range filter (NMR restraint remediation)
 # 30-Mar-2022 - my  - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022 - my  - add support for auth_comp_id (DAOTHER-7690)
 # 04-Aug-2022 - my  - detect sequence gaps in auth_seq_id, 'gap_in_auth_seq' (NMR restraint remediation)
@@ -968,15 +969,15 @@ class CifReader:
 
         else:
             if catName == 'pdbx_nonpoly_scheme':
-                sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
-                                   key=itemgetter(1))
+                sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col])
+                                       for row in rowList), key=itemgetter(1))
             else:
                 if all(row[label_seq_col].isdigit() for row in rowList):
-                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], int(row[label_seq_col]), row[comp_id_col]) for row in rowList),
-                                       key=lambda x: (len(x[0]), x[0], x[3]))
+                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], int(row[label_seq_col]), row[comp_id_col])
+                                           for row in rowList), key=lambda x: (len(x[0]), x[0], x[3]))
                 else:
-                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
-                                       key=lambda x: (len(x[0]), x[0], x[1]))
+                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col])
+                                           for row in rowList), key=lambda x: (len(x[0]), x[0], x[1]))
 
             keyDict = {(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
 
@@ -1310,7 +1311,8 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'ndb_model'
+                                                                         if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
@@ -1326,7 +1328,8 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'ndb_model'
+                                                                         if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
@@ -1342,7 +1345,8 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'ndb_model'
+                                                                         if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
@@ -1372,7 +1376,8 @@ class CifReader:
                                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                    {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                    {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                   {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                   {'name': 'ndb_model'
+                                                                    if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                    {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                    ],
                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
@@ -1387,7 +1392,8 @@ class CifReader:
                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                    {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                    {'name': 'ndb_model'
+                                                                     if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                     {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                     ],
                                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': c},
@@ -1454,8 +1460,10 @@ class CifReader:
         struct_sheet_range = self.getDictListWithFilter('struct_sheet_range',
                                                         [{'name': 'sheet_id', 'type': 'str'},
                                                          {'name': 'id', 'type': 'str'},
-                                                         {'name': 'beg_label_seq_id' if label_scheme else 'beg_auth_seq_id', 'type': 'int', 'alt_name': 'beg_seq_id'},
-                                                         {'name': 'end_label_seq_id' if label_scheme else 'end_auth_seq_id', 'type': 'int', 'alt_name': 'end_seq_id'}
+                                                         {'name': 'beg_label_seq_id'
+                                                          if label_scheme else 'beg_auth_seq_id', 'type': 'int', 'alt_name': 'beg_seq_id'},
+                                                         {'name': 'end_label_seq_id'
+                                                          if label_scheme else 'end_auth_seq_id', 'type': 'int', 'alt_name': 'end_seq_id'}
                                                          ],
                                                         [{'name': 'beg_label_asym_id', 'type': 'str', 'value': chain_id},
                                                          {'name': 'end_label_asym_id', 'type': 'str', 'value': chain_id}

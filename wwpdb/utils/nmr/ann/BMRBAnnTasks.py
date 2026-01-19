@@ -22,7 +22,7 @@ from typing import Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
                                                ALLOWED_AMBIGUITY_CODES,
@@ -43,7 +43,7 @@ try:
                                                        retrieveOriginalFileName)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
                                    ALLOWED_AMBIGUITY_CODES,
@@ -918,7 +918,7 @@ class BMRBAnnTasks:
 
                         for row in dat:
                             if row not in EMPTY_VALUE:
-                                if row not in MONDICT3:
+                                if row not in STD_MON_DICT:
                                     if row not in nstd_monomers:
                                         nstd_monomers.append(row)
                                     if _type != 'non-polymer':
@@ -960,7 +960,8 @@ class BMRBAnnTasks:
                                     except ValueError:
                                         row[auth_seq_id_col] = None
 
-                            if len(conflict_auth_seq_ids) == 0 and (all(row[auth_seq_id_col] not in EMPTY_VALUE for row in lp) or len(lp) == 1):
+                            if len(conflict_auth_seq_ids) == 0\
+                               and (all(row[auth_seq_id_col] not in EMPTY_VALUE for row in lp) or len(lp) == 1):
                                 break
 
                             for row in reversed(lp):
@@ -1417,11 +1418,13 @@ class BMRBAnnTasks:
                                     if h[1] == h[2]:
                                         solvent_name = h[1]
                                 solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
-                                solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
+                                solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name)\
+                                    and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
                                 solvent_system[_solvent] = 0
-                                solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent) and not perdeuterated_pat.match(_solvent)\
+                                solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent)\
+                                    and not perdeuterated_pat.match(_solvent)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(_solvent) else 'natural abundance'
 
                         total_v = sum(v for v in solvent_system.values())
@@ -1443,11 +1446,13 @@ class BMRBAnnTasks:
                                     if h[1] == h[2]:
                                         solvent_name = h[1]
                                 solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
-                                solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
+                                solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name)\
+                                    and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
                                 solvent_system[_solvent] = 100
-                                solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent) and not perdeuterated_pat.match(_solvent)\
+                                solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent)\
+                                    and not perdeuterated_pat.match(_solvent)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(_solvent) else 'natural abundance'
 
                         total_v = sum(v for v in solvent_system.values())
@@ -1466,11 +1471,13 @@ class BMRBAnnTasks:
                                 if h[1] == h[2]:
                                     solvent_name = h[1]
                             solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
-                            solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
+                            solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name)\
+                                and not perdeuterated_pat.match(solvent_name)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                         else:
                             solvent_system[_solvent_system] = 100
-                            solvent_isotope[_solvent_system] = '[U-2H]' if deuterated_pat.match(_solvent_system) and not perdeuterated_pat.match(_solvent_system)\
+                            solvent_isotope[_solvent_system] = '[U-2H]' if deuterated_pat.match(_solvent_system)\
+                                and not perdeuterated_pat.match(_solvent_system)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(_solvent_system) else 'natural abundance'
 
                     lp_category = '_Sample_component'
@@ -2506,8 +2513,8 @@ class BMRBAnnTasks:
                     dup_idx.add(idx2)
                     res_idx[idx2] = idx1
 
-                pk_name_pat = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
-                mr_name_pat = re.compile(r'D_[0-9]+_mr-(\S+)_P([0-9]+).(\S+).V([0-9]+)$')
+                pk_name_pat = re.compile(r'D_\d{6,10}_nmr-peaks-upload_P(\d+)\.dat\.V(\d+)$')
+                mr_name_pat = re.compile(r'D_\d{6,10}_mr-(\S+)_P(\d+)\.(\S+)\.V(\d+)$')
 
                 for idx in sorted(list(dup_idx)):
                     sf_framecode = sp_info[idx]['sf_framecode']

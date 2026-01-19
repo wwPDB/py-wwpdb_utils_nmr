@@ -386,7 +386,8 @@ class GromacsMRParserListener(ParseTreeListener):
                                     ps['chain_id'] = chain_mapping[ps['chain_id']]
 
                             self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
+                                                                          self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 

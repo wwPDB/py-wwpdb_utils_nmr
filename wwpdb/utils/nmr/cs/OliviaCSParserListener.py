@@ -19,13 +19,13 @@ from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3)
+                                               STD_MON_DICT)
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.cs.OliviaCSParser import OliviaCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3)
+                                   STD_MON_DICT)
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.cs.OliviaCSParser import OliviaCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
@@ -87,7 +87,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
 
             for compId in self.compIdSet:
-                if compId in MONDICT3:
+                if compId in STD_MON_DICT:
                     if len(compId) == 3:
                         self.polyPeptide = True
                     elif len(compId) == 2 and compId.startswith('D'):
@@ -165,7 +165,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
                 return
 
             if len(comp_id) == 1 and not self.polyRibonucleotide and not self.polyDeoxyribonucleotide and self.polyPeptide:
-                comp_id = next((_comp_id for _comp_id in self.compIdSet if _comp_id in MONDICT3 and MONDICT3[_comp_id] == comp_id), comp_id)
+                comp_id = next((_comp_id for _comp_id in self.compIdSet if _comp_id in STD_MON_DICT and STD_MON_DICT[_comp_id] == comp_id), comp_id)
 
             self.atomSelectionSets.clear()
 

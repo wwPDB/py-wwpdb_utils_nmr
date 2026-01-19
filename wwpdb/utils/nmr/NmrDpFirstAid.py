@@ -586,8 +586,10 @@ class NmrDpFirstAid:
                             if LOOP_PAT.match(line):
                                 pass_sf_loop = True
                                 if 'sf_category' in target:
-                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
-                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
+                                              + '   ' + sf_framecode + '\n')
+                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
+                                              + '    ' + target['sf_category'] + '\n')
                                     ofh.write('#\n')
                                 ofh.write(line)
                         elif sf_named_pattern.match(line):
@@ -690,8 +692,10 @@ class NmrDpFirstAid:
                             target = next(target for target in targets if target['loop_location'] == i)
                             if 'sf_category' in target:
                                 ofh.write('save_' + target['sf_framecode'] + '\n')
-                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
-                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
+                                          + '   ' + target['sf_framecode'] + '\n')
+                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
+                                          + '    ' + target['sf_category'] + '\n')
                                 ofh.write('#\n')
                         if i not in ignored_loop_locations:
                             ofh.write(line)
@@ -886,10 +890,12 @@ class NmrDpFirstAid:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             if __pynmrstar_v3_3__:
-                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with the saveframe name (\S+)\. "
+                msg_pattern = re.compile(r'^.*' + msg_template
+                                         + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with the saveframe name (\S+)\. "
                                          r"Error detected on line (\d+).*$")
             else:
-                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with.* the saveframe name (\S+)\. "
+                msg_pattern = re.compile(r'^.*' + msg_template
+                                         + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with.* the saveframe name (\S+)\. "
                                          r"Error detected on line (\d+).*$")
 
             try:

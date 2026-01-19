@@ -51,7 +51,7 @@ try:
                                                LARGE_ASYM_ID,
                                                LEN_MAJOR_ASYM_ID,
                                                EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
@@ -81,7 +81,7 @@ except ImportError:
                                    LARGE_ASYM_ID,
                                    LEN_MAJOR_ASYM_ID,
                                    EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
@@ -1352,7 +1352,7 @@ class NmrVrptUtility:
                     comp_name_unchecked = False
                     if _auth_atom_id == 'pdbx_auth_atom_name':
                         for c in coord:
-                            if c['auth_comp_id'] is not None and c['auth_comp_id'] not in MONDICT3\
+                            if c['auth_comp_id'] is not None and c['auth_comp_id'] not in STD_MON_DICT\
                                and c['alt_auth_comp_id'] is not None and c['auth_comp_id'] != c['alt_auth_comp_id']:
                                 _auth_atom_id_ = 'alt_auth_atom_id'
                                 break
@@ -1513,7 +1513,8 @@ class NmrVrptUtility:
                     if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
                         if 'HOH' not in (comp_id_1, comp_id_2):
-                            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - "
+                                             f"distance restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1546,7 +1547,8 @@ class NmrVrptUtility:
                                            lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - "
+                                         f"distance restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1755,7 +1757,8 @@ class NmrVrptUtility:
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
                        or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
                         if angle_type not in ('PPA', 'UNNAMED'):
-                            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - "
+                                             f"dihedral angle restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1772,7 +1775,8 @@ class NmrVrptUtility:
                                             lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - "
+                                         f"dihedral angle restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1855,7 +1859,8 @@ class NmrVrptUtility:
                 list_id = int(sf_tag[0]['ID'])
 
                 try:
-                    rdc_type = sf_tag[0]['Details']  # e.g. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1, RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
+                    # e.g. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1, RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
+                    rdc_type = sf_tag[0]['Details']
                     if rdc_type in (None, '', '.', '?', 'null'):
                         rdc_type = 'UNNAMED'
                 except KeyError:
@@ -2941,7 +2946,8 @@ class NmrVrptUtility:
                 angle_type = list(angle_type_set) + [any_type]
             except IndexError:
                 self.__log.write(f"Dihedral angle analysis failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
-                self.__results['error_message_angle'] = 'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
+                self.__results['error_message_angle'] =\
+                    'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
                 self.__results['angle'] = False
                 return True
 

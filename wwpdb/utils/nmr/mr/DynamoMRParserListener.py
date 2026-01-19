@@ -21,7 +21,7 @@ from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                RDC_BB_PAIR_CODE,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                REPRESENTATIVE_MODEL_ID,
@@ -53,7 +53,7 @@ try:
                                                        getPotentialType)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    RDC_BB_PAIR_CODE,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    REPRESENTATIVE_MODEL_ID,
@@ -2459,7 +2459,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             seqId = int(str(ctx.Integer(0)))
             compId = str(ctx.Simple_name(0)).upper()
 
-            if compId not in MONDICT3.values() and compId not in MONDICT3:
+            if compId not in STD_MON_DICT.values() and compId not in STD_MON_DICT:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               f"Found unknown residue name {compId!r}.")
                 return
@@ -2467,7 +2467,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if len(compId) >= 3:
                 pass
             else:
-                compId = next(k for k, v in MONDICT3.items() if v == compId and len(k) == 3)
+                compId = next(k for k, v in STD_MON_DICT.items() if v == compId and len(k) == 3)
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
@@ -2728,7 +2728,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             seqId = int(str(ctx.Integer(0)))
             compId = str(ctx.Simple_name(0)).upper()
 
-            if compId not in MONDICT3.values() and compId not in MONDICT3:
+            if compId not in STD_MON_DICT.values() and compId not in STD_MON_DICT:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               f"Found unknown residue name {compId!r}.")
                 return
@@ -2736,7 +2736,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if len(compId) >= 3:
                 pass
             else:
-                compId = next(k for k, v in MONDICT3.items() if v == compId and len(k) == 3)
+                compId = next(k for k, v in STD_MON_DICT.items() if v == compId and len(k) == 3)
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1

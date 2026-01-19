@@ -41,7 +41,9 @@ class TestNmrDpUtility(unittest.TestCase):
         pass
 
     def __test_nmr_cs_str_consistency(self, entry_id):
-        self.utility.addInput(name='chem_shift_file_path_list', value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[entry_id]], type='file_list')
+        self.utility.addInput(name='chem_shift_file_path_list',
+                              value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[entry_id]],
+                              type='file_list')
         if len(self.mr_file_path[entry_id]) == 1:
             self.utility.addInput(name='atypical_restraint_file_path_list',
                                   value=[{'file_name': self.data_dir_path + self.mr_file_path[entry_id][0], 'file_type': self.res_file_type[entry_id]}],

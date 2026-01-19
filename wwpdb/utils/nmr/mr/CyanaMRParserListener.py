@@ -22,7 +22,7 @@ from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                RDC_BB_PAIR_CODE,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -68,7 +68,7 @@ try:
                                                        getDstFuncForSsBond)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    RDC_BB_PAIR_CODE,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -539,7 +539,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
                                or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
                                 isRdc = False
-                            elif comp_id_1 in MONDICT3\
+                            elif comp_id_1 in STD_MON_DICT\
                                     and self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
                                     and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 pass
@@ -1160,7 +1160,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
                                or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
                                 isRdc = False
-                            elif comp_id_1 in MONDICT3\
+                            elif comp_id_1 in STD_MON_DICT\
                                     and self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
                                     and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 pass
@@ -1732,7 +1732,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             return
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0\
+                            else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
 
@@ -1788,8 +1789,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
                                                           if any(True for b in self.ccU.lastBonds
-                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId and b[self.ccU.ccbAtomId2] == _cifAtomId)
-                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId
+                                                                      and b[self.ccU.ccbAtomId2] == _cifAtomId)
+                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId
+                                                                         and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
                                         if cifAtomId is None:
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
@@ -1810,7 +1813,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in MONDICT3:
+                                elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -1958,7 +1961,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         atomSelection = []
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0\
+                            else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             idx = ps['auth_seq_id'].index(cifSeqId)
@@ -1993,7 +1997,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in MONDICT3:
+                                elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -4471,7 +4475,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if len(self.col_order_of_dist_w_chain) == 0:
                 for j in range(3):
-                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.ccU) in MONDICT3:
+                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.ccU) in STD_MON_DICT:
                         compId = translateToStdResName(jVal[j], ccU=self.ccU)
                         if self.ccU.updateChemCompDict(compId):
                             for k in range(3):
@@ -4481,7 +4485,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 chainId = jVal[3 - (j + k)]
                                 if atomId in ('M', 'Q'):
                                     continue
-                                if self.hasPolySeq and len(atomId) < len(chainId) and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                if self.hasPolySeq and len(atomId) < len(chainId)\
+                                   and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4519,7 +4524,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         break
                             if len(self.col_order_of_dist_w_chain) == 3:
                                 break
-                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.ccU) not in MONDICT3:
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.ccU) not in STD_MON_DICT:
                         compId = translateToStdResName(jVal[j], ccU=self.ccU)
                         if self.ccU.updateChemCompDict(compId):
                             for k in range(3):
@@ -4529,7 +4534,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 chainId = jVal[3 - (j + k)]
                                 if atomId in ('M', 'Q'):
                                     continue
-                                if self.hasPolySeq and len(atomId) < len(chainId) and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                if self.hasPolySeq and len(atomId) < len(chainId)\
+                                   and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4566,7 +4572,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if len(self.col_order_of_dist_w_chain) == 3:
                                 break
                 for j in range(3, 6):
-                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.ccU) in MONDICT3:
+                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.ccU) in STD_MON_DICT:
                         compId = translateToStdResName(jVal[j], ccU=self.ccU)
                         if self.ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
@@ -4576,7 +4582,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 chainId = jVal[12 - (j + k)]
                                 if atomId in ('M', 'Q'):
                                     continue
-                                if self.hasPolySeq and len(atomId) < len(chainId) and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                if self.hasPolySeq and len(atomId) < len(chainId)\
+                                   and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4614,7 +4621,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         break
                             if len(self.col_order_of_dist_w_chain) == 6:
                                 break
-                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.ccU) not in MONDICT3:
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.ccU) not in STD_MON_DICT:
                         compId = translateToStdResName(jVal[j], ccU=self.ccU)
                         if self.ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
@@ -4624,7 +4631,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 chainId = jVal[12 - (j + k)]
                                 if atomId in ('M', 'Q'):
                                     continue
-                                if self.hasPolySeq and len(atomId) < len(chainId) and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                if self.hasPolySeq and len(atomId) < len(chainId)\
+                                   and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4957,7 +4965,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
                                or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
                                 isRdc = False
-                            elif comp_id_1 in MONDICT3\
+                            elif comp_id_1 in STD_MON_DICT\
                                     and self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
                                     and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 pass
@@ -5586,7 +5594,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             return
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0\
+                            else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
 
@@ -5642,8 +5651,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
                                                           if any(True for b in self.ccU.lastBonds
-                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId and b[self.ccU.ccbAtomId2] == _cifAtomId)
-                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId
+                                                                      and b[self.ccU.ccbAtomId2] == _cifAtomId)
+                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId
+                                                                         and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
                                         if cifAtomId is None:
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
@@ -5664,7 +5675,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in MONDICT3:
+                                elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -5812,7 +5823,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         atomSelection = []
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0\
+                            else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             idx = ps['auth_seq_id'].index(cifSeqId)
@@ -5847,7 +5859,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in MONDICT3:
+                                elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}.")
                                 else:

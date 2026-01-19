@@ -22,7 +22,7 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
                                                EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
@@ -64,7 +64,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
                                    EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
@@ -996,7 +996,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             return
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                                    if _cifSeqId in ps['auth_seq_id'] else None)
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
 
@@ -1052,8 +1053,10 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
                                                           if any(True for b in self.ccU.lastBonds
-                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId and b[self.ccU.ccbAtomId2] == _cifAtomId)
-                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId
+                                                                      and b[self.ccU.ccbAtomId2] == _cifAtomId)
+                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId
+                                                                         and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
                                         if cifAtomId is None:
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
@@ -1074,7 +1077,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in MONDICT3:
+                                elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -1222,7 +1225,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         atomSelection = []
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                                    if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             idx = ps['auth_seq_id'].index(cifSeqId)
@@ -1257,7 +1261,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in MONDICT3:
+                                elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
                                 else:

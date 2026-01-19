@@ -826,10 +826,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.scale = 1.0
             if self.scale is None or self.scale == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' should be a positive value.")
+                              f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' "
+                              "should be a positive value.")
             elif self.scale < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must not be a negative value.")
+                              f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' "
+                              "must not be a negative value.")
 
         elif ctx.Asymptote():
             self.asymptote = self.getNumber_s(ctx.number_s())
@@ -5916,7 +5918,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         if self.donor_columnSel < 0:
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                          "The donor atom has not been selected. 'don' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
+                          "The donor atom has not been selected. 'don' tag must be exist "
+                          "in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
                           "e.g. assign (acc and segid A and resid 2 and name O) (don and segid A and resid 8 and name HN) "
                           "Or, did you forgot to add three numbers as a distance restraint after the second atom selection? "
                           "e.g. assign (selection) (selection) target delta-lower delta-upper "
@@ -5927,7 +5930,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         if self.acceptor_columnSel < 0:
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                          "The acceptor atom has not been selected. 'acc' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
+                          "The acceptor atom has not been selected. 'acc' tag must be exist "
+                          "in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
                           "e.g. assign (acc and resid 2 and segid A and name O) (don and resid 8 and segid A and name HN) "
                           "Or, did you forgot to add three numbers as a distance restraint after the second atom selection? "
                           "e.g. assign (selection) (selection) target delta-lower delta-upper "
@@ -7173,7 +7177,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                 _seqId, _compId, _ = self.getRealSeqId(ps, _seqId, isPolySeq)
                                                 # _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                                                 if self.ccU.updateChemCompDict(_compId):
-                                                    leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
+                                                    leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                                      if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
 
                                                     _atomIdSelect = set()
                                                     for ccb in self.ccU.lastBonds:
@@ -7203,7 +7208,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                             continue
 
                                                         if distance(to_np_array(_neighbor[0]), origin) < 2.5:
-                                                            _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
+                                                            _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId,
+                                                                                   'comp_id': _compId, 'atom_id': _atomId})
 
                         # struct_conn category
                         _atom = self.cR.getDictListWithFilter('struct_conn',
@@ -7321,13 +7327,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 else:
                                     cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
                                     if cca is not None:
-                                        _origin = {'x': float(cca[self.ccU.ccaCartnX]), 'y': float(cca[self.ccU.ccaCartnY]), 'z': float(cca[self.ccU.ccaCartnZ])}
+                                        _origin = {'x': float(cca[self.ccU.ccaCartnX]),
+                                                   'y': float(cca[self.ccU.ccaCartnY]),
+                                                   'z': float(cca[self.ccU.ccaCartnZ])}
                                         origin = to_np_array(_origin)
 
                                         for _atomId in _nonBondedAtomIdSelect:
                                             _cca = next((_cca for _cca in self.ccU.lastAtomList if _cca[self.ccU.ccaAtomId] == _atomId), None)
                                             if _cca is not None:
-                                                _neighbor = {'x': float(_cca[self.ccU.ccaCartnX]), 'y': float(_cca[self.ccU.ccaCartnY]), 'z': float(_cca[self.ccU.ccaCartnZ])}
+                                                _neighbor = {'x': float(_cca[self.ccU.ccaCartnX]),
+                                                             'y': float(_cca[self.ccU.ccaCartnY]),
+                                                             'z': float(_cca[self.ccU.ccaCartnZ])}
 
                                                 if distance(to_np_array(_neighbor), origin) < 2.0:
                                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
@@ -7531,7 +7541,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
                         if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
-                        elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                        elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0]
+                                                  and __atomId in PARAMAGNETIC_ELEMENTS)
                                                  or __atomId in FERROMAGNETIC_ELEMENTS or __atomId in LANTHANOID_ELEMENTS):
                             pass
                         elif self.cur_subtype == 'plane':
@@ -7866,7 +7877,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
                         if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
-                        elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                        elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0]
+                                                  and __atomId in PARAMAGNETIC_ELEMENTS)
                                                  or __atomId in FERROMAGNETIC_ELEMENTS or __atomId in LANTHANOID_ELEMENTS):
                             pass
                         elif self.cur_subtype == 'plane':
@@ -7927,7 +7939,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
                         if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
-                        elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                        elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0]
+                                                  and __atomId in PARAMAGNETIC_ELEMENTS)
                                                  or __atomId in FERROMAGNETIC_ELEMENTS or __atomId in LANTHANOID_ELEMENTS):
                             pass
                         elif self.cur_subtype == 'plane':
@@ -8106,7 +8119,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
                         if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
-                        elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                        elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0]
+                                                  and __atomId in PARAMAGNETIC_ELEMENTS)
                                                  or __atomId in FERROMAGNETIC_ELEMENTS or __atomId in LANTHANOID_ELEMENTS):
                             pass
                         elif self.cur_subtype == 'plane':

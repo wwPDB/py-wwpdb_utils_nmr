@@ -201,10 +201,14 @@ class XeasyCSReader:
 if __name__ == "__main__":
     nmr_poly_seq = [{'chain_id': '1',
                      'seq_id': list(range(1, 82)),
-                     'comp_id': ['ALA', 'MET', 'GLY', 'ASN', 'LYS', 'ILE', 'TYR', 'VAL', 'GLY', 'GLY', 'LEU', 'PRO', 'THR', 'CYS', 'LEU', 'ASN', 'GLN', 'ASP', 'GLN', 'VAL',
-                                 'LYS', 'GLU', 'LEU', 'LEU', 'GLN', 'SER', 'PHE', 'GLY', 'GLU', 'LEU', 'LYS', 'GLY', 'LEU', 'ASN', 'LEU', 'VAL', 'MET', 'ASP', 'THR', 'ASN',
-                                 'THR', 'ASN', 'LEU', 'ASN', 'LYS', 'GLY', 'PHE', 'ALA', 'PHE', 'PHE', 'GLU', 'TYR', 'CYS', 'ASP', 'PRO', 'SER', 'VAL', 'THR', 'ASP', 'HIS',
-                                 'ALA', 'ILE', 'ALA', 'GLY', 'LEU', 'HIS', 'GLY', 'MET', 'LEU', 'LEU', 'GLY', 'ASP', 'ARG', 'ARG', 'LEU', 'VAL', 'VAL', 'GLN', 'ARG', 'SER',
+                     'comp_id': ['ALA', 'MET', 'GLY', 'ASN', 'LYS', 'ILE', 'TYR', 'VAL', 'GLY', 'GLY',
+                                 'LEU', 'PRO', 'THR', 'CYS', 'LEU', 'ASN', 'GLN', 'ASP', 'GLN', 'VAL',
+                                 'LYS', 'GLU', 'LEU', 'LEU', 'GLN', 'SER', 'PHE', 'GLY', 'GLU', 'LEU',
+                                 'LYS', 'GLY', 'LEU', 'ASN', 'LEU', 'VAL', 'MET', 'ASP', 'THR', 'ASN',
+                                 'THR', 'ASN', 'LEU', 'ASN', 'LYS', 'GLY', 'PHE', 'ALA', 'PHE', 'PHE',
+                                 'GLU', 'TYR', 'CYS', 'ASP', 'PRO', 'SER', 'VAL', 'THR', 'ASP', 'HIS',
+                                 'ALA', 'ILE', 'ALA', 'GLY', 'LEU', 'HIS', 'GLY', 'MET', 'LEU', 'LEU',
+                                 'GLY', 'ASP', 'ARG', 'ARG', 'LEU', 'VAL', 'VAL', 'GLN', 'ARG', 'SER',
                                  'ILE']
                      }]
     entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}

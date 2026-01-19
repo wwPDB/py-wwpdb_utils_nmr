@@ -530,23 +530,23 @@ RESERVED_LIG_CODE = ('LIG', 'DRG', 'INH')
 DNR_PARENT_CODE = ('DC', 'CYT', 'DC5', 'DC3')
 CH_PARENT_CODE = ('C', 'RCYT', 'C5', 'C3')
 
-PDB_ID_PAT = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?\d\w{3}$')
-LEGACY_PDB_ID_PAT = re.compile(r'^\d\w{3}$')
+PDB_ID_PAT = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?[1-9]\w{3}$')
+LEGACY_PDB_ID_PAT = re.compile(r'^[1-9]\w{3}$')
 
 BMRB_ID_PAT = re.compile(r'^(bmr)?([1-9]\d{0,4})$')
 
-DEP_ID_PAT = re.compile(r'^D_\d{6,10}$')
+DEP_ID_PAT = re.compile(r'^D_[1-9]\d{5,9}$')
 
 CCD_ID_PAT = re.compile(r'(\w{1,3}|\w{5})')
 
 BMRB_NMR_STAR_FILE_NAME_PAT = re.compile(r'^bmr[1-9]\d{0,4}_3.str$')
-PROC_MR_FILE_NAME_PAT = re.compile(r'^D_\d{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
+PROC_MR_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
                                    r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
 
-ONEDEP_MODEL_FILE_PAT = re.compile(r'^(D_\d{6,10})_model_P1\.cif\.V\d+$')
+ONEDEP_MODEL_FILE_PAT = re.compile(r'^(D_[1-9]\d{5,9})_model_P1\.cif\.V\d+$')
 ONEDEP_UPLOAD_FILE_PAT = re.compile(r'(.*)\-upload_(.*)\.V(\d+)$')
 ONEDEP_FILE_PAT = re.compile(r'(.*)\.V(\d+)$')
-MR_FILE_NAME_PAT = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?\d\w{3}.mr$')
+MR_FILE_NAME_PAT = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?[1-9]\w{3}.mr$')
 MR_FILE_HEADER_PAT = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
 
 DATABLOCK_PAT = re.compile(r'\s*data_(\S+)\s*')

@@ -69,11 +69,11 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
 
     emptyValue = (None, '', '.', '?', 'null', 'None')
 
-    mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?\d\w{3}.mr$')
-    proc_mr_file_name_pattern = re.compile(r'^D_\d{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
+    mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?[1-9]\w{3}.mr$')
+    proc_mr_file_name_pattern = re.compile(r'^D_[1-9]\d{5,9}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
                                            r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
-    pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?\d\w{3}$')
-    dep_id_pattern = re.compile(r'^D_\d{6,10}$')
+    pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?(\d{4})?[1-9]\w{3}$')
+    dep_id_pattern = re.compile(r'^D_[1-9]\d{5,9}$')
     bmrb_id_pattern = re.compile(r'^(bmr)?[1-9]\d{4}$')
 
     try:
@@ -150,11 +150,11 @@ class gen_auth_view_onedep:
 
         self.__auth_view = auth_view
 
-        self.__cif_name_pattern = re.compile(r'D_\d{6,10}_model-(\S+)_P1\.cif\.V(\d+)$')
-        self.__mr_name_pattern = re.compile(r'D_\d{6,10}_mr-(\S+)_P(\d+)\.(\S+)\.V(\d+)$')
-        self.__pk_name_pattern = re.compile(r'D_\d{6,10}_nmr-peaks-upload_P(\d+)\.dat\.V(\d+)$')
-        self.__nmr_cif_name_pattern = re.compile(r'D_\d{6,10}_nmr-data-str_P(\d+)\.cif\.V(\d+)$')
-        self.__cs_ann_name_pattern = re.compile(r'D_\d{6,10}_cs-(\S+)_P1\.cif\.V(\d+)')
+        self.__cif_name_pattern = re.compile(r'D_[1-9]\d{5,9}_model-(\S+)_P1\.cif\.V(\d+)$')
+        self.__mr_name_pattern = re.compile(r'D_[1-9]\d{5,9}_mr-(\S+)_P(\d+)\.(\S+)\.V(\d+)$')
+        self.__pk_name_pattern = re.compile(r'D_[1-9]\d{5,9}_nmr-peaks-upload_P(\d+)\.dat\.V(\d+)$')
+        self.__nmr_cif_name_pattern = re.compile(r'D_[1-9]\d{5,9}_nmr-data-str_P(\d+)\.cif\.V(\d+)$')
+        self.__cs_ann_name_pattern = re.compile(r'D_[1-9]\d{5,9}_cs-(\S+)_P1\.cif\.V(\d+)')
 
         self.__amb_top_pattern = re.compile(r"^\%FLAG ATOM_NAME\s*")
         self.__amb_rst_pattern = re.compile(r"\s*\&rst\s*")

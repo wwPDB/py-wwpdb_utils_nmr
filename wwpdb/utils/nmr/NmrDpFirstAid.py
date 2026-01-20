@@ -86,8 +86,8 @@ __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.
 
 PYNMRSTAR_LP_OBJ_PAT = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
 
-ONEDEP_ANY_UPLOAD_FILE_NAME_PAT = re.compile(r'^(.*)\-upload_(.*)\.V(\d+)$')
-ONEDEP_ANY_FILE_NAME_PAT = re.compile(r'\(.*)\.V(\d+)$')
+ONEDEP_ANY_UPLOAD_FILE_NAME_PAT = re.compile(r'^(\S+)\-upload_(\S+)\.V(\d+)$')
+ONEDEP_ANY_FILE_NAME_PAT = re.compile(r'^(\S+)\.V(\d+)$')
 
 
 class NmrDpFirstAid:

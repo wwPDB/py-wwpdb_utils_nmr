@@ -39,6 +39,7 @@ try:
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                MAX_PREF_LABEL_SCHEME_COUNT,
+                                               LOCAL_OFFSET_ATTEMPT,
                                                MAX_ALLOWED_EXT_SEQ,
                                                UNREAL_AUTH_SEQ_NUM,
                                                THRESHOLD_FOR_CIRCULAR_SHIFT,
@@ -142,6 +143,7 @@ except ImportError:
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    MAX_PREF_LABEL_SCHEME_COUNT,
+                                   LOCAL_OFFSET_ATTEMPT,
                                    MAX_ALLOWED_EXT_SEQ,
                                    UNREAL_AUTH_SEQ_NUM,
                                    THRESHOLD_FOR_CIRCULAR_SHIFT,
@@ -1549,7 +1551,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -1574,7 +1576,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break

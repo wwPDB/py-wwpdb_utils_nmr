@@ -42,8 +42,9 @@ try:
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                MAX_PREF_LABEL_SCHEME_COUNT,
-                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                               LOCAL_OFFSET_ATTEMPT,
                                                MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
+                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                PLANE_LIKE_LOWER_LIMIT,
                                                PLANE_LIKE_UPPER_LIMIT,
                                                DIST_RESTRAINT_RANGE,
@@ -171,8 +172,9 @@ except ImportError:
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    MAX_PREF_LABEL_SCHEME_COUNT,
-                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                   LOCAL_OFFSET_ATTEMPT,
                                    MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
+                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
                                    PLANE_LIKE_LOWER_LIMIT,
                                    PLANE_LIKE_UPPER_LIMIT,
                                    DIST_RESTRAINT_RANGE,
@@ -4730,7 +4732,7 @@ class BaseStackedMRParserListener():
                     if real_seq_id in offset:
                         offset = offset[real_seq_id]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if real_seq_id + shift in offset:
                                 offset = offset[real_seq_id + shift]
                                 break
@@ -4742,7 +4744,7 @@ class BaseStackedMRParserListener():
                 if real_seq_id + offset in ps['auth_seq_id']:
                     return real_seq_id + offset
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                    for shift in range(1, 100):
+                    for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                         if real_seq_id + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(real_seq_id + shift + offset) - shift
                             if 0 <= idx < len(ps['auth_seq_id']):
@@ -7169,7 +7171,7 @@ class BaseStackedMRParserListener():
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -7181,7 +7183,7 @@ class BaseStackedMRParserListener():
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                    for shift in range(1, 100):
+                    for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                         if seqId + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
                             if 0 <= idx < len(ps['auth_seq_id']):
@@ -7207,7 +7209,7 @@ class BaseStackedMRParserListener():
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -7219,7 +7221,7 @@ class BaseStackedMRParserListener():
         if seqId + offset in ps['auth_seq_id']:
             return seqId + offset
         if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-            for shift in range(1, 100):
+            for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                 if seqId + shift + offset in ps['auth_seq_id']:
                     idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
                     if 0 <= idx < len(ps['auth_seq_id']):
@@ -7258,7 +7260,7 @@ class BaseStackedMRParserListener():
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -7270,7 +7272,7 @@ class BaseStackedMRParserListener():
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)], False
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                    for shift in range(1, 100):
+                    for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                         if seqId + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
                             if 0 <= idx < len(ps['auth_seq_id']):
@@ -7300,7 +7302,7 @@ class BaseStackedMRParserListener():
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -7317,7 +7319,7 @@ class BaseStackedMRParserListener():
                 if seqId + offset in _ps['seq_id']:
                     return seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)], True
         if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-            for shift in range(1, 100):
+            for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                 if seqId + shift + offset in ps['auth_seq_id']:
                     idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
                     if 0 <= idx < len(ps['auth_seq_id']):

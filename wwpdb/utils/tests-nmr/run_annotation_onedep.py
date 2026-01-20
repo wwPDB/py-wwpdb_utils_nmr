@@ -19,6 +19,7 @@ try:
                                                STOP_PAT,
                                                EMPTY_VALUE,
                                                MR_FILE_NAME_PAT,
+                                               PROC_MR_FILE_NAME_PAT,
                                                PDB_ID_PAT,
                                                DEP_ID_PAT,
                                                BMRB_ID_PAT)
@@ -35,6 +36,7 @@ except ImportError:
                                    STOP_PAT,
                                    EMPTY_VALUE,
                                    MR_FILE_NAME_PAT,
+                                   PROC_MR_FILE_NAME_PAT,
                                    PDB_ID_PAT,
                                    DEP_ID_PAT,
                                    BMRB_ID_PAT)
@@ -77,9 +79,6 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
         @return: Whether input file is combined NMR data file, dictionary of list of associated constraint file names for each format
     """
 
-    proc_mr_file_name_pattern = re.compile(r'^D_[1-9]\d{5,9}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
-                                           r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
-
     try:
 
         star_data = pynmrstar.Entry.from_file(file_path)
@@ -89,7 +88,7 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
             if sf.category == 'constraint_statistics':
                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                 entry_id = get_first_sf_tag(sf, 'Entry_ID')
-                combined = (MR_FILE_NAME_PAT.match(data_file_name) or proc_mr_file_name_pattern.match(data_file_name))\
+                combined = (MR_FILE_NAME_PAT.match(data_file_name) or PROC_MR_FILE_NAME_PAT.match(data_file_name))\
                     and (PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id) or BMRB_ID_PAT.match(entry_id))
                 original_file_name = None
 

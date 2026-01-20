@@ -29,6 +29,7 @@ try:
                                                ZINC_ION_CODE,
                                                CALCIUM_ION_CODE,
                                                MAX_PREF_LABEL_SCHEME_COUNT,
+                                               PERIPH_OFFSET_ATTEMPT,
                                                MAX_ALLOWED_EXT_SEQ,
                                                UNREAL_AUTH_SEQ_NUM,
                                                CS_RESTRAINT_RANGE,
@@ -83,6 +84,7 @@ except ImportError:
                                    ZINC_ION_CODE,
                                    CALCIUM_ION_CODE,
                                    MAX_PREF_LABEL_SCHEME_COUNT,
+                                   PERIPH_OFFSET_ATTEMPT,
                                    MAX_ALLOWED_EXT_SEQ,
                                    UNREAL_AUTH_SEQ_NUM,
                                    CS_RESTRAINT_RANGE,
@@ -684,8 +686,7 @@ class BaseCSParserListener():
 
             ps = next(ps for ps in self.polySeq if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'])
             seq_ids = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']
-            min_seq_id = seq_ids[0]
-            max_seq_id = seq_ids[-1]
+            min_seq_id, max_seq_id = seq_ids[0], seq_ids[-1]
 
             if seq_id < min_seq_id or seq_id > max_seq_id:
                 offset = min_seq_id - seq_id
@@ -696,7 +697,7 @@ class BaseCSParserListener():
                         self.offset[chain_id] = offset
                         return
 
-                    for shift in range(1, 10):
+                    for shift in range(1, PERIPH_OFFSET_ATTEMPT):
                         _seq_id = seq_id + offset + shift
                         if _seq_id in seq_ids and comp_id == ps['comp_id'][seq_ids.index(_seq_id)]:
                             self.offset[chain_id] = offset + shift
@@ -709,8 +710,7 @@ class BaseCSParserListener():
         if None in self.offset:
             return
 
-        min_seq_id = 1000
-        max_seq_id = -1000
+        min_seq_id, max_seq_id = 1000, -1000
         for ps in self.polySeq:
             min_seq_id = min(min_seq_id, ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'][0])
             max_seq_id = max(max_seq_id, ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'][-1])
@@ -729,7 +729,7 @@ class BaseCSParserListener():
                         self.offset[None] = offset
                         return
 
-                for shift in range(1, 10):
+                for shift in range(1, PERIPH_OFFSET_ATTEMPT):
                     for ps in self.polySeq:
                         seq_ids = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']
                         min_seq_id = seq_ids[0]

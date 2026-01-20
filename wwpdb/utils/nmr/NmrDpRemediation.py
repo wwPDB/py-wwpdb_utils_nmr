@@ -59,7 +59,8 @@ try:
                                                MAX_DIM_NUM_OF_SPECTRA,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                ALLOWED_AMBIGUITY_CODES,
-                                               MAX_OFFSET_ATTEMPT,
+                                               GLOBAL_OFFSET_ATTEMPT,
+                                               PERIPH_OFFSET_ATTEMPT,
                                                ONEDEP_MODEL_FILE_PAT,
                                                COMMENT_PAT,
                                                SEQ_MISMATCH_WARNING_PAT,
@@ -190,7 +191,8 @@ except ImportError:
                                    MAX_DIM_NUM_OF_SPECTRA,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    ALLOWED_AMBIGUITY_CODES,
-                                   MAX_OFFSET_ATTEMPT,
+                                   GLOBAL_OFFSET_ATTEMPT,
+                                   PERIPH_OFFSET_ATTEMPT,
                                    ONEDEP_MODEL_FILE_PAT,
                                    COMMENT_PAT,
                                    SEQ_MISMATCH_WARNING_PAT,
@@ -4885,7 +4887,7 @@ class NmrDpRemediation:
                         valid = self.__reg.sail_flag
                         row_src = src_lp.data[src_idx]
                         if 0 <= src_idx < len(src_lp):
-                            for offset in range(1, 10):
+                            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                 if src_idx + offset < len(src_lp):
                                     row = src_lp.data[src_idx + offset]
                                     if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
@@ -5034,7 +5036,7 @@ class NmrDpRemediation:
                                             atom_type = row_src[atom_id_col][0]
                                             val = float(row_src[val_col])
                                             sig = self.__reg.ccU.getBondSignature(comp_id, atom_id)
-                                            for offset in range(1, 10):
+                                            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                                 if src_idx + offset < len(src_lp):
                                                     row = src_lp.data[src_idx + offset]
                                                     if row[chain_id_col] == chain_id_src\
@@ -5066,7 +5068,7 @@ class NmrDpRemediation:
                                     atom_ids_in_group_src = self.__reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
                                         if atom_type in PROTON_BEGIN_CODE else []
                                     ambig_code_4_test = hetero_group_test = False
-                                    for offset in range(1, 10):
+                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                         if src_idx + offset < len(src_lp):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == comp_id\
@@ -5099,7 +5101,7 @@ class NmrDpRemediation:
                                                         break
                                     if not ambig_code_4_test:
                                         ambig_code_5_test = False
-                                        for offset in range(1, 10):
+                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                             if src_idx + offset < len(src_lp):
                                                 row = src_lp.data[src_idx + offset]
                                                 if row[comp_id_col] == comp_id\
@@ -5131,7 +5133,7 @@ class NmrDpRemediation:
                                                     ambig_code_5_test = True
                                                     break
                                         if not ambig_code_5_test:
-                                            for offset in range(1, 10):
+                                            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                                 if src_idx + offset < len(src_lp):
                                                     row = src_lp.data[src_idx + offset]
                                                     if row[comp_id_col] == comp_id\
@@ -5164,7 +5166,7 @@ class NmrDpRemediation:
                                     atom_type = row_src[atom_id_col][0]
                                     ambig_code_src = row_src[ambig_code_col]
                                     ambig_code_5_test = False
-                                    for offset in range(1, 10):
+                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                         if src_idx + offset < len(src_lp):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == comp_id\
@@ -5196,7 +5198,7 @@ class NmrDpRemediation:
                                                 ambig_code_5_test = True
                                                 break
                                     if not ambig_code_5_test:
-                                        for offset in range(1, 10):
+                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                             if src_idx + offset < len(src_lp):
                                                 row = src_lp.data[src_idx + offset]
                                                 if row[comp_id_col] == comp_id\
@@ -5279,7 +5281,7 @@ class NmrDpRemediation:
                         valid = self.__reg.sail_flag
                         if 0 <= src_idx < len(src_lp):
                             row_src = src_lp.data[src_idx]
-                            for offset in range(1, 10):
+                            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                 if src_idx + offset < len(src_lp):
                                     row = src_lp.data[src_idx + offset]
                                     if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
@@ -5373,7 +5375,7 @@ class NmrDpRemediation:
                                         atom_type = row_src[atom_id_col][0]
                                         val = float(row_src[val_col])
                                         sig = self.__reg.ccU.getBondSignature(comp_id, atom_id)
-                                        for offset in range(1, 10):
+                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                             if src_idx + offset < len(src_lp):
                                                 row = src_lp.data[src_idx + offset]
                                                 if row[chain_id_col] == chain_id_src\
@@ -5405,7 +5407,7 @@ class NmrDpRemediation:
                                 atom_ids_in_group = self.__reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
                                     if atom_type in PROTON_BEGIN_CODE else []
                                 ambig_code_4_test = hetero_group_test = False
-                                for offset in range(1, 10):
+                                for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                     if src_idx + offset < len(src_lp):
                                         row = src_lp.data[src_idx + offset]
                                         if row[comp_id_col] == comp_id\
@@ -5434,7 +5436,7 @@ class NmrDpRemediation:
                                                     break
                                 if not ambig_code_4_test:
                                     ambig_code_5_test = False
-                                    for offset in range(1, 10):
+                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                         if src_idx + offset < len(src_lp):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == comp_id\
@@ -5462,7 +5464,7 @@ class NmrDpRemediation:
                                                 ambig_code_5_test = True
                                                 break
                                     if not ambig_code_5_test:
-                                        for offset in range(1, 10):
+                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                             if src_idx + offset < len(src_lp):
                                                 row = src_lp.data[src_idx + offset]
                                                 if row[comp_id_col] == comp_id\
@@ -5493,7 +5495,7 @@ class NmrDpRemediation:
                                 atom_type = row_src[atom_id_col][0]
                                 ambig_code_src = row_src[ambig_code_col]
                                 ambig_code_5_test = False
-                                for offset in range(1, 10):
+                                for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                     if src_idx + offset < len(src_lp):
                                         row = src_lp.data[src_idx + offset]
                                         if row[comp_id_col] == comp_id\
@@ -5521,7 +5523,7 @@ class NmrDpRemediation:
                                             ambig_code_5_test = True
                                             break
                                 if not ambig_code_5_test:
-                                    for offset in range(1, 10):
+                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                         if src_idx + offset < len(src_lp):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == comp_id\
@@ -6803,7 +6805,7 @@ class NmrDpRemediation:
                                 return _found, _resolved, _reparse, _index, _row
 
                             found = False
-                            for offset in range(1, MAX_OFFSET_ATTEMPT):
+                            for offset in range(1, GLOBAL_OFFSET_ATTEMPT):
                                 found, resolved, reparse, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, offset)
 
                                 if found:
@@ -7013,7 +7015,7 @@ class NmrDpRemediation:
                                     return _resolved, _reparse, _index, _row
 
                                 found = False
-                                for offset in range(1, MAX_OFFSET_ATTEMPT):
+                                for offset in range(1, GLOBAL_OFFSET_ATTEMPT):
                                     resolved, reparse, _index, __row = test_seq_id_offset_as_is(lp, index, _row, idx, chain_id, seq_id, comp_id, offset)
 
                                     if resolved:
@@ -7151,7 +7153,7 @@ class NmrDpRemediation:
                                     _atom_type = row[atom_id_col][0]
                                     _ambig_code = str(ambig_code)
                                     _idx = idx
-                                    for offset in range(1, 10):
+                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                         if _idx + offset < len(loop):
                                             row_ = loop.data[_idx + offset]
                                             if row_[comp_id_col] == comp_id\
@@ -7176,7 +7178,7 @@ class NmrDpRemediation:
                                         _row[12] = ambig_code = 4
                                         val = float(row[val_col])
                                         sig = self.__reg.ccU.getBondSignature(comp_id, atom_id)
-                                        for offset in range(1, 10):
+                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                             if _idx + offset < len(loop):
                                                 row_ = loop.data[_idx + offset]
                                                 if row_[chain_id_col] == _chain_id and row_[seq_id_col] == _seq_id\
@@ -7207,7 +7209,7 @@ class NmrDpRemediation:
                                     if _atom_type in PROTON_BEGIN_CODE else []
                                 ambig_code_4_test = hetero_group_test = False
                                 _idx = idx
-                                for offset in range(1, 10):
+                                for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                     if _idx + offset < len(loop):
                                         row_ = loop.data[_idx + offset]
                                         if row_[comp_id_col] == comp_id\
@@ -7235,7 +7237,7 @@ class NmrDpRemediation:
                                                     break
                                 if not ambig_code_4_test:
                                     ambig_code_5_test = False
-                                    for offset in range(1, 10):
+                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                         if _idx + offset < len(loop):
                                             row_ = loop.data[_idx + offset]
                                             if row_[comp_id_col] == comp_id\
@@ -7261,7 +7263,7 @@ class NmrDpRemediation:
                                                 ambig_code_5_test = True
                                                 break
                                     if not ambig_code_5_test:
-                                        for offset in range(1, 10):
+                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                             if _idx + offset < len(loop):
                                                 row_ = loop.data[_idx + offset]
                                                 if row_[comp_id_col] == comp_id\
@@ -7291,7 +7293,7 @@ class NmrDpRemediation:
                                 _ambig_code = str(ambig_code)
                                 _idx = idx
                                 ambig_code_5_test = False
-                                for offset in range(1, 10):
+                                for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                     if _idx + offset < len(loop):
                                         row_ = loop.data[_idx + offset]
                                         if row_[comp_id_col] == comp_id\
@@ -7315,7 +7317,7 @@ class NmrDpRemediation:
                                             ambig_code_5_test = True
                                             break
                                 if not ambig_code_5_test:
-                                    for offset in range(1, 10):
+                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                         if _idx + offset < len(loop):
                                             row_ = loop.data[_idx + offset]
                                             if row_[comp_id_col] == comp_id\

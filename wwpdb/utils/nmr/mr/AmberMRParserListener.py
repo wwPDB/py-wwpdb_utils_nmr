@@ -36,7 +36,7 @@ try:
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
-                                               MAX_OFFSET_ATTEMPT,
+                                               GLOBAL_OFFSET_ATTEMPT,
                                                THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                PLANE_LIKE_LOWER_LIMIT,
                                                PLANE_LIKE_UPPER_LIMIT,
@@ -139,7 +139,7 @@ except ImportError:
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
-                                   MAX_OFFSET_ATTEMPT,
+                                   GLOBAL_OFFSET_ATTEMPT,
                                    THRESHOLD_FOR_CIRCULAR_SHIFT,
                                    PLANE_LIKE_LOWER_LIMIT,
                                    PLANE_LIKE_UPPER_LIMIT,
@@ -7844,7 +7844,7 @@ class AmberMRParserListener(ParseTreeListener):
     def guessChainIdFromCompId(self, seqId: int, compId: str) -> List[str]:
         chainIds = [ps['auth_chain_id'] for ps in self.__polySeq if compId in ps['comp_id']]
         if len(chainIds) > 1:
-            min_gap = MAX_OFFSET_ATTEMPT
+            min_gap = GLOBAL_OFFSET_ATTEMPT
             _chainIds = []
             for chainId in chainIds:
                 ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
@@ -7858,7 +7858,7 @@ class AmberMRParserListener(ParseTreeListener):
                 elif gap == min_gap:
                     _chainIds.append(chainId)
             if len(_chainIds) > 1:
-                min_gap = MAX_OFFSET_ATTEMPT
+                min_gap = GLOBAL_OFFSET_ATTEMPT
                 _chainIds = []
                 offset = 0
                 for ps in self.__polySeq:

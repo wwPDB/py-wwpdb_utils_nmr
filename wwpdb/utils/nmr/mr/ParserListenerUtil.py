@@ -68,7 +68,7 @@ try:
                                                NMR_STAR_AUX_LP_KEY_ITEMS,
                                                NMR_STAR_AUX_LP_DATA_ITEMS,
                                                MAX_ALLOWED_EXT_SEQ,
-                                               MAX_OFFSET_ATTEMPT,
+                                               GLOBAL_OFFSET_ATTEMPT,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_MED,
@@ -117,7 +117,7 @@ except ImportError:
                                    NMR_STAR_AUX_LP_KEY_ITEMS,
                                    NMR_STAR_AUX_LP_DATA_ITEMS,
                                    MAX_ALLOWED_EXT_SEQ,
-                                   MAX_OFFSET_ATTEMPT,
+                                   GLOBAL_OFFSET_ATTEMPT,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_MED,
@@ -6474,7 +6474,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
         return starAtom
 
     if seqId is not None and offsetHolder is not None:
-        for offset in range(1, MAX_OFFSET_ATTEMPT):
+        for offset in range(1, GLOBAL_OFFSET_ATTEMPT):
             seqKey = (chainId, seqId + offset, compId)
             if has_aux_atom:
                 auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
@@ -6541,7 +6541,7 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
             if seqKey in authToInsCode:
                 return authToInsCode[seqKey]
 
-        for offset in range(1, MAX_OFFSET_ATTEMPT):
+        for offset in range(1, GLOBAL_OFFSET_ATTEMPT):
             seqKey = (chainId, seqId + offset, compId)
             if seqKey in authToInsCode:
                 offsetHolder[chainId] = offset

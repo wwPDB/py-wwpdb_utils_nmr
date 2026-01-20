@@ -83,6 +83,7 @@ try:
                                                MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                ALLOWED_AMBIGUITY_CODES,
+                                               PERIPH_OFFSET_ATTEMPT,
                                                PDB_ID_PAT,
                                                DEP_ID_PAT,
                                                BMRB_NMR_STAR_FILE_NAME_PAT,
@@ -202,6 +203,7 @@ except ImportError:
                                    MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    ALLOWED_AMBIGUITY_CODES,
+                                   PERIPH_OFFSET_ATTEMPT,
                                    PDB_ID_PAT,
                                    DEP_ID_PAT,
                                    BMRB_NMR_STAR_FILE_NAME_PAT,
@@ -9583,7 +9585,7 @@ class NmrDpValidation:
                                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                 if test_seq_id == seq_id), None)
                                             if auth_seq_id is None:
-                                                for offset in range(1, 10):
+                                                for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                                     auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                         if test_seq_id == seq_id + offset), None)
                                                     if auth_seq_id is not None:
@@ -12139,7 +12141,7 @@ class NmrDpValidation:
 
                     else:
 
-                        for _offset in range(1, 10):
+                        for _offset in range(1, PERIPH_OFFSET_ATTEMPT):
                             if (cif_chain_id, cif_seq_id + _offset) in label_to_auth_seq:
                                 _, _cif_seq_id = label_to_auth_seq[(cif_chain_id, cif_seq_id + _offset)]
                                 if (cif_chain_id, _cif_seq_id) in auth_to_label_seq:

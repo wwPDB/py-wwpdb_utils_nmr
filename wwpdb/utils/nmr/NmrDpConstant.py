@@ -547,6 +547,12 @@ ONEDEP_FILE_PAT = re.compile(r'(.*)\.V(\d+)$')
 PDB_MR_FILE_NAME_PAT = re.compile(r'^[1-9]\w{3}.mr$')
 PDB_MR_FILE_HEADER_PAT = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
 
+INTNL_MODEL_FILE_NAME_PAT = re.compile(r'D_\d{6,10}_model-(\S+)_P1\.cif\.V(\d+)$')
+INTNL_CS_FILE_NAME_PAT = re.compile(r'D_\d{6,10}_cs-(\S+)_P1\.cif\.V(\d+)')
+INTNL_MR_FILE_NAME_PAT = re.compile(r'D_\d{6,10}_model-(\S+)_P1\.cif\.V(\d+)$')
+INTNL_PK_FILE_NAME_PAT = re.compile(r'D_\d{6,10}_nmr-peaks-upload_P(\d+)\.dat\.V(\d+)$')
+INTNL_NMR_DATA_FILE_NAME_PAT = re.compile(r'D_\d{6,10}_nmr-data-str_P1\.cif\.V(\d+)$')
+
 DATABLOCK_PAT = re.compile(r'\s*data_(\S+)\s*')
 SF_ANONYMOUS_PAT = re.compile(r'\s*save_\S+\s*')
 SAVE_PAT = re.compile(r'\s*save_\s*')

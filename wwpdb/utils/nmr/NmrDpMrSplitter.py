@@ -198,17 +198,25 @@ AMBER_A_FORMAT_PAT = re.compile(r'%FORMAT\((\d+)a(\d+)\)\s*')
 AMBER_I_FORMAT_PAT = re.compile(r'%FORMAT\((\d+)I(\d+)\)\s*')
 AMBER_R_PAT = re.compile(r'r(\d+)=(.*)')
 
+AMBER_TOP_PAT = re.compile(r"^\%FLAG ATOM_NAME\s*")
 AMBER_RST_PAT = re.compile(r'\s*&[Rr][Ss][Tt].*')
 AMBER_END_PAT = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
 AMBER_MISSING_END_ERR_MSG = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 AMBER_EXTRA_END_ERR_MSG_PAT = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
 AMBER_EXPECTING_COMMA_PAT = re.compile("expecting \\{.*Comma.*\\}")  # NOTICE: depends on ANTLR v4 and AmberMRLexer.g4
 
+CHARMM_TOP_PAT = re.compile(r"^\s*\d+\sEXT\s*")
+CHARMM_RST_PAT = re.compile(r"^\s*KMAX\s+\d+\s+\-\s*")
+
 CYANA_UNSET_INFO_PAT = re.compile(r'\s*unset\s+info.*')
 CYANA_PRINT_PAT = re.compile(r'\s*print\s+\".*\".*')
 
+GROMACS_TOP_PAT = re.compile(r"^\[ atoms \]\s*")
+GROMACS_RST_PAT = re.compile(r"^\[ (distance|dihedral|orientation)_restraints \]\s*")
 GROMACS_COMMENT_PAT = re.compile(r'\s*;+[^0-9]?(.*)')
 GROMACS_TAG_PAT = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
+
+PDB_TOP_PAT = re.compile(r"^(ATOM|HETATM)\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){3}.*$")
 
 SPARKY_ASSIGNMENT_PAT = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*')
 
@@ -307,6 +315,116 @@ def is_eps_or_pdf_file(fPath: str) -> bool:
         chunk = ifh.read(5)
         if chunk in (b'%!PS-', b'%PDF-'):
             return True
+
+    return False
+
+
+def is_star_file(fPath: str) -> bool:
+    """ Check if a given file contains STAR syntaxes.
+    """
+
+    has_datablock = False
+    has_anonymous_saveframe = False
+    has_save = False
+    has_loop = False
+    has_stop = False
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if DATABLOCK_PAT.match(line):
+                has_datablock = True
+            elif SF_ANONYMOUS_PAT.match(line):
+                has_anonymous_saveframe = True
+            elif SAVE_PAT.match(line):
+                has_save = True
+            elif LOOP_PAT.match(line):
+                has_loop = True
+            elif STOP_PAT.match(line):
+                has_stop = True
+
+    return has_datablock or has_anonymous_saveframe or has_save or has_loop or has_stop
+
+
+def is_amb_top_file(fPath: str) -> bool:
+    """ Check if a given file contains AMBER topology/patemeter syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if AMBER_TOP_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_amb_rst_file(fPath: str) -> bool:
+    """ Check if a given file contains AMBER restraint syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if AMBER_RST_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_cha_top_file(fPath: str) -> bool:
+    """ Check if a given file contains CHARMM topology/patemeter syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if CHARMM_TOP_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_cha_rst_file(fPath: str) -> bool:
+    """ Check if a given file contains CHARMM restraint syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if CHARMM_RST_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_gro_top_file(fPath: str) -> bool:
+    """ Check if a given file contains GROMACS topology/patemeter syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if GROMACS_TOP_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_gro_rst_file(fPath: str) -> bool:
+    """ Check if a given file contains GROMACS restraint syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if GROMACS_RST_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_pdb_top_file(fPath: str) -> bool:
+    """ Check if a given file contains PDB-line topology/patemeter syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if PDB_TOP_PAT.match(line):
+                return True
 
     return False
 

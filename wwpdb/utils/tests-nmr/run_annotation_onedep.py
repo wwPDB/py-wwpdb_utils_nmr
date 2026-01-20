@@ -21,7 +21,7 @@ try:
                                                INTNL_CS_FILE_NAME_PAT,
                                                INTNL_MR_FILE_NAME_PAT,
                                                INTNL_PK_FILE_NAME_PAT,
-                                               ONEDEP_NMR_DATA_FILE_NAME_PAT)
+                                               WORK_NMR_DATA_FILE_NAME_PAT)
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
     from wwpdb.utils.nmr.NmrDpMrSplitter import (is_star_file,
                                                  is_amb_top_file,
@@ -46,7 +46,7 @@ except ImportError:
                                    INTNL_CS_FILE_NAME_PAT,
                                    INTNL_MR_FILE_NAME_PAT,
                                    INTNL_PK_FILE_NAME_PAT,
-                                   ONEDEP_NMR_DATA_FILE_NAME_PAT)
+                                   WORK_NMR_DATA_FILE_NAME_PAT)
     from nmr.NmrDpUtility import NmrDpUtility
     from nmr.NmrDpMrSplitter import (is_star_file,
                                      is_amb_top_file,
@@ -320,8 +320,8 @@ class gen_auth_view_onedep:
         _version = None
 
         for file_name in sorted(os.listdir(self.__data_dir)):
-            if ONEDEP_NMR_DATA_FILE_NAME_PAT.match(file_name):
-                g = ONEDEP_NMR_DATA_FILE_NAME_PAT.search(file_name).groups()
+            if WORK_NMR_DATA_FILE_NAME_PAT.match(file_name):
+                g = WORK_NMR_DATA_FILE_NAME_PAT.search(file_name).groups()
 
                 version = int(g[1])
 

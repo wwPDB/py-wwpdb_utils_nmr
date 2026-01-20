@@ -342,7 +342,7 @@ try:
                                                MAX_CONFLICT_ATTEMPT,
                                                PDB_ID_PAT,
                                                BMRB_ID_PAT,
-                                               ONEDEP_MODEL_FILE_NAME_PAT,
+                                               WORK_MODEL_FILE_NAME_PAT,
                                                INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT,
                                                CHK_DESC_PAT,
                                                CHK_DESC_ONE_PAT,
@@ -481,7 +481,7 @@ except ImportError:
                                    MAX_CONFLICT_ATTEMPT,
                                    PDB_ID_PAT,
                                    BMRB_ID_PAT,
-                                   ONEDEP_MODEL_FILE_NAME_PAT,
+                                   WORK_MODEL_FILE_NAME_PAT,
                                    INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT,
                                    CHK_DESC_PAT,
                                    CHK_DESC_ONE_PAT,
@@ -9041,14 +9041,14 @@ class NmrDpUtility:
             if len(self.__reg.internal_atom_name_mapping) == 0:
                 cif_file_name = os.path.basename(self.__reg.cifPath)
 
-                if ONEDEP_MODEL_FILE_NAME_PAT.match(cif_file_name):
+                if WORK_MODEL_FILE_NAME_PAT.match(cif_file_name):
 
                     try:
 
                         import subprocess  # pylint: disable=import-outside-toplevel
 
                         cur_dir_path = self.__reg.cR.getDirPath()
-                        dep_id = ONEDEP_MODEL_FILE_NAME_PAT.search(cif_file_name).groups()[0]
+                        dep_id = WORK_MODEL_FILE_NAME_PAT.search(cif_file_name).groups()[0]
                         internal_cif_file = os.path.join(cur_dir_path, self.__reg.cahceDirPath, f'{dep_id}_model-upload_P1.cif.V1')
 
                         if not os.path.exists(internal_cif_file):

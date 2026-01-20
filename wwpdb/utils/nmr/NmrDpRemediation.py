@@ -61,7 +61,7 @@ try:
                                                ALLOWED_AMBIGUITY_CODES,
                                                GLOBAL_OFFSET_ATTEMPT,
                                                PERIPH_OFFSET_ATTEMPT,
-                                               ONEDEP_MODEL_FILE_NAME_PAT,
+                                               WORK_MODEL_FILE_NAME_PAT,
                                                COMMENT_PAT,
                                                SEQ_MISMATCH_WARNING_PAT,
                                                INCONSISTENT_RESTRAINT_WARNING_PAT,
@@ -193,7 +193,7 @@ except ImportError:
                                    ALLOWED_AMBIGUITY_CODES,
                                    GLOBAL_OFFSET_ATTEMPT,
                                    PERIPH_OFFSET_ATTEMPT,
-                                   ONEDEP_MODEL_FILE_NAME_PAT,
+                                   WORK_MODEL_FILE_NAME_PAT,
                                    COMMENT_PAT,
                                    SEQ_MISMATCH_WARNING_PAT,
                                    INCONSISTENT_RESTRAINT_WARNING_PAT,
@@ -10688,8 +10688,8 @@ class NmrDpRemediation:
         if has_res_sch and pdbAtomNumberDict is None and not self.__reg.internal_mode:
             cif_file_name = os.path.basename(self.__reg.cifPath)
 
-            if ONEDEP_MODEL_FILE_NAME_PAT.match(cif_file_name):
-                dep_id = ONEDEP_MODEL_FILE_NAME_PAT.search(cif_file_name).groups()[0]
+            if WORK_MODEL_FILE_NAME_PAT.match(cif_file_name):
+                dep_id = WORK_MODEL_FILE_NAME_PAT.search(cif_file_name).groups()[0]
 
                 file_path = os.path.join(self.__reg.cR.getDirPath(), f'{dep_id}_model-upload_P1.pdb.V1')
 

@@ -537,8 +537,8 @@ CCD_ID_PAT = re.compile(r'(\w{1,3}|\w{5})')
 
 BMRB_NMR_STAR_FILE_NAME_PAT = re.compile(r'^bmr[1-9]\d{0,4}_3.str$')
 
-ONEDEP_MODEL_FILE_NAME_PAT = re.compile(r'^(D_[1-9]\d{5,9})_model_P1\.cif\.V\d+$')
-ONEDEP_NMR_DATA_FILE_NAME_PAT = re.compile(r'^(D_[1-9]\d{5,9})_nmr-data-str_P1\.cif\.V(\d+)$')
+WORK_MODEL_FILE_NAME_PAT = re.compile(r'^(D_[1-9]\d{5,9})_model_P1\.cif\.V\d+$')
+WORK_NMR_DATA_FILE_NAME_PAT = re.compile(r'^(D_[1-9]\d{5,9})_nmr-data-str_P1\.cif\.V(\d+)$')
 
 PDB_MR_FILE_NAME_PAT = re.compile(r'^[1-9]\w{3}.mr$')
 PDB_MR_FILE_HEADER_PAT = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')

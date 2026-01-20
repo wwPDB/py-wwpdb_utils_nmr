@@ -86,8 +86,8 @@ __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.
 
 PYNMRSTAR_LP_OBJ_PAT = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
 
-ONEDEP_UPLOAD_FILE_PAT = re.compile(r'(.*)\-upload_(.*)\.V(\d+)$')
-ONEDEP_FILE_PAT = re.compile(r'(.*)\.V(\d+)$')
+ONEDEP_ANY_UPLOAD_FILE_NAME_PAT = re.compile(r'^(.*)\-upload_(.*)\.V(\d+)$')
+ONEDEP_ANY_FILE_NAME_PAT = re.compile(r'\(.*)\.V(\d+)$')
 
 
 class NmrDpFirstAid:
@@ -1007,12 +1007,12 @@ class NmrDpFirstAid:
                 self.rescueImmatureStr(file_list_id)
 
                 if rescued:
-                    if ONEDEP_UPLOAD_FILE_PAT.match(srcPath):
-                        g = ONEDEP_UPLOAD_FILE_PAT.search(srcPath).groups()
+                    if ONEDEP_ANY_UPLOAD_FILE_NAME_PAT.match(srcPath):
+                        g = ONEDEP_ANY_UPLOAD_FILE_NAME_PAT.search(srcPath).groups()
                         srcPath = g[0] + '-upload-convert_' + g[1] + '.V' + g[2]
                     else:
-                        if ONEDEP_FILE_PAT.match(srcPath):
-                            g = ONEDEP_FILE_PAT.search(srcPath).groups()
+                        if ONEDEP_ANY_FILE_NAME_PAT.match(srcPath):
+                            g = ONEDEP_ANY_FILE_NAME_PAT.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
 
                     self.__reg.star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)

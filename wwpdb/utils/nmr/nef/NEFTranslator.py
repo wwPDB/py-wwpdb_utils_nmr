@@ -166,7 +166,8 @@ try:
                                                ALT_DIST_CONSTRAINT_TYPES,
                                                ALT_DIHED_CONSTRAINT_TYPES,
                                                ALT_RDC_CONSTRAINT_TYPES,
-                                               ENTITY_DELETED_ATOM_ITEMS)
+                                               PERIPH_OFFSET_ATTEMPT,
+                                               MAX_CONFLICT_ATTEMPT)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            letterToDigit,
                                            indexToLetter,
@@ -209,7 +210,8 @@ except ImportError:
                                    ALT_DIST_CONSTRAINT_TYPES,
                                    ALT_DIHED_CONSTRAINT_TYPES,
                                    ALT_RDC_CONSTRAINT_TYPES,
-                                   ENTITY_DELETED_ATOM_ITEMS)
+                                   PERIPH_OFFSET_ATTEMPT,
+                                   MAX_CONFLICT_ATTEMPT)
     from nmr.AlignUtil import (deepcopy,
                                letterToDigit,
                                indexToLetter,
@@ -244,6 +246,11 @@ INTEGER_PAT = re.compile(r'^([+-]?[1-9]\d*|0)$')
 BAD_EXPR_PAT = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
 # separator pattern
 SEPARATOR_PAT = re.compile(r'[\&\\\|\;\:\,\/]')
+
+
+# data items in _Entity_deleted_atom category of NMR-STAR
+ENTITY_DELETED_ATOM_ITEMS = ('ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
+                             'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID')
 
 
 def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row: dict) -> str:
@@ -3210,7 +3217,7 @@ class NEFTranslator:
                                 chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
                             else:
                                 valid = False
-                                for c in range(1, 5):
+                                for c in range(1, MAX_CONFLICT_ATTEMPT):
                                     seq_align, _ = alignPolymerSequenceWithConflicts(self.__pA, cif_ps, nmr_ps, c)
                                     if len(seq_align) > 0:
                                         chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
@@ -3294,7 +3301,7 @@ class NEFTranslator:
                                                             if _comp_id not in STD_MON_DICT:
                                                                 row[comp_id_col] = _comp_id
                                             else:
-                                                for c in range(1, 5):
+                                                for c in range(1, PERIPH_OFFSET_ATTEMPT):
                                                     k = (test_chain_id, int(row[seq_id_col]) + c)
                                                     if k in rev_seq:
                                                         row[chain_id_col] = str(_entity_assembly_id)
@@ -3325,7 +3332,7 @@ class NEFTranslator:
                                     else:
 
                                         valid = False
-                                        for c in range(1, 5):
+                                        for c in range(1, MAX_CONFLICT_ATTEMPT):
                                             seq_align, _ = alignPolymerSequenceWithConflicts(self.__pA, cif_ps, nmr_ps, c)
                                             if len(seq_align) > 0:
                                                 chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)

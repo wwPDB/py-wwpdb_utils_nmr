@@ -209,10 +209,6 @@ MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK = 10000
 # maximum number of rows to be used for spectral peak list identification
 MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY = 10
 
-# data items in _Entity_deleted_atom category of NMR-STAR
-ENTITY_DELETED_ATOM_ITEMS = ('ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
-                             'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID')
-
 # alternative dictionary of constraint type
 ALT_DIST_CONSTRAINT_TYPES = {'nef': {'NOE': 'noe',
                                      'NOE build-up': 'noe_build_up',
@@ -634,6 +630,8 @@ MAX_ALLOWED_EXT_SEQ = 2
 MIN_EXT_SEQ_FOR_ATOM_SEL_ERR = 12
 
 UNREAL_AUTH_SEQ_NUM = -10000
+
+MAX_CONFLICT_ATTEMPT = 5
 
 DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}

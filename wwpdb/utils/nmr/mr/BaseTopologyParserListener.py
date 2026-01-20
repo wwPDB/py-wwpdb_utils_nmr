@@ -27,7 +27,8 @@ try:
                                                AMINO_PROTON_CODE,
                                                NON_METAL_ELEMENTS,
                                                REPRESENTATIVE_MODEL_ID,
-                                               REPRESENTATIVE_ALT_ID)
+                                               REPRESENTATIVE_ALT_ID,
+                                               MAX_CONFLICT_ATTEMPT)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            alignPolymerSequence,
@@ -53,7 +54,8 @@ except ImportError:
                                    AMINO_PROTON_CODE,
                                    NON_METAL_ELEMENTS,
                                    REPRESENTATIVE_MODEL_ID,
-                                   REPRESENTATIVE_ALT_ID)
+                                   REPRESENTATIVE_ALT_ID,
+                                   MAX_CONFLICT_ATTEMPT)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                alignPolymerSequence,
@@ -436,7 +438,7 @@ class BaseTopologyParserListener():
             self.__seqAlign, compIdMapping = alignPolymerSequence(self.__pA, polySeqModel, self.polySeqPrmTop)
 
             if len(self.__seqAlign) == 0:
-                for c in range(1, 5):
+                for c in range(1, MAX_CONFLICT_ATTEMPT):
                     self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.polySeqPrmTop, c)
                     if len(self.__seqAlign) > 0:
                         break
@@ -786,7 +788,7 @@ class BaseTopologyParserListener():
                                 resolved = True
 
                     if not resolved:
-                        for c in range(1, 5):
+                        for c in range(1, MAX_CONFLICT_ATTEMPT):
                             __seqAlign__, _ = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel__, orphanPolySeqPrmTop, c)
                             if len(__seqAlign__) > 0:
                                 for sa in __seqAlign__:

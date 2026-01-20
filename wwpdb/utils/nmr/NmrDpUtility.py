@@ -339,6 +339,7 @@ try:
                                                FERROMAGNETIC_ELEMENTS,
                                                MAX_DIM_NUM_OF_SPECTRA,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               MAX_CONFLICT_ATTEMPT,
                                                PDB_ID_PAT,
                                                BMRB_ID_PAT,
                                                ONEDEP_MODEL_FILE_PAT,
@@ -477,6 +478,7 @@ except ImportError:
                                    FERROMAGNETIC_ELEMENTS,
                                    MAX_DIM_NUM_OF_SPECTRA,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   MAX_CONFLICT_ATTEMPT,
                                    PDB_ID_PAT,
                                    BMRB_ID_PAT,
                                    ONEDEP_MODEL_FILE_PAT,
@@ -2701,7 +2703,7 @@ class NmrDpUtility:
                                             if has_alt_seq_align:
                                                 continue
 
-                                            for c in range(1, 5):
+                                            for c in range(1, MAX_CONFLICT_ATTEMPT):
                                                 seq_align, _ = alignPolymerSequenceWithConflicts(self.__reg.pA, [ps1], [ps2], c)
 
                                                 if len(seq_align) == 1:

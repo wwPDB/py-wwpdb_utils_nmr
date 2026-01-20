@@ -40,6 +40,7 @@ try:
                                                MAX_PREF_LABEL_SCHEME_COUNT,
                                                MAX_ALLOWED_EXT_SEQ,
                                                UNREAL_AUTH_SEQ_NUM,
+                                               MAX_CONFLICT_ATTEMPT,
                                                CS_RESTRAINT_RANGE,
                                                CS_RESTRAINT_ERROR,
                                                WEIGHT_RANGE,
@@ -153,6 +154,7 @@ except ImportError:
                                    MAX_PREF_LABEL_SCHEME_COUNT,
                                    MAX_ALLOWED_EXT_SEQ,
                                    UNREAL_AUTH_SEQ_NUM,
+                                   MAX_CONFLICT_ATTEMPT,
                                    CS_RESTRAINT_RANGE,
                                    CS_RESTRAINT_ERROR,
                                    WEIGHT_RANGE,
@@ -1337,7 +1339,7 @@ class BasePKParserListener():
                 self.chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.polySeqRst, self.seqAlign)
 
                 if len(self.seqAlign) == 0 and not self.hasNonPolySeq:  # allow conflict to detect sequence mismatch with sequence number shift (8dhz)
-                    for c in range(1, 5):
+                    for c in range(1, MAX_CONFLICT_ATTEMPT):
                         self.seqAlign, _ = alignPolymerSequenceWithConflicts(self.pA, self.polySeq, self.polySeqRst, c)
                         if len(self.seqAlign) > 0:
                             self.chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.polySeqRst, self.seqAlign)

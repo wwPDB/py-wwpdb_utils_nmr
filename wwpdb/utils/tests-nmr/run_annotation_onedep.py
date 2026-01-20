@@ -13,7 +13,7 @@ from typing import List, Tuple, Union, Optional
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                PDB_MR_FILE_NAME_PAT,
-                                               PROC_MR_FILE_NAME_PAT,
+                                               INTNL_ANY_MR_FILE_NAME_PAT,
                                                PDB_ID_PAT,
                                                DEP_ID_PAT,
                                                BMRB_ID_PAT,
@@ -21,7 +21,7 @@ try:
                                                INTNL_CS_FILE_NAME_PAT,
                                                INTNL_MR_FILE_NAME_PAT,
                                                INTNL_PK_FILE_NAME_PAT,
-                                               INTNL_NMR_DATA_FILE_NAME_PAT)
+                                               ONEDEP_NMR_DATA_FILE_NAME_PAT)
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
     from wwpdb.utils.nmr.NmrDpMrSplitter import (is_star_file,
                                                  is_amb_top_file,
@@ -38,7 +38,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    PDB_MR_FILE_NAME_PAT,
-                                   PROC_MR_FILE_NAME_PAT,
+                                   INTNL_ANY_MR_FILE_NAME_PAT,
                                    PDB_ID_PAT,
                                    DEP_ID_PAT,
                                    BMRB_ID_PAT,
@@ -46,7 +46,7 @@ except ImportError:
                                    INTNL_CS_FILE_NAME_PAT,
                                    INTNL_MR_FILE_NAME_PAT,
                                    INTNL_PK_FILE_NAME_PAT,
-                                   INTNL_NMR_DATA_FILE_NAME_PAT)
+                                   ONEDEP_NMR_DATA_FILE_NAME_PAT)
     from nmr.NmrDpUtility import NmrDpUtility
     from nmr.NmrDpMrSplitter import (is_star_file,
                                      is_amb_top_file,
@@ -123,7 +123,7 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
             if sf.category == 'constraint_statistics':
                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                 entry_id = get_first_sf_tag(sf, 'Entry_ID')
-                combined = (PDB_MR_FILE_NAME_PAT.match(data_file_name) or PROC_MR_FILE_NAME_PAT.match(data_file_name))\
+                combined = (PDB_MR_FILE_NAME_PAT.match(data_file_name) or INTNL_ANY_MR_FILE_NAME_PAT.match(data_file_name))\
                     and (PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id) or BMRB_ID_PAT.match(entry_id))
                 original_file_name = None
 
@@ -320,10 +320,10 @@ class gen_auth_view_onedep:
         _version = None
 
         for file_name in sorted(os.listdir(self.__data_dir)):
-            if INTNL_NMR_DATA_FILE_NAME_PAT.match(file_name):
-                g = INTNL_NMR_DATA_FILE_NAME_PAT.search(file_name).groups()
+            if ONEDEP_NMR_DATA_FILE_NAME_PAT.match(file_name):
+                g = ONEDEP_NMR_DATA_FILE_NAME_PAT.search(file_name).groups()
 
-                version = int(g[0])
+                version = int(g[1])
 
                 if _version is None or version > _version:
                     self.__nmr_cif_file_path = os.path.join(self.__data_dir, file_name)

@@ -537,21 +537,21 @@ CCD_ID_PAT = re.compile(r'(\w{1,3}|\w{5})')
 
 BMRB_NMR_STAR_FILE_NAME_PAT = re.compile(r'^bmr[1-9]\d{0,4}_3.str$')
 
-PROC_MR_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
-                                   r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
-
-ONEDEP_MODEL_FILE_PAT = re.compile(r'^(D_[1-9]\d{5,9})_model_P1\.cif\.V\d+$')
-ONEDEP_UPLOAD_FILE_PAT = re.compile(r'(.*)\-upload_(.*)\.V(\d+)$')
-ONEDEP_FILE_PAT = re.compile(r'(.*)\.V(\d+)$')
+ONEDEP_MODEL_FILE_NAME_PAT = re.compile(r'^(D_[1-9]\d{5,9})_model_P1\.cif\.V\d+$')
+ONEDEP_NMR_DATA_FILE_NAME_PAT = re.compile(r'^(D_[1-9]\d{5,9})_nmr-data-str_P1\.cif\.V(\d+)$')
 
 PDB_MR_FILE_NAME_PAT = re.compile(r'^[1-9]\w{3}.mr$')
 PDB_MR_FILE_HEADER_PAT = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
 
-INTNL_MODEL_FILE_NAME_PAT = re.compile(r'D_[1-9]\d{5,9}_model-(\S+)_P1\.cif\.V(\d+)$')
-INTNL_CS_FILE_NAME_PAT = re.compile(r'D_[1-9]\d{5,9}_cs-(\S+)_P1\.cif\.V(\d+)')
-INTNL_MR_FILE_NAME_PAT = re.compile(r'D_[1-9]\d{5,9}_mr-(\S+)_P(\d+)\.(\S+)\.V(\d+)$')
-INTNL_PK_FILE_NAME_PAT = re.compile(r'D_[1-9]\d{5,9}_nmr-peaks-upload_P(\d+)\.dat\.V(\d+)$')
-INTNL_NMR_DATA_FILE_NAME_PAT = re.compile(r'D_[1-9]\d{5,9}_nmr-data-str_P1\.cif\.V(\d+)$')
+INTNL_MODEL_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_model-(\S+)_P1\.cif\.V(\d+)$')
+INTNL_CS_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_cs-(\S+)_P1\.cif\.V(\d+)')
+INTNL_MR_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_mr-(\S+)_P(\d+)\.(\S+)\.V(\d+)$')
+INTNL_PK_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_nmr-peaks-upload_P(\d+)\.dat\.V(\d+)$')
+
+INTNL_EXT_MODEL_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_model-upload_P(\d+)\.dat\.V(\d+)$')
+INTNL_ANY_MR_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
+                                        r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
+INTNL_ANY_FILE_NAME_PAT = re.compile(r'^D_[1-9]\d{5,9}_\S+(-(upload|upload-convert|deposit|annotate|release|review))?_P\d+\.\S+\.V\d+$')
 
 DATABLOCK_PAT = re.compile(r'\s*data_(\S+)\s*')
 SF_ANONYMOUS_PAT = re.compile(r'\s*save_\S+\s*')

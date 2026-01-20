@@ -37,8 +37,6 @@ try:
                                                NEF_VERSION,
                                                MAX_DIM_NUM_OF_SPECTRA,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                               ONEDEP_UPLOAD_FILE_PAT,
-                                               ONEDEP_FILE_PAT,
                                                DATABLOCK_PAT,
                                                SF_ANONYMOUS_PAT,
                                                SAVE_PAT,
@@ -68,8 +66,6 @@ except ImportError:
                                    NEF_VERSION,
                                    MAX_DIM_NUM_OF_SPECTRA,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                   ONEDEP_UPLOAD_FILE_PAT,
-                                   ONEDEP_FILE_PAT,
                                    DATABLOCK_PAT,
                                    SF_ANONYMOUS_PAT,
                                    SAVE_PAT,
@@ -89,6 +85,9 @@ __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.
 
 
 PYNMRSTAR_LP_OBJ_PAT = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
+
+ONEDEP_UPLOAD_FILE_PAT = re.compile(r'(.*)\-upload_(.*)\.V(\d+)$')
+ONEDEP_FILE_PAT = re.compile(r'(.*)\.V(\d+)$')
 
 
 class NmrDpFirstAid:

@@ -18,7 +18,7 @@ try:
                                                LOOP_PAT,
                                                STOP_PAT,
                                                EMPTY_VALUE,
-                                               MR_FILE_NAME_PAT,
+                                               PDB_MR_FILE_NAME_PAT,
                                                PROC_MR_FILE_NAME_PAT,
                                                PDB_ID_PAT,
                                                DEP_ID_PAT,
@@ -35,7 +35,7 @@ except ImportError:
                                    LOOP_PAT,
                                    STOP_PAT,
                                    EMPTY_VALUE,
-                                   MR_FILE_NAME_PAT,
+                                   PDB_MR_FILE_NAME_PAT,
                                    PROC_MR_FILE_NAME_PAT,
                                    PDB_ID_PAT,
                                    DEP_ID_PAT,
@@ -88,7 +88,7 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
             if sf.category == 'constraint_statistics':
                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                 entry_id = get_first_sf_tag(sf, 'Entry_ID')
-                combined = (MR_FILE_NAME_PAT.match(data_file_name) or PROC_MR_FILE_NAME_PAT.match(data_file_name))\
+                combined = (PDB_MR_FILE_NAME_PAT.match(data_file_name) or PROC_MR_FILE_NAME_PAT.match(data_file_name))\
                     and (PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id) or BMRB_ID_PAT.match(entry_id))
                 original_file_name = None
 

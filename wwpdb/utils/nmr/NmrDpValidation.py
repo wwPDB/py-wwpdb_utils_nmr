@@ -88,7 +88,7 @@ try:
                                                DEP_ID_PAT,
                                                BMRB_NMR_STAR_FILE_NAME_PAT,
                                                PROC_MR_FILE_NAME_PAT,
-                                               MR_FILE_NAME_PAT,
+                                               PDB_MR_FILE_NAME_PAT,
                                                WS_PAT,
                                                CONCAT_SEQ_ID_INS_CODE_PAT,
                                                CS_UNCERT_MAX,
@@ -208,7 +208,7 @@ except ImportError:
                                    DEP_ID_PAT,
                                    BMRB_NMR_STAR_FILE_NAME_PAT,
                                    PROC_MR_FILE_NAME_PAT,
-                                   MR_FILE_NAME_PAT,
+                                   PDB_MR_FILE_NAME_PAT,
                                    WS_PAT,
                                    CONCAT_SEQ_ID_INS_CODE_PAT,
                                    CS_UNCERT_MAX,
@@ -1707,7 +1707,7 @@ class NmrDpValidation:
            and '_Constraint_file' in self.__reg.lp_category_list:
             _sf = self.__reg.star_data[file_list_id].get_saveframes_by_category('constraint_statistics')[0]
             data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
-            if MR_FILE_NAME_PAT.match(data_file_name) or PROC_MR_FILE_NAME_PAT.match(data_file_name):
+            if PDB_MR_FILE_NAME_PAT.match(data_file_name) or PROC_MR_FILE_NAME_PAT.match(data_file_name):
                 entry_id = get_first_sf_tag(_sf, 'Entry_ID')
                 if PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id):
                     self.__reg.remediation_mode = True

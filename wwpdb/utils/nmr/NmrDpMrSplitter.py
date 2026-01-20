@@ -33,7 +33,7 @@ try:
                                                PROTON_BEGIN_CODE,
                                                MAX_DIM_NUM_OF_SPECTRA,
                                                HALF_SPIN_NUCLEUS,
-                                               MR_FILE_HEADER_PAT,
+                                               PDB_MR_FILE_HEADER_PAT,
                                                DATABLOCK_PAT,
                                                SF_ANONYMOUS_PAT,
                                                SAVE_PAT,
@@ -114,7 +114,7 @@ except ImportError:
                                    PROTON_BEGIN_CODE,
                                    MAX_DIM_NUM_OF_SPECTRA,
                                    HALF_SPIN_NUCLEUS,
-                                   MR_FILE_HEADER_PAT,
+                                   PDB_MR_FILE_HEADER_PAT,
                                    DATABLOCK_PAT,
                                    SF_ANONYMOUS_PAT,
                                    SAVE_PAT,
@@ -2718,7 +2718,7 @@ class NmrDpMrSplitter:
                             in_header = False
                             continue
 
-                        if MR_FILE_HEADER_PAT.match(line)\
+                        if PDB_MR_FILE_HEADER_PAT.match(line)\
                            or SEL_MR_FILE_HEADER_PAT.match(line)\
                            or SEL_PK_FILE_HEADER_PAT.match(line)\
                            or SEL_CS_FILE_HEADER_PAT.match(line):
@@ -3160,7 +3160,7 @@ class NmrDpMrSplitter:
                                 in_header = False
                                 continue
 
-                        if MR_FILE_HEADER_PAT.match(line)\
+                        if PDB_MR_FILE_HEADER_PAT.match(line)\
                            or SEL_MR_FILE_HEADER_PAT.match(line)\
                            or SEL_PK_FILE_HEADER_PAT.match(line)\
                            or SEL_CS_FILE_HEADER_PAT.match(line):
@@ -4121,8 +4121,8 @@ class NmrDpMrSplitter:
                 with open(dst_file, 'r') as ifh:
                     for line in ifh:
 
-                        if MR_FILE_HEADER_PAT.match(line):
-                            g = MR_FILE_HEADER_PAT.search(line).groups()
+                        if PDB_MR_FILE_HEADER_PAT.match(line):
+                            g = PDB_MR_FILE_HEADER_PAT.search(line).groups()
 
                             if ofh is not None:
                                 if len(g[0]) > 0:

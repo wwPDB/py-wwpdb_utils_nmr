@@ -691,7 +691,7 @@ class CifReader:
                         if filterItemType in ('str', 'enum'):
                             pass
                         elif filterItemType == 'starts-with-alnum':
-                            if not val[0].isalnum():
+                            if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
                                 keep = False
                                 break
                         elif filterItemType == 'bool':
@@ -765,7 +765,7 @@ class CifReader:
                     if dataItemType in ('str', 'enum'):
                         pass
                     elif dataItemType == 'starts-with-alnum':
-                        if not val[0].isalnum():
+                        if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
                             val = None
                     elif dataItemType == 'bool':
                         val = val.lower() in self.trueValue

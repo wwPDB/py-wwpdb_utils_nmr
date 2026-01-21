@@ -97,7 +97,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.__col_name.append(col_name)
             if col_name in cs_atom_like_names or col_name.endswith('#') or col_name.endswith('#'):
                 self.__col_order.append('atom_name_instance')
-            elif col_name.startswith('Q') or col_name.startswith('M') and 'H' + col_name[1:].replace('%', '2').replace('#', '2') in cs_atom_like_names:
+            elif col_name.startswith('Q')\
+                    or (col_name.startswith('M') and 'H' + col_name[1:].replace('%', '2').replace('#', '2') in cs_atom_like_names):
                 self.__col_order.append('atom_name_instance')
             elif (col_name.endswith('%') or col_name.endswith('#')) and col_name[:-1] + '2' in cs_atom_like_names:
                 self.__col_order.append('atom_name_instance')
@@ -244,7 +245,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             comp_id = 'D' + comp_id
-                                elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
+                                elif self.__col_order.count('residue_name') == 0\
+                                        and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__rev_reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[0])
                                     comp_id = g[1]
@@ -347,7 +349,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             comp_id = 'D' + comp_id
-                                elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
+                                elif self.__col_order.count('residue_name') == 0\
+                                        and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__rev_reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[0])
                                     comp_id = g[1]

@@ -50,7 +50,8 @@ class TestNmrDpUtility(unittest.TestCase):
                               type='file_list')
         if len(self.mr_file_path[entry_id]) == 1:
             self.utility.addInput(name='atypical_restraint_file_path_list',
-                                  value=[{'file_name': self.data_dir_path + self.mr_file_path[entry_id][0], 'file_type': self.res_file_type[entry_id]}],
+                                  value=[{'file_name': self.data_dir_path + self.mr_file_path[entry_id][0],
+                                          'file_type': self.res_file_type[entry_id]}],
                                   type='file_dict_list')
         else:
             ar_path_list = []

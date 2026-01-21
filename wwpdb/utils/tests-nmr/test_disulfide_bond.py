@@ -66,7 +66,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + entry_id + '-disulfide-bond-nef2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-disulfide-bond-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str', type='file')
-        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-nef2str-str-deposit-log.json', type='file')
+        self.utility.addOutput(name='report_file_path',
+                               value=self.data_dir_path + entry_id + '-disulfide-bond-nef2str-str-deposit-log.json',
+                               type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setVerbose(False)
 
@@ -112,7 +114,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef-consistency-log.json', type='file')
+        self.utility.addInput(name='report_file_path',
+                              value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef-consistency-log.json',
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
@@ -120,7 +124,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + entry_id + '-disulfide-bond-str2nef-release-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-disulfide-bond-str2nef-next.str')
         self.utility.addOutput(name='nef_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef.nef', type='file')
-        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef-nef-release-log.json', type='file')
+        self.utility.addOutput(name='report_file_path',
+                               value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef-nef-release-log.json',
+                               type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setVerbose(False)
 

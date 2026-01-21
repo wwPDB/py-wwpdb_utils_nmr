@@ -125,7 +125,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
         self.utility.setDestination(self.data_dir_path + self.cs_file_path[entry_id][0] + '-daother-7407-next.str')
-        self.utility.addOutput(name='nmr_cif_file_path', value=self.data_dir_path + self.cs_file_path[entry_id][0] + '-daother-7407-next.cif', type='file')
+        self.utility.addOutput(name='nmr_cif_file_path',
+                               value=self.data_dir_path + self.cs_file_path[entry_id][0] + '-daother-7407-next.cif',
+                               type='file')
         self.utility.setLog(self.data_dir_path + entry_id + '-cs-str-consistency-log.json')
         self.utility.setVerbose(False)
 

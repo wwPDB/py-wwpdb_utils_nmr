@@ -21,6 +21,7 @@ import unittest
 import os
 import sys
 import pynmrstar
+
 from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 
 
@@ -2576,7 +2577,8 @@ class TestNEFTranslator(unittest.TestCase):
                         "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3",
                                     "H", "HA", "HBX", "HBY", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"],
                     },
-                    {"comp_id": "TYR", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "H", "HA", "HBX", "HBY", "HD1", "HD2", "HE1", "HE2", "N"]},
+                    {"comp_id": "TYR", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2",
+                                                   "H", "HA", "HBX", "HBY", "HD1", "HD2", "HE1", "HE2", "N"]},
                     {"comp_id": "VAL", "atom_id": ["C", "CA", "CB", "CGX", "CGY", "H", "HA", "HB", "HGX%", "HGY%", "N"]},
                 ]
             ],
@@ -2610,13 +2612,12 @@ class TestNEFTranslator(unittest.TestCase):
                     {"comp_id": "PRO", "atom_id": ["C", "CA", "CB", "CD", "CG", "HA", "HB2", "HB3", "HD2", "HD3", "HG2", "HG3"]},
                     {"comp_id": "SER", "atom_id": ["C", "CA", "CB", "H", "HA", "HB2", "HB3", "N"]},
                     {"comp_id": "THR", "atom_id": ["C", "CA", "CB", "CG2", "H", "HA", "HB", "HG21", "HG22", "HG23", "N"]},
-                    {
-                        "comp_id": "TRP",
-                        "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3",
-                                    "H", "HA", "HB2", "HB3", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"],
-                    },
-                    {"comp_id": "TYR", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "H", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "N"]},
-                    {"comp_id": "VAL", "atom_id": ["C", "CA", "CB", "CG1", "CG2", "H", "HA", "HB", "HG11", "HG12", "HG13", "HG21", "HG22", "HG23", "N"]},
+                    {"comp_id": "TRP", "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3",
+                                                   "H", "HA", "HB2", "HB3", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"]},
+                    {"comp_id": "TYR", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2",
+                                                   "H", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "N"]},
+                    {"comp_id": "VAL", "atom_id": ["C", "CA", "CB", "CG1", "CG2",
+                                                   "H", "HA", "HB", "HG11", "HG12", "HG13", "HG21", "HG22", "HG23", "N"]},
                 ]
             ],
         )
@@ -2788,7 +2789,8 @@ class TestNEFTranslator(unittest.TestCase):
                     {"comp_id": "SER", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
                     {"comp_id": "THR", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG2", "H", "HA", "HB", "HG21", "HG22", "HG23", "N"]},
                     {"comp_id": "TRP", "ambig_code": 1,
-                     "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3", "H", "HA", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"]},
+                     "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3",
+                                 "H", "HA", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"]},
                     {"comp_id": "TRP", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
                     {"comp_id": "TYR", "ambig_code": 1,
                      "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "H", "HA", "HD1", "HD2", "HE1", "HE2", "N"]},

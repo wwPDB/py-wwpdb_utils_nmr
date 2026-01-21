@@ -583,7 +583,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.dihedralsIncHydrogenStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#dihedrals_without_hydrogen_statement.
-    def enterDihedrals_without_hydrogen_statement(self, ctx: AmberPTParser.Dihedrals_without_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterDihedrals_without_hydrogen_statement(self, ctx: AmberPTParser.Dihedrals_without_hydrogen_statementContext
+                                                  ):  # pylint: disable=unused-argument
         self.dihedralsWithoutHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#dihedrals_without_hydrogen_statement.
@@ -867,7 +868,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.titleStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#tree_chain_classification_statement.
-    def enterTree_chain_classification_statement(self, ctx: AmberPTParser.Tree_chain_classification_statementContext):  # pylint: disable=unused-argument
+    def enterTree_chain_classification_statement(self, ctx: AmberPTParser.Tree_chain_classification_statementContext
+                                                 ):  # pylint: disable=unused-argument
         self.treeChainClassificationStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#tree_chain_classification_statement.

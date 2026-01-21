@@ -443,7 +443,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if name == 'weight':
                         self.__cur_contrib_weight = float(string)
 
-                elif self.__cur_path in ('/noe_restraint_list/peak/contribution/spin_system/atom', '/data_set/restraint_list/restraint/contribution/atom'):
+                elif self.__cur_path in ('/noe_restraint_list/peak/contribution/spin_system/atom',
+                                         '/data_set/restraint_list/restraint/contribution/atom'):
 
                     if name == 'segid' and len(string) > 0:
                         self.__segid = string
@@ -1031,7 +1032,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             self.ccU.updateChemCompDict(_cifCompId)
 
                             if isinstance(atomId, str):
-                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                  if cca[self.ccU.ccaAtomId] == atomId), None)
                                 if cifAtomId is None:
                                     if ord == 0:
                                         _cifSeqId += seqOffset[ord + 1] - offset
@@ -1061,10 +1063,12 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
                                             _cifCompId = cifCompId if offset == 0\
-                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                      if _cifSeqId in ps['auth_seq_id'] else None)
                                             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                                             if coordAtomSite is not None:
-                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                                  if _cifAtomId in coordAtomSite['atom_id']), None)
 
                                     else:
                                         cifAtomId = cifAtomIds[0]

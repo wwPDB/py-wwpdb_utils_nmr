@@ -1033,7 +1033,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             atom1 = self.atomSelectionSet[0][0]
             atom2 = self.atomSelectionSet[1][0]
 
-            dstFunc = getDstFuncForHBond(atom1, atom2) if atom1['atom_id'][0] != 'S' or atom2['atom_id'][1] != 'S' else getDstFuncForSsBond(atom1, atom2)
+            dstFunc = getDstFuncForHBond(atom1, atom2) if atom1['atom_id'][0] != 'S' or atom2['atom_id'][1] != 'S'\
+                else getDstFuncForSsBond(atom1, atom2)
 
             try:
                 if self.validateDistanceRange(float(dstFunc['weight']), None,

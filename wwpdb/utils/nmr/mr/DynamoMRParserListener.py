@@ -245,7 +245,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-            dstFunc = self.validateDistanceRangeWithIndex(index, group, weight, scale, target_value, lower_limit, upper_limit, self.omitDistLimitOutlier)
+            dstFunc = self.validateDistanceRangeWithIndex(index, group, weight, scale,
+                                                          target_value, lower_limit, upper_limit, self.omitDistLimitOutlier)
 
             if dstFunc is None:
                 return
@@ -431,7 +432,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-            dstFunc = self.validateDistanceRangeWithIndex(index, group, weight, scale, target_value, lower_limit, upper_limit, self.omitDistLimitOutlier)
+            dstFunc = self.validateDistanceRangeWithIndex(index, group, weight, scale,
+                                                          target_value, lower_limit, upper_limit, self.omitDistLimitOutlier)
 
             if dstFunc is None:
                 return
@@ -610,7 +612,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-            dstFunc = self.validateDistanceRangeWithIndex(index, group, weight, scale, target_value, lower_limit, upper_limit, self.omitDistLimitOutlier)
+            dstFunc = self.validateDistanceRangeWithIndex(index, group, weight, scale,
+                                                          target_value, lower_limit, upper_limit, self.omitDistLimitOutlier)
 
             if dstFunc is None:
                 return
@@ -1304,8 +1307,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
@@ -1313,7 +1318,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
@@ -1491,8 +1497,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
@@ -1500,7 +1508,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
@@ -1678,8 +1687,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
@@ -1687,7 +1698,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
@@ -1874,8 +1886,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
@@ -1883,7 +1897,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "

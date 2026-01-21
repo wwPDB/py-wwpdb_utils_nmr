@@ -959,7 +959,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
                                     if len(seqIdRemapFailed) > 0:
                                         if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
-                                            seqIdRemap = self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                            seqIdRemap =\
+                                                self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
                                             if len(seqIdRemap) != len(seqIdRemapFailed)\
                                                or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
@@ -997,7 +998,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                         seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'],
                                                                        'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                             elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
-                                seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                                seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'],
+                                                               'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
                 if len(_seqIdRemap) > 0 and 'chain_id_remap' not in self.reasonsForReParsing:
@@ -1887,7 +1889,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     ext_seq = False
-                    if self.__reasons is None and (self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT or atomId == 'H'):
+                    if self.__reasons is None and (self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                                                   or atomId == 'H'):
                         auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
                         min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
                         if len(auth_seq_id_list) > 0:
@@ -2200,7 +2203,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping,
+                                                                  _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomIdSet, _atomId = [], []
             for atomId_ in atomId.split('|'):
@@ -2219,14 +2223,16 @@ class RosettaMRParserListener(ParseTreeListener):
                             hvyAtomId = None
                             for canHvyAtomId in hvyAtomIdList:
                                 if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
-                                                representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                                representativeModelId=self.__representativeModelId,
+                                                representativeAltId=self.__representativeAltId,
                                                 modelNumName=self.__modelNumName):
                                     hvyAtomId = canHvyAtomId
                                     break
                             if hvyAtomId is not None:
                                 for _atomId_ in atomIdList:
                                     if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
-                                                    representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                                    representativeModelId=self.__representativeModelId,
+                                                    representativeAltId=self.__representativeAltId,
                                                     modelNumName=self.__modelNumName):
                                         _atomId.append(_atomId_)
                         if len(_atomId) > 1:
@@ -2238,7 +2244,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     if details is not None:
                         if atomId_ != authAtomId:
                             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, authAtomId, leave_unmatched=True)
-                        elif len(atomId_) > 1 and not atomId_[-1].isalpha() and (atomId_[0] in PSE_PRO_BEGIN_CODE or atomId_[0] in ('C', 'N', 'P', 'F')):
+                        elif len(atomId_) > 1 and not atomId_[-1].isalpha()\
+                                and (atomId_[0] in PSE_PRO_BEGIN_CODE or atomId_[0] in ('C', 'N', 'P', 'F')):
                             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId_[:-1], leave_unmatched=True)
                             if atomId_[-1].isdigit() and int(atomId_[-1]) <= len(_atomId):
                                 _atomId = [_atomId[int(atomId_[-1]) - 1]]
@@ -4074,26 +4081,26 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
-    def enterMin_residue_atomic_distance_restraints(self,
-                                                    ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext):  # pylint: disable=unused-argument
+    def enterMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext
+                                                    ):  # pylint: disable=unused-argument
         self.__cur_subtype = 'geo'
 
     # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
-    def exitMin_residue_atomic_distance_restraints(self,
-                                                   ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext):  # pylint: disable=unused-argument
+    def exitMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext
+                                                   ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
-    def enterMin_residue_atomic_distance_restraint(self,
-                                                   ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):  # pylint: disable=unused-argument
+    def enterMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext
+                                                   ):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
-    def exitMin_residue_atomic_distance_restraint(self,
-                                                  ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext):  # pylint: disable=unused-argument
+    def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext
+                                                  ):  # pylint: disable=unused-argument
 
         try:
 
@@ -5297,7 +5304,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.__polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "

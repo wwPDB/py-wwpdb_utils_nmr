@@ -915,7 +915,8 @@ class NmrDpValidation:
                     if not os.path.basename(csPath).startswith('bmr'):
 
                         _csPath = csPath + '.cif2str'
-                        if not self.__reg.c2S.convert(csPath, _csPath, originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):
+                        if not self.__reg.c2S.convert(csPath, _csPath,
+                                                      originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):
                             _csPath = csPath
 
                         csPath = _csPath
@@ -1210,7 +1211,8 @@ class NmrDpValidation:
                                         self.__reg.has_legacy_sf_issue = True
 
                                         self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                                   allowEmpty=allow_empty, hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
+                                                                                   allowEmpty=allow_empty,
+                                                                                   hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                                         _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
 
@@ -1252,7 +1254,8 @@ class NmrDpValidation:
                             err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
                                   f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                             # DAOTHER-5673
-                            err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                            err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
+                                else " Please re-upload the file."
 
                             if len(message['error']) > 0:
                                 for err_message in message['error']:
@@ -1379,7 +1382,8 @@ class NmrDpValidation:
                     if self.__reg.op == 'nmr-cs-mr-merge':
 
                         _mrPath = mrPath + '.cif2str'
-                        if not self.__reg.c2S.convert(mrPath, _mrPath, originalFileName=mr.get('original_file_name') if isinstance(mr, dict) else None):
+                        if not self.__reg.c2S.convert(mrPath, _mrPath,
+                                                      originalFileName=mr.get('original_file_name') if isinstance(mr, dict) else None):
                             mrPath = _mrPath
 
                     codec = detect_bom(mrPath, 'utf-8')
@@ -1421,7 +1425,8 @@ class NmrDpValidation:
                             err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
                                   f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                             # DAOTHER-5673
-                            err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                            err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
+                                else " Please re-upload the file."
 
                             if len(message['error']) > 0:
                                 for err_message in message['error']:
@@ -1786,7 +1791,8 @@ class NmrDpValidation:
             if lp_category in LP_CATEGORIES[file_type].values():
                 lp_counts[[k for k, v in LP_CATEGORIES[file_type].items() if v == lp_category][0]] += 1
 
-        if file_type == 'nmr-star' and lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] == 0 and '_Spectral_dim' in self.__reg.lp_category_list:
+        if file_type == 'nmr-star' and lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] == 0\
+           and '_Spectral_dim' in self.__reg.lp_category_list:
             lp_counts['spectral_peak'] = self.__reg.lp_category_list.count('_Spectral_dim')
 
         content_subtype = 'poly_seq'
@@ -3095,7 +3101,8 @@ class NmrDpValidation:
                                                                    {'name': 'label_seq_id', 'type': 'int', 'value': seq_id},
                                                                    {'name': 'label_comp_id', 'type': 'str', 'value': comp_id},
                                                                    {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                                   {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                                   {'name': 'label_alt_id', 'type': 'enum',
+                                                                    'enum': (self.__reg.representative_alt_id,)}
                                                                    ])
 
                 except Exception as e:
@@ -4543,7 +4550,8 @@ class NmrDpValidation:
 
                         atom_id_ = atom_id
 
-                        if (file_type == 'nef' or not self.__reg.combined_mode or self.__reg.transl_pseudo_name) and self.isNmrAtomName(comp_id, atom_id):
+                        if (file_type == 'nef' or not self.__reg.combined_mode or self.__reg.transl_pseudo_name)\
+                           and self.isNmrAtomName(comp_id, atom_id):
                             atom_id_ = self.getRepAtomId(comp_id, atom_id)
 
                             if file_type == 'nmr-star' and self.__reg.combined_mode and self.__reg.transl_pseudo_name and atom_id != atom_id_\
@@ -4806,7 +4814,8 @@ class NmrDpValidation:
                                     continue
 
                                 if not self.__reg.nefT.validate_comp_atom(comp_id,
-                                                                          translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids, ccU=self.__reg.ccU)):
+                                                                          translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids,
+                                                                                                 ccU=self.__reg.ccU)):
 
                                     if self.__reg.nonblk_bad_nterm and self.__reg.csStat.peptideLike(comp_id)\
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
@@ -5888,9 +5897,11 @@ class NmrDpValidation:
                         msg += self.__getReducedAtomNotations(key_items, row_1)
 
                         if index_tag in row_1:
-                            warn = f"[Check rows of {index_tag} {row_1[index_tag]} vs {row_2[index_tag]}, {id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
+                            warn = f"[Check rows of {index_tag} {row_1[index_tag]} vs {row_2[index_tag]}, "\
+                                f"{id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
                         else:
-                            warn = f"[Check rows of {index_tag} {id_set[i] + 1} vs {id_set[j] + 1}, {id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
+                            warn = f"[Check rows of {index_tag} {id_set[i] + 1} vs {id_set[j] + 1}, "\
+                                f"{id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
                         warn += f"Found conflict on restraints ({discrepancy[:-2]}) for the same {data_unit_name} ({msg})."
 
                         self.__reg.report.warning.appendDescription('conflicted_data',
@@ -5907,9 +5918,11 @@ class NmrDpValidation:
                         msg += self.__getReducedAtomNotations(key_items, row_1)
 
                         if index_tag in row_1:
-                            warn = f"[Check rows of {index_tag} {row_1[index_tag]} vs {row_2[index_tag]}, {id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
+                            warn = f"[Check rows of {index_tag} {row_1[index_tag]} vs {row_2[index_tag]}, "\
+                                f"{id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
                         else:
-                            warn = f"[Check rows of {index_tag} {id_set[i] + 1} vs {id_set[j] + 1}, {id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
+                            warn = f"[Check rows of {index_tag} {id_set[i] + 1} vs {id_set[j] + 1}, "\
+                                f"{id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
                         warn += f"Found discrepancy in restraints ({discrepancy[:-2]}) for the same {data_unit_name} ({msg})."
 
                         self.__reg.report.warning.appendDescription('inconsistent_data',
@@ -6243,8 +6256,9 @@ class NmrDpValidation:
                         except (ValueError, TypeError):
                             pass
 
-                    neighbor_comp_ids = set(_row[comp_id_name] for _row in lp_data
-                                            if _row[chain_id_name] == chain_id and abs(_row[seq_id_name] - seq_id) < 4 and _row[seq_id_name] != seq_id)
+                    neighbor_comp_ids =\
+                        set(_row[comp_id_name] for _row in lp_data
+                            if _row[chain_id_name] == chain_id and abs(_row[seq_id_name] - seq_id) < 4 and _row[seq_id_name] != seq_id)
 
                     polypeptide_like = False
 
@@ -6356,7 +6370,8 @@ class NmrDpValidation:
 
                                     err_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value})."
 
                                     if self.__reg.cifChecked:
@@ -6406,19 +6421,23 @@ class NmrDpValidation:
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                         + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                        f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        "The nearest aromatic ring "\
+                                        f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
                                     warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                        f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        "The nearest aromatic ring "\
+                                        f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                    if (na['ring_angle'] - MAGIC_ANGLE) * z_score > 0.0 or self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
+                                    if (na['ring_angle'] - MAGIC_ANGLE) * z_score > 0.0\
+                                       or self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
 
                                         self.__reg.report.warning.appendDescription('anomalous_data'
                                                                                     if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0
@@ -6437,7 +6456,8 @@ class NmrDpValidation:
                                             _details = loop.data[idx][details_col]
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                                f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
+                                                "The nearest aromatic ring "\
+                                                f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                                 f"is located at a distance of {na['ring_distance']}Å, "\
                                                 f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
                                             if _details in EMPTY_VALUE or (details not in _details):
@@ -6463,14 +6483,17 @@ class NmrDpValidation:
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                         + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                        f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                        "The nearest paramagnetic/ferromagnetic atom "\
+                                        f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                         f"is located at a distance of {pa['distance']}Å."
 
                                     warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                        f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                        "The nearest paramagnetic/ferromagnetic atom "\
+                                        f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                         f"is located at a distance of {pa['distance']}Å."
 
                                     self.__reg.report.warning.appendDescription('anomalous_data' if pa['distance'] > VICINITY_PARAMAGNETIC
@@ -6489,7 +6512,7 @@ class NmrDpValidation:
                                         details = f"{full_value_name} {value} is not within expected range "\
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                             "The nearest paramagnetic/ferromagnetic atom "\
-                                            f"{pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
+                                            f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å.\n"
                                         if _details in EMPTY_VALUE or (details not in _details):
                                             if _details in EMPTY_VALUE:
@@ -6507,11 +6530,13 @@ class NmrDpValidation:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                         + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) "\
-                                        f"must be verified (avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."
+                                        f"must be verified (avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, "\
+                                        f"Z_score {z_score:.2f})."
 
                                     warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value})."
 
                                     if self.__reg.cifChecked:
@@ -6534,7 +6559,8 @@ class NmrDpValidation:
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                             + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                            f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                            f"The nearest aromatic ring "\
+                                            f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
@@ -6543,7 +6569,8 @@ class NmrDpValidation:
                                             "which is outside of expected range "\
                                             f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                             f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                            f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                            "The nearest aromatic ring "\
+                                            f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
@@ -6594,17 +6621,21 @@ class NmrDpValidation:
                                     + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."
 
-                                warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} ({value} ppm, {sigma:.2f} sigma), "\
-                                    f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
+                                    f"({value} ppm, {sigma:.2f} sigma), "\
+                                    "which is outside of expected range "\
+                                    f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                     f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value})."
 
                                 if na is not None:
 
                                     if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0 or na['ring_distance'] > VICINITY_AROMATIC:
-                                        warn += f" The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        warn += " The nearest aromatic ring "\
+                                            f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
-                                        warn_alt += f" The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        warn_alt += " The nearest aromatic ring "\
+                                            f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
                                     else:
@@ -6668,7 +6699,8 @@ class NmrDpValidation:
 
                                     err_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value})."
 
                                     if self.__reg.cifChecked:
@@ -6718,19 +6750,23 @@ class NmrDpValidation:
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                         + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                        f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        "The nearest aromatic ring "\
+                                        f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
                                     warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                        f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        "The nearest aromatic ring "\
+                                        f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                    if (na['ring_angle'] - MAGIC_ANGLE) * z_score > 0.0 or self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
+                                    if (na['ring_angle'] - MAGIC_ANGLE) * z_score > 0.0\
+                                       or self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
 
                                         if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0 or na['ring_distance'] > VICINITY_AROMATIC:
 
@@ -6747,7 +6783,8 @@ class NmrDpValidation:
                                                 _details = loop.data[idx][details_col]
                                                 details = f"{full_value_name} {value} is not within expected range "\
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                                    f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
+                                                    "The nearest aromatic ring "\
+                                                    f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                                     f"is located at a distance of {na['ring_distance']}Å, "\
                                                     f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
                                                 if _details in EMPTY_VALUE or (details not in _details):
@@ -6802,7 +6839,7 @@ class NmrDpValidation:
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
                                                 "The nearest paramagnetic/ferromagnetic atom "\
-                                                f"{pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
+                                                f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                                 f"is located at a distance of {pa['distance']}Å.\n"
                                             if _details in EMPTY_VALUE or (details not in _details):
                                                 if _details in EMPTY_VALUE:
@@ -6820,11 +6857,13 @@ class NmrDpValidation:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                         + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) "\
-                                        f"must be verified (avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."
+                                        f"must be verified (avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, "\
+                                        f"Z_score {z_score:.2f})."
 
                                     warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value})."
 
                                     if self.__reg.cifChecked:
@@ -6847,7 +6886,8 @@ class NmrDpValidation:
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                             + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                            f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                            "The nearest aromatic ring "\
+                                            f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
@@ -6856,7 +6896,8 @@ class NmrDpValidation:
                                             "which is outside of expected range "\
                                             f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                             f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                            f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                            "The nearest aromatic ring "\
+                                            f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
@@ -6995,7 +7036,8 @@ class NmrDpValidation:
 
                                 err_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                     f"({value} ppm, {sigma:.2f} sigma), "\
-                                    f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                    "which is outside of expected range "\
+                                    f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                     f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value})."
 
                                 if self.__reg.cifChecked:
@@ -7045,15 +7087,18 @@ class NmrDpValidation:
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                     + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                    f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                    "The nearest aromatic ring "\
+                                    f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                     f"is located at a distance of {na['ring_distance']}Å, "\
                                     f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
                                 warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                     f"({value} ppm, {sigma:.2f} sigma), "\
-                                    f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                    "which is outside of expected range "\
+                                    f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                     f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                    f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                    "The nearest aromatic ring "\
+                                    f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                     f"is located at a distance of {na['ring_distance']}Å, "\
                                     f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
@@ -7076,7 +7121,8 @@ class NmrDpValidation:
                                         _details = loop.data[idx][details_col]
                                         details = f"{full_value_name} {value} is not within expected range "\
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                            f"The nearest aromatic ring {na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']} "\
+                                            "The nearest aromatic ring "\
+                                            f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane.\n"
                                         if _details in EMPTY_VALUE or (details not in _details):
@@ -7102,17 +7148,21 @@ class NmrDpValidation:
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                     + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                    f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                    "The nearest paramagnetic/ferromagnetic atom "\
+                                    f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                     f"is located at a distance of {pa['distance']}Å."
 
                                 warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                     f"({value} ppm, {sigma:.2f} sigma), "\
-                                    f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                    "which is outside of expected range "\
+                                    f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                     f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                    f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                    "The nearest paramagnetic/ferromagnetic atom "\
+                                    f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                     f"is located at a distance of {pa['distance']}Å."
 
-                                self.__reg.report.warning.appendDescription('anomalous_data' if pa['distance'] > VICINITY_PARAMAGNETIC else 'unusual_data',
+                                self.__reg.report.warning.appendDescription('anomalous_data' if pa['distance'] > VICINITY_PARAMAGNETIC
+                                                                            else 'unusual_data',
                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                              'category': lp_category, 'description': warn,
                                                                              'value': value, 'z_score': z_score,
@@ -7126,7 +7176,8 @@ class NmrDpValidation:
                                     _details = loop.data[idx][details_col]
                                     details = f"{full_value_name} {value} is not within expected range "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                        f"The nearest paramagnetic/ferromagnetic atom {pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']} "\
+                                        "The nearest paramagnetic/ferromagnetic atom "\
+                                        f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                         f"is located at a distance of {pa['distance']}Å.\n"
                                     if _details in EMPTY_VALUE or (details not in _details):
                                         if _details in EMPTY_VALUE:
@@ -7149,7 +7200,8 @@ class NmrDpValidation:
 
                                 warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                     f"({value} ppm, {sigma:.2f} sigma), "\
-                                    f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                    "which is outside of expected range "\
+                                    f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                     f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value})."
 
                                 if self.__reg.cifChecked:
@@ -7172,15 +7224,18 @@ class NmrDpValidation:
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                         + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                        f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        "The nearest aromatic ring "\
+                                        f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
                                     warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                        f"The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        "The nearest aromatic ring "\
+                                        f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
@@ -7200,14 +7255,17 @@ class NmrDpValidation:
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                         + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
-                                        f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                        "The nearest paramagnetic/ferromagnetic atom "\
+                                        f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                         f"is located at a distance of {pa['distance']}Å."
 
                                     warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                         f"({value} ppm, {sigma:.2f} sigma), "\
-                                        f"which is outside of expected range ({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
+                                        "which is outside of expected range "\
+                                        f"({avg_value + 5.0 * std_value:.2f} ~ {avg_value - 5.0 * std_value:.2f} ppm, "\
                                         f"avg {avg_value}, std {std_value}, min {min_value}, max {max_value}). "\
-                                        f"The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                        "The nearest paramagnetic/ferromagnetic atom "\
+                                        f"({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                         f"is located at a distance of {pa['distance']}Å."
 
                                     self.__reg.report.warning.appendDescription('unusual_data',
@@ -7560,7 +7618,8 @@ class NmrDpValidation:
                                                 + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
                                                 "However, observation nucleus of "\
                                                 + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
-                                                + f" is different in the set that share the same ambiguity code ({_atom_id[0]!r} vs {_atom_id2[0]!r})."
+                                                + " is different in the set that share the same ambiguity code "\
+                                                f"({_atom_id[0]!r} vs {_atom_id2[0]!r})."
 
                                             self.__reg.report.error.appendDescription('invalid_ambiguity_code',
                                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -7596,7 +7655,8 @@ class NmrDpValidation:
                                         else:
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                                + f", {value_name} {value}, {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
+                                                + f", {value_name} {value}, {ambig_code_name} {str(ambig_code)!r}, "\
+                                                f"{ambig_set_id_name} {ambig_set_id}] "\
                                                 f"However, {value_name} {value2} of "\
                                                 + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
                                                 + " is noticeably diffrent from others in the set that share the same ambiguity code "\
@@ -7805,7 +7865,8 @@ class NmrDpValidation:
 
                             if not self.__reg.ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
-                                if self.__reg.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__reg.nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                if self.__reg.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                                   and self.__reg.nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
                                     idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
@@ -8029,8 +8090,9 @@ class NmrDpValidation:
                 if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
                     warn = "Disulfide bond "\
-                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) can not be verified with "\
-                        f"the assigned chemical shift values ({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CA {ca_chem_shift_1} ppm, "\
+                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) "\
+                        "can not be verified with the assigned chemical shift values "\
+                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CA {ca_chem_shift_1} ppm, "\
                         f"{nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CB {cb_chem_shift_1} ppm, redox_state_pred {disulf['redox_state_pred_1']})."
 
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
@@ -8047,8 +8109,9 @@ class NmrDpValidation:
                 if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
                     warn = "Disulfide bond "\
-                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) can not be verified with "\
-                        f"the assigned chemical shift values ({nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CA {ca_chem_shift_2} ppm, "\
+                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) "\
+                        "can not be verified with the assigned chemical shift values "\
+                        f"({nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CA {ca_chem_shift_2} ppm, "\
                         f"{nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CB {cb_chem_shift_2} ppm, redox_state_pred {disulf['redox_state_pred_2']})."
 
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
@@ -8334,8 +8397,9 @@ class NmrDpValidation:
                 if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 
                     warn = "Other bond "\
-                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) can not be verified with "\
-                        f"the assigned chemical shift values ({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CA {ca_chem_shift_1} ppm, "\
+                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) "\
+                        "can not be verified with the assigned chemical shift values "\
+                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CA {ca_chem_shift_1} ppm, "\
                         f"{nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CB {cb_chem_shift_1} ppm, redox_state_pred {other['redox_state_pred_1']})."
 
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
@@ -8352,8 +8416,9 @@ class NmrDpValidation:
                 if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
                     warn = "Other bond "\
-                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) can not be verified with "\
-                        f"the assigned chemical shift values ({nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CA {ca_chem_shift_2} ppm, "\
+                        f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) "\
+                        "can not be verified with the assigned chemical shift values "\
+                        f"({nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CA {ca_chem_shift_2} ppm, "\
                         f"{nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CB {cb_chem_shift_2} ppm, redox_state_pred {other['redox_state_pred_2']})."
 
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
@@ -9195,7 +9260,8 @@ class NmrDpValidation:
                                     if self.__reg.annotation_mode or self.__reg.native_combined:
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
-                                                  if v[0] == entity_assembly_id and v[1] == comp_index_id and k[2] == comp_id), (None, None))
+                                                  if v[0] == entity_assembly_id
+                                                  and v[1] == comp_index_id and k[2] == comp_id), (None, None))
                                         if _auth_asym_id is not None:
                                             seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
@@ -9205,7 +9271,8 @@ class NmrDpValidation:
                                     if self.__reg.annotation_mode or self.__reg.native_combined:
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
-                                                  if chain_id.isdigit() and v[0] == int(chain_id) and v[1] == seq_id and k[2] == comp_id), (None, None))
+                                                  if chain_id.isdigit() and v[0] == int(chain_id)
+                                                  and v[1] == seq_id and k[2] == comp_id), (None, None))
                                         if _auth_asym_id is not None:
                                             seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
@@ -9218,16 +9285,19 @@ class NmrDpValidation:
                                                 row_[d] = chain_id
                                             else:
                                                 chain_id, comp_id =\
-                                                    next(((_auth_asym_id, _auth_comp_id) for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                    next(((_auth_asym_id, _auth_comp_id)
+                                                          for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                           if _auth_seq_id == seq_id), (chain_id, comp_id))
                                                 seq_key = (chain_id, seq_id, comp_id)
                                                 if seq_key in auth_to_star_seq:
                                                     row_[d] = chain_id
                                                     row_[atom_dim_num * 2 + d] = comp_id
                                         if seq_key not in auth_to_star_seq:
-                                            comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                            comp_id = next((_auth_comp_id
+                                                            for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                             if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
-                                            _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                            _auth_seq_id = next((_auth_seq_id
+                                                                 for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                                  if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
                                             if _auth_seq_id is not None:
                                                 seq_key = (chain_id, _auth_seq_id, comp_id)
@@ -9239,7 +9309,8 @@ class NmrDpValidation:
                                 else:
                                     auth_atom_id = atom_id
 
-                                _assign, warn = assignCoordPolymerSequenceWithChainId(self.__reg.caC, self.__reg.nefT, chain_id, seq_id, comp_id, atom_id)
+                                _assign, warn = assignCoordPolymerSequenceWithChainId(self.__reg.caC, self.__reg.nefT,
+                                                                                      chain_id, seq_id, comp_id, atom_id)
 
                                 rescued = False
 
@@ -9285,7 +9356,8 @@ class NmrDpValidation:
                                         if not self.__reg.ccU.updateChemCompDict(comp_id.upper()):
                                             continue
 
-                                        cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == atom_id.upper()), None)
+                                        cca = next((cca for cca in self.__reg.ccU.lastAtomList
+                                                    if cca[self.__reg.ccU.ccaAtomId] == atom_id.upper()), None)
 
                                         if cca is None:
                                             continue
@@ -9322,7 +9394,8 @@ class NmrDpValidation:
                                                                           auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
                                                                           enableWarning=enableWarning,
-                                                                          preferAuthAtomName=prefer_auth_atom_name and comp_id in auth_atom_name_to_id,
+                                                                          preferAuthAtomName=prefer_auth_atom_name
+                                                                          and comp_id in auth_atom_name_to_id,
                                                                           representativeModelId=self.__reg.representative_model_id,
                                                                           representativeAltId=self.__reg.representative_alt_id,
                                                                           modelNumName=model_num_name)
@@ -9516,7 +9589,8 @@ class NmrDpValidation:
 
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
-                                                  if v[0] == entity_assembly_id and v[1] == comp_index_id and k[2] == comp_id), (None, None))
+                                                  if v[0] == entity_assembly_id
+                                                  and v[1] == comp_index_id and k[2] == comp_id), (None, None))
                                         if _auth_asym_id is not None:
                                             seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
@@ -9525,29 +9599,34 @@ class NmrDpValidation:
                                     except KeyError:
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
-                                                  if chain_id.isdigit() and v[0] == int(chain_id) and v[1] == seq_id and k[2] == comp_id), (None, None))
+                                                  if chain_id.isdigit() and v[0] == int(chain_id)
+                                                  and v[1] == seq_id and k[2] == comp_id), (None, None))
                                         if _auth_asym_id is not None:
                                             seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 chain_id, seq_id = _auth_asym_id, _auth_seq_id
                                         else:
-                                            chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                            chain_id = next((_auth_asym_id
+                                                             for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                              if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
                                             seq_key = (chain_id, seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 row_[d] = chain_id
                                             else:
                                                 chain_id, comp_id =\
-                                                    next(((_auth_asym_id, _auth_comp_id) for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                    next(((_auth_asym_id, _auth_comp_id)
+                                                          for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                           if _auth_seq_id == seq_id), (chain_id, comp_id))
                                                 seq_key = (chain_id, seq_id, comp_id)
                                                 if seq_key in auth_to_star_seq:
                                                     row_[d] = chain_id
                                                     row_[atom_dim_num * 2 + d] = comp_id
                                         if seq_key not in auth_to_star_seq:
-                                            comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                            comp_id = next((_auth_comp_id
+                                                            for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                             if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
-                                            _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                            _auth_seq_id = next((_auth_seq_id
+                                                                 for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                                  if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
                                             if _auth_seq_id is not None:
                                                 seq_key = (chain_id, _auth_seq_id, comp_id)
@@ -9604,7 +9683,8 @@ class NmrDpValidation:
                                     if self.__reg.annotation_mode or self.__reg.native_combined:
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
-                                                  if v[0] == entity_assembly_id and v[1] == comp_index_id and k[2] == comp_id), (None, None))
+                                                  if v[0] == entity_assembly_id
+                                                  and v[1] == comp_index_id and k[2] == comp_id), (None, None))
                                         if _auth_asym_id is not None:
                                             seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
@@ -9614,29 +9694,34 @@ class NmrDpValidation:
                                     if self.__reg.annotation_mode or self.__reg.native_combined:
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
-                                                  if chain_id.isdigit() and v[0] == int(chain_id) and v[1] == seq_id and k[2] == comp_id), (None, None))
+                                                  if chain_id.isdigit() and v[0] == int(chain_id)
+                                                  and v[1] == seq_id and k[2] == comp_id), (None, None))
                                         if _auth_asym_id is not None:
                                             seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 chain_id, seq_id = _auth_asym_id, _auth_seq_id
                                         else:
-                                            chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                            chain_id = next((_auth_asym_id
+                                                             for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                              if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
                                             seq_key = (chain_id, seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 row_[d] = chain_id
                                             else:
                                                 chain_id, comp_id =\
-                                                    next(((_auth_asym_id, _auth_comp_id) for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                    next(((_auth_asym_id, _auth_comp_id)
+                                                          for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                           if _auth_seq_id == seq_id), (chain_id, comp_id))
                                                 seq_key = (chain_id, seq_id, comp_id)
                                                 if seq_key in auth_to_star_seq:
                                                     row_[d] = chain_id
                                                     row_[atom_dim_num * 2 + d] = comp_id
                                         if seq_key not in auth_to_star_seq:
-                                            comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                            comp_id = next((_auth_comp_id
+                                                            for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                             if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
-                                            _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                            _auth_seq_id = next((_auth_seq_id
+                                                                 for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                                  if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
                                             if _auth_seq_id is not None:
                                                 seq_key = (chain_id, _auth_seq_id, comp_id)
@@ -9720,7 +9805,8 @@ class NmrDpValidation:
 
                                 chain_id, seq_id = auth_asym_id, auth_seq_id
 
-                                _assign, warn = assignCoordPolymerSequenceWithChainId(self.__reg.caC, self.__reg.nefT, chain_id, seq_id, comp_id, atom_id)
+                                _assign, warn = assignCoordPolymerSequenceWithChainId(self.__reg.caC, self.__reg.nefT,
+                                                                                      chain_id, seq_id, comp_id, atom_id)
 
                                 if warn is not None:
 
@@ -11412,7 +11498,8 @@ class NmrDpValidation:
                                      and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                     # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                     cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                    and cca_row[6] == _seq_key[1]), None)
                                     if cca_row is not None:
                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                     if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
@@ -11433,7 +11520,8 @@ class NmrDpValidation:
                                             comp_id = _comp_id
                                             # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                             cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                            and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                             atom_id = __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
@@ -11442,7 +11530,8 @@ class NmrDpValidation:
                                             comp_id = _comp_id
                                             # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                             cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                            and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                             break
@@ -11526,7 +11615,8 @@ class NmrDpValidation:
                                              and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                             # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                             cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                            and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                             if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
@@ -11547,8 +11637,8 @@ class NmrDpValidation:
                                                     comp_id = _comp_id
                                                     # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                                     cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                                    if cca_row[4] == comp_id
-                                                                    and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                                    and cca_row[6] == _seq_key[1]), None)
                                                     if cca_row is not None:
                                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                                     atom_id = __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
@@ -11557,8 +11647,8 @@ class NmrDpValidation:
                                                     comp_id = _comp_id
                                                     # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                                     cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                                    if cca_row[4] == comp_id
-                                                                    and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                                    and cca_row[6] == _seq_key[1]), None)
                                                     if cca_row is not None:
                                                         entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                                     break
@@ -12317,8 +12407,9 @@ class NmrDpValidation:
                        and (seq_id == 1 or cif_seq_id == 1 or ((seq_key[0], seq_key[1] - 1)
                                                                if seq_key is not None else (cif_chain_id, cif_seq_id - 1)) in coord_unobs_res)\
                        and atom_id_ in AMINO_PROTON_CODE\
-                       and (cyclic or comp_id == 'PRO' or (atom_id_ in PROTON_BEGIN_CODE
-                                                           or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
+                       and (cyclic or comp_id == 'PRO'
+                            or (atom_id_ in PROTON_BEGIN_CODE
+                                or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
 
                         err += " However, it is acceptable if corresponding atom name, H1, is given during biocuration "
 
@@ -12674,12 +12765,14 @@ class NmrDpValidation:
                                                                            'category': lp_category, 'description': err})
 
                                 if self.__reg.verbose:
-                                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - {err}\n")
+                                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
+                                                         f"++ ValueError  - {err}\n")
 
             except Exception as e:
 
                 self.__reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - " + str(e))
+                                                          f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
+                                                          "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - {str(e)}\n")
@@ -12858,7 +12951,8 @@ class NmrDpValidation:
                                                                        'category': lp_category, 'description': err})
 
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {err}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                                     f"++ ValueError  - {err}\n")
 
             except LookupError as e:
 
@@ -12883,7 +12977,8 @@ class NmrDpValidation:
             except Exception as e:
 
                 self.__reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - " + str(e))
+                                                          f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                                          "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - {str(e)}\n")
@@ -13754,9 +13849,11 @@ class NmrDpValidation:
 
                     self.__calculateStatsOfAssignedChemShift(file_list_id, sf_framecode, lp_data, cs_ann, ent)
 
-                elif content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint') and len(lp_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
+                elif content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint')\
+                        and len(lp_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
 
-                    conflict_id_set = self.__reg.nefT.get_conflict_id_set(sf, lp_category, self.__reg.consist_key_items[file_type][content_subtype])[0]
+                    conflict_id_set = self.__reg.nefT.get_conflict_id_set(sf, lp_category,
+                                                                          self.__reg.consist_key_items[file_type][content_subtype])[0]
 
                     conflict_warns = self.__reg.report.warning.getValueListWithSf('conflicted_data', file_name, sf_framecode)
                     inconsist_warns = self.__reg.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
@@ -13994,7 +14091,8 @@ class NmrDpValidation:
 
                                             if a in all_atoms:
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
+                                                if data_type == '1H' and h1_col != -1\
+                                                   and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -14007,7 +14105,8 @@ class NmrDpValidation:
                                                     all_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                             elif a in non_excl_atoms:
-                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': row[value_name]})
+                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id,
+                                                                         'atom_id': a, 'value': row[value_name]})
 
                                     else:
 
@@ -14032,7 +14131,8 @@ class NmrDpValidation:
                                                 all_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                         elif atom_id in non_excl_atoms:
-                                            excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': row[value_name]})
+                                            excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id,
+                                                                     'atom_id': atom_id, 'value': row[value_name]})
 
                             else:
                                 excluded_comp_id.append({'seq_id': seq_id, 'comp_id': comp_id})
@@ -14136,7 +14236,8 @@ class NmrDpValidation:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
+                                                if data_type == '1H' and h1_col != -1\
+                                                   and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -14155,7 +14256,8 @@ class NmrDpValidation:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
+                                        if data_type == '1H' and h1_col != -1\
+                                           and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                             bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -14264,7 +14366,8 @@ class NmrDpValidation:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
+                                                if data_type == '1H' and h1_col != -1\
+                                                   and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -14283,7 +14386,8 @@ class NmrDpValidation:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
+                                        if data_type == '1H' and h1_col != -1\
+                                           and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                             sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -14383,7 +14487,8 @@ class NmrDpValidation:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
+                                                if data_type == '1H' and h1_col != -1\
+                                                   and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -14396,7 +14501,8 @@ class NmrDpValidation:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
+                                        if data_type == '1H' and h1_col != -1\
+                                           and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                             ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -14493,7 +14599,8 @@ class NmrDpValidation:
 
                                                 atom_set.add(a)
 
-                                                if data_type == '1H' and h1_col != -1 and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
+                                                if data_type == '1H' and h1_col != -1\
+                                                   and a not in non_rep_methyl_pros and a[0] in PROTON_BEGIN_CODE:
                                                     aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C' and c13_col != -1:
@@ -14509,7 +14616,8 @@ class NmrDpValidation:
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and h1_col != -1 and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
+                                        if data_type == '1H' and h1_col != -1\
+                                           and atom_id not in non_rep_methyl_pros and atom_id[0] in PROTON_BEGIN_CODE:
                                             aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -15088,7 +15196,8 @@ class NmrDpValidation:
                                                                                      'description': warn})
 
                                         if self.__reg.verbose:
-                                            self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                            self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
+                                                                 f"++ Warning  - {warn}\n")
 
                             elif comp_id == 'LEU':
 
@@ -15181,7 +15290,8 @@ class NmrDpValidation:
                                                                                      'description': warn})
 
                                         if self.__reg.verbose:
-                                            self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                            self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
+                                                                 f"++ Warning  - {warn}\n")
 
                             else:
 
@@ -15262,7 +15372,8 @@ class NmrDpValidation:
                                                                                      'description': warn})
 
                                         if self.__reg.verbose:
-                                            self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                            self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
+                                                                 f"++ Warning  - {warn}\n")
 
                             ilv_rotameric_state.append(ilv)
 
@@ -16067,7 +16178,8 @@ class NmrDpValidation:
                                     chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
                                         comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row_1)
 
-                                    data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit, lower_limit,
+                                    data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1,
+                                                                                  target_value, upper_limit, lower_limit,
                                                                                   member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
                                                                                   chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
@@ -16088,7 +16200,8 @@ class NmrDpValidation:
                                 chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
                                     comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row_1)
 
-                                data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit, lower_limit,
+                                data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1,
+                                                                              target_value, upper_limit, lower_limit,
                                                                               member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
                                                                               chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 

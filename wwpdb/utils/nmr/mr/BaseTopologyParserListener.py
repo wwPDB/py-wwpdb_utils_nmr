@@ -542,7 +542,8 @@ class BaseTopologyParserListener():
                                         _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
                                         atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
-                                    atomNum['atom_id'] = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
+                                    atomNum['atom_id'] = translateToStdAtomName(atomId, authCompId, chemCompAtomIds,
+                                                                                ccU=self.ccU, unambig=self.unambig)
                                     del atomNum['atom_type']
 
             for k, atomNum in self.atomNumberDict.items():
@@ -925,10 +926,12 @@ class BaseTopologyParserListener():
                     for test_chain_id, ref_chain_ids in test_chain_id_map.items():
                         ref_chain_id0 = ref_chain_ids[0]
                         for ref_chain_id in ref_chain_ids[1:]:
-                            sa = next((sa for sa in self.__seqAlign if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id), None)
+                            sa = next((sa for sa in self.__seqAlign
+                                       if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id), None)
                             if sa is None:
                                 continue
-                            ps = next((ps for ps in self.polySeqModel if ps['auth_chain_id'] == ref_chain_id), None)
+                            ps = next((ps for ps in self.polySeqModel
+                                       if ps['auth_chain_id'] == ref_chain_id), None)
                             if ps is None:
                                 continue
                             for auth_seq_id, comp_id in zip(ps['auth_seq_id'], ps['comp_id']):

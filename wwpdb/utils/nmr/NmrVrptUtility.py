@@ -1938,7 +1938,8 @@ class NmrVrptUtility:
 
                     if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
-                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() "
+                                         f"++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1957,7 +1958,8 @@ class NmrVrptUtility:
                                           lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() "
+                                         f"++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -2946,7 +2948,8 @@ class NmrVrptUtility:
                         angle_type_set.add(r['angle_type'])
                 angle_type = list(angle_type_set) + [any_type]
             except IndexError:
-                self.__log.write(f"Dihedral angle analysis failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
+                self.__log.write("Dihedral angle analysis failed due to data error in the dihedral angle restraints. "
+                                 f"{self.__dihedRestDict.values()}\n")
                 self.__results['error_message_angle'] =\
                     'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
                 self.__results['angle'] = False

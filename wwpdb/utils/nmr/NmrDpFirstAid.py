@@ -652,7 +652,8 @@ class NmrDpFirstAid:
                                         _lp_category = '_' + CATEGORY_PAT.search(line).groups()[0]
                                         if lp_category == _lp_category:
                                             target['loop_location'] = lp_loc
-                                            content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == target['lp_category']), None)
+                                            content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                    if v == target['lp_category']), None)
                                             if content_subtype is not None:
                                                 target['sf_category'] = SF_CATEGORIES[file_type][content_subtype]
                                                 target['sf_tag_prefix'] = SF_TAG_PREFIXES[file_type][content_subtype]

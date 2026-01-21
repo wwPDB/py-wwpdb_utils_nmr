@@ -757,7 +757,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.squareExponent is None or self.squareExponent <= 0.0:
                 self.f.append("[Invalid data] "
                               "The exponent value of square-well or soft-square function "
-                              f"'NOE {str(ctx.SqExponent())} {self.getClass_name(ctx.class_name(0))} {self.squareExponent} END' must be a positive value.")
+                              f"'NOE {str(ctx.SqExponent())} {self.getClass_name(ctx.class_name(0))} {self.squareExponent} END' "
+                              "must be a positive value.")
 
         elif ctx.SoExponent():
             self.softExponent = self.getNumber_s(ctx.number_s())
@@ -771,7 +772,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.softExponent is None or self.softExponent <= 0.0:
                 self.f.append("[Invalid data] "
                               "The exponent value for soft-square function only "
-                              f"'NOE {str(ctx.SoExponent())} {self.getClass_name(ctx.class_name(0))} {self.softExponent} END' must be a positive value.")
+                              f"'NOE {str(ctx.SoExponent())} {self.getClass_name(ctx.class_name(0))} {self.softExponent} END' "
+                              "must be a positive value.")
 
         elif ctx.SqConstant():
             self.squareConstant = self.getNumber_s(ctx.number_s())
@@ -785,7 +787,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.squareConstant is None or self.squareConstant <= 0.0:
                 self.f.append("[Invalid data] "
                               "The auxiliary scaling constant of square-well or soft-square function "
-                              f"'NOE {str(ctx.SqConstant())} {self.getClass_name(ctx.class_name(0))} {self.squareConstant} END' must be a positive value.")
+                              f"'NOE {str(ctx.SqConstant())} {self.getClass_name(ctx.class_name(0))} {self.squareConstant} END' "
+                              "must be a positive value.")
 
         elif ctx.SqOffset():
             self.squareOffset = self.getNumber_s(ctx.number_s())
@@ -799,7 +802,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.squareOffset is None or self.squareOffset < 0.0:
                 self.f.append("[Invalid data] "
                               "The negative offset value to all upper bounds of square-well or soft-square function "
-                              f"'NOE {str(ctx.SqOffset())} {self.getClass_name(ctx.class_name(0))} {self.squareOffset} END' must not be a negative value.")
+                              f"'NOE {str(ctx.SqOffset())} {self.getClass_name(ctx.class_name(0))} {self.squareOffset} END' "
+                              "must not be a negative value.")
 
         elif ctx.Rswitch():
             self.rSwitch = self.getNumber_s(ctx.number_s())
@@ -813,7 +817,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.rSwitch is None or self.rSwitch < 0.0:
                 self.f.append("[Invalid data] "
                               "The smoothing parameter of soft-square function "
-                              f"'NOE {str(ctx.Rswitch())} {self.getClass_name(ctx.class_name(0))} {self.rSwitch} END' must not be a negative value.")
+                              f"'NOE {str(ctx.Rswitch())} {self.getClass_name(ctx.class_name(0))} {self.rSwitch} END' "
+                              "must not be a negative value.")
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
@@ -845,11 +850,13 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.asymptote is None:
                 self.f.append("[Range value warning] "
                               "The asymptote slope value "
-                              f"'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' should be a non-negative value.")
+                              f"'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' "
+                              "should be a non-negative value.")
             elif self.asymptote < 0.0:
                 self.f.append("[Invalid data] "
                               "The asymptote slope value "
-                              f"'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' must not be a negative value.")
+                              f"'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' "
+                              "must not be a negative value.")
 
         elif ctx.Bhig():
             self.B_high = self.getNumber_s(ctx.number_s())
@@ -863,11 +870,13 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.B_high is None:
                 self.f.append("[Range value warning] "
                               "The potential barrier value "
-                              f"'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' should be a non-negative value.")
+                              f"'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' "
+                              "should be a non-negative value.")
             elif self.B_high < 0.0:
                 self.f.append("[Invalid data] "
                               "The potential barrier value "
-                              f"'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' must not be a negative value.")
+                              f"'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' "
+                              "must not be a negative value.")
 
         elif ctx.Ceiling():
             self.ceiling = self.getNumber_s(ctx.number_s())
@@ -881,11 +890,13 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.ceiling is None:
                 self.f.append("[Range value warning] "
                               "The ceiling value for energy constant "
-                              f"'NOE {str(ctx.Ceiling())} {self.ceiling} END' should be a non-negative value.")
+                              f"'NOE {str(ctx.Ceiling())} {self.ceiling} END' "
+                              "should be a non-negative value.")
             elif self.ceiling < 0.0:
                 self.f.append("[Invalid data] "
                               "The ceiling value for energy constant "
-                              f"'NOE {str(ctx.Ceiling())} {self.ceiling} END' must not be a negative value.")
+                              f"'NOE {str(ctx.Ceiling())} {self.ceiling} END' "
+                              "must not be a negative value.")
 
         elif ctx.Temperature():
             self.temperature = self.getNumber_s(ctx.number_s())
@@ -898,32 +909,38 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.temperature = 300.0
             if self.temperature is None:
                 self.f.append("[Range value warning] "
-                              f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' should be a non-negative value.")
+                              f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' "
+                              "should be a non-negative value.")
             elif self.temperature < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' must not be a negative value.")
+                              f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' "
+                              "must not be a negative value.")
 
         elif ctx.Monomers():
             self.monomers = int(str(ctx.Integer()))
             if self.monomers is None or self.monomers == 0:
                 self.f.append("[Range value warning] "
                               "The number of monomers "
-                              f"'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' should be a positive value.")
+                              f"'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' "
+                              "should be a positive value.")
             elif self.monomers < 0:
                 self.f.append("[Invalid data] "
                               "The number of monomers "
-                              f"'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' must not be a negative value.")
+                              f"'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' "
+                              "must not be a negative value.")
 
         elif ctx.Ncount():
             self.ncount = int(str(ctx.Integer()))
             if self.ncount is None or self.ncount == 0:
                 self.f.append("[Range value warning] "
                               "The number of assign statements "
-                              f"'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' should be a positive value.")
+                              f"'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' "
+                              "should be a positive value.")
             elif self.ncount < 0:
                 self.f.append("[Invalid data] "
                               "The number of assign statements "
-                              f"'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' must not be a negative value.")
+                              f"'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' "
+                              "must not be a negative value.")
 
         elif ctx.Reset():
             self.noePotential = 'biharmonic'  # default potential
@@ -1685,7 +1702,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
@@ -1758,7 +1776,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                       "Found inter-chain RDC vector; "
                                       f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "
                                       f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "
-                                      "However, it might be an artificial RDC constraint on solid-state NMR applied to symmetric samples such as fibrils.")
+                                      "However, it might be an artificial RDC constraint on solid-state NMR "
+                                      "applied to symmetric samples such as fibrils.")
                 if isinstance(combinationId, int):
                     combinationId += 1
                 if self.debug:
@@ -2318,7 +2337,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
@@ -5148,7 +5168,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
@@ -6646,9 +6667,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         oper_list = self.cR.getDictList('pdbx_struct_oper_list')
                         if len(oper_list) > 0:
                             for oper in oper_list:
-                                matrix = numpy.array([[float(oper['matrix[1][1]']), float(oper['matrix[1][2]']), float(oper['matrix[1][3]'])],
-                                                     [float(oper['matrix[2][1]']), float(oper['matrix[2][2]']), float(oper['matrix[2][3]'])],
-                                                     [float(oper['matrix[3][1]']), float(oper['matrix[3][2]']), float(oper['matrix[3][3]'])]], dtype=float)
+                                matrix = numpy.array([
+                                    [float(oper['matrix[1][1]']), float(oper['matrix[1][2]']), float(oper['matrix[1][3]'])],
+                                    [float(oper['matrix[2][1]']), float(oper['matrix[2][2]']), float(oper['matrix[2][3]'])],
+                                    [float(oper['matrix[3][1]']), float(oper['matrix[3][2]']), float(oper['matrix[3][3]'])]], dtype=float)
                                 vector = numpy.array([float(oper['vector[1]']), float(oper['vector[2]']), float(oper['vector[3]'])], dtype=float)
 
                                 if numpy.array_equal(matrix, identity) and numpy.array_equal(vector, zero):
@@ -7327,7 +7349,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                             continue
 
                                         if distance(to_np_array(_neighbor[0]), origin) < 2.0:
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                   'comp_id': compId, 'atom_id': _atomId})
 
                                 else:
                                     cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
@@ -7345,7 +7368,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                              'z': float(_cca[self.ccU.ccaCartnZ])}
 
                                                 if distance(to_np_array(_neighbor), origin) < 2.0:
-                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                           'comp_id': compId, 'atom_id': _atomId})
 
                     atomSelection = [dict(s) for s in set(frozenset(atom.items())
                                                           for atom in _atomSelection
@@ -7396,7 +7420,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
                             for _atom in _atomByRes:
-                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
+                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                       'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
 
                         else:
                             psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
@@ -7405,9 +7430,11 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                     seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
                                     if self.ccU.updateChemCompDict(compId):
-                                        atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                                        atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                   if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
                                         for atomId in atomIds:
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                   'comp_id': compId, 'atom_id': atomId})
 
                     self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
                                                                           for atom in _atomSelection
@@ -7687,9 +7714,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             _tail =\
                                 self.cR.getDictListWithFilter('atom_site',
                                                               CARTN_DATA_ITEMS,
-                                                              [{'name': self.authAsymId, 'type': 'str', 'value': self.inVector3D_tail['chain_id']},
-                                                               {'name': self.authSeqId, 'type': 'int', 'value': self.inVector3D_tail['seq_id']},
-                                                               {'name': self.authAtomId, 'type': 'str', 'value': self.inVector3D_tail['atom_id']},
+                                                              [{'name': self.authAsymId, 'type': 'str',
+                                                                'value': self.inVector3D_tail['chain_id']},
+                                                               {'name': self.authSeqId, 'type': 'int',
+                                                                'value': self.inVector3D_tail['seq_id']},
+                                                               {'name': self.authAtomId, 'type': 'str',
+                                                                'value': self.inVector3D_tail['atom_id']},
                                                                {'name': self.modelNumName, 'type': 'int',
                                                                 'value': self.representativeModelId},
                                                                {'name': 'label_alt_id', 'type': 'enum',
@@ -7707,9 +7737,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     _head =\
                                         self.cR.getDictListWithFilter('atom_site',
                                                                       CARTN_DATA_ITEMS,
-                                                                      [{'name': self.authAsymId, 'type': 'str', 'value': self.inVector3D_head['chain_id']},
-                                                                       {'name': self.authSeqId, 'type': 'int', 'value': self.inVector3D_head['seq_id']},
-                                                                       {'name': self.authAtomId, 'type': 'str', 'value': self.inVector3D_head['atom_id']},
+                                                                      [{'name': self.authAsymId, 'type': 'str',
+                                                                        'value': self.inVector3D_head['chain_id']},
+                                                                       {'name': self.authSeqId, 'type': 'int',
+                                                                        'value': self.inVector3D_head['seq_id']},
+                                                                       {'name': self.authAtomId, 'type': 'str',
+                                                                        'value': self.inVector3D_head['atom_id']},
                                                                        {'name': self.modelNumName, 'type': 'int',
                                                                         'value': self.representativeModelId},
                                                                        {'name': 'label_alt_id', 'type': 'enum',
@@ -8107,7 +8140,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                             or self.reasons['segment_id_mismatch'][chainId] is not None):
                                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                                       "Couldn't specify segment name "
-                                                      f"'{chainId}' in the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
+                                                      f"'{chainId}' in the coordinates.")
+                                        # do not use 'chainId!r' expression, '%' code throws ValueError
                         else:
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}

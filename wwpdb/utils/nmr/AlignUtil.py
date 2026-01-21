@@ -1213,7 +1213,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
             _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1, seqIdName=seq_id_name,
                                                                        compIdName='alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id')
-            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2, compIdName='auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id')
+            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2,
+                                                                       compIdName='auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id')
 
             if conflict == 0:
                 if hasLargeInnerSeqGap(_ps2) and not hasLargeInnerSeqGap(_ps1):

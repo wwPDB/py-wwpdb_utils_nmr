@@ -1314,8 +1314,10 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.__polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-chain RDC vector; "
@@ -1323,7 +1325,8 @@ class GromacsMRParserListener(ParseTreeListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.__polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-residue RDC vector; "

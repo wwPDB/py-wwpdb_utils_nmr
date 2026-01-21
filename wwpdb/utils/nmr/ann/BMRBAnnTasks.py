@@ -3484,7 +3484,8 @@ class BMRBAnnTasks:
 
         for sf in master_entry.frame_list:
             sf_tag_prefix = sf.tag_prefix
-            label_tags = [sf_tag.split('.')[1] for sf_tag in DEFAULT_SF_LABEL_TAGS if sf_tag.startswith(f'{sf_tag_prefix}.') and sf_tag.endswith('_label')]
+            label_tags = [sf_tag.split('.')[1] for sf_tag in DEFAULT_SF_LABEL_TAGS
+                          if sf_tag.startswith(f'{sf_tag_prefix}.') and sf_tag.endswith('_label')]
             if len(label_tags) == 0:
                 continue
             for label_tag in label_tags:

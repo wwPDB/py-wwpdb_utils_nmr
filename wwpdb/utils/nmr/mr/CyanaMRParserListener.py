@@ -1767,7 +1767,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             self.ccU.updateChemCompDict(_cifCompId)
 
                             if isinstance(atomId, str):
-                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                  if cca[self.ccU.ccaAtomId] == atomId), None)
                                 if cifAtomId is None:
                                     if ord == 0:
                                         _cifSeqId += seqOffset[ord + 1] - offset
@@ -1797,10 +1798,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
                                             _cifCompId = cifCompId if offset == 0\
-                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                      if _cifSeqId in ps['auth_seq_id'] else None)
                                             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                                             if coordAtomSite is not None:
-                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                                  if _cifAtomId in coordAtomSite['atom_id']), None)
 
                                     else:
                                         cifAtomId = cifAtomIds[0]
@@ -2228,8 +2231,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
@@ -2237,7 +2242,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
@@ -2821,7 +2827,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         elif value2 > DIST_RANGE_MAX:  # lol_only
                             lower_limit = value
 
-                        elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                        elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX\
+                                and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                             upper_limit = value2
                             lower_limit = value
                             if self.applyPdbStatCap:
@@ -3725,7 +3732,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         elif value2 > DIST_RANGE_MAX:  # lol_only
                             lower_limit = value
 
-                        elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                        elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX\
+                                and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                             upper_limit = value2
                             lower_limit = value
                             if self.applyPdbStatCap:
@@ -5641,7 +5649,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             self.ccU.updateChemCompDict(_cifCompId)
 
                             if isinstance(atomId, str):
-                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                  if cca[self.ccU.ccaAtomId] == atomId), None)
                                 if cifAtomId is None:
                                     if ord == 0:
                                         _cifSeqId += seqOffset[ord + 1] - offset
@@ -5671,10 +5680,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
                                             _cifCompId = cifCompId if offset == 0\
-                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                      if _cifSeqId in ps['auth_seq_id'] else None)
                                             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                                             if coordAtomSite is not None:
-                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                                  if _cifAtomId in coordAtomSite['atom_id']), None)
 
                                     else:
                                         cifAtomId = cifAtomIds[0]
@@ -6451,7 +6462,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     chainId1 = chainAssign1[0][0]
                     chainId2 = chainAssign2[0][0]
                     if chainId1 == chainId2:
-                        seqIdDict = next((remap['seq_id_dict'] for remap in self.reasons['chain_seq_id_remap'] if remap['chain_id'] == chainId1), None)
+                        seqIdDict = next((remap['seq_id_dict'] for remap in self.reasons['chain_seq_id_remap']
+                                          if remap['chain_id'] == chainId1), None)
                         if seqIdDict is not None:
                             seqIdDictKeys = seqIdDict.keys()
                             seqIdDictVals = seqIdDict.values()

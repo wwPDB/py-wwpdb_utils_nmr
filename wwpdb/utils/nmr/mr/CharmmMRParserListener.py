@@ -1993,7 +1993,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                             continue
 
                                         if distance(to_np_array(_neighbor[0]), origin) < 2.0:
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                   'comp_id': compId, 'atom_id': _atomId})
 
                                 else:
                                     cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
@@ -2011,7 +2012,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                              'z': float(_cca[self.ccU.ccaCartnZ])}
 
                                                 if distance(to_np_array(_neighbor), origin) < 2.0:
-                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                           'comp_id': compId, 'atom_id': _atomId})
 
                     atomSelection = [dict(s) for s in set(frozenset(atom.items())
                                                           for atom in _atomSelection
@@ -2062,7 +2064,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
                             for _atom in _atomByRes:
-                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
+                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                       'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
 
                         else:
                             psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
@@ -2071,9 +2074,11 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                     seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
                                     if self.ccU.updateChemCompDict(compId):
-                                        atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                                        atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                   if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
                                         for atomId in atomIds:
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                   'comp_id': compId, 'atom_id': atomId})
 
                     self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
                                                                           for atom in _atomSelection

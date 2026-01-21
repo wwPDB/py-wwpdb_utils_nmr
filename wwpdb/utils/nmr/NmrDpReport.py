@@ -86,7 +86,8 @@
 # 17-Jan-2024  M. Yokochi - add 'coordinate_issue' error (DAOTHER-9084)
 # 29-Jan-2024  M. Yokochi - add 'ambiguous_dihedral_angle' warning type (NMR restraint remediation, 6sy2)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
-# 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
+# 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary
+#                           (NMR restraint remediation, 6fw4)
 # 07-Nov-2024  M. Yokochi - add 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-xea', and 'nm-pea-xwi' file types
 #                           for NMR spectral peak remediation
 # 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
@@ -969,7 +970,8 @@ class NmrDpReport:
                             continue
                         saveframe_tag[k.lower()] = v
 
-                chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
+                chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'],
+                                        'loop': loop, 'saveframe_tag': saveframe_tag})
 
         return None if len(chem_shift_refs) == 0 else chem_shift_refs
 
@@ -1867,11 +1869,14 @@ class NmrDpReport:
 
         if not self.__immutable:
 
-            ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'disordered_index', 'enum_mismatch_ignorable',
+            ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch',
+                                       'disordered_index', 'enum_mismatch_ignorable',
                                        'skipped_saveframe_category', 'skipped_loop_category',
                                        'anomalous_chemical_shift', 'unusual_chemical_shift',
-                                       'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
-                                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
+                                       'complemented_chemical_shift', 'incompletely_assigned_chemical_shift',
+                                       'incompletely_assigned_spectral_peak',
+                                       'anomalous_data', 'unusual_data', 'unusual/rare_data',
+                                       'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']
 
             self.corrected_warning = NmrDpReportWarning(self.__verbose, self.__log)
@@ -2227,13 +2232,17 @@ class NmrDpReportError:
         self.items = ('internal_error', 'format_issue', 'coordinate_issue',
                       'missing_mandatory_content', 'missing_mandatory_item',
                       'content_mismatch', 'sequence_mismatch',
-                      'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                      'atom_not_found', 'hydrogen_not_instantiated', 'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data',
+                      'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type',
+                      'invalid_isotope_number', 'invalid_ambiguity_code',
+                      'atom_not_found', 'hydrogen_not_instantiated', 'multiple_data',
+                      'missing_data', 'duplicated_index', 'anomalous_data',
                       'unparsed_data')
 
         self.group_items = ('sequence_mismatch',
-                            'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                            'atom_not_found', 'hydrogen_not_instantiated', 'multiple_data', 'missing_data', 'anomalous_data')
+                            'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type',
+                            'invalid_isotope_number', 'invalid_ambiguity_code',
+                            'atom_not_found', 'hydrogen_not_instantiated', 'multiple_data',
+                            'missing_data', 'anomalous_data')
 
         self.__contents = {item: None for item in self.items}
 
@@ -2350,7 +2359,8 @@ class NmrDpReportError:
                 continue
 
             if any(True for c in self.__contents[item]
-                   if (c['file_name'] == file_name or file_name in EMPTY_VALUE) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
+                   if (c['file_name'] == file_name or file_name in EMPTY_VALUE)
+                   and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
 
         return False
@@ -2359,26 +2369,31 @@ class NmrDpReportError:
         """ Return list of error values specified by item name and file name.
         """
 
-        if item in ('total', 'internal_error') or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ('total', 'internal_error') or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
-        return [c for c in self.__contents[item] if c['file_name'] == file_name or (key is None or key in c['description'])]
+        return [c for c in self.__contents[item]
+                if c['file_name'] == file_name or (key is None or key in c['description'])]
 
     def getValueListWithSf(self, item: str, file_name: str, sf_framecode: str, key: Optional[str] = None) -> Optional[List[dict]]:
         """ Return list of error values specified by item name, file name, and saveframe.
         """
 
-        if item in ('total', 'internal_error') or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ('total', 'internal_error') or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item]
-                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
+                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode
+                and (key is None or key in c['description'])]
 
     def getInheritableValueList(self, item: str) -> Optional[List[dict]]:
         """ Return list of error values with inheritable flag.
         """
 
-        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if 'inheritable' in c and c['inheritable']]
@@ -2397,7 +2412,8 @@ class NmrDpReportError:
             if k == 'total' or v is None:
                 continue
 
-            dlist = [c for c in v if 'inheritable' in c and c['inheritable'] and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode]
+            dlist = [c for c in v if 'inheritable' in c and c['inheritable']
+                     and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode]
 
             if len(dlist) == 0:
                 continue
@@ -2413,7 +2429,8 @@ class NmrDpReportError:
         """ Return list of error values having unique sf_framecode and description.
         """
 
-        if item in ('total', 'internal_error') or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ('total', 'internal_error') or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         rlist = []
@@ -2446,7 +2463,8 @@ class NmrDpReportError:
         """ Return error description specified by item name, file name, and saveframe.
         """
 
-        if item in ('total', 'internal_error') or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ('total', 'internal_error') or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         try:
@@ -2557,31 +2575,38 @@ class NmrDpReportWarning:
         self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch',
                       'enum_mismatch_ignorable', 'corrected_format_issue', 'corrected_saveframe_name',
                       'disordered_index', 'sequence_mismatch',
-                      'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
+                      'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch',
+                      'ccd_mismatch', 'ambiguity_code_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_bond_length', 'ambiguous_dihedral_angle', 'anomalous_rdc_vector',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
-                      'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
+                      'complemented_chemical_shift', 'incompletely_assigned_chemical_shift',
+                      'incompletely_assigned_spectral_peak',
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
-                      'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
+                      'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data',
+                      'redundant_mr_data', 'unsupported_mr_data',
                       'conflicted_peak_list', 'inconsistent_peak_list', 'unsupported_peak_list',
                       'concatenated_sequence', 'coordinate_issue', 'not_superimposed_model', 'exactly_overlaid_model',
                       'assigned_peak_atom_not_found', 'hydrogen_not_instantiated')
 
         self.group_items = ('sequence_mismatch',
-                            'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
+                            'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch',
+                            'ccd_mismatch', 'ambiguity_code_mismatch',
                             'anomalous_bond_length', 'ambiguous_dihedral_angle', 'anomalous_rdc_vector',
-                            'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
+                            'complemented_chemical_shift', 'incompletely_assigned_chemical_shift',
+                            'incompletely_assigned_spectral_peak',
                             'unusual/rare_data', 'insufficient_data',
                             'conflicted_data', 'inconsistent_data', 'redundant_data',
-                            'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
+                            'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data',
+                            'redundant_mr_data', 'unsupported_mr_data',
                             'conflicted_peak_list', 'inconsistent_peak_list', 'unsupported_peak_list',
                             'hydrogen_not_instantiated')
 
         self.mr_err_items = ('hydrogen_not_instantiated', 'coordinate_issue',
                              'ambiguous_dihedral_angle', 'anomalous_rdc_vector', 'anomalous_data',
-                             'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
+                             'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data',
+                             'redundant_mr_data', 'unsupported_mr_data',
                              'conflicted_peak_list', 'inconsistent_peak_list', 'unsupported_peak_list')
 
         self.__contents = {item: None for item in self.items}
@@ -2699,7 +2724,8 @@ class NmrDpReportWarning:
                 continue
 
             if any(True for c in self.__contents[item]
-                   if (c['file_name'] == file_name or file_name in EMPTY_VALUE) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
+                   if (c['file_name'] == file_name or file_name in EMPTY_VALUE)
+                   and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
 
         return False
@@ -2708,26 +2734,31 @@ class NmrDpReportWarning:
         """ Return list of warning values specified by item name and file name.
         """
 
-        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
-        return [c for c in self.__contents[item] if c['file_name'] == file_name and (key is None or key in c['description'])]
+        return [c for c in self.__contents[item] if c['file_name'] == file_name
+                and (key is None or key in c['description'])]
 
     def getValueListWithSf(self, item: str, file_name: str, sf_framecode: str, key: Optional[str] = None) -> Optional[List[dict]]:
         """ Return list of warning values specified by item name, file name, and saveframe.
         """
 
-        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item]
-                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
+                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode
+                and (key is None or key in c['description'])]
 
     def getInheritableValueList(self, item: str) -> Optional[List[dict]]:
         """ Return list of warning values with inheritable flag.
         """
 
-        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if 'inheritable' in c and c['inheritable']]
@@ -2746,7 +2777,8 @@ class NmrDpReportWarning:
             if k == 'total' or v is None:
                 continue
 
-            dlist = [c for c in v if 'inheritable' in c and c['inheritable'] and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode]
+            dlist = [c for c in v if 'inheritable' in c and c['inheritable']
+                     and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode]
 
             if len(dlist) == 0:
                 continue
@@ -2762,7 +2794,8 @@ class NmrDpReportWarning:
         """ Return list of warning values having unique sf_framecode and description.
         """
 
-        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         rlist = []
@@ -2795,7 +2828,8 @@ class NmrDpReportWarning:
         """ Return warning description specified by item name, file name, and saveframe.
         """
 
-        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None\
+           or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         try:

@@ -716,7 +716,8 @@ class BaseLinearMRParserListener():
 
                 self.__seqAlign, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRst,
                                                           resolvedMultimer=self.reasons is not None)
-                self.__chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.__polySeqRst, self.__seqAlign)
+                self.__chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type,
+                                                                    self.polySeq, self.__polySeqRst, self.__seqAlign)
 
                 if len(message) > 0:
                     self.f.extend(message)
@@ -1017,7 +1018,8 @@ class BaseLinearMRParserListener():
 
                                     if len(seqIdRemapFailed) > 0:
                                         if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
-                                            seqIdRemap = self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                            seqIdRemap =\
+                                                self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
                                             if len(seqIdRemap) != len(seqIdRemapFailed)\
                                                or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
@@ -1885,8 +1887,10 @@ class BaseLinearMRParserListener():
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
-                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                  if _seqId == seqId and _compId == compId)
+                                origCompId =\
+                                    next(origCompId
+                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -1964,8 +1968,10 @@ class BaseLinearMRParserListener():
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
-                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                  if _seqId == seqId and _compId == compId)
+                                origCompId =\
+                                    next(origCompId
+                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -2570,8 +2576,10 @@ class BaseLinearMRParserListener():
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
-                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                  if _seqId == seqId and _compId == compId)
+                                origCompId =\
+                                    next(origCompId
+                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -2673,8 +2681,10 @@ class BaseLinearMRParserListener():
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
-                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                  if _seqId == seqId and _compId == compId)
+                                origCompId =\
+                                    next(origCompId
+                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -3028,7 +3038,8 @@ class BaseLinearMRParserListener():
 
         return list(chainAssign)
 
-    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: Optional[str], seqId: int, atomId: str) -> List[Tuple[str, int, str, bool]]:
+    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: Optional[str], seqId: int, atomId: str
+                                                           ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -3246,7 +3257,8 @@ class BaseLinearMRParserListener():
         return list(chainAssign)
 
     def assignCoordPolymerSequenceWithIndex(self, refChainId: str, seqId: int, compId: str, atomId: str,
-                                            index: Optional[int] = None, group: Optional[int] = None) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
+                                            index: Optional[int] = None, group: Optional[int] = None
+                                            ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -3722,8 +3734,10 @@ class BaseLinearMRParserListener():
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
-                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                  if _seqId == seqId and _compId == compId)
+                                origCompId =\
+                                    next(origCompId
+                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -3818,8 +3832,10 @@ class BaseLinearMRParserListener():
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
-                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                  if _seqId == seqId and _compId == compId)
+                                origCompId =\
+                                    next(origCompId
+                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -4098,7 +4114,8 @@ class BaseLinearMRParserListener():
                     if details is not None:
                         if atomId_ != __atomId:
                             _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, __atomId, leave_unmatched=True)
-                        elif len(atomId_) > 1 and not atomId_[-1].isalpha() and (atomId_[0] in PSE_PRO_BEGIN_CODE or atomId_[0] in ('C', 'N', 'P', 'F')):
+                        elif len(atomId_) > 1 and not atomId_[-1].isalpha()\
+                                and (atomId_[0] in PSE_PRO_BEGIN_CODE or atomId_[0] in ('C', 'N', 'P', 'F')):
                             _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId_[:-1], leave_unmatched=True)
                             if atomId_[-1].isdigit() and int(atomId_[-1]) <= len(_atomId):
                                 _atomId = [_atomId[int(atomId_[-1]) - 1]]
@@ -4374,7 +4391,8 @@ class BaseLinearMRParserListener():
                     if details is not None:
                         if atomId_ != __atomId:
                             _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, __atomId, leave_unmatched=True)
-                        elif len(atomId_) > 1 and not atomId_[-1].isalpha() and (atomId_[0] in PSE_PRO_BEGIN_CODE or atomId_[0] in ('C', 'N', 'P', 'F')):
+                        elif len(atomId_) > 1 and not atomId_[-1].isalpha()\
+                                and (atomId_[0] in PSE_PRO_BEGIN_CODE or atomId_[0] in ('C', 'N', 'P', 'F')):
                             _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId_[:-1], leave_unmatched=True)
                             if atomId_[-1].isdigit() and int(atomId_[-1]) <= len(_atomId):
                                 _atomId = [_atomId[int(atomId_[-1]) - 1]]
@@ -4592,7 +4610,8 @@ class BaseLinearMRParserListener():
             for cifAtomId in _atomId:
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId})
 
-                _cifAtomId, asis = self.testCoordAtomIdConsistencyWithIndex(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, index, group)
+                _cifAtomId, asis = self.testCoordAtomIdConsistencyWithIndex(chainId, cifSeqId, cifCompId, cifAtomId,
+                                                                            seqKey, coordAtomSite, index, group)
                 if asis:
                     atomSelection[-1]['asis'] = True
                 if cifAtomId != _cifAtomId:

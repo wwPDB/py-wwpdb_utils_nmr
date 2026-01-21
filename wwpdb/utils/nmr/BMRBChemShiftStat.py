@@ -512,7 +512,8 @@ class BMRBChemShiftStat:
 
             if d == 'methyl-geminal' and is_proton:
                 return next(item['atom_id'] for item in cs_stat
-                            if item['desc'] == d and item['atom_id'] != atom_id and item['atom_id'][:-2] == atom_id[:-2] and item['atom_id'][-1] == atom_id[-1])
+                            if item['desc'] == d and item['atom_id'] != atom_id
+                            and item['atom_id'][:-2] == atom_id[:-2] and item['atom_id'][-1] == atom_id[-1])
 
             if d.startswith('aroma-opposite'):
                 return next(item['atom_id'] for item in cs_stat
@@ -1769,7 +1770,8 @@ class BMRBChemShiftStat:
 
         if len(ref_atom_ids) == 0 or cc_rel_status != 'REL':
             if verbose:
-                self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
+                self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() "
+                                 f"++ Warning  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
             return False, None, None
 
         ref_alt_atom_ids = [a[self.__ccU.ccaAltAtomId] for a in self.__ccU.lastAtomList]
@@ -1795,7 +1797,8 @@ class BMRBChemShiftStat:
                                 if a[self.__ccU.ccaAltAtomId] == atom_id)
 
             if verbose:
-                self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
+                self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() "
+                                 f"++ Warning  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
                                  f"It should be {_ref_atom_id}\n")
 
             # print(f'case 1. {_comp_id}:{atom_id} -> {comp_id}:{_ref_atom_id}')
@@ -1909,7 +1912,8 @@ class BMRBChemShiftStat:
                                                  and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'))]
 
                 cn_h_bonds = collections.Counter([b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                                  if b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE and b[self.__ccU.ccbAtomId2] not in leaving_atom_list])
+                                                  if b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE
+                                                  and b[self.__ccU.ccbAtomId2] not in leaving_atom_list])
 
                 h_list = [a for a in _list if a['atom_id'][0] in PROTON_BEGIN_CODE and a['desc'] == 'isolated']
 

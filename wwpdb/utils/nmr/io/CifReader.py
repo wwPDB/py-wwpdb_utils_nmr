@@ -31,7 +31,8 @@
 # 18-Dec-2023 - my  - add calculate_uninstanced_coord() (DAOTHER-8945)
 # 24-Jan-2024 - my  - add 'default-from' attribute for key/data items (D_1300043061)
 # 21-Feb-2024 - my  - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
-# 07-Mar-2024 - my  - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
+# 07-Mar-2024 - my  - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID
+#                     (DAOTHER-9158 vs D_1300043061)
 # 20-Aug-2024 - my  - support truncated loop sequence in the model (DAOTHER-9644)
 # 10-Sep-2024 - my  - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 # 18-Sep-2024 - my  - add 'starts-with-alnum' item type (DAOTHER-9694)
@@ -1051,7 +1052,8 @@ class CifReader:
                 etype = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
                 # DAOTHER-9644: support for truncated loop in the model
-                if withRmsd and catName == 'pdbx_poly_seq_scheme' and len(authSeqDict) > 0:  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
+                # avoid interference of ParserListenerUtils.coordAssemblyChecker()
+                if withRmsd and catName == 'pdbx_poly_seq_scheme' and len(authSeqDict) > 0:
 
                     if len(misPolyLink) > 0:
 
@@ -1445,8 +1447,10 @@ class CifReader:
         struct_conf = self.getDictListWithFilter('struct_conf',
                                                  [{'name': 'conf_type_id', 'type': 'str'},
                                                   {'name': helix_id_name, 'type': 'str', 'alt_name': 'helix_id'},
-                                                  {'name': 'beg_label_seq_id' if label_scheme else 'beg_auth_seq_id', 'type': 'int', 'alt_name': 'beg_seq_id'},
-                                                  {'name': 'end_label_seq_id' if label_scheme else 'end_auth_seq_id', 'type': 'int', 'alt_name': 'end_seq_id'}
+                                                  {'name': 'beg_label_seq_id'
+                                                   if label_scheme else 'beg_auth_seq_id', 'type': 'int', 'alt_name': 'beg_seq_id'},
+                                                  {'name': 'end_label_seq_id'
+                                                   if label_scheme else 'end_auth_seq_id', 'type': 'int', 'alt_name': 'end_seq_id'}
                                                   ],
                                                  [{'name': 'beg_label_asym_id', 'type': 'str', 'value': chain_id},
                                                   {'name': 'end_label_asym_id', 'type': 'str', 'value': chain_id}

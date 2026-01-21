@@ -21,8 +21,6 @@ import unittest
 import os
 import sys
 import pynmrstar
-from packaging import version
-
 from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 
 
@@ -33,10 +31,6 @@ if __package__ is None or __package__ == "":
     from commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=import-error,unused-import
 else:
     from .commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=relative-beyond-top-level
-
-__pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
-__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
-__pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
 
 class TestNEFTranslator(unittest.TestCase):
@@ -290,14 +284,7 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(read_out[1], "Loop")
         read_out = self.neft.read_input_file(os.path.join(self.data_dir_path, "nonsense.nef"))
         self.assertEqual(read_out[0], False)
-        if __pynmrstar_v3_2__:
-            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\' followed by the data name. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 2.')  # noqa: E501
-        elif __pynmrstar_v3_1__:
-            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 3.')  # noqa: E501
-        elif __pynmrstar_v3__:
-            self.assertEqual(read_out[1], "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file? on line 2")
-        else:
-            self.assertEqual(read_out[1], "(\"Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?\", 2)")
+        self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\' followed by the data name. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 2.')  # noqa: E501
 
     def test_load_csv_data(self):
         self.assertTrue(len(self.neft.tagMap) > 0, "Can't read NEF-NMRSTAR_equivalence.csv or its empty")
@@ -2615,7 +2602,8 @@ class TestNEFTranslator(unittest.TestCase):
                                                    "H", "HA", "HB", "HD11", "HD12", "HD13", "HG12", "HG13", "HG21", "HG22", "HG23", "N"]},
                     {"comp_id": "LEU", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CG",
                                                    "H", "HA", "HB2", "HB3", "HD11", "HD12", "HD13", "HD21", "HD22", "HD23", "HG", "N"]},
-                    {"comp_id": "LYS", "atom_id": ["C", "CA", "CB", "CD", "CE", "CG", "H", "HA", "HB2", "HB3", "HD2", "HD3", "HE2", "HE3", "HG2", "HG3", "N"]},
+                    {"comp_id": "LYS", "atom_id": ["C", "CA", "CB", "CD", "CE", "CG",
+                                                   "H", "HA", "HB2", "HB3", "HD2", "HD3", "HE2", "HE3", "HG2", "HG3", "N"]},
                     {"comp_id": "MET", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HG2", "HG3", "N"]},
                     {"comp_id": "PHE", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "CZ",
                                                    "H", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HZ", "N"]},
@@ -2799,13 +2787,11 @@ class TestNEFTranslator(unittest.TestCase):
                     {"comp_id": "SER", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "H", "HA", "N"]},
                     {"comp_id": "SER", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
                     {"comp_id": "THR", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG2", "H", "HA", "HB", "HG21", "HG22", "HG23", "N"]},
-                    {
-                        "comp_id": "TRP",
-                        "ambig_code": 1,
-                        "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3", "H", "HA", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"],
-                    },
+                    {"comp_id": "TRP", "ambig_code": 1,
+                     "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3", "H", "HA", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"]},
                     {"comp_id": "TRP", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
-                    {"comp_id": "TYR", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "H", "HA", "HD1", "HD2", "HE1", "HE2", "N"]},
+                    {"comp_id": "TYR", "ambig_code": 1,
+                     "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "H", "HA", "HD1", "HD2", "HE1", "HE2", "N"]},
                     {"comp_id": "TYR", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
                     {"comp_id": "VAL", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "H", "HA", "HB", "N"]},
                     {"comp_id": "VAL", "ambig_code": 2, "atom_id": ["CG1", "CG2", "HG11", "HG12", "HG13", "HG21", "HG22", "HG23"]},
@@ -3313,7 +3299,8 @@ class TestNEFTranslator(unittest.TestCase):
             "_Torsion_angle_constraint.Comp_ID_4",
             "_Torsion_angle_constraint.Atom_ID_4",
         ]
-        indat = [1, 1, ".", "A", 394, "ASP", "C", "A", 395, "ARG", "N", "A", 395, "ARG", "CA", "A", 395, "ARG", "C", 1, ".", ".", ".", -76, -56, ".", "PHI"]
+        indat = [1, 1, ".", "A", 394, "ASP", "C", "A", 395, "ARG", "N", "A", 395, "ARG", "CA", "A", 395, "ARG", "C",
+                 1, ".", ".", ".", -76, -56, ".", "PHI"]
         outdat = [
             [
                 1,

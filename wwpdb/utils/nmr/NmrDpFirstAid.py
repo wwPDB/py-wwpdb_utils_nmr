@@ -1247,8 +1247,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
@@ -1282,8 +1282,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
@@ -1323,8 +1323,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
@@ -1366,8 +1366,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
@@ -1569,8 +1569,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1610,8 +1610,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1677,8 +1677,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1700,8 +1700,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1727,8 +1727,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1754,8 +1754,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "

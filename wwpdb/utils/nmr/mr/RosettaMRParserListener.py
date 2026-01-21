@@ -594,7 +594,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
                 self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                           resolvedMultimer=self.__reasons is not None)
-                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
+                                                                    self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 if len(message) > 0:
                     self.__f.extend(message)
@@ -793,7 +794,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                                           if ps['auth_chain_id'] == ref_chain_id)
 
                                     seq_id_mapping = {}
-                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa else sa['ref_seq_id'],
+                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa
+                                                                                      else sa['ref_seq_id'],
                                                                                       sa['mid_code'], sa['test_seq_id']):
                                         if mid_code == '|' and test_seq_id is not None:
                                             seq_id_mapping[test_seq_id] = ref_auth_seq_id
@@ -897,8 +899,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
                                     if uniq_ps and offset is not None and len(seq_id_mapping) > 0\
                                        and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
-                                        for ref_seq_id, mid_code, test_seq_id, ref_code, test_code in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id'],
-                                                                                                          sa['ref_code'], sa['test_code']):
+                                        for ref_seq_id, mid_code, test_seq_id, ref_code, test_code in zip(sa['ref_seq_id'], sa['mid_code'],
+                                                                                                          sa['test_seq_id'], sa['ref_code'],
+                                                                                                          sa['test_code']):
                                             if test_seq_id is None:
                                                 continue
                                             if mid_code == '|' and test_seq_id not in seq_id_mapping:
@@ -986,7 +989,8 @@ class RosettaMRParserListener(ParseTreeListener):
                             if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                                 offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
                                 if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
-                                    failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
+                                    failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed
+                                                      if failed_ps['chain_id'] == ps['auth_chain_id']), None)
                                     if failed_ps is None:
                                         continue
                                     if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
@@ -1009,7 +1013,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                 valid = False
                                 break
                             if chainId in chainIds:
-                                offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if k == chainId and v is not None)
+                                offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items()
+                                              if k == chainId and v is not None)
                                 for auth_seq_id in ps['auth_seq_id']:
                                     if auth_seq_id - offset in chainIdRemap:
                                         valid = False
@@ -1373,7 +1378,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 else:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                    f"{srcFunc}, the target value='{target_value}' "
+                                    f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
@@ -1387,7 +1393,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 else:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                    f"{srcFunc}, the lower limit value='{lower_limit}' "
+                                    f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
@@ -1401,7 +1408,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 else:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                    f"{srcFunc}, the upper limit value='{upper_limit}' "
+                                    f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if DIST_ERROR_MIN <= lower_linear_limit < DIST_ERROR_MAX:
@@ -1415,7 +1423,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 else:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' "
+                                    f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX or (upper_linear_limit == 0.0 and self.__allowZeroUpperLimit):
@@ -1429,7 +1438,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 else:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                    f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' "
+                                    f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -1437,25 +1447,29 @@ class RosettaMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the lower limit value='{lower_limit}' must be less than the target value '{target_value}'.")
+                                    f"{srcFunc}, the lower limit value='{lower_limit}' "
+                                    f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' must be less than the target value '{target_value}'.")
+                                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' "
+                                    f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.")
+                                    f"{srcFunc}, the upper limit value='{upper_limit}' "
+                                    f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be greater than the target value '{target_value}'.")
+                                    f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' "
+                                    f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -1463,19 +1477,22 @@ class RosettaMRParserListener(ParseTreeListener):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the lower limit value='{lower_limit}' must be less than the upper limit value '{upper_limit}'.")
+                                    f"{srcFunc}, the lower limit value='{lower_limit}' "
+                                    f"must be less than the upper limit value '{upper_limit}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' must be less than the upper limit value '{upper_limit}'.")
+                                    f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' "
+                                    f"must be less than the upper limit value '{upper_limit}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the lower limit value='{lower_limit}' must be less than the upper limit value '{upper_linear_limit}'.")
+                                    f"{srcFunc}, the lower limit value='{lower_limit}' "
+                                    f"must be less than the upper limit value '{upper_linear_limit}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
@@ -1495,7 +1512,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                    f"{srcFunc}, the upper limit value='{upper_limit}' must be less than the upper linear limit value '{upper_linear_limit}'.")
+                                    f"{srcFunc}, the upper limit value='{upper_limit}' "
+                                    f"must be less than the upper linear limit value '{upper_linear_limit}'.")
 
         if not validRange:
             return None
@@ -1505,35 +1523,40 @@ class RosettaMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the target value='{target_value}' "
+                                f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the lower limit value='{lower_limit}' "
+                                f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the upper limit value='{upper_limit}' "
+                                f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' "
+                                f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' "
+                                f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -3188,7 +3211,8 @@ class RosettaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                                f"{srcFunc}, the target value='{target_value}' "
+                                f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
@@ -3196,7 +3220,8 @@ class RosettaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                                f"{srcFunc}, the lower limit value='{lower_limit}' "
+                                f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
@@ -3204,7 +3229,8 @@ class RosettaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                                f"{srcFunc}, the upper limit value='{upper_limit}' "
+                                f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if ANGLE_ERROR_MIN <= lower_linear_limit < ANGLE_ERROR_MAX:
@@ -3212,7 +3238,8 @@ class RosettaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                                f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' "
+                                f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if ANGLE_ERROR_MIN < upper_linear_limit <= ANGLE_ERROR_MAX:
@@ -3220,19 +3247,22 @@ class RosettaMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                                f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' "
+                                f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if None not in (lower_limit, lower_linear_limit):
             if lower_linear_limit > lower_limit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' must be less than the lower limit value '{lower_limit}'.")
+                                f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' "
+                                f"must be less than the lower limit value '{lower_limit}'.")
 
         if None not in (upper_limit, upper_linear_limit):
             if upper_limit > upper_linear_limit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the upper limit value='{upper_limit}' must be less than the upper linear limit value '{upper_linear_limit}'.")
+                                f"{srcFunc}, the upper limit value='{upper_limit}' "
+                                f"must be less than the upper linear limit value '{upper_linear_limit}'.")
 
         if not validRange:
             return None
@@ -3242,35 +3272,40 @@ class RosettaMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the target value='{target_value}' "
+                                f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the lower limit value='{lower_limit}' "
+                                f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the upper limit value='{upper_limit}' "
+                                f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the lower linear limit value='{lower_linear_limit}' "
+                                f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                                f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' "
+                                f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None

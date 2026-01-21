@@ -1342,7 +1342,8 @@ class BasePKParserListener():
                     for c in range(1, MAX_CONFLICT_ATTEMPT):
                         self.seqAlign, _ = alignPolymerSequenceWithConflicts(self.pA, self.polySeq, self.polySeqRst, c)
                         if len(self.seqAlign) > 0:
-                            self.chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.polySeqRst, self.seqAlign)
+                            self.chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type,
+                                                                              self.polySeq, self.polySeqRst, self.seqAlign)
                             break
 
                 if len(message) > 0:
@@ -1561,8 +1562,9 @@ class BasePKParserListener():
 
                                     if uniq_ps and offset is not None and len(seq_id_mapping) > 0\
                                        and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
-                                        for ref_seq_id, mid_code, test_seq_id, ref_code, test_code in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id'],
-                                                                                                          sa['ref_code'], sa['test_code']):
+                                        for ref_seq_id, mid_code, test_seq_id, ref_code, test_code in zip(sa['ref_seq_id'], sa['mid_code'],
+                                                                                                          sa['test_seq_id'], sa['ref_code'],
+                                                                                                          sa['test_code']):
                                             if test_seq_id is None:
                                                 continue
                                             if mid_code == '|' and test_seq_id not in seq_id_mapping:
@@ -1579,7 +1581,9 @@ class BasePKParserListener():
                                         if len(offsets) == 1:
                                             offset = offsets[0][0]
                                             seq_id_mapping = {ref_seq_id - offset: ref_seq_id for ref_seq_id in poly_seq_model['auth_seq_id']}
-                                        item = {'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping, 'comp_id_set': list(set(poly_seq_model['comp_id']))}
+                                        item = {'chain_id': ref_chain_id,
+                                                'seq_id_dict': seq_id_mapping,
+                                                'comp_id_set': list(set(poly_seq_model['comp_id']))}
                                         if item not in seqIdRemap:
                                             seqIdRemapFailed.append(item)
 
@@ -1842,7 +1846,8 @@ class BasePKParserListener():
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aromatic'
-                                    elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and min_ppm > C_ALL_CENTER_MIN and max_ppm < C_CARBONYL_CENTER_MIN:
+                                    elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX\
+                                            and min_ppm > C_ALL_CENTER_MIN and max_ppm < C_CARBONYL_CENTER_MIN:
                                         __v['atom_type'] = 'N'
                                         __v['atom_isotope_number'] = 15
                                         __v['axis_code'] = 'N'
@@ -2393,7 +2398,8 @@ class BasePKParserListener():
                                                 _dict1['axis_code'] = f'H{dim_to_code[_dim_id1]}'
                                                 _dict2['axis_code'] = f'H{dim_to_code[_dim_id2]}'
                                         if d == 3:
-                                            _transfer = next((_transfer for _transfer in cur_spectral_dim_transfer if _transfer['type'] == 'onebond'), None)
+                                            _transfer = next((_transfer for _transfer in cur_spectral_dim_transfer
+                                                              if _transfer['type'] == 'onebond'), None)
                                             if _transfer is not None:
                                                 if _dim_id1 not in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
                                                     if _region1 == 'H-aliphatic':
@@ -3269,7 +3275,8 @@ class BasePKParserListener():
             for _idx in reversed(del_idx_list):
                 del loop.data[_idx]
 
-    def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
+    def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]], use_peak_row_format: bool,
+                                                    loop: pynmrstar.Loop):
 
         is_reparsable = self.reasons is None and self.software_name != 'PIPP'
 
@@ -3281,8 +3288,10 @@ class BasePKParserListener():
 
             if use_peak_row_format:
 
-                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}', f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
-                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}', f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
+                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}',
+                        f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
+                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}',
+                        f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
 
                 dat = loop.get_tag(tags)
 
@@ -3476,8 +3485,10 @@ class BasePKParserListener():
                                 if loop.data[idx][details_col] in EMPTY_VALUE:
                                     loop.data[idx][details_col] = f'{atom_id}, {atom_id2} -> cleared'
 
-                                loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] =\
-                                    loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = None
+                                loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] =\
+                                    loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] =\
+                                    loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] =\
+                                    loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = None
 
                     elif chain_id == chain_id2 and seq_id != seq_id2:
                         position, position2 = row[4], row[9]
@@ -3962,7 +3973,8 @@ class BasePKParserListener():
                                     pass
                             if loop.data[idx - num_of_dim + dim_id_2][details_col] in EMPTY_VALUE:
                                 loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {common_atom_id2}'
-                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = common_atom_id2
+                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] =\
+                                loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = common_atom_id2
 
                         if None not in (shift, shift2):
                             diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
@@ -4206,7 +4218,8 @@ class BasePKParserListener():
                                 loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = common_atom_id
+                                loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = \
+                                    loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = common_atom_id
 
                             # pylint: disable=cell-var-from-loop
                             def alt_swap_seq_atom_id_2(atom_id2_list):
@@ -4231,7 +4244,8 @@ class BasePKParserListener():
                                 loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
                                 loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = common_atom_id2
+                                loop.data[idx - num_of_dim + dim_id_2][atom_id_col] =\
+                                    loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = common_atom_id2
 
                             diff_ = diff2_ = None
                             if shift_ is not None:
@@ -4414,8 +4428,10 @@ class BasePKParserListener():
 
             if use_peak_row_format:
 
-                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}', f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
-                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}', f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
+                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}',
+                        f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
+                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}',
+                        f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
 
                 dat = loop.get_tag(tags)
 
@@ -4662,7 +4678,8 @@ class BasePKParserListener():
                             self.reasonsForReParsing['jcoupling_idx_history'] = self.jcoupling_idx_history
                             is_reparsable = False
 
-    def __remediatePeakAssignmentForRelayedTransfer(self, num_of_dim: int, relayed_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
+    def __remediatePeakAssignmentForRelayedTransfer(self, num_of_dim: int, relayed_transfers: List[List[int]], use_peak_row_format: bool,
+                                                    loop: pynmrstar.Loop):
 
         is_reparsable = self.reasons is None and self.software_name != 'PIPP'
 
@@ -4672,8 +4689,10 @@ class BasePKParserListener():
 
             if use_peak_row_format:
 
-                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}', f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
-                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}', f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
+                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}',
+                        f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
+                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}',
+                        f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
 
                 dat = loop.get_tag(tags)
 
@@ -6051,7 +6070,8 @@ class BasePKParserListener():
                                 atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][1]][0]
                             if _atom1['chain_id'] != _atom2['chain_id']\
                                or _atom1['seq_id'] != _atom2['seq_id']\
-                               or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                               or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
+                               or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
                                 valid = False
                         if not valid:
                             continue
@@ -6298,7 +6318,8 @@ class BasePKParserListener():
                                 atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][1]][0]
                             if _atom1['chain_id'] != _atom2['chain_id']\
                                or _atom1['seq_id'] != _atom2['seq_id']\
-                               or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                               or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
+                               or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
                                 valid = False
                         if not valid:
                             continue
@@ -6575,10 +6596,12 @@ class BasePKParserListener():
                                 atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
                             if _atom1['chain_id'] != _atom2['chain_id']\
                                or _atom1['seq_id'] != _atom2['seq_id']\
-                               or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                               or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
+                               or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
                                or _atom3['chain_id'] != _atom4['chain_id']\
                                or _atom3['seq_id'] != _atom4['seq_id']\
-                               or _atom3['atom_id'][0] == _atom4['atom_id'][0] or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                               or _atom3['atom_id'][0] == _atom4['atom_id'][0]\
+                               or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
                                 valid = False
                         if not valid:
                             continue
@@ -6761,8 +6784,10 @@ class BasePKParserListener():
                             if len(history) > 0:
                                 onebond_idx = collections.Counter(history).most_common()[0][0]
                                 _atom1, _atom2, _atom3, _atom4 =\
-                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][1]][0], \
-                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][0]][0], \
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][1]][0], \
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], \
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
                                    or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
@@ -6793,8 +6818,10 @@ class BasePKParserListener():
                             if len(history) > 0:
                                 onebond_idx = collections.Counter(history).most_common()[0][0]
                                 _atom1, _atom2, _atom3, _atom4 =\
-                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][1]][0], \
-                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][0]][0], \
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][1]][0], \
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], \
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
                                    or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
@@ -6999,7 +7026,8 @@ class BasePKParserListener():
                         if np['comp_id'][0] == _ligCompId:
                             _ligSeqId = np['auth_seq_id'][0]
 
-            if resIdLike[idx] and resIdSpan[idx][1] + 1 <= len(term) and _str_[idx][resIdSpan[idx][1]].islower() and _str[idx][resIdSpan[idx][1]].isupper():
+            if resIdLike[idx] and resIdSpan[idx][1] + 1 <= len(term)\
+               and _str_[idx][resIdSpan[idx][1]].islower() and _str[idx][resIdSpan[idx][1]].isupper():
                 if resIdSpan[idx][1] + 1 < len(term) and any(_str_[idx][resIdSpan[idx][1] + 1].startswith(elem) for elem in ASSIGNMENT_HALF_SPIN_NUCLEUS):
                     term = _str[idx] = term[0:resIdSpan[idx][1]] + term[resIdSpan[idx][1] + 1:]
                 elif resIdSpan[idx][1] + 1 == len(term):
@@ -7217,7 +7245,8 @@ class BasePKParserListener():
                         if not atomNameLike[idx] and hint is not None and 'comp_id' in hint[0] and self.cur_list_id != -1:
                             _compId = hint[0]['comp_id']
                             cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-                            if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
+                            if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H'
+                                   for _dim_id in range(1, self.num_of_dim + 1)):
                                 if _compId in ('DT', 'T') and atomId == 'C7':
                                     _str[idx] = _str[idx].replace('C7', 'H7')
                                     _string = ' '.join(_str)
@@ -7304,7 +7333,8 @@ class BasePKParserListener():
                                         if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
-                                    if with_compid is not None and (atomId.startswith(with_compid) or (atomId in with_compid and index < resNameSpan[idx][1])):
+                                    if with_compid is not None and (atomId.startswith(with_compid)
+                                                                    or (atomId in with_compid and index < resNameSpan[idx][1])):
                                         continue
                                     _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -7346,7 +7376,8 @@ class BasePKParserListener():
                             if atomId[0] in ('Q', 'M') and index + 1 < len(__term) and __term[index + 1].isdigit():
                                 continue
                             if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
-                               and ((index + 3 < len(__term) and __term[index + 3].isdigit() or (index + 4 < len(__term) and __term[index + 4].isdigit()))):
+                               and ((index + 3 < len(__term) and __term[index + 3].isdigit()
+                                     or (index + 4 < len(__term) and __term[index + 4].isdigit()))):
                                 continue
                             if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                                 continue
@@ -7405,7 +7436,8 @@ class BasePKParserListener():
                             if atomId[0] in ('Q', 'M') and index + 1 < len(___term) and ___term[index + 1].isdigit():
                                 continue
                             if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
-                               and ((index + 3 < len(___term) and ___term[index + 3].isdigit() or (index + 4 < len(___term) and ___term[index + 4].isdigit()))):
+                               and ((index + 3 < len(___term) and ___term[index + 3].isdigit()
+                                     or (index + 4 < len(___term) and ___term[index + 4].isdigit()))):
                                 continue
                             if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                                 continue
@@ -7915,7 +7947,8 @@ class BasePKParserListener():
 
             if self.__verbose_debug:
                 print(f' -> {idx} segid:{segIdLike[idx]}, resid:{resIdLike[idx]}, resname:{resNameLike[idx]}, '
-                      f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, __atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
+                      f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, '
+                      f'__atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
 
         resIdCount = 0
         for idx in range(lenStr):
@@ -8071,7 +8104,8 @@ class BasePKParserListener():
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
-                    if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret
+                           if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -8178,7 +8212,8 @@ class BasePKParserListener():
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
-                    if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret
+                           if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -8285,7 +8320,8 @@ class BasePKParserListener():
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
-                    if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret
+                           if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -8394,7 +8430,8 @@ class BasePKParserListener():
                             continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
-                    if any(True for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                    if any(True for item in ret
+                           if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -8483,7 +8520,8 @@ class BasePKParserListener():
                                                 self.reasonsForReParsing['default_seg_id'] = {}
                                             if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
                                                 self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
-                                            if self.cur_list_id != -1 and self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                            if self.cur_list_id != -1\
+                                               and self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
                                                 self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
                                     else:
                                         idx = 0
@@ -8499,7 +8537,8 @@ class BasePKParserListener():
                         if any(True for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                             if self.__ignore_diagonal:
                                 continue
-                        ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
+                        ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId,
+                                    'comp_id': resName, 'atom_id': atomName})
                     else:
                         if any(True for item in ret
                                if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
@@ -10794,7 +10833,8 @@ class BasePKParserListener():
                     if seqId == max_auth_seq_id\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in CARBOXYL_CODE\
-                           and not isCyclicPolymer(self.cR, self.polySeq, chainId, self.representativeModelId, self.representativeAltId, self.modelNumName):
+                           and not isCyclicPolymer(self.cR, self.polySeq, chainId,
+                                                   self.representativeModelId, self.representativeAltId, self.modelNumName):
                             self.f.append(f"[Coordinate issue] {self.getCurrentSpectralPeak(n=index)}"
                                           f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                           "Please re-upload the model file.")

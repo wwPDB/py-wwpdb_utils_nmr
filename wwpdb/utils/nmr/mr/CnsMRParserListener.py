@@ -966,7 +966,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             if exponent not in (0, 1, 2, 4):
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The exponent value of dihedral angle restraint 'ed={exponent}' should be 1 (linear well), 2 (square well) or 4 (quartic well) "
+                              f"The exponent value of dihedral angle restraint 'ed={exponent}' "
+                              "should be 1 (linear well), 2 (square well) or 4 (quartic well) "
                               "so that set the default exponent value (square well).")
                 exponent = 2
 

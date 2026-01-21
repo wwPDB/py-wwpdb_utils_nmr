@@ -303,7 +303,8 @@ class BMRBAnnTasks:
                                         list_id = sf_framecode.split('_')[-1]
                                         if _sf_framecode != sf_framecode:
                                             sf_framecode = f'{parent_sf_tag_prefix[1:]}_{list_id}'
-                                            for _list_id, parent_sf in enumerate(master_entry.get_saveframes_by_category(parent_sf_tag_prefix[1:]), start=1):
+                                            for _list_id, parent_sf in enumerate(master_entry.get_saveframes_by_category(parent_sf_tag_prefix[1:]),
+                                                                                 start=1):
                                                 if str(_list_id) == list_id:
                                                     set_sf_tag(parent_sf, 'Sf_framecode', sf_framecode)
                                                     set_sf_tag(parent_sf, 'ID', list_id)

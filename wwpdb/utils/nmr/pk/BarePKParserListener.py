@@ -1324,7 +1324,8 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if None in (x_ppm, y_ppm, z_ppm, a_ppm) or isinstance(x_ppm, list) or isinstance(y_ppm, list) or isinstance(z_ppm, list) or isinstance(a_ppm, list):
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm) or isinstance(x_ppm, list) or isinstance(y_ppm, list)\
+               or isinstance(z_ppm, list) or isinstance(a_ppm, list):
                 self.peaks4D -= 1
                 return
 

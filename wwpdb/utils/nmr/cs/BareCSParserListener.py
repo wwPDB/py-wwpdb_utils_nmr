@@ -426,7 +426,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 _seq_id = seq_id
                 auth_seq_id_map = {}
 
-                for atom_id, value, value_uncertainty, occupancy, figure_of_merit in zip(atom_ids, values, value_uncertainties, occupancies, figure_of_merits):
+                for atom_id, value, value_uncertainty, occupancy, figure_of_merit in zip(atom_ids, values, value_uncertainties,
+                                                                                         occupancies, figure_of_merits):
                     self.atomSelectionSets.clear()
 
                     dstFunc = self.validateCsValue(self.cur_line_num, value, value_uncertainty, occupancy, figure_of_merit)
@@ -525,7 +526,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 if len(assignments) == 0:
                     return
 
-                for L, value, value_uncertainty, occupancy, figure_of_merit in zip(assignments, values, value_uncertainties, occupancies, figure_of_merits):
+                for L, value, value_uncertainty, occupancy, figure_of_merit in zip(assignments, values, value_uncertainties,
+                                                                                   occupancies, figure_of_merits):
                     self.atomSelectionSets.clear()
 
                     dstFunc = self.validateCsValue(self.cur_line_num, value, value_uncertainty, occupancy, figure_of_merit)

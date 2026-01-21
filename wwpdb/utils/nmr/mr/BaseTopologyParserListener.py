@@ -373,7 +373,8 @@ class BaseTopologyParserListener():
 
                         if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                      None, compId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -488,7 +489,8 @@ class BaseTopologyParserListener():
                             chainIndex += 1
 
                     for ps_top in self.polySeqPrmTop:
-                        if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']):
+                        if len(ps_top['seq_id']) > 3\
+                           and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']):
                             continue
                         _chainId = copy.copy(ps_top['chain_id'])
                         chainId = indexToLetter(chainIndex)
@@ -514,7 +516,8 @@ class BaseTopologyParserListener():
                             self.__seqAlign.remove(sa)
 
             # test chain assignment before applying comp_id mapping
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type,
+                                                                self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
 
             for cmap in compIdMapping:
                 if any(True for ca in self.__chainAssign if ca['test_chain_id'] == cmap['chain_id']):
@@ -529,7 +532,8 @@ class BaseTopologyParserListener():
 
                                     if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'],
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                                  None, authCompId, atomNum['auth_atom_id'],
                                                                                   atomNum['comp_id'], None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
@@ -644,7 +648,8 @@ class BaseTopologyParserListener():
                                     atomNum['atom_id'] = atomId
                                     continue
 
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type,
+                                                                self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
 
             if len(message) > 0:
                 self.__f.extend(message)

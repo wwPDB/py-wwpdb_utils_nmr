@@ -409,21 +409,25 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                 return 'H' + atomId[2:]
 
         elif refCompId == 'ASN' and (atomId.startswith('HND')
-                                     or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+                                     or ((atomId.startswith('HN') or atomId.startswith('HG'))
+                                         and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HND1':
                 return 'HD21'
             if atomId == 'HND2':
                 return 'HD22'
-            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
+            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG'))
+                                   and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
                 return 'HD2'
 
         elif refCompId == 'GLN' and (atomId.startswith('HNE')
-                                     or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+                                     or ((atomId.startswith('HN') or atomId.startswith('HD'))
+                                         and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HNE1':
                 return 'HE21'
             if atomId == 'HNE2':
                 return 'HE22'
-            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#')) and not unambig:
+            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD'))
+                                   and atomId[-1] in ('%', '*', '#')) and not unambig:
                 return 'HE2'  # 5xdi
 
         elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
@@ -1132,21 +1136,25 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                 return 'H' + atomId[2:]
 
         elif refCompId == 'ASN' and (atomId.startswith('HND')
-                                     or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+                                     or ((atomId.startswith('HN') or atomId.startswith('HG'))
+                                         and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HND1':
                 return 'HD21'
             if atomId == 'HND2':
                 return 'HD22'
-            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
+            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG'))
+                                   and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
                 return 'HD2'
 
         elif refCompId == 'GLN' and (atomId.startswith('HNE')
-                                     or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+                                     or ((atomId.startswith('HN') or atomId.startswith('HD'))
+                                         and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HNE1':
                 return 'HE21'
             if atomId == 'HNE2':
                 return 'HE22'
-            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#')) and not unambig:
+            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD'))
+                                   and atomId[-1] in ('%', '*', '#')) and not unambig:
                 return 'HE2'  # 5xdi
 
         elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
@@ -7232,7 +7240,8 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
     return row
 
 
-def getAltPkRow(pkSubtype: str, _indexId: int, indexId: int, listId: int, entryId: str, dstFunc: dict, details: Optional[str] = None) -> Optional[List[Any]]:
+def getAltPkRow(pkSubtype: str, _indexId: int, indexId: int, listId: int, entryId: str, dstFunc: dict, details: Optional[str] = None
+                ) -> Optional[List[Any]]:
     """ Return row data for a _Peak loop.
         @return: data array
     """
@@ -8797,8 +8806,10 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                                 compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                                 if compId in compIds:
                                     cifCompId = compId
-                                    origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                      if _seqId == seqId and _compId == compId)
+                                    origCompId =\
+                                        next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'],
+                                                                                               ps['comp_id'], ps['auth_comp_id'])
+                                             if _seqId == seqId and _compId == compId)
                             if compId in (cifCompId, origCompId):
                                 if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((chainId, seqId_, cifCompId, True))

@@ -72,7 +72,8 @@
 #                           (NMR restraint remediation, 5w3n)
 # 31-Aug-2022  M. Yokochi - separate atom_not_found error and hydrogen_not_instantiated error (NMR restraint remediation)
 # 06-Sep-2022  M. Yokochi - add support for branched entity and extra restraints in NMR-STAR format (NMR restraint remediation)
-# 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format (DAOTHER-8059, NMR restraint remediation)
+# 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format
+#                           (DAOTHER-8059, NMR restraint remediation)
 # 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
 # 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
@@ -100,9 +101,10 @@
 # 26-Feb-2025  M. Yokochi - add 'nm-pea-ccp' file type for CCPN tabular spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 05-Mar-2025  M. Yokochi - add 'nm-pea-bar' file type for bare spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
-# 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file (DAOTHER-8905, 9785, NMR data remediation Phase 2)
-# 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', and 'nm-shi-xea' file_types
-#                           (v4.4.0, DAOTHER-9785)
+# 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file
+#                           (DAOTHER-8905, 9785, NMR data remediation Phase 2)
+# 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2',
+#                           and 'nm-shi-xea' file_types (v4.4.0, DAOTHER-9785)
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
 # 24-Apr-2025  M. Yokochi - add NmrDpReportOutputStatistics class for standalone NMR data conversion service (DAOTHER-9785)
 # 25-Apr-2025  M. Yokochi - add 'unparsed_data' error to block conversion due to unparsed data with error in standalone NMR data conversion service
@@ -118,7 +120,8 @@
 # 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file (DAOTHER-7829, 9785, NMR data remediation)
 # 20-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in ROSETTA restraints
 #                           (DAOTHER-7829, 9785, NMR data remediation)
-# 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints (DAOTHER-7829, 9785, NMR data remediation)
+# 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints
+#                           (DAOTHER-7829, 9785, NMR data remediation)
 # 07-Jan-2026  M. Yokochi - update report7s status code when adding error/warning description
 ##
 """ Wrapper class for NMR data processing report.
@@ -1346,7 +1349,8 @@ class NmrDpReport:
             return None
 
         if not (cif_beg_seq_id in poly_seq['seq_id'] and cif_end_seq_id in poly_seq['seq_id'] and label_scheme)\
-           and not ('auth_seq_id' in poly_seq and cif_beg_seq_id in poly_seq['auth_seq_id'] and cif_end_seq_id in poly_seq['auth_seq_id'] and not label_scheme):
+           and not ('auth_seq_id' in poly_seq and cif_beg_seq_id in poly_seq['auth_seq_id']
+                    and cif_end_seq_id in poly_seq['auth_seq_id'] and not label_scheme):
             return None
 
         if label_scheme:
@@ -1478,8 +1482,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f"+{self.__class_name__}.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable\n")
-            raise UserWarning(f"+{self.__class_name__}.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable")
+                self.__log.write(f"+{self.__class_name__}.setError() "
+                                 "++ Warning  - No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.setError() "
+                              "++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def setWarning(self):
         """ Set processing status Warning.
@@ -1512,8 +1518,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__log.write(f"+{self.__class_name__}.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable\n")
-            raise UserWarning(f"+{self.__class_name__}.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable")
+                self.__log.write(f"+{self.__class_name__}.clean() "
+                                 "++ Warning  - No effects on NMR data processing report because the report is immutable\n")
+            raise UserWarning(f"+{self.__class_name__}.clean() "
+                              "++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def setDiamagnetic(self, diamagnetic: bool):
         """ Set diamagetism of molecular assembly.

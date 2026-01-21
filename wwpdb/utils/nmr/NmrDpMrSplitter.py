@@ -1300,8 +1300,10 @@ class NmrDpMrSplitter:
                                 elif cs_atom_likes + atom_unlikes == 6 and rdc_range_like:
                                     has_rdc_restraint = True
 
-                                elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like or has_hbond_restraint)\
-                                        and names[0][0] in hbond_da_atom_types and names[1][0] in PROTON_BEGIN_CODE and names[2][0] in hbond_da_atom_types:
+                                elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like
+                                                              or rdc_range_like or has_hbond_restraint)\
+                                        and names[0][0] in hbond_da_atom_types and names[1][0] in PROTON_BEGIN_CODE\
+                                        and names[2][0] in hbond_da_atom_types:
                                     has_hbond_restraint = True
 
                                 atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
@@ -1400,7 +1402,8 @@ class NmrDpMrSplitter:
                                 elif t_lower.startswith('resi'):
                                     has_resi = True
 
-                                elif has_grou and has_sele and has_resi and not has_plane_restraint and _t_lower.startswith('weig'):
+                                elif has_grou and has_sele and has_resi and not has_plane_restraint\
+                                        and _t_lower.startswith('weig'):
                                     if atom_likes > 0:
                                         try:
                                             v = float(t)
@@ -1604,7 +1607,8 @@ class NmrDpMrSplitter:
                 if is_aux_amb:
 
                     has_atom_name = has_residue_label = has_residue_pointer = has_amb_atom_type =\
-                        chk_atom_name_format = chk_residue_label_format = chk_residue_pointer_format = chk_amb_atom_type_format =\
+                        chk_atom_name_format = chk_residue_label_format =\
+                        chk_residue_pointer_format = chk_amb_atom_type_format =\
                         in_atom_name = in_residue_label = in_residue_pointer = in_amb_atom_type = False
 
                     atom_names = residue_labels = residue_pointers = amb_atom_types = 0
@@ -1806,7 +1810,8 @@ class NmrDpMrSplitter:
                                         seq_id = int(l_split[8])
                                         comp_id = l_split[2]
                                         atom_id = l_split[3]
-                                        if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                        if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
+                                           and atom_id in atom_like_names_oth:
                                             atom_names += 1
                                     except ValueError:
                                         pass
@@ -1851,7 +1856,8 @@ class NmrDpMrSplitter:
                                             seq_id = int(l_split[2])
                                             comp_id = l_split[3]
                                             atom_id = l_split[4]
-                                            if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                            if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
+                                               and atom_id in atom_like_names_oth:
                                                 atom_names += 1
                                         except ValueError:
                                             pass
@@ -1870,7 +1876,8 @@ class NmrDpMrSplitter:
                                     seq_id = int(l_split[4] if l_split[4].isdigit() else l_split[5])
                                     comp_id = l_split[3]
                                     atom_id = l_split[2]
-                                    if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                    if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
+                                       and atom_id in atom_like_names_oth:
                                         # if atom_num == 1:
                                         #     has_top_num = True
                                         atom_names += 1
@@ -2362,7 +2369,8 @@ class NmrDpMrSplitter:
 
             except ValueError as e:
 
-                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - " + str(e))
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {str(e)}\n")
@@ -2961,7 +2969,8 @@ class NmrDpMrSplitter:
 
             except Exception as e:
 
-                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - " + str(e))
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - {str(e)}\n")
@@ -3118,7 +3127,8 @@ class NmrDpMrSplitter:
 
                     err = f"The restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
 
-                    self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                    self.__reg.report.error.appendDescription('internal_error',
+                                                              f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
 
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
@@ -3519,7 +3529,8 @@ class NmrDpMrSplitter:
                                 err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
                                 # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
+                                    else " Please re-upload the file."
 
                                 if len(message['error']) > 0:
                                     for err_message in message['error']:
@@ -3703,7 +3714,8 @@ class NmrDpMrSplitter:
                                 err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
                                 # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
+                                    else " Please re-upload the file."
 
                                 if len(message['error']) > 0:
                                     for err_message in message['error']:
@@ -3766,7 +3778,8 @@ class NmrDpMrSplitter:
 
             except Exception as e:
 
-                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
@@ -7489,7 +7502,8 @@ class NmrDpMrSplitter:
 
         except ValueError as e:
 
-            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
+            self.__reg.report.error.appendDescription('internal_error',
+                                                      f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - {str(e)}\n")

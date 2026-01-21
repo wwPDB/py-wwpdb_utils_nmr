@@ -3790,7 +3790,7 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
         try:
             if not os.path.exists(loc_cif_gz_path):
                 url = f'https://data.pdbj.org/pdb_versioned/data/entries/{extended_pdb_id[9:11]}/{extended_pdb_id}/{cif_gz_file}'
-                print(f'Downloading {url} -> {loc_cif_gz_path} ...')
+                # print(f'Downloading {url} -> {loc_cif_gz_path} ...')
                 r = requests.get(url, timeout=5.0)
                 with open(loc_cif_gz_path, 'wb') as f:
                     f.write(r.content)

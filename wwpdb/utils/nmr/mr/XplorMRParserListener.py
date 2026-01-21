@@ -1343,7 +1343,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             if exponent not in (0, 1, 2, 4):
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The exponent value of dihedral angle restraint 'ed={exponent}' should be 1 (linear well), 2 (square well) or 4 (quartic well) "
+                              f"The exponent value of dihedral angle restraint 'ed={exponent}' "
+                              "should be 1 (linear well), 2 (square well) or 4 (quartic well) "
                               "so that set the default exponent value (square well).")
                 exponent = 2
 
@@ -1943,7 +1944,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                               f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
-            spin_system = f'{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_1[0]][0]}{atom_id_1[0]}-{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_2[0]][0]}{atom_id_2[0]}'
+            spin_system = f'{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_1[0]][0]}{atom_id_1[0]}-'\
+                f'{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_2[0]][0]}{atom_id_2[0]}'
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
@@ -1986,7 +1988,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 if atom_id_1[0] not in PROTON_BEGIN_CODE or atom_id_2[0] not in PROTON_BEGIN_CODE:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
-                                  f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, which usually accepts 1H-1H dipolar coupling; "
+                                  f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, "
+                                  "which usually accepts 1H-1H dipolar coupling; "
                                   f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
@@ -2123,7 +2126,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1
+                                and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                     if ps1 is None:
                         warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
@@ -2498,7 +2502,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1
+                                and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                     if ps1 is None:
                         warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"

@@ -1761,7 +1761,8 @@ class BaseStackedMRParserListener():
                                                           if ps['auth_chain_id'] == ref_chain_id)
 
                                     seq_id_mapping = {}
-                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa else sa['ref_seq_id'],
+                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa
+                                                                                      else sa['ref_seq_id'],
                                                                                       sa['mid_code'], sa['test_seq_id']):
                                         if mid_code == '|' and test_seq_id is not None:
                                             seq_id_mapping[test_seq_id] = ref_auth_seq_id
@@ -2047,7 +2048,8 @@ class BaseStackedMRParserListener():
                                     self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
                             if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
-                                polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRstFailed, chainAssignFailed)
+                                polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRstFailed,
+                                                                                         chainAssignFailed)
 
                                 if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                     self.__polySeqRst = polySeqRst
@@ -2287,7 +2289,8 @@ class BaseStackedMRParserListener():
                                 valid = False
                                 break
                             if chainId in chainIds:
-                                offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if k == chainId and v is not None)
+                                offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items()
+                                              if k == chainId and v is not None)
                                 for auth_seq_id in ps['auth_seq_id']:
                                     if auth_seq_id - offset in chainIdRemap:
                                         valid = False
@@ -2546,11 +2549,13 @@ class BaseStackedMRParserListener():
                         if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
                             if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
-                                failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
+                                failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed
+                                                  if failed_ps['chain_id'] == ps['auth_chain_id']), None)
                                 if failed_ps is None:
                                     continue
                                 if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
-                                    seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                                    seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'],
+                                                                   'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                         elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
                             safe = True
                             for _ps in self.polySeq:
@@ -2653,7 +2658,8 @@ class BaseStackedMRParserListener():
             else:
                 if target_value <= DIST_ERROR_MIN and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The target value='{target_value}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     target_value = None
                 else:
                     validRange = False
@@ -2666,12 +2672,14 @@ class BaseStackedMRParserListener():
             else:
                 if lower_limit <= DIST_ERROR_MIN and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The lower limit value='{lower_limit:.3f}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The lower limit value='{lower_limit:.3f}' "
+                                  f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.allowZeroUpperLimit):
@@ -2679,12 +2687,14 @@ class BaseStackedMRParserListener():
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The upper limit value='{upper_limit:.3f}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The upper limit value='{upper_limit:.3f}' "
+                                  f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if DIST_ERROR_MIN <= lower_linear_limit < DIST_ERROR_MAX:
@@ -2692,12 +2702,14 @@ class BaseStackedMRParserListener():
             else:
                 if lower_linear_limit <= DIST_ERROR_MIN and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_linear_limit = None
                 else:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                                  f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX or (upper_linear_limit == 0.0 and self.allowZeroUpperLimit):
@@ -2705,7 +2717,8 @@ class BaseStackedMRParserListener():
             else:
                 if (upper_linear_limit <= DIST_ERROR_MIN or upper_linear_limit > DIST_ERROR_MAX) and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_linear_limit = None
                 else:
                     validRange = False
@@ -2718,7 +2731,8 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'. "
+                                  f"The lower limit value='{lower_limit:.3f}' "
+                                  f"must be less than the target value '{target_value}'. "
                                   "It indicates that a negative value was unexpectedly set: "
                                   f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
@@ -2726,7 +2740,8 @@ class BaseStackedMRParserListener():
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'. "
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                                  f"must be less than the target value '{target_value}'. "
                                   "It indicates that a negative value was unexpectedly set: "
                                   f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
@@ -2734,7 +2749,8 @@ class BaseStackedMRParserListener():
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value}'. "
+                                  f"The upper limit value='{upper_limit:.3f}' "
+                                  f"must be greater than the target value '{target_value}'. "
                                   "It indicates that a negative value was unexpectedly set: "
                                   f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
@@ -2742,7 +2758,8 @@ class BaseStackedMRParserListener():
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.3f}' must be greater than the target value '{target_value}'. "
+                                  f"The upper linear limit value='{upper_linear_limit:.3f}' "
+                                  f"must be greater than the target value '{target_value}'. "
                                   "It indicates that a negative value was unexpectedly set: "
                                   f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
@@ -2752,19 +2769,22 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
+                                  f"The lower limit value='{lower_limit:.3f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.3f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.3f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.")
+                                  f"The lower limit value='{lower_limit:.3f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.3f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
@@ -2794,35 +2814,40 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.3f}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.3f}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.3f}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -2872,7 +2897,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
@@ -2880,7 +2906,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.3f}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
@@ -2888,7 +2915,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.3f}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if ANGLE_ERROR_MIN <= lower_linear_limit < ANGLE_ERROR_MAX:
@@ -2896,7 +2924,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if ANGLE_ERROR_MIN < upper_linear_limit <= ANGLE_ERROR_MAX:
@@ -2904,19 +2933,22 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.3f}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if None not in (lower_limit, lower_linear_limit):
             if lower_linear_limit > lower_limit:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.")
+                              f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                              f"must be less than the lower limit value '{lower_limit:.3f}'.")
 
         if None not in (upper_limit, upper_linear_limit):
             if upper_limit > upper_linear_limit:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
+                              f"The upper limit value='{upper_limit:.3f}' "
+                              f"must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -2926,35 +2958,40 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.3f}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.3f}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.3f}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -2986,7 +3023,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
@@ -2994,7 +3032,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
@@ -3002,7 +3041,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if RDC_ERROR_MIN <= lower_linear_limit < RDC_ERROR_MAX:
@@ -3010,7 +3050,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if RDC_ERROR_MIN < upper_linear_limit <= RDC_ERROR_MAX:
@@ -3018,7 +3059,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3026,25 +3068,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3052,19 +3098,22 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
@@ -3084,7 +3133,8 @@ class BaseStackedMRParserListener():
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3094,35 +3144,40 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if RDC_RANGE_MIN <= lower_linear_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if RDC_RANGE_MIN <= upper_linear_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -3147,62 +3202,72 @@ class BaseStackedMRParserListener():
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The target value(1)='{target_value_1}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The target value(1)='{target_value_1}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN <= lower_limit_1 < RDC_ERROR_MAX:
             dstFunc['lower_limit_1'] = f"{lower_limit_1:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The lower limit value(1)='{lower_limit_1:.6f}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < upper_limit_1 <= RDC_ERROR_MAX:
             dstFunc['upper_limit_1'] = f"{upper_limit_1:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The upper limit value(1)='{upper_limit_1:.6f}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < target_value_2 < RDC_ERROR_MAX:
             dstFunc['target_value_2'] = f"{target_value_2:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The target value(2)='{target_value_2}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The target value(2)='{target_value_2}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN <= lower_limit_2 < RDC_ERROR_MAX:
             dstFunc['lower_limit_2'] = f"{lower_limit_2:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The lower limit value(2)='{lower_limit_2:.6f}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < upper_limit_2 <= RDC_ERROR_MAX:
             dstFunc['upper_limit_2'] = f"{upper_limit_2:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The upper limit value(2)='{upper_limit_2:.6f}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit_1 > target_value_1:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.6f}' must be less than the target value(1) '{target_value_1}'.")
+                          f"The lower limit value(1)='{lower_limit_1:.6f}' "
+                          f"must be less than the target value(1) '{target_value_1}'.")
 
         if upper_limit_1 < target_value_1:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.6f}' must be greater than the target value(1) '{target_value_1}'.")
+                          f"The upper limit value(1)='{upper_limit_1:.6f}' "
+                          f"must be greater than the target value(1) '{target_value_1}'.")
 
         if lower_limit_2 > target_value_2:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.6f}' must be less than the target value(2) '{target_value_2}'.")
+                          f"The lower limit value(2)='{lower_limit_2:.6f}' "
+                          f"must be less than the target value(2) '{target_value_2}'.")
 
         if upper_limit_2 < target_value_2:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.6f}' must be greater than the target value(2) '{target_value_2}'.")
+                          f"The upper limit value(2)='{upper_limit_2:.6f}' "
+                          f"must be greater than the target value(2) '{target_value_2}'.")
 
         if not validRange:
             return None
@@ -3211,37 +3276,43 @@ class BaseStackedMRParserListener():
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The target value(1)='{target_value_1}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The target value(1)='{target_value_1}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= lower_limit_1 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The lower limit value(1)='{lower_limit_1:.6f}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= upper_limit_1 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The upper limit value(1)='{upper_limit_1:.6f}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= target_value_2 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The target value(2)='{target_value_2}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The target value(2)='{target_value_2}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= lower_limit_2 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The lower limit value(2)='{lower_limit_2:.6f}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= upper_limit_2 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.6f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The upper limit value(2)='{upper_limit_2:.6f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if target_value_1 is None and lower_limit_1 is None and upper_limit_1 is None:
             return None
@@ -3265,42 +3336,48 @@ class BaseStackedMRParserListener():
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The target value(1)='{target_value_1}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The target value(1)='{target_value_1}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN <= lower_limit_1 < ANGLE_ERROR_MAX:
             dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The lower limit value(1)='{lower_limit_1:.3f}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < upper_limit_1 <= ANGLE_ERROR_MAX:
             dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The upper limit value(1)='{upper_limit_1:.3f}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < target_value_2 < ANGLE_ERROR_MAX:
             dstFunc['target_value_2'] = f"{target_value_2}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The target value(2)='{target_value_2}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The target value(2)='{target_value_2}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN <= lower_limit_2 < ANGLE_ERROR_MAX:
             dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The lower limit value(2)='{lower_limit_2:.3f}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < upper_limit_2 <= ANGLE_ERROR_MAX:
             dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The upper limit value(2)='{upper_limit_2:.3f}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if not validRange:
             return None
@@ -3309,37 +3386,43 @@ class BaseStackedMRParserListener():
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The target value(1)='{target_value_1}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The target value(1)='{target_value_1}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= lower_limit_1 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The lower limit value(1)='{lower_limit_1:.3f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= upper_limit_1 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The upper limit value(1)='{upper_limit_1:.3f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= target_value_2 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The target value(2)='{target_value_2}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The target value(2)='{target_value_2}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= lower_limit_2 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The lower limit value(2)='{lower_limit_2:.3f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= upper_limit_2 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The upper limit value(2)='{upper_limit_2:.3f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if target_value_1 is None and lower_limit_1 is None and upper_limit_1 is None:
             return None
@@ -3364,7 +3447,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if T1T2_ERROR_MIN <= lower_limit < T1T2_ERROR_MAX:
@@ -3372,7 +3456,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if T1T2_ERROR_MIN < upper_limit <= T1T2_ERROR_MAX:
@@ -3380,7 +3465,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if T1T2_ERROR_MIN <= lower_linear_limit < T1T2_ERROR_MAX:
@@ -3388,7 +3474,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if T1T2_ERROR_MIN < upper_linear_limit <= T1T2_ERROR_MAX:
@@ -3396,7 +3483,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3404,25 +3492,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3430,19 +3522,22 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
@@ -3462,7 +3557,8 @@ class BaseStackedMRParserListener():
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3472,35 +3568,40 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if T1T2_RANGE_MIN <= lower_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if T1T2_RANGE_MIN <= upper_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if T1T2_RANGE_MIN <= lower_linear_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if T1T2_RANGE_MIN <= upper_linear_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -3522,7 +3623,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if CSA_ERROR_MIN <= lower_limit < CSA_ERROR_MAX:
@@ -3530,7 +3632,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if CSA_ERROR_MIN < upper_limit <= CSA_ERROR_MAX:
@@ -3538,7 +3641,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if CSA_ERROR_MIN <= lower_linear_limit < CSA_ERROR_MAX:
@@ -3546,7 +3650,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if CSA_ERROR_MIN < upper_linear_limit <= CSA_ERROR_MAX:
@@ -3554,7 +3659,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3562,25 +3668,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3588,19 +3698,22 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
@@ -3620,7 +3733,8 @@ class BaseStackedMRParserListener():
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3630,35 +3744,40 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if CSA_RANGE_MIN <= lower_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if CSA_RANGE_MIN <= upper_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if CSA_RANGE_MIN <= lower_linear_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if CSA_RANGE_MIN <= upper_linear_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -3680,7 +3799,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if PRE_ERROR_MIN <= lower_limit < PRE_ERROR_MAX:
@@ -3688,7 +3808,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if PRE_ERROR_MIN < upper_limit <= PRE_ERROR_MAX:
@@ -3696,7 +3817,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if PRE_ERROR_MIN <= lower_linear_limit < PRE_ERROR_MAX:
@@ -3704,7 +3826,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if PRE_ERROR_MIN < upper_linear_limit <= PRE_ERROR_MAX:
@@ -3712,7 +3835,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3720,25 +3844,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3746,19 +3874,22 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
@@ -3778,7 +3909,8 @@ class BaseStackedMRParserListener():
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3788,35 +3920,40 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if PRE_RANGE_MIN <= lower_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if PRE_RANGE_MIN <= upper_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if PRE_RANGE_MIN <= lower_linear_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if PRE_RANGE_MIN <= upper_linear_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -3838,7 +3975,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if PCS_ERROR_MIN <= lower_limit < PCS_ERROR_MAX:
@@ -3846,7 +3984,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if PCS_ERROR_MIN < upper_limit <= PCS_ERROR_MAX:
@@ -3854,7 +3993,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if PCS_ERROR_MIN <= lower_linear_limit < PCS_ERROR_MAX:
@@ -3862,7 +4002,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if PCS_ERROR_MIN < upper_linear_limit <= PCS_ERROR_MAX:
@@ -3870,7 +4011,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3878,25 +4020,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3904,19 +4050,22 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
@@ -3936,7 +4085,8 @@ class BaseStackedMRParserListener():
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3946,35 +4096,40 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if PCS_RANGE_MIN <= lower_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if PCS_RANGE_MIN <= lower_linear_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if PCS_RANGE_MIN <= upper_linear_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -3996,7 +4151,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if CCR_ERROR_MIN <= lower_limit < CCR_ERROR_MAX:
@@ -4004,7 +4160,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if CCR_ERROR_MIN < upper_limit <= CCR_ERROR_MAX:
@@ -4012,7 +4169,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if CCR_ERROR_MIN <= lower_linear_limit < CCR_ERROR_MAX:
@@ -4020,7 +4178,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if CCR_ERROR_MIN < upper_linear_limit <= CCR_ERROR_MAX:
@@ -4028,7 +4187,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -4036,25 +4196,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -4062,19 +4226,22 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
@@ -4094,7 +4261,8 @@ class BaseStackedMRParserListener():
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -4104,35 +4272,40 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if CCR_RANGE_MIN <= lower_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if CCR_RANGE_MIN <= upper_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if CCR_RANGE_MIN <= lower_linear_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if CCR_RANGE_MIN <= upper_linear_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
@@ -6244,7 +6417,8 @@ class BaseStackedMRParserListener():
                                 continue
 
                     _seqId = seqId
-                    if self.reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps and seqId not in ps['auth_seq_id'] and seqId in ps['alt_auth_seq_id']:
+                    if self.reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps\
+                       and seqId not in ps['auth_seq_id'] and seqId in ps['alt_auth_seq_id']:
                         try:
                             seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _altSeqId_ == seqId)
                         except StopIteration:
@@ -6347,7 +6521,8 @@ class BaseStackedMRParserListener():
 
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
                         # """
-                        # if isinstance(origAtomId, str) and origAtomId.startswith('HT') and coordAtomSite is not None and origAtomId not in atomSiteAtomId:
+                        # if isinstance(origAtomId, str) and origAtomId.startswith('HT')\
+                        #    and coordAtomSite is not None and origAtomId not in atomSiteAtomId:
                         #     if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                         #         continue
                         # """
@@ -6957,7 +7132,8 @@ class BaseStackedMRParserListener():
                                                             if seqKey in self.__coordUnobsAtom\
                                                                and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
                                                                     or (_atomId[0] in PROTON_BEGIN_CODE
-                                                                        and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                        and any(True for bondedTo
+                                                                                in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                                 warn_title = 'Coordinate issue'
                                                             if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
@@ -7012,8 +7188,9 @@ class BaseStackedMRParserListener():
                                                                         or seqId != __seqId):  # 1qkg
                                                                     __compId = __coordAtomSite['comp_id']
                                                                     __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                                                    # 2ld5
                                                                     if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']\
-                                                                       and self.csStat.getTypeOfCompId(compId) == self.csStat.getTypeOfCompId(__compId):  # 2ld5
+                                                                       and self.csStat.getTypeOfCompId(compId) == self.csStat.getTypeOfCompId(__compId):
                                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                                             self.reasonsForReParsing['label_seq_scheme'] = {}
                                                                         if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
@@ -7026,8 +7203,8 @@ class BaseStackedMRParserListener():
                                                                                 self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
                                                                             if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
                                                                                 self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
-                                                                            self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.cur_subtype] =\
-                                                                                True
+                                                                            self.reasonsForReParsing['inhibit_label_seq_scheme'][
+                                                                                chainId][self.cur_subtype] = True
                                                                         break
                                                         self.preferAuthSeq = __preferAuthSeq
                                                     if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
@@ -7047,7 +7224,8 @@ class BaseStackedMRParserListener():
                                                                 ligands += len(np['seq_id'])
                                                         if ligands == 0:
                                                             for np in self.__nonPoly:
-                                                                if 'alt_comp_id' in np and np['auth_chain_id'] == chainId and atomId == np['alt_comp_id'][0]:
+                                                                if 'alt_comp_id' in np and np['auth_chain_id'] == chainId\
+                                                                   and atomId == np['alt_comp_id'][0]:
                                                                     ligands += len(np['seq_id'])
                                                         if ligands == 0:
                                                             for np in self.__nonPoly:
@@ -7090,7 +7268,8 @@ class BaseStackedMRParserListener():
                                                                         self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
                                                                         checked = True
                                                             if checked and isPolySeq and (self.reasons is None
-                                                                                          or (self.reasons is not None and 'np_seq_id_remap' in self.reasons)):
+                                                                                          or (self.reasons is not None
+                                                                                              and 'np_seq_id_remap' in self.reasons)):
                                                                 continue
                                                         # 2n3r
                                                         elif ligands > 1 and isPolySeq and self.reasons is not None and 'np_seq_id_remap' in self.reasons\

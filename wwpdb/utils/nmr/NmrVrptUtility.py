@@ -334,7 +334,8 @@ def angle_target_values(target_value: Optional[float], target_value_uncertainty:
             if target_value_clock >= 360.0:
                 target_value_clock -= 360.0
 
-            if has_valid_lower_linear_limit or has_valid_upper_linear_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
+            # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
+            if has_valid_lower_linear_limit or has_valid_upper_linear_limit:
                 target_value_vote_aclock = target_value_vote_clock = 0
 
                 if has_valid_lower_linear_limit:

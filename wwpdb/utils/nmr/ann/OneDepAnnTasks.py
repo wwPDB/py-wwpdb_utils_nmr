@@ -324,7 +324,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_1H_err', '_Assigned_chem_shift_list', 'Chem_shift_1H_err', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_2H_err', '_Assigned_chem_shift_list', 'Chem_shift_2H_err', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_31P_err', '_Assigned_chem_shift_list', 'Chem_shift_31P_err', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id', '_Assigned_chem_shift_list', 'Chem_shift_reference_ID', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id',
+                            '_Assigned_chem_shift_list', 'Chem_shift_reference_ID', 1, None),
                            # add pdbx_nmr_assigned_chem_shift_list.chem_shift_reference_label
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_label',
                             '_Assigned_chem_shift_list', 'Chem_shift_reference_label', 1, None),
@@ -334,7 +335,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_assigned_chem_shift_list', 'data_file_name', '_Assigned_chem_shift_list', 'Data_file_name', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'details', '_Assigned_chem_shift_list', 'Details', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'entry_id', '_Assigned_chem_shift_list', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'error_derivation_method', '_Assigned_chem_shift_list', 'Error_derivation_method', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'error_derivation_method',
+                            '_Assigned_chem_shift_list', 'Error_derivation_method', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'id', '_Assigned_chem_shift_list', 'ID', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'label', '_Assigned_chem_shift_list', 'Sf_framecode', 1, None),
                            ('pdbx_nmr_chem_shift_reference', 'carbon_shifts_flag', '_Chem_shift_reference', 'Carbon_shifts_flag', 1, None),
@@ -386,14 +388,16 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectral_peak_list', 'entry_id', '_Spectral_peak_list', 'Entry_ID', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'experiment_id', '_Spectral_peak_list', 'Experiment_ID', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'id', '_Spectral_peak_list', 'ID', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'number_of_spectral_dimensions', '_Spectral_peak_list', 'Number_of_spectral_dimensions', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'number_of_spectral_dimensions',
+                            '_Spectral_peak_list', 'Number_of_spectral_dimensions', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'solution_id', '_Spectral_peak_list', 'Sample_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_list.solution_label
                            ('pdbx_nmr_spectral_peak_list', 'solution_label', '_Spectral_peak_list', 'Sample_label', 1, None),
                            # add pdbx_nmr_spectral_peak_list.assigned_chem_shift_list_id
                            ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_id', '_Spectral_peak_list', 'Assigned_chem_shift_list_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_list.assigned_chem_shift_list_label
-                           ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_label', '_Spectral_peak_list', 'Assigned_chem_shift_list_label', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_label',
+                            '_Spectral_peak_list', 'Assigned_chem_shift_list_label', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Software', 'Details', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Spectral_peak_list', 'Text_data_format', 1, None),
                            # add pdbx_nmr_spectral_peak_list.label
@@ -460,7 +464,8 @@ class OneDepAnnTasks:
         #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
         #             self.__lpTagMap.append(tag_map)
         # """
-        self.__lpTagMap = [('pdbx_nmr_chem_shift_experiment', 'assigned_chem_shift_list_id', '_Chem_shift_experiment', 'Assigned_chem_shift_list_ID', 1, None),
+        self.__lpTagMap = [('pdbx_nmr_chem_shift_experiment', 'assigned_chem_shift_list_id',
+                            '_Chem_shift_experiment', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'entry_id', '_Chem_shift_experiment', 'Entry_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'experiment_name', '_Chem_shift_experiment', 'Experiment_name', 1, None),
@@ -571,7 +576,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectrometer', 'spectrometer_id', '_NMR_spectrometer_view', 'ID', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'assigned_chem_shift_list_id',
                             '_Systematic_chem_shift_offset', 'Assigned_chem_shift_list_ID', 1, None),
-                           ('pdbx_nmr_systematic_chem_shift_offset', 'atom_isotope_number', '_Systematic_chem_shift_offset', 'Atom_isotope_number', 1, None),
+                           ('pdbx_nmr_systematic_chem_shift_offset', 'atom_isotope_number',
+                            '_Systematic_chem_shift_offset', 'Atom_isotope_number', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'atom_type', '_Systematic_chem_shift_offset', 'Atom_type', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'entry_id', '_Systematic_chem_shift_offset', 'Entry_ID', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'type', '_Systematic_chem_shift_offset', 'Type', 1, None),
@@ -1663,7 +1669,8 @@ class OneDepAnnTasks:
                                                            and len(_row[col]) > 80 and get_first_sf_tag(sf, 'Name').lower() in software_vendor:
                                                             _row[col] = software_vendor[get_first_sf_tag(sf, 'Name').lower()]
                                                         has_uniq_lp_row = True
-                                                    else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    else:
                                                         if cif_tag.endswith('range'):
                                                             if row[cif_tag] not in EMPTY_VALUE:
                                                                 try:
@@ -1706,7 +1713,8 @@ class OneDepAnnTasks:
                                                     col = lp.tags.index(tag)
                                                     if map_code != -22:
                                                         _row[col] = row[cif_tag]
-                                                    else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    else:
                                                         if cif_tag.endswith('range'):
                                                             if row[cif_tag] not in EMPTY_VALUE:
                                                                 try:
@@ -2109,7 +2117,8 @@ class OneDepAnnTasks:
                                                 if has_list_id_tag and tag_map[3] == list_id_tag:
                                                     _row[lp_cif_tags.index(tag_map[1])] = list_id
                                                 if tag_map[4] == 33:
-                                                    _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item and tag_map[4] == -33), None)
+                                                    _tag_map = next((tag_map for tag_map in lp_tag_maps
+                                                                     if tag_map[1] == cif_item and tag_map[4] == -33), None)
                                                     if _tag_map is not None:
                                                         _row[lp_cif_tags.index(_tag_map[1])] = row[_lp_tags.index(tag_map[3])]
                                                 elif tag_map[4] != -22:

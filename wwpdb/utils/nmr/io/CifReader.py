@@ -313,7 +313,8 @@ class CifReader:
 
         if self.__random_rotaion_test:
             self.__log.write(f"+{self.__class_name__}.__init__() ++ Warning  - Enabled random rotation test\n")
-            self.__log.write(f"+{self.__class_name__}.__init__() ++ Warning  - Single model rotation test: {self.__single_model_rotation_test}\n")
+            self.__log.write(f"+{self.__class_name__}.__init__() "
+                             f"++ Warning  - Single model rotation test: {self.__single_model_rotation_test}\n")
 
         # clustering parameters for recognition of well-defined regions
         self.__min_features_for_clustering = 4
@@ -324,7 +325,8 @@ class CifReader:
         # minimum monomers for domain recognition
         self.__min_monomers_for_domain = 12
 
-        assert self.__min_monomers_for_domain > 6  # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
+        # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
+        assert self.__min_monomers_for_domain > 6
 
         # criterion for cutoff RMSD value
         self.__rmsd_cutoff = RMSD_CUTOFF_FOR_DOMAIN
@@ -859,7 +861,8 @@ class CifReader:
                         if catName == 'pdbx_poly_seq_scheme':
                             if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
                                 c = row[altDict['chain_id']]
-                                etype = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                                etype = next((e['type'] for e in entityPoly
+                                              if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
                                 if etype is not None and 'polypeptide' not in etype:
                                     if c not in unmapSeqIds:
                                         unmapSeqIds[c], unmapAuthSeqIds[c] = [], []
@@ -970,17 +973,21 @@ class CifReader:
 
         else:
             if catName == 'pdbx_nonpoly_scheme':
-                sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col])
+                sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col],
+                                        row[label_seq_col], row[comp_id_col])
                                        for row in rowList), key=itemgetter(1))
             else:
                 if all(row[label_seq_col].isdigit() for row in rowList):
-                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], int(row[label_seq_col]), row[comp_id_col])
+                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col],
+                                            int(row[label_seq_col]), row[comp_id_col])
                                            for row in rowList), key=lambda x: (len(x[0]), x[0], x[3]))
                 else:
-                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col])
+                    sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col],
+                                            row[label_seq_col], row[comp_id_col])
                                            for row in rowList), key=lambda x: (len(x[0]), x[0], x[1]))
 
-            keyDict = {(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
+            keyDict = {(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col]
+                       for row in rowList}
 
             for row in rowList:
                 key = (row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col])
@@ -1301,7 +1308,8 @@ class CifReader:
                                 if c2 == c:
                                     continue
 
-                                etype2 = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c2 in e['pdbx_strand_id'].split(',')), None)
+                                etype2 = next((e['type'] for e in entityPoly
+                                               if 'pdbx_strand_id' in e and c2 in e['pdbx_strand_id'].split(',')), None)
 
                                 if etype2 is not None and 'polypeptide' in etype2:
                                     polyPeptideChains.append(c2)
@@ -1313,8 +1321,8 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                        {'name': 'ndb_model'
-                                                                         if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                                         'type': 'int', 'alt_name': 'model_id'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
@@ -1330,8 +1338,8 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                        {'name': 'ndb_model'
-                                                                         if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                                         'type': 'int', 'alt_name': 'model_id'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
@@ -1347,8 +1355,8 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                        {'name': 'ndb_model'
-                                                                         if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                                         'type': 'int', 'alt_name': 'model_id'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',

@@ -239,8 +239,10 @@ class BMRBChemShiftStat:
             return deepcopy(self.__cachedDictForSimilarCompId[key])
 
         aa_bb = {"C", "CA", "CB", "H", "HA", "HA2", "HA3", "N"}
-        dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", "H2'1", "H2'2", 'P'}
-        rn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", "H5'1", "H5'2", "H2'1", "HO'2", 'P', "O2'"}
+        dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'",
+                 "H5'", "H5''", "H5'1", "H5'2", "H2'1", "H2'2", 'P'}
+        rn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'",
+                 "H5'", "H5''", "HO2'", "H5'1", "H5'2", "H2'1", "HO'2", 'P', "O2'"}
         ch_bb = {"C1", "C2", "C3", "C4", "C5", "C6", "H1", "H2", "H3", "H4", "H5", "H61", "H62"}
 
         try:
@@ -769,7 +771,8 @@ class BMRBChemShiftStat:
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         return [item['atom_id'] for item in cs_stat
-                if item['atom_id'] not in bb_atoms and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
+                if item['atom_id'] not in bb_atoms
+                and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
     @functools.lru_cache(maxsize=128)
     def getCentroidAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
@@ -1850,7 +1853,8 @@ class BMRBChemShiftStat:
 
             if self.__ccU.updateChemCompDict(comp_id):
                 c_h_bonds = collections.Counter([b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                                 if b[self.__ccU.ccbAtomId1].startswith('C') and b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE])
+                                                 if b[self.__ccU.ccbAtomId1].startswith('C')
+                                                 and b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE])
 
                 for k, v in c_h_bonds.items():
                     if v == 3:
@@ -2550,7 +2554,8 @@ class BMRBChemShiftStat:
                                             if a[self.__ccU.ccaAltAtomId] == atom_id)
                         if atom_id == _ref_atom_id:
                             continue
-                        print(f'[Warning] {comp_id}:{atom_id} is valid, but _chem_comp.alt_atom_id matched with different atom_id {_ref_atom_id}.')
+                        print(f'[Warning] {comp_id}:{atom_id} is valid, '
+                              f'but _chem_comp.alt_atom_id matched with different atom_id {_ref_atom_id}.')
                         ret['warning'] += 1
 
                     elif atom_id in ref_atom_ids and atom_id not in ref_alt_atom_ids:

@@ -967,16 +967,18 @@ class AmberMRParserListener(ParseTreeListener):
                                         for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                             if mid_code == '|' and test_seq_id is not None:
                                                 try:
-                                                    seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                                       in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                                       if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                                    seq_id_mapping[test_seq_id] =\
+                                                        next(auth_seq_id for auth_seq_id, seq_id
+                                                             in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                             if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                                 except StopIteration:
                                                     if uniq_ps:
                                                         seq_id_mapping[test_seq_id] = ref_seq_id
 
                                         offset = None
                                         offsets = [v - k for k, v in seq_id_mapping.items()]
-                                        if len(offsets) > 0 and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                        if len(offsets) > 0 and ('gap_in_auth_seq' not in poly_seq_model
+                                                                 or not poly_seq_model['gap_in_auth_seq']):
                                             offsets = collections.Counter(offsets).most_common()
                                             if len(offsets) > 1:
                                                 offset = offsets[0][0]
@@ -1227,7 +1229,8 @@ class AmberMRParserListener(ParseTreeListener):
                             if len(hint) > 0:
                                 hint = f" The peripheral atom selections are: {hint[:-1]}."
                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                            f"'{varName}' is missing despite being set 'iat({varNum})={iat}'.{hint}")
+                                            f"'{varName}' is missing "
+                                            f"despite being set 'iat({varNum})={iat}'.{hint}")
                         else:
                             nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
                             maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
@@ -1336,12 +1339,14 @@ class AmberMRParserListener(ParseTreeListener):
                             if iat > 0:
                                 if col >= len(self.atnam):
                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                    f"'atnam({col+1})' is missing despite being set iresid=1, iat({col+1})={iat}.")
+                                                    f"'atnam({col+1})' is missing "
+                                                    f"despite being set iresid=1, iat({col+1})={iat}.")
                                 else:
                                     atnam = self.atnam[col]
                                     if len(atnam) == 0:
                                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                        f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.")
+                                                        f"'atnam({col+1})={atnam}' is empty "
+                                                        f"despite being set iresid=1, iat({col+1})={iat}.")
                                     else:
                                         factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col],
                                                                                        useDefault=len(self.__atomNumberDict) == 0)
@@ -1358,7 +1363,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 elif varNum in self.igr:
                                     if varNum not in self.grnam:
                                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                        f"'grnam({varNum})' is missing despite being set iresid=1, igr({varNum})={self.igr[varNum]}.")
+                                                        f"'grnam({varNum})' is missing "
+                                                        f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.")
                                     else:
                                         for igr, grnam in zip(self.igr[varNum], self.grnam[varNum]):
                                             if len(grnam) == 0:
@@ -1952,8 +1958,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                        __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                   chainId, seqId, _compId)
+                                                        __chainId, __seqId =\
+                                                            retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                  chainId, seqId, _compId)
                                                         if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                             _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                             break
@@ -1972,8 +1979,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                         chainId = ps['auth_chain_id']
                                                         for _compId in _compIds:
                                                             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                                __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                           chainId, seqId, _compId)
+                                                                __chainId, __seqId =\
+                                                                    retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                          chainId, seqId, _compId)
                                                                 if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                     _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                     break
@@ -2025,12 +2033,14 @@ class AmberMRParserListener(ParseTreeListener):
                                                 compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                 chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                 for chainId in chainIds:
-                                                    updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                    updatePolySeqRst(self.__polySeqRstFailed,
+                                                                     chainId, seqId, compId, factor['auth_comp_id'])
 
                                     elif iat < 0:
                                         varNum = col + 1
                                         if self.igr is None:
-                                            warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0\
+                                            warn_title =\
+                                                'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0\
                                                 else 'Unsupported data'
                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                             f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
@@ -2053,7 +2063,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                     compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                     chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                     for chainId in chainIds:
-                                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                        updatePolySeqRst(self.__polySeqRstFailed,
+                                                                         chainId, seqId, compId, factor['auth_comp_id'])
 
                                 else:
                                     if iat > 0:
@@ -2065,7 +2076,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     else:
                                         varNum = col + 1
                                         if self.igr is None:
-                                            warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0\
+                                            warn_title =\
+                                                'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0\
                                                 else 'Unsupported data'
                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                             f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
@@ -2109,7 +2121,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                     compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                     chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                     for chainId in chainIds:
-                                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                        updatePolySeqRst(self.__polySeqRstFailed,
+                                                                         chainId, seqId, compId, factor['auth_comp_id'])
 
                                                 offset += 3
 
@@ -2129,7 +2142,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                     compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                     chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                     for chainId in chainIds:
-                                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                        updatePolySeqRst(self.__polySeqRstFailed,
+                                                                         chainId, seqId, compId, factor['auth_comp_id'])
 
                         else:
 
@@ -2171,7 +2185,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                     compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                     chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                     for chainId in chainIds:
-                                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                        updatePolySeqRst(self.__polySeqRstFailed,
+                                                                         chainId, seqId, compId, factor['auth_comp_id'])
                                                     continue
                                                 __factor = {'auth_seq_id': int(g2[_offset]),
                                                             'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -2191,7 +2206,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                     compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                     chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                     for chainId in chainIds:
-                                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                        updatePolySeqRst(self.__polySeqRstFailed,
+                                                                         chainId, seqId, compId, factor['auth_comp_id'])
                                             continue
 
                                         if g is None and gwc is None and (e is None or col > 0):
@@ -2262,7 +2278,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                                  self.iat[_col]],
                                                                                                              around)
                                                                     if __factor is not None:
-                                                                        if self.updateSanderAtomNumberDict(__factor, useDefault=self.__useDefault):
+                                                                        if self.updateSanderAtomNumberDict(__factor,
+                                                                                                           useDefault=self.__useDefault):
                                                                             continue
                                                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                         f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
@@ -2276,7 +2293,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                         compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                         for chainId in chainIds:
-                                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                            updatePolySeqRst(self.__polySeqRstFailed,
+                                                                             chainId, seqId, compId, factor['auth_comp_id'])
                                                         continue
                                                     __factor = {'auth_seq_id': int(g[offset]),
                                                                 'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -2296,7 +2314,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                         compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                         for chainId in chainIds:
-                                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                            updatePolySeqRst(self.__polySeqRstFailed,
+                                                                             chainId, seqId, compId, factor['auth_comp_id'])
 
                                         else:
                                             s = None
@@ -2330,7 +2349,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 elif iat < 0:
                                     varNum = col + 1
                                     if self.igr is None:
-                                        warn_title = 'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0\
+                                        warn_title =\
+                                            'Missing data' if len(hint) == 0 and not self.__internal and len(self.__atomNumberDict) == 0\
                                             else 'Unsupported data'
                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
@@ -2372,8 +2392,10 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                 f"{' '.join(g2[_offset:offset+3]).strip()!r}.")
                                                                 break
                                                             _factor = {'auth_seq_id': int(g2[_offset]),
-                                                                       'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
-                                                                       'auth_atom_id': _factor['atom_id'],  # pylint: disable=unsubscriptable-object
+                                                                       'auth_comp_id':
+                                                                       _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                                       'auth_atom_id':
+                                                                       _factor['atom_id'],  # pylint: disable=unsubscriptable-object
                                                                        'iat': iat
                                                                        }
                                                             if not self.updateSanderAtomNumberDict(_factor, useDefault=self.__useDefault):
@@ -2392,7 +2414,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                         compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                         for chainId in chainIds:
-                                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                            updatePolySeqRst(self.__polySeqRstFailed,
+                                                                             chainId, seqId, compId, factor['auth_comp_id'])
 
                                                 continue
 
@@ -2464,8 +2487,10 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                 f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
                                                                 break
                                                             _factor = {'auth_seq_id': int(g[offset]),
-                                                                       'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
-                                                                       'auth_atom_id': _factor['atom_id'],  # pylint: disable=unsubscriptable-object
+                                                                       'auth_comp_id':
+                                                                       _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                                       'auth_atom_id':
+                                                                       _factor['atom_id'],  # pylint: disable=unsubscriptable-object
                                                                        'iat': iat
                                                                        }
                                                             if not self.updateSanderAtomNumberDict(_factor, useDefault=self.__useDefault):
@@ -2483,7 +2508,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                         compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                         for chainId in chainIds:
-                                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
+                                                            updatePolySeqRst(self.__polySeqRstFailed,
+                                                                             chainId, seqId, compId, factor['auth_comp_id'])
 
                         if failed and None not in (factor1, factor2)\
                            and factor1['auth_seq_id'] != factor2['auth_seq_id']\
@@ -2651,8 +2677,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                        __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                   chainId, seqId, _compId)
+                                                        __chainId, __seqId =\
+                                                            retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                  chainId, seqId, _compId)
                                                         if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                             _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                             break
@@ -2671,8 +2698,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                         chainId = ps['auth_chain_id']
                                                         for _compId in _compIds:
                                                             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                                __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                           chainId, seqId, _compId)
+                                                                __chainId, __seqId =\
+                                                                    retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                          chainId, seqId, _compId)
                                                                 if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                     _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                     break
@@ -2881,8 +2909,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                     chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                     for _compId in _compIds:
                                                         if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                            __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                       chainId, seqId, _compId)
+                                                            __chainId, __seqId =\
+                                                                retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                      chainId, seqId, _compId)
                                                             if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                 _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                 break
@@ -2902,8 +2931,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             chainId = ps['auth_chain_id']
                                                             for _compId in _compIds:
                                                                 if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                                    __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                               chainId, seqId, _compId)
+                                                                    __chainId, __seqId =\
+                                                                        retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                              chainId, seqId, _compId)
                                                                     if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                         _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                         break
@@ -2983,8 +3013,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                        __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                   chainId, seqId, _compId)
+                                                        __chainId, __seqId =\
+                                                            retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                  chainId, seqId, _compId)
                                                         if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                             _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                             break
@@ -3003,8 +3034,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                         chainId = ps['auth_chain_id']
                                                         for _compId in _compIds:
                                                             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                                __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                           chainId, seqId, _compId)
+                                                                __chainId, __seqId =\
+                                                                    retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                          chainId, seqId, _compId)
                                                                 if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                     _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                     break
@@ -3151,7 +3183,8 @@ class AmberMRParserListener(ParseTreeListener):
                             else self.__dihed_amb_comp_sander_pat.search(self.lastComment).groups()
 
                         gp = None\
-                            if self.lastComment is None or self.lastPlaneSeqId is None or not self.__dihed_plane_sander_pat.match(self.lastComment)\
+                            if self.lastComment is None or self.lastPlaneSeqId is None\
+                            or not self.__dihed_plane_sander_pat.match(self.lastComment)\
                             else self.__dihed_plane_sander_pat.search(self.lastComment).groups()
 
                         gwc = None\
@@ -3219,8 +3252,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                        __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                   chainId, seqId, _compId)
+                                                        __chainId, __seqId =\
+                                                            retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                  chainId, seqId, _compId)
                                                         if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                             _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                             break
@@ -3239,8 +3273,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                         chainId = ps['auth_chain_id']
                                                         for _compId in _compIds:
                                                             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                                __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                           chainId, seqId, _compId)
+                                                                __chainId, __seqId =\
+                                                                    retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                          chainId, seqId, _compId)
                                                                 if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                     _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                     break
@@ -3324,8 +3359,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                        __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                   chainId, seqId, _compId)
+                                                        __chainId, __seqId =\
+                                                            retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                  chainId, seqId, _compId)
                                                         if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                             _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                             break
@@ -3344,8 +3380,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                         chainId = ps['auth_chain_id']
                                                         for _compId in _compIds:
                                                             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                                __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                           chainId, seqId, _compId)
+                                                                __chainId, __seqId =\
+                                                                    retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                          chainId, seqId, _compId)
                                                                 if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                     _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                     break
@@ -3420,8 +3457,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                        __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                   chainId, seqId, _compId)
+                                                        __chainId, __seqId =\
+                                                            retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                  chainId, seqId, _compId)
                                                         if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                             _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                             break
@@ -3440,8 +3478,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                         chainId = ps['auth_chain_id']
                                                         for _compId in _compIds:
                                                             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                                __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                           chainId, seqId, _compId)
+                                                                __chainId, __seqId =\
+                                                                    retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                          chainId, seqId, _compId)
                                                                 if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                     _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                     break
@@ -3567,8 +3606,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                     chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                     for _compId in _compIds:
                                                         if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                            __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                       chainId, seqId, _compId)
+                                                            __chainId, __seqId =\
+                                                                retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                      chainId, seqId, _compId)
                                                             if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                 _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                 break
@@ -3588,8 +3628,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             chainId = ps['auth_chain_id']
                                                             for _compId in _compIds:
                                                                 if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                                                                    __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
-                                                                                                               chainId, seqId, _compId)
+                                                                    __chainId, __seqId =\
+                                                                        retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'],
+                                                                                              chainId, seqId, _compId)
                                                                     if __seqId is not None and __seqId in ps['auth_seq_id']:
                                                                         _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
                                                                         break
@@ -3676,7 +3717,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     if iat in self.__atomNumberDict:
                                         atomSelection.append(copy.copy(self.__atomNumberDict[iat]))
                                     else:
-                                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                                            else 'Unsupported data'
                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                                 else:  # ambmask format
@@ -3707,7 +3749,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 if iat in self.__atomNumberDict:
                                     atomSelection.append(copy.copy(self.__atomNumberDict[iat]))
                                 else:
-                                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                                        else 'Unsupported data'
                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                     f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                             else:  # ambmask format
@@ -3721,7 +3764,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     if igr in self.__atomNumberDict:
                                         atomSelection.append(copy.copy(self.__atomNumberDict[igr]))
                                     else:
-                                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                                            else 'Unsupported data'
                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.")
                                 else:  # ambmask format
@@ -5502,7 +5546,8 @@ class AmberMRParserListener(ParseTreeListener):
                 compId = ps['comp_id'][idx]
                 cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][idx]
 
-                asis = (not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel) or enforceAuthSeq or not self.__preferAuthSeq
+                asis = (not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel)\
+                    or enforceAuthSeq or not self.__preferAuthSeq
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                 asis=asis)
@@ -5550,7 +5595,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 found = True
                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                        or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                    else 'H' + _atomId[-1]
                                 found = True
                             elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                 found = True
@@ -5566,7 +5612,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         seqKey = _seqKey
                                     elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                            else 'H' + _atomId[-1]
                                         found = True
                                         self.__preferAuthSeq = False
                                         self.__authSeqId = 'label_seq_id'
@@ -5589,7 +5636,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     seqKey = _seqKey
                                 elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                            or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                    _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                    _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                        else 'H' + _atomId[-1]
                                     found = True
                                     self.__preferAuthSeq = False
                                     self.__authSeqId = 'label_seq_id'
@@ -5629,7 +5677,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                     if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
                                         if coordAtomSite is not None\
-                                           and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                           and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                or _atomId == 'P'):
                                             checked = True
                                     if _atomId[0] in PROTON_BEGIN_CODE:
                                         bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -5642,7 +5691,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                     checked = True
                                                     if enableWarning:
                                                         self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated "
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not properly instantiated "
                                                                         "in the coordinates. Please re-upload the model file.")
                                             elif bondedTo[0][0] == 'O':
                                                 checked = True
@@ -5657,13 +5707,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                                     in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                     if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                     self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
-                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                    "is not present in the coordinates.")
                                                     return factor
                                                 warn_title = 'Hydrogen not instantiated'\
-                                                    if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1')\
+                                                    if (compId == 'ASP' and authAtomId == 'HD1')\
+                                                    or (compId == 'GLU' and authAtomId == 'HE1')\
                                                     else 'Atom not found'
                                                 self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                "is not present in the coordinates.")
                                             if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['auth_seq_scheme'] = {}
                                             self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
@@ -5677,13 +5730,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                         in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                        "is not present in the coordinates.")
                                         return factor
                                     warn_title = 'Hydrogen not instantiated'\
-                                        if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1')\
+                                        if (compId == 'ASP' and authAtomId == 'HD1')\
+                                        or (compId == 'GLU' and authAtomId == 'HE1')\
                                         else 'Atom not found'
                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                    "is not present in the coordinates.")
                                 if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['auth_seq_scheme'] = {}
                                 self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
@@ -5765,7 +5821,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                     elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                            else 'H' + _atomId[-1]
                                         found = True
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                         found = True
@@ -5780,7 +5837,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -5802,7 +5860,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                             self.__preferAuthSeq = False
                                             self.__authSeqId = 'label_seq_id'
@@ -5841,7 +5900,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None\
-                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                        or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -5874,7 +5934,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             "is not present in the coordinates.")
                                                             return factor
                                                         warn_title = 'Hydrogen not instantiated'\
-                                                            if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1')\
+                                                            if (compId == 'ASP' and authAtomId == 'HD1')\
+                                                            or (compId == 'GLU' and authAtomId == 'HE1')\
                                                             else 'Atom not found'
                                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} "
@@ -5892,13 +5953,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
-                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                "is not present in the coordinates.")
                                                 return factor
                                             warn_title = 'Hydrogen not instantiated'\
-                                                if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1')\
+                                                if (compId == 'ASP' and authAtomId == 'HD1')\
+                                                or (compId == 'GLU' and authAtomId == 'HE1')\
                                                 else 'Atom not found'
                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                            "is not present in the coordinates.")
                                         if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['auth_seq_scheme'] = {}
                                         self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
@@ -5914,7 +5978,8 @@ class AmberMRParserListener(ParseTreeListener):
         """
 
         if self.lastComment is None:
-            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                else 'Unsupported data'
             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                             "Failed to recognize AMBER atom numbers in the restraint file "
                             "because neither AMBER parameter/topology file nor Sander comment are available.")
@@ -5927,12 +5992,14 @@ class AmberMRParserListener(ParseTreeListener):
                                 "please attach ambiguous atom name mapping information generated "
                                 "by 'makeDIST_RST' to the AMBER restraint file.")
             else:
-                warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                    else 'Unsupported data'
                 self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 "Failed to recognize AMBER atom numbers in the restraint file "
                                 f"because Sander comment {lastComment!r} couldn't be interpreted as a {subtype_name}.")
 
-    def updateSanderAtomNumberDict(self, factor: dict, cifCheck: bool = True, useDefault: bool = True, useAuthSeqScheme: bool = False) -> bool:
+    def updateSanderAtomNumberDict(self, factor: dict, cifCheck: bool = True,
+                                   useDefault: bool = True, useAuthSeqScheme: bool = False) -> bool:
         """ Try to update Sander atom number dictionary.
         """
 
@@ -6085,7 +6152,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if (((authCompId in (compId, origCompId, 'None') or compId not in STD_MON_DICT) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
-                                                                    asis=((not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel)
+                                                                    asis=((not hasAuthSeqScheme
+                                                                           and refAuthChainId not in self.__concatHeteroLabel)
                                                                           or enforceAuthSeq or not self.__preferAuthSeq))  # 2mki
 
                     if authCompId in (compId, origCompId) and compId in STD_MON_DICT and coordAtomSite is not None\
@@ -6138,7 +6206,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                     elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                            else 'H' + _atomId[-1]
                                         found = True
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                         found = True
@@ -6154,7 +6223,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -6177,7 +6247,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                             self.__preferAuthSeq = False
                                             self.__authSeqId = 'label_seq_id'
@@ -6220,7 +6291,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                             if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None\
-                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                        or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -6232,7 +6304,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
                                                             checked = True
                                                             self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated "
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                            "is not properly instantiated "
                                                                             "in the coordinates. Please re-upload the model file.")
                                                     elif bondedTo[0][0] == 'O':
                                                         checked = True
@@ -6246,13 +6319,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                                         in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not present in the coordinates.")
                                                     else:
                                                         warn_title = 'Hydrogen not instantiated'\
-                                                            if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1')\
+                                                            if (compId == 'ASP' and authAtomId == 'HD1')\
+                                                            or (compId == 'GLU' and authAtomId == 'HE1')\
                                                             else 'Atom not found'
                                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not present in the coordinates.")
                                         return True
 
                     elif 'igr' in factor:
@@ -6289,7 +6365,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                     elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                            else 'H' + _atomId[-1]
                                         found = True
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                         found = True
@@ -6305,7 +6382,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -6328,7 +6406,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                             self.__preferAuthSeq = False
                                             self.__authSeqId = 'label_seq_id'
@@ -6372,7 +6451,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                             if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None\
-                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                        or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -6384,7 +6464,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
                                                             checked = True
                                                             self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated "
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                            "is not properly instantiated "
                                                                             "in the coordinates. Please re-upload the model file.")
                                                     elif bondedTo[0][0] == 'O':
                                                         checked = True
@@ -6398,13 +6479,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                                         in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not present in the coordinates.")
                                                     else:
                                                         warn_title = 'Hydrogen not instantiated'\
-                                                            if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1')\
+                                                            if (compId == 'ASP' and authAtomId == 'HD1')\
+                                                            or (compId == 'GLU' and authAtomId == 'HE1')\
                                                             else 'Atom not found'
                                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not present in the coordinates.")
 
                         if found:
                             return True
@@ -6524,7 +6608,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                     elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                            else 'H' + _atomId[-1]
                                         found = True
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                         found = True
@@ -6539,7 +6624,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -6561,7 +6647,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                             self.__preferAuthSeq = False
                                             self.__authSeqId = 'label_seq_id'
@@ -6594,17 +6681,19 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['atom_id'] = _atomId
                                         del factor['iat']
                                         self.__sanderAtomNumberDict[iat] = factor
-                                        """
-                                        if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['use_alt_poly_seq'] = True
-                                        """
+                                        # """
+                                        # if self.__cur_subtype == 'dist' and not useDefault\
+                                        #    and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                        #     self.reasonsForReParsing['use_alt_poly_seq'] = True
+                                        # """
                                         if cifCheck and seqKey not in self.__coordUnobsRes\
                                            and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             auth_seq_id_list = list(filter(None, np['auth_seq_id']))
                                             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None\
-                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                        or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -6616,7 +6705,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
                                                             checked = True
                                                             self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated "
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                            "is not properly instantiated "
                                                                             "in the coordinates. Please re-upload the model file.")
                                                     elif bondedTo[0][0] == 'O':
                                                         checked = True
@@ -6627,7 +6717,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                    and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId,
                                                                            self.__representativeAltId, self.__modelNumName):
                                                     self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
-                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated "
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                    "is not properly instantiated "
                                                                     "in the coordinates. Please re-upload the model file.")
                                                     checked = True
 
@@ -6640,13 +6731,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                                         in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not present in the coordinates.")
                                                     else:
                                                         warn_title = 'Hydrogen not instantiated'\
-                                                            if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1')\
+                                                            if (compId == 'ASP' and authAtomId == 'HD1')\
+                                                            or (compId == 'GLU' and authAtomId == 'HE1')\
                                                             else 'Atom not found'
                                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not present in the coordinates.")
                                         return True
 
                     elif 'igr' in factor:
@@ -6675,7 +6769,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                     elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                            else 'H' + _atomId[-1]
                                         found = True
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                         found = True
@@ -6690,7 +6785,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -6712,7 +6808,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                             self.__preferAuthSeq = False
                                             self.__authSeqId = 'label_seq_id'
@@ -6746,17 +6843,19 @@ class AmberMRParserListener(ParseTreeListener):
                                         del _factor['igr']
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         ccdCheckOnly = True
-                                        """
-                                        if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['use_alt_poly_seq'] = True
-                                        """
+                                        # """
+                                        # if self.__cur_subtype == 'dist' and not useDefault\
+                                        #    and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                        #     self.reasonsForReParsing['use_alt_poly_seq'] = True
+                                        # """
                                         if cifCheck and seqKey not in self.__coordUnobsRes\
                                            and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             auth_seq_id_list = list(filter(None, np['auth_seq_id']))
                                             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None\
-                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                   and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                        or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in PROTON_BEGIN_CODE:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -6768,7 +6867,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
                                                             checked = True
                                                             self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated "
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                            "is not properly instantiated "
                                                                             "in the coordinates. Please re-upload the model file.")
                                                     elif bondedTo[0][0] == 'O':
                                                         checked = True
@@ -6782,13 +6882,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                                         in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not present in the coordinates.")
                                                     else:
                                                         warn_title = 'Hydrogen not instantiated'\
-                                                            if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1')\
+                                                            if (compId == 'ASP' and authAtomId == 'HD1')\
+                                                            or (compId == 'GLU' and authAtomId == 'HE1')\
                                                             else 'Atom not found'
                                                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} "
+                                                                        "is not present in the coordinates.")
 
                         if found:
                             return True
@@ -6802,7 +6905,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return self.updateSanderAtomNumberDict(factor, cifCheck, False, useAuthSeqScheme)
 
-    def updateSanderAtomNumberDictWithAmbigCode(self, factor: dict, cifCheck: bool = True, useDefault: bool = True, useAuthSeqScheme: bool = False
+    def updateSanderAtomNumberDictWithAmbigCode(self, factor: dict, cifCheck: bool = True,
+                                                useDefault: bool = True, useAuthSeqScheme: bool = False
                                                 ) -> bool:
         """ Try to update Sander atom number dictionary.
         """
@@ -6976,7 +7080,8 @@ class AmberMRParserListener(ParseTreeListener):
                        or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
-                                                                        asis=((not hasAuthSeqScheme and chainId not in self.__concatHeteroLabel)
+                                                                        asis=((not hasAuthSeqScheme
+                                                                               and chainId not in self.__concatHeteroLabel)
                                                                               or enforceAuthSeq or not self.__preferAuthSeq))  # 2mki
 
                         if authCompId in (compId, origCompId) and compId in STD_MON_DICT\
@@ -7006,7 +7111,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             found = True
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                         elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                             found = True
@@ -7046,7 +7152,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -7087,9 +7194,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                 checked = False
                                                 _seqId = factor['seq_id']
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
+                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes\
+                                                   or _seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None\
-                                                       and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                       and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                            or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -7154,7 +7263,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             found = True
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                         elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                             found = True
@@ -7194,7 +7304,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -7236,9 +7347,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                 checked = False
                                                 _seqId = _factor['seq_id']
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
+                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes\
+                                                   or _seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None\
-                                                       and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                       and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                            or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -7324,7 +7437,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             found = True
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                         elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                             found = True
@@ -7362,7 +7476,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -7395,17 +7510,19 @@ class AmberMRParserListener(ParseTreeListener):
                                             factor['atom_id'] = _atomId
                                             del factor['iat']
                                             self.__sanderAtomNumberDict[iat] = factor
-                                            """
-                                            if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
-                                                self.reasonsForReParsing['use_alt_poly_seq'] = True
-                                            """
+                                            # """
+                                            # if self.__cur_subtype == 'dist' and not useDefault\
+                                            #    and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                            #     self.reasonsForReParsing['use_alt_poly_seq'] = True
+                                            # """
                                             if cifCheck and seqKey not in self.__coordUnobsRes\
                                                and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 auth_seq_id_list = list(filter(None, np['auth_seq_id']))
                                                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None\
-                                                       and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                       and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                            or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
@@ -7470,7 +7587,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             found = True
                                         elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                                                    or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                                                else 'H' + _atomId[-1]
                                             found = True
                                         elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                             found = True
@@ -7508,7 +7626,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 found = True
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -7542,17 +7661,19 @@ class AmberMRParserListener(ParseTreeListener):
                                             del _factor['igr']
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             ccdCheckOnly = True
-                                            """
-                                            if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
-                                                self.reasonsForReParsing['use_alt_poly_seq'] = True
-                                            """
+                                            # """
+                                            # if self.__cur_subtype == 'dist' and not useDefault\
+                                            #    and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                            #     self.reasonsForReParsing['use_alt_poly_seq'] = True
+                                            # """
                                             if cifCheck and seqKey not in self.__coordUnobsRes\
                                                and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 auth_seq_id_list = list(filter(None, np['auth_seq_id']))
                                                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None\
-                                                       and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
+                                                       and ((_atomId in AMINO_PROTON_CODE and 'H1' in coordAtomSite['atom_id'])
+                                                            or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in PROTON_BEGIN_CODE:
                                                     bondedTo = self.__ccU.getBondedTo(compId, _atomId)
@@ -8677,12 +8798,14 @@ class AmberMRParserListener(ParseTreeListener):
 
                     if _iprot <= 0:
                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
-                                        f"The atom number involved in the NOESY peak 'ihp({imix},{ipeak})={_iprot}' should be a positive integer.")
+                                        f"The atom number involved in the NOESY peak 'ihp({imix},{ipeak})={_iprot}' "
+                                        f"should be a positive integer.")
                         continue
 
                     if _jprot <= 0:
                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
-                                        f"The atom number involved in the NOESY peak 'jhp({imix},{ipeak})={_jprot}' should be a positive integer.")
+                                        f"The atom number involved in the NOESY peak 'jhp({imix},{ipeak})={_jprot}' "
+                                        f"should be a positive integer.")
                         continue
 
                     awt = 1.0
@@ -8705,7 +8828,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if _iprot in self.__atomNumberDict:
                             atomSelection.append(copy.copy(self.__atomNumberDict[_iprot]))
                         else:
-                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                                else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(imix,ipeak)}"
                                             f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -8731,7 +8855,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if _jprot in self.__atomNumberDict:
                             atomSelection.append(copy.copy(self.__atomNumberDict[_jprot]))
                         else:
-                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                                else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(imix,ipeak)}"
                                             f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -8784,7 +8909,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 sf['loop'].add_data(row)
 
                     elif self.__hasPolySeq:
-                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                            else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "
                                         "because AMBER parameter/topology file is not available.")
@@ -9066,7 +9192,8 @@ class AmberMRParserListener(ParseTreeListener):
                     if _iprot in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_iprot]))
                     else:
-                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                            else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(n=n)}"
                                         f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.")
                         continue
@@ -9114,7 +9241,8 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                        else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Failed to recognize AMBER atom numbers in the chemical shift restraint file "
                                     "because AMBER parameter/topology file is not available.")
@@ -9154,7 +9282,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if _iat in self.__atomNumberDict:
                             atomSelection.append(copy.copy(self.__atomNumberDict[_iat]))
                         else:
-                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                                else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                             f"The ring atom 'iatr({n},{r})={_iat}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -9181,7 +9310,8 @@ class AmberMRParserListener(ParseTreeListener):
                                       f"ring_atom={atom}")
 
                     elif self.__hasPolySeq:
-                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                            else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Failed to recognize AMBER atom numbers in the chemical shift restraint file "
                                         "because AMBER parameter/topology file is not available.")
@@ -9587,7 +9717,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if _iprot in self.__atomNumberDict:
                     atomSelection.append(copy.copy(self.__atomNumberDict[_iprot]))
                 else:
-                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                        else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                     f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.")
                     continue
@@ -9640,7 +9771,8 @@ class AmberMRParserListener(ParseTreeListener):
                         sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
-                warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                    else 'Unsupported data'
                 self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 "Failed to recognize AMBER atom numbers in the Psuedocontact shift restraint file "
                                 "because AMBER parameter/topology file is not available.")
@@ -9998,7 +10130,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__atomNumberDict[_id] = atom_sel_i
                                     atomSelection.append(atom_sel_i)
                         if atom_id_i is None:
-                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                                else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.dataset, n)}"
                                             f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -10041,7 +10174,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__atomNumberDict[_jd] = atom_sel_j
                                     atomSelection.append(atom_sel_j)
                         if atom_id_j is None:
-                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                            warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                                else 'Unsupported data'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.dataset, n)}"
                                             f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.")
                             continue
@@ -10156,7 +10290,8 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                        else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "
                                     "because AMBER parameter/topology file is not available.")
@@ -10617,7 +10752,8 @@ class AmberMRParserListener(ParseTreeListener):
                     if _icsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_icsa]))
                     else:
-                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                            else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.")
                         continue
@@ -10638,7 +10774,8 @@ class AmberMRParserListener(ParseTreeListener):
                     if _jcsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_jcsa]))
                     else:
-                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                            else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.")
                         continue
@@ -10659,7 +10796,8 @@ class AmberMRParserListener(ParseTreeListener):
                     if _kcsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_kcsa]))
                     else:
-                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                        warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                            else 'Unsupported data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.")
                         continue
@@ -10827,7 +10965,8 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0 else 'Unsupported data'
+                    warn_title = 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
+                        else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "
                                     "because AMBER parameter/topology file is not available.")
@@ -11416,7 +11555,8 @@ class AmberMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str] = None) -> Tuple[str, int, Optional[str]]:  # pylint: disable=no-self-use
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str] = None
+                          ) -> Tuple[str, int, Optional[str]]:  # pylint: disable=no-self-use
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
             if len(_compId) == 2 and _compId.startswith('D'):
@@ -11634,7 +11774,8 @@ class AmberMRParserListener(ParseTreeListener):
                 found = True
             elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in coordAtomSite['atom_id']
                                                       or ('H' + atomId[-1]) in coordAtomSite['atom_id']):
-                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id']\
+                    else 'H' + atomId[-1]
                 found = True
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
@@ -11649,7 +11790,8 @@ class AmberMRParserListener(ParseTreeListener):
                         seqKey = _seqKey
                     elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                               or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                            else 'H' + atomId[-1]
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
@@ -11671,7 +11813,8 @@ class AmberMRParserListener(ParseTreeListener):
                     seqKey = _seqKey
                 elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                           or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                        else 'H' + atomId[-1]
                     found = True
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
@@ -11695,7 +11838,8 @@ class AmberMRParserListener(ParseTreeListener):
                 seqKey = _seqKey
             elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                       or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                    else 'H' + atomId[-1]
                 found = True
                 self.__preferAuthSeq = False
                 self.__authSeqId = 'label_seq_id'
@@ -11734,7 +11878,8 @@ class AmberMRParserListener(ParseTreeListener):
                                        and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
                                     if enableWarning:
                                         self.__f.append("[Hydrogen not instantiated] "
-                                                        f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                                        f"{chainId}:{seqId}:{compId}:{atomId} "
+                                                        "is not properly instantiated in the coordinates. "
                                                         "Please re-upload the model file.")
                                         return
                             elif bondedTo[0][0] == 'O':
@@ -11747,13 +11892,16 @@ class AmberMRParserListener(ParseTreeListener):
                                     or (atomId[0] in PROTON_BEGIN_CODE and self.__ccU.getBondedAtoms(compId, atomId, exclProton=True)[0]
                                         in self.__coordUnobsAtom[seqKey]['atom_ids'])):
                                 self.__f.append("[Coordinate issue] "
-                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                                                f"{chainId}:{seqId}:{compId}:{atomId} "
+                                                "is not present in the coordinates.")
                             else:
                                 warn_title = 'Hydrogen not instantiated'\
-                                    if (compId == 'ASP' and atomId == 'HD1') or (compId == 'GLU' and atomId == 'HE1')\
+                                    if (compId == 'ASP' and atomId == 'HD1')\
+                                    or (compId == 'GLU' and atomId == 'HE1')\
                                     else 'Atom not found'
                                 self.__f.append(f"[{warn_title}] "
-                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                                                f"{chainId}:{seqId}:{compId}:{atomId} "
+                                                "is not present in the coordinates.")
 
     def __getCurrentRestraint(self, dataset: Optional[str] = None, n: Optional[int] = None) -> str:
         if self.__cur_subtype == 'dist':
@@ -11779,7 +11927,8 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'pcs':
             if None in (dataset, n):
                 return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints, {self.__def_err_sf_framecode}] "
-            return f"[Check the {n}th row of pseudocontact shift restraints (name of paramagnetic center={dataset}), {self.__def_err_sf_framecode}] "
+            return f"[Check the {n}th row of pseudocontact shift restraints "\
+                f"(name of paramagnetic center={dataset}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'csa':
             if None in (dataset, n):
                 return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints, {self.__def_err_sf_framecode}] "

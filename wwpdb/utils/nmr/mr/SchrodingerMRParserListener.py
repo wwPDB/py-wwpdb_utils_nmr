@@ -570,7 +570,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     self.dihedRestraints -= 1
 
     # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_by_number.
-    def exitDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext):  # pylint: disable=unused-argument
+    def exitDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext
+                                            ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#angle_statement.
@@ -746,7 +747,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
             if target_value <= 0.0:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target distance '{target_value}' should be a positive value because we cannot refer the initial coordinates.")
+                              f"The target distance '{target_value}' should be a positive value "
+                              "because we cannot refer the initial coordinates.")
                 return
 
             delta = abs(self.numberSelection[2])
@@ -1192,14 +1194,16 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                           "Not a hydrogen; "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          f"The {self.software_name} atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             return
 
         if donor['atom_id'][0] not in ('N', 'O', 'F'):
             self.f.append(f"[Unmatched atom type] {self.getCurrentRestraint()}"
                           "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "
                           f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          f"The {self.software_name} atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             is_hbond = False
             # return
 
@@ -1207,7 +1211,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.f.append(f"[Unmatched atom type] {self.getCurrentRestraint()}"
                           "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
                           f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          f"The {self.software_name} atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             is_hbond = False
             # return
 
@@ -1222,7 +1227,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
                 if self.nefT.validate_comp_atom(comp_id, atom_id_1) and self.nefT.validate_comp_atom(comp_id, atom_id_2):
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                  "Found a donor-hydrogen vector over multiple covalent bonds in the 'HBDA' statement; "
+                                  "Found a donor-hydrogen vector over multiple covalent bonds in the 'FXHB' statement; "
                                   f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
                                   f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
                     return
@@ -1897,7 +1902,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                 else:
                     chainId = self.polySeq[0]['auth_chain_id']
 
-                self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq if any(re.match(p, ps['auth_chain_id']) for p in str_pattern)]
+                self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq
+                                           if any(re.match(p, ps['auth_chain_id']) for p in str_pattern)]
                 if self.hasNonPolySeq:
                     for np in self.nonPolySeq:
                         _chainId = np['auth_chain_id']

@@ -363,7 +363,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.anglesIncHydrogenStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#angles_without_hydrogen_statement.
-    def enterAngles_without_hydrogen_statement(self, ctx: AmberPTParser.Angles_without_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterAngles_without_hydrogen_statement(self, ctx: AmberPTParser.Angles_without_hydrogen_statementContext
+                                               ):  # pylint: disable=unused-argument
         self.anglesWithoutHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#angles_without_hydrogen_statement.
@@ -453,7 +454,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.bondsIncHydrogenStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#bonds_without_hydrogen_statement.
-    def enterBonds_without_hydrogen_statement(self, ctx: AmberPTParser.Bonds_without_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterBonds_without_hydrogen_statement(self, ctx: AmberPTParser.Bonds_without_hydrogen_statementContext
+                                              ):  # pylint: disable=unused-argument
         self.bondsWithoutHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#bonds_without_hydrogen_statement.
@@ -543,7 +545,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.cmapIndexStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#dihedral_force_constant_statement.
-    def enterDihedral_force_constant_statement(self, ctx: AmberPTParser.Dihedral_force_constant_statementContext):  # pylint: disable=unused-argument
+    def enterDihedral_force_constant_statement(self, ctx: AmberPTParser.Dihedral_force_constant_statementContext
+                                               ):  # pylint: disable=unused-argument
         self.dihedralForceConstantStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#dihedral_force_constant_statement.
@@ -573,7 +576,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.dihedralPhaseStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#dihedrals_inc_hydrogen_statement.
-    def enterDihedrals_inc_hydrogen_statement(self, ctx: AmberPTParser.Dihedrals_inc_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterDihedrals_inc_hydrogen_statement(self, ctx: AmberPTParser.Dihedrals_inc_hydrogen_statementContext
+                                              ):  # pylint: disable=unused-argument
         self.dihedralsIncHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#dihedrals_inc_hydrogen_statement.

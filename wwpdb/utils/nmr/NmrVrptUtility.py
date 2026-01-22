@@ -1372,7 +1372,8 @@ class NmrVrptUtility:
 
                     coordinates_per_model[atom_key] = to_np_array(c)
 
-                    # DAOTHER-9200 for wwpdb.apps.validation.src.wrapper.restraintsanalysis.generate_formated_output (MISSING ATOM IN MODEL KeyError)
+                    # DAOTHER-9200 for wwpdb.apps.validation.src.wrapper.restraintsanalysis.generate_formated_output
+                    # (MISSING ATOM IN MODEL KeyError)
                     if _auth_atom_id == 'pdbx_auth_atom_name' and c['auth_atom_id'] != c['alt_auth_atom_id']:
                         _atom_key = (c['auth_asym_id'], c['auth_seq_id'], c['auth_comp_id'],
                                      c['alt_auth_atom_id'], c['pdbx_PDB_ins_code'])
@@ -1393,7 +1394,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
 
             self.__atomIdList = self.__coordinates = None
@@ -1620,7 +1622,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
 
             self.__distRestDict = self.__distRestSeqDict = None
@@ -1823,7 +1826,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
 
             self.__dihedRestDict = self.__dihedRestSeqDict = None
@@ -1999,7 +2003,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - {str(e)}\n")
 
             self.__rdcRestDict = self.__rdcRestSeqDict = None
@@ -2292,7 +2297,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__distRestViolDict = self.__distRestUnmapped = None
@@ -2473,7 +2479,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__dihedRestViolDict = self.__dihedRestUnmapped = None
@@ -2634,7 +2641,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__rdcRestViolDict = self.__rdcRestUnmapped = None
@@ -2912,7 +2920,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
@@ -3157,7 +3166,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
@@ -3385,7 +3395,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False

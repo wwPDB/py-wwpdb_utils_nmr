@@ -303,8 +303,9 @@ class BMRBAnnTasks:
                                         list_id = sf_framecode.split('_')[-1]
                                         if _sf_framecode != sf_framecode:
                                             sf_framecode = f'{parent_sf_tag_prefix[1:]}_{list_id}'
-                                            for _list_id, parent_sf in enumerate(master_entry.get_saveframes_by_category(parent_sf_tag_prefix[1:]),
-                                                                                 start=1):
+                                            for _list_id, parent_sf\
+                                                    in enumerate(master_entry.get_saveframes_by_category(parent_sf_tag_prefix[1:]),
+                                                                 start=1):
                                                 if str(_list_id) == list_id:
                                                     set_sf_tag(parent_sf, 'Sf_framecode', sf_framecode)
                                                     set_sf_tag(parent_sf, 'ID', list_id)
@@ -2861,13 +2862,17 @@ class BMRBAnnTasks:
                                 row[8], row[9], row[10] = 'ppm', '0.000', 'internal'
                                 if n in (1, 2, 13, 15, 19, 31):
                                     if n == 1:
-                                        row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'direct', '1.0'
+                                        row[2], row[3], row[11], row[12] =\
+                                            default_internal_reference, 'methyl protons', 'direct', '1.0'
                                     elif n == 2:
-                                        row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
+                                        row[2], row[3], row[11], row[12] =\
+                                            default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
                                     elif n == 13:
-                                        row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
+                                        row[2], row[3], row[11], row[12] =\
+                                            default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
                                     elif n == 15:
-                                        row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
+                                        row[2], row[3], row[11], row[12] =\
+                                            default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
                                     elif n == 19:
                                         row[2], row[3], row[11], row[12] = 'CCl3F', 'fluorine', 'direct', '1.0'
                                     else:
@@ -3502,8 +3507,10 @@ class BMRBAnnTasks:
                             set_sf_tag(sf, label_tag, f'${parent_sf_framecode}')
                     except IndexError:
                         try:
-                            parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
-                                                                                     if isinstance(parent_list_id, str) else str(parent_list_id))[0]
+                            parent_sf =\
+                                master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID',
+                                                                             int(parent_list_id) if isinstance(parent_list_id, str)
+                                                                             else str(parent_list_id))[0]
                             parent_sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode')
                             if len(parent_sf_framecode) > 0:
                                 set_sf_tag(sf, label_tag, f'${parent_sf_framecode}')

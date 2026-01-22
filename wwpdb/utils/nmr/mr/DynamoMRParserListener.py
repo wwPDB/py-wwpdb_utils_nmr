@@ -862,17 +862,20 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by DynamoMRParser#torsion_angle_restraints_sw_segid.
-    def enterTorsion_angle_restraints_sw_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_sw_segidContext):  # pylint: disable=unused-argument
+    def enterTorsion_angle_restraints_sw_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_sw_segidContext
+                                               ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dihed'
 
         self.closeSequence()
 
     # Exit a parse tree produced by DynamoMRParser#torsion_angle_restraints_sw_segid.
-    def exitTorsion_angle_restraints_sw_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_sw_segidContext):  # pylint: disable=unused-argument
+    def exitTorsion_angle_restraints_sw_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_sw_segidContext
+                                              ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by DynamoMRParser#torsion_angle_restraint_sw_segid.
-    def enterTorsion_angle_restraint_sw_segid(self, ctx: DynamoMRParser.Torsion_angle_restraint_sw_segidContext):  # pylint: disable=unused-argument
+    def enterTorsion_angle_restraint_sw_segid(self, ctx: DynamoMRParser.Torsion_angle_restraint_sw_segidContext
+                                              ):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -1035,17 +1038,20 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by DynamoMRParser#torsion_angle_restraints_ew_segid.
-    def enterTorsion_angle_restraints_ew_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_ew_segidContext):  # pylint: disable=unused-argument
+    def enterTorsion_angle_restraints_ew_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_ew_segidContext
+                                               ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dihed'
 
         self.closeSequence()
 
     # Exit a parse tree produced by DynamoMRParser#torsion_angle_restraints_ew_segid.
-    def exitTorsion_angle_restraints_ew_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_ew_segidContext):  # pylint: disable=unused-argument
+    def exitTorsion_angle_restraints_ew_segid(self, ctx: DynamoMRParser.Torsion_angle_restraints_ew_segidContext
+                                              ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by DynamoMRParser#torsion_angle_restraint_ew_segid.
-    def enterTorsion_angle_restraint_ew_segid(self, ctx: DynamoMRParser.Torsion_angle_restraint_ew_segidContext):  # pylint: disable=unused-argument
+    def enterTorsion_angle_restraint_ew_segid(self, ctx: DynamoMRParser.Torsion_angle_restraint_ew_segidContext
+                                              ):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()

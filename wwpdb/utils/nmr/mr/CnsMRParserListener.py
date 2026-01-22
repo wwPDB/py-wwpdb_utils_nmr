@@ -3447,7 +3447,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if not self.hasPolySeq and not self.hasNonPolySeq:
                     return
 
-                simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
+                # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
+                simpleNameIndex = simpleNamesIndex = 0
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq
@@ -3692,7 +3693,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.factor['atom_id'] = [None]
                     self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                   f"The attribute property {_attr_prop!r} "
-                                  "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.")
+                                  "related to the Langevin dynamics (nonzero friction coefficient) is not possessed "
+                                  "in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop == 'mass':
@@ -3842,7 +3844,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         # intra
                         if self.ccU.updateChemCompDict(compId):
-                            leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
+                            leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                              if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
 
                             _atomIdSelect = set()
                             for ccb in self.ccU.lastBonds:
@@ -3873,7 +3876,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         _atom['comp_id'] = coordAtomSite['comp_id']
 
                                 if _atom is not None and _atom['comp_id'] == compId:
-                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                           'comp_id': compId, 'atom_id': _atomId})
 
                                 else:
                                     psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
@@ -3882,7 +3886,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                             seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
                                             if any(True for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId):
-                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                       'comp_id': compId, 'atom_id': _atomId})
 
                             # sequential
                             if hasLeaavindAtomId:
@@ -3927,9 +3932,12 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                         _neighbor =\
                                                             self.cR.getDictListWithFilter('atom_site',
                                                                                           CARTN_DATA_ITEMS,
-                                                                                          [{'name': self.authAsymId, 'type': 'str', 'value': chainId},
-                                                                                           {'name': self.authSeqId, 'type': 'int', 'value': _seqId},
-                                                                                           {'name': self.authAtomId, 'type': 'str', 'value': _atomId},
+                                                                                          [{'name': self.authAsymId, 'type': 'str',
+                                                                                            'value': chainId},
+                                                                                           {'name': self.authSeqId, 'type': 'int',
+                                                                                            'value': _seqId},
+                                                                                           {'name': self.authAtomId, 'type': 'str',
+                                                                                            'value': _atomId},
                                                                                            {'name': self.modelNumName, 'type': 'int',
                                                                                             'value': self.representativeModelId},
                                                                                            {'name': 'label_alt_id', 'type': 'enum',
@@ -4109,7 +4117,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         _sequenceSelect.add((chainId, seqId))
 
                     for (chainId, seqId) in _sequenceSelect:
-                        _atom = next(_atom for _atom in self.factor['atom_selection'] if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
+                        _atom = next(_atom for _atom in self.factor['atom_selection']
+                                     if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
                         compId = _atom['comp_id']
 
                         _atomByRes =\
@@ -4955,7 +4964,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'segidentifier' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"The 'segidentifier' clause has no effect for a conjunction of "
+                                          f"factor {self.getReadableFactor(__factor)} "
                                           f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Sfbox():

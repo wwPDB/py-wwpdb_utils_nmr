@@ -665,8 +665,10 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                     if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                       and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                            or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                       and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                             and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.reasons['model_chain_id_ext']
+                                and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                         self.allowZeroUpperLimit = True
                 self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -751,7 +753,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
-                    if self.__restraint_key is not None and isDefinedInterChainRestraint(atoms, self.__restraint_key, self.symmetric, self.polySeq):
+                    if self.__restraint_key is not None\
+                       and isDefinedInterChainRestraint(atoms, self.__restraint_key, self.symmetric, self.polySeq):
                         continue
                     if isIdenticalRestraint(atoms, self.nefT):
                         continue
@@ -914,7 +917,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
                         if not isinstance(atomId, str):
-                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                           if atomId.match(cca[self.ccU.ccaAtomId])), None)
                             if atomId is None:
                                 resKey = (seqId, _compId)
                                 if resKey not in self.extResKey:
@@ -1065,7 +1069,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                             _cifCompId = cifCompId if offset == 0\
                                                 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
                                                       if _cifSeqId in ps['auth_seq_id'] else None)
-                                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
+                                            seqKey, coordAtomSite =\
+                                                self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                                             if coordAtomSite is not None:
                                                 cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
                                                                   if _cifAtomId in coordAtomSite['atom_id']), None)
@@ -1257,7 +1262,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                              if cca[self.ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
                                 if _cifCompId is None and not self.allow_ext_seq:

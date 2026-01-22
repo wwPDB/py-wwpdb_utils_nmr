@@ -277,7 +277,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + 'mth1743-test-20190919-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + 'mth1743-test-20190919-nef2str.str', type='file')
-        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + 'mth1743-test-20190919-nef2str-str-deposit-log.json', type='file')
+        self.utility.addOutput(name='report_file_path',
+                               value=self.data_dir_path + 'mth1743-test-20190919-nef2str-str-deposit-log.json',
+                               type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setVerbose(False)
 

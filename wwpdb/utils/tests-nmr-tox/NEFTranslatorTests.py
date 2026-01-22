@@ -2532,7 +2532,8 @@ class TestNEFTranslator(unittest.TestCase):
                     {"comp_id": "ASN", "atom_id": ["C", "CA", "CB",
                                                    "H", "HA", "HBX", "HBY", "HD2X", "HD2Y", "N", "ND2"]},
                     {"comp_id": "GLN", "atom_id": ["C", "CA", "CB", "CG",
-                                                   "H", "HA", "HB2", "HB3", "HBX", "HBY", "HE2X", "HE2Y", "HG2", "HG3", "HGX", "HGY", "N", "NE2"]},
+                                                   "H", "HA", "HB2", "HB3", "HBX", "HBY", "HE2X", "HE2Y", "HG2", "HG3", "HGX", "HGY",
+                                                   "N", "NE2"]},
                     {"comp_id": "GLU", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HBX", "HBY", "HGX", "HGY", "N"]},
                     {"comp_id": "GLY", "atom_id": ["CA", "H", "HA2", "HA3", "N"]},
                     {"comp_id": "HIS", "atom_id": ["C", "CA", "CB", "CD2", "H", "HA", "HB2", "HB3", "HBX", "HBY", "HD2", "N"]},
@@ -2628,7 +2629,8 @@ class TestNEFTranslator(unittest.TestCase):
         cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
         self.assertEqual(
-            self.neft.get_nef_atom_type_from_cs_loop(cs_loops[0], lp_category="nef_chemical_shift"),  # select the first cs loop by input sta_data
+            # select the first cs loop by input sta_data
+            self.neft.get_nef_atom_type_from_cs_loop(cs_loops[0], lp_category="nef_chemical_shift"),
             [
                 [
                     {
@@ -2700,7 +2702,8 @@ class TestNEFTranslator(unittest.TestCase):
                 [
                     {
                         "isotope_number": [13],
-                        "atom_id": ["C", "CA", "CB", "CD", "CD1", "CD2", "CE", "CE1", "CE2", "CE3", "CG", "CG1", "CG2", "CH2", "CZ", "CZ2", "CZ3"],
+                        "atom_id": ["C", "CA", "CB", "CD", "CD1", "CD2", "CE", "CE1", "CE2", "CE3",
+                                    "CG", "CG1", "CG2", "CH2", "CZ", "CZ2", "CZ3"],
                         "atom_type": "C",
                     },
                     {

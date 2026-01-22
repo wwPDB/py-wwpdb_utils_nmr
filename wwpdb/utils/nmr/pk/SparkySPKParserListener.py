@@ -462,7 +462,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.__cur_id if self.__cur_id is not None else self.peaks3D
 
-            x_ppm, y_ppm, z_ppm, a_ppm = self.positionSelection[0], self.positionSelection[1], self.positionSelection[2], self.positionSelection[3]
+            x_ppm, y_ppm, z_ppm, a_ppm =\
+                self.positionSelection[0], self.positionSelection[1], self.positionSelection[2], self.positionSelection[3]
 
             x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
             if self.__cur_lw is not None:
@@ -647,7 +648,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.__cur_id if self.__cur_id is not None else self.peaks4D
 
-            x_ppm, y_ppm, z_ppm, a_ppm = self.positionSelection[0], self.positionSelection[1], self.positionSelection[2], self.positionSelection[3]
+            x_ppm, y_ppm, z_ppm, a_ppm =\
+                self.positionSelection[0], self.positionSelection[1], self.positionSelection[2], self.positionSelection[3]
 
             x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
             if self.__cur_lw is not None:

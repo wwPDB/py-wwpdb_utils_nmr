@@ -2674,7 +2674,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.squareExponent = int(str(ctx.Integer()))
             if self.squareExponent <= 0.0:
                 self.f.append("[Invalid data] "
-                              f"The exponent value 'RESTRAINTS HARMONIC {str(ctx.Exponent())}={self.squareExponent} END' must be a positive value.")
+                              f"The exponent value 'RESTRAINTS HARMONIC {str(ctx.Exponent())}={self.squareExponent} END' "
+                              "must be a positive value.")
 
         elif ctx.Normal():
             if ctx.number_s(0):
@@ -5613,14 +5614,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                           "Not a hydrogen; "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             return
 
         if donor['atom_id'][0] not in ('N', 'O', 'F'):
             self.f.append(f"[Unmatched atom type] {self.getCurrentRestraint()}"
                           "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "
                           f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             is_hbond = False
             # return
 
@@ -5628,7 +5631,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.f.append(f"[Unmatched atom type] {self.getCurrentRestraint()}"
                           "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
                           f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             is_hbond = False
             # return
 
@@ -6041,7 +6045,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             sf['id'] += 1
 
         if self.reasons is None\
-           and 'segment_id' in self.atomSelectionSet[self.donor_columnSel][0] and 'segment_id' in self.atomSelectionSet[self.acceptor_columnSel][0]\
+           and 'segment_id' in self.atomSelectionSet[self.donor_columnSel][0]\
+           and 'segment_id' in self.atomSelectionSet[self.acceptor_columnSel][0]\
            and self.atomSelectionSet[0][0]['segment_id'] != self.atomSelectionSet[1][0]['segment_id']\
            and 'assert_uniq_segment_id' not in self.reasonsForReParsing:
             self.reasonsForReParsing['assert_uniq_segment_id'] = True
@@ -6748,7 +6753,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if not self.hasPolySeq and not self.hasNonPolySeq:
                     return
 
-                simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
+                # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
+                simpleNameIndex = simpleNamesIndex = 0
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq
@@ -6993,7 +6999,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.factor['atom_id'] = [None]
                     self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                   f"The attribute property {_attr_prop!r} "
-                                  "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.")
+                                  "related to the Langevin dynamics (nonzero friction coefficient) is not possessed "
+                                  "in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop == 'mass':
@@ -7137,7 +7144,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         # intra
                         if self.ccU.updateChemCompDict(compId):
-                            leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
+                            leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                              if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
 
                             _atomIdSelect = set()
                             for ccb in self.ccU.lastBonds:
@@ -7177,7 +7185,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                             seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
                                             if any(True for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId):
-                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                       'comp_id': compId, 'atom_id': _atomId})
 
                             # sequential
                             if hasLeaavindAtomId:
@@ -7222,9 +7231,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                         _neighbor =\
                                                             self.cR.getDictListWithFilter('atom_site',
                                                                                           CARTN_DATA_ITEMS,
-                                                                                          [{'name': self.authAsymId, 'type': 'str', 'value': chainId},
-                                                                                           {'name': self.authSeqId, 'type': 'int', 'value': _seqId},
-                                                                                           {'name': self.authAtomId, 'type': 'str', 'value': _atomId},
+                                                                                          [{'name': self.authAsymId, 'type': 'str',
+                                                                                            'value': chainId},
+                                                                                           {'name': self.authSeqId, 'type': 'int',
+                                                                                            'value': _seqId},
+                                                                                           {'name': self.authAtomId, 'type': 'str',
+                                                                                            'value': _atomId},
                                                                                            {'name': self.modelNumName, 'type': 'int',
                                                                                             'value': self.representativeModelId},
                                                                                            {'name': 'label_alt_id', 'type': 'enum',
@@ -7404,7 +7416,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         _sequenceSelect.add((chainId, seqId))
 
                     for (chainId, seqId) in _sequenceSelect:
-                        _atom = next(_atom for _atom in self.factor['atom_selection'] if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
+                        _atom = next(_atom for _atom in self.factor['atom_selection']
+                                     if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
                         compId = _atom['comp_id']
 
                         _atomByRes =\
@@ -8172,7 +8185,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'segidentifier' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"The 'segidentifier' clause has no effect for a conjunction of "
+                                          f"factor {self.getReadableFactor(__factor)} "
                                           f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Store1():

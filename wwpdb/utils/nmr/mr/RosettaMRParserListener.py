@@ -697,7 +697,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
                         if any(True for ps in self.__polySeq if 'identical_chain_id' in ps):
-                            polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+                            polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                                                     self.__chainAssign)
 
                             if polySeqRst is not None and (not self.__hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                 self.__polySeqRst = polySeqRst
@@ -733,8 +734,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                                     self.reasonsForReParsing['non_poly_remap'][k][k2] = v2
 
                         if self.__hasBranched:
-                            polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.__polySeq, self.__branched, self.__polySeqRst,
-                                                                                     self.__chainAssign)
+                            polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.__polySeq, self.__branched,
+                                                                                     self.__polySeqRst, self.__chainAssign)
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
@@ -821,7 +822,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                                     self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
                                                 else:
                                                     seq_id_mapping = {}
-                                                    for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                    for ref_seq_id, mid_code, test_seq_id\
+                                                            in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                                         if mid_code == '|' and test_seq_id is not None:
                                                             seq_id_mapping[test_seq_id] = ref_seq_id
 
@@ -880,9 +882,10 @@ class RosettaMRParserListener(ParseTreeListener):
                                     for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                         if mid_code == '|' and test_seq_id is not None:
                                             try:
-                                                seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                                   in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                                   if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                                seq_id_mapping[test_seq_id] =\
+                                                    next(auth_seq_id for auth_seq_id, seq_id
+                                                         in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                         if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                             except StopIteration:
                                                 if uniq_ps:
                                                     seq_id_mapping[test_seq_id] = ref_seq_id
@@ -918,7 +921,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
-                                        seqIdRemap = self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                        seqIdRemap =\
+                                            self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
                                         if len(seqIdRemap) != len(seqIdRemapFailed)\
                                            or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
                                            or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
@@ -1181,8 +1185,10 @@ class RosettaMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext']
+                         and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext']
+                            and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
             self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -1617,7 +1623,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     return ps['auth_chain_id'], seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)]
         if 'Check the 1th row of' in self.__getCurrentRestraint() and isFirstTrial and isPolySeq\
            and (self.__reasons is None
-                or not ('seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons or 'ext_chain_seq_id_remap' in self.__reasons)):
+                or not ('seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons
+                        or 'ext_chain_seq_id_remap' in self.__reasons)):
             try:
                 if not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])
                            and ('gap_in_auth_seq' not in _ps or _ps['auth_seq_id'][0] > 0)
@@ -1734,7 +1741,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                 if atomId is not None and cifCompId not in STD_MON_DICT and self.__mrAtomNameMapping:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCheck=self.__hasCoord)
                                     origCompId = ps['auth_comp_id'][idx]
-                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping,
+                                                                     seqId, origCompId, atomId, coordAtomSite)
                                 if atomId is None\
                                    or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                                     chainAssign.add((chainId, seqId_, cifCompId, True))
@@ -1754,7 +1762,8 @@ class RosettaMRParserListener(ParseTreeListener):
                         if self.__reasons is not None:
                             if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
                                and seqId in self.__reasons['non_poly_remap'][cifCompId]:
-                                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
+                                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'],
+                                                                                   None, chainId, seqId, cifCompId)
                                 if fixedSeqId is not None:
                                     seqId = _seqId = fixedSeqId
                         elif atomId in self.__uniqAtomIdToSeqKey:
@@ -1853,7 +1862,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
+                                      or self.__multiPolymer):
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
@@ -2125,7 +2135,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
+                                      or self.__multiPolymer):
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
@@ -2326,14 +2337,16 @@ class RosettaMRParserListener(ParseTreeListener):
                         hvyAtomId = None
                         for canHvyAtomId in hvyAtomIdList:
                             if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
-                                            representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                            representativeModelId=self.__representativeModelId,
+                                            representativeAltId=self.__representativeAltId,
                                             modelNumName=self.__modelNumName):
                                 hvyAtomId = canHvyAtomId
                                 break
                         if hvyAtomId is not None:
                             for _atomId_ in atomIdList:
                                 if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
-                                                representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                                representativeModelId=self.__representativeModelId,
+                                                representativeAltId=self.__representativeAltId,
                                                 modelNumName=self.__modelNumName):
                                     _atomId.append(_atomId_)
                     if len(_atomId) > 1:
@@ -2417,7 +2430,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for cifAtomId in _atomId:
 
-                if seqKey in self.__coordUnobsRes and cifCompId in STD_MON_DICT and self.__reasons is not None and 'non_poly_remap' in self.__reasons:
+                if seqKey in self.__coordUnobsRes and cifCompId in STD_MON_DICT\
+                   and self.__reasons is not None and 'non_poly_remap' in self.__reasons:
                     if self.__ccU.updateChemCompDict(cifCompId):
                         try:
                             next(cca for cca in self.__ccU.lastAtomList
@@ -3721,8 +3735,10 @@ class RosettaMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext']
+                         and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext']
+                            and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
             self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -5631,8 +5647,10 @@ class RosettaMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext']
+                         and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext']
+                            and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
                     self.__allowZeroUpperLimit = True
             self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 

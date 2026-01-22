@@ -949,7 +949,8 @@ class NmrDpRemediation:
 
                                                 try:
 
-                                                    lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
+                                                    lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
+                                                                                         None, None, None,
                                                                                          enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                                          excl_missing_data=self.__reg.excl_missing_data)[0]
 
@@ -990,7 +991,8 @@ class NmrDpRemediation:
                                                     # 'J-couplings', 'backbone chemical shifts'
 
                                                     elif self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
-                                                        sf.tags[itCol][1] = 'chemical_shift' if file_type == 'nef' else 'backbone chemical shifts'
+                                                        sf.tags[itCol][1] = 'chemical_shift' if file_type == 'nef'\
+                                                            else 'backbone chemical shifts'
 
                                                     # else:
                                                     #    sf.tags[itCol][1] = 'J-couplings'
@@ -1019,7 +1021,8 @@ class NmrDpRemediation:
 
                                                 try:
 
-                                                    lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
+                                                    lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
+                                                                                         None, None, None,
                                                                                          enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                                          excl_missing_data=self.__reg.excl_missing_data)[0]
 
@@ -2985,7 +2988,8 @@ class NmrDpRemediation:
                                       {'name': 'Auth_seq_ID', 'type': 'int'},
                                       {'name': 'Auth_comp_ID', 'type': 'str'},
                                       {'name': 'Auth_atom_ID', 'type': 'str'},
-                                      {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False, 'default': '1', 'default-from': 'parent'},
+                                      {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False,
+                                       'default': '1', 'default-from': 'parent'},
                                       {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                       ]
 
@@ -3513,8 +3517,8 @@ class NmrDpRemediation:
             ent_sf.add_tag('Number_of_monomers', None if entity_type in ('non-polymer', 'water') else item['num_of_monomers'] + nmr_ext_monomers)
             ent_sf.add_tag('Number_of_nonpolymer_components', None if entity_type not in ('non-polymer', 'water') else 1)
             ent_sf.add_tag('Paramagnetic',
-                           'no' if not self.__paramag or entity_type not in ('non-polymer', 'water') or item['comp_id'] not in PARAMAGNETIC_ELEMENTS
-                           else 'yes')
+                           'no' if not self.__paramag or entity_type not in ('non-polymer', 'water')
+                           or item['comp_id'] not in PARAMAGNETIC_ELEMENTS else 'yes')
 
             _label_asym_id = 'label_asym_id' if 'fixed_label_asym_id' not in item else 'fixed_label_asym_id'
 
@@ -4665,7 +4669,8 @@ class NmrDpRemediation:
                 if 'Data_file_name' not in tagNames:
                     sf.add_tag('Data_file_name', input_source_dic['original_file_name'])
 
-            items = ['ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
+            items = ['ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID',
+                     'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
                      'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
                      'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
                      'Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name',
@@ -4907,7 +4912,8 @@ class NmrDpRemediation:
                 if _seq_key in coord_atom_site\
                    and (coord_atom_site[_seq_key]['comp_id'] == comp_id
                         or (_seq_key not in coord_unobs_res and coord_atom_site[_seq_key]['comp_id'] not in STD_MON_DICT)
-                        or (_seq_key in coord_unobs_res and coord_unobs_res[_seq_key]['comp_id'] != comp_id)):  # 8b9r: A:24:VAL (unobserved), A:24:CU
+                        or (_seq_key in coord_unobs_res and coord_unobs_res[_seq_key]['comp_id'] != comp_id)):
+                    # 8b9r: A:24:VAL (unobserved), A:24:CU
                     _coord_atom_site = coord_atom_site[_seq_key]
                     _atom_site_atom_id = _coord_atom_site['atom_id']
                     # DAOTHER-8817
@@ -5004,13 +5010,15 @@ class NmrDpRemediation:
                             if self.__reg.annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:  # DAOTHER-9286
                                 atom_ids =\
                                     self.__reg.dpV.getAtomIdListInXplorForLigandRemap(comp_id,
-                                                                                      _row[23] if fill_orig_atom_id else atom_id, _coord_atom_site)
+                                                                                      _row[23] if fill_orig_atom_id else atom_id,
+                                                                                      _coord_atom_site)
                         else:
                             atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
                             if len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id:
                                 atom_ids =\
-                                    self.__reg.dpV.getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, _atom_site_atom_id,
-                                                                                                        ccU=self.__reg.ccU))
+                                    self.__reg.dpV.getAtomIdListInXplor(comp_id,
+                                                                        translateToStdAtomName(atom_id, comp_id, _atom_site_atom_id,
+                                                                                               ccU=self.__reg.ccU))
                                 if len(atom_ids) == 1 and atom_ids[0] in _atom_site_atom_id and atom_id not in _atom_site_atom_id:
                                     atom_id = atom_ids[0]
                             if self.__reg.annotation_mode and (len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id):  # DAOTHER-9286
@@ -5357,7 +5365,9 @@ class NmrDpRemediation:
                     else:
                         atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
                         if len(atom_ids) == 0:
-                            atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__reg.ccU))
+                            atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id,
+                                                                           translateToStdAtomName(atom_id, comp_id,
+                                                                                                  ccU=self.__reg.ccU))
                     if valid and len(missing_ch3) > 0:
                         if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
                            and len(self.__reg.dpV.getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
@@ -5987,7 +5997,8 @@ class NmrDpRemediation:
                                         _row[18] = comp_id
                                         # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                         cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                        and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
                                         if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
@@ -6013,7 +6024,8 @@ class NmrDpRemediation:
                                                                 and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
-                                                row[19] = atom_id = __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                                row[19] = atom_id =\
+                                                    __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
                                                 _seq_key = __seq_key
                                                 break
                                             if _atom_id in __coord_atom_site['atom_id']:
@@ -6076,7 +6088,8 @@ class NmrDpRemediation:
                                                     if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                             elif len_in_grp == 3:
                                                 _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                    if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                                    if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                    else atom_id
                                             elif _row[23] in EMPTY_VALUE:
                                                 _row[23] = atom_id
 
@@ -6156,7 +6169,8 @@ class NmrDpRemediation:
                                                             if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                                     elif len_in_grp == 3:
                                                         _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                            if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                                            if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                            else atom_id
                                                     elif _row[23] in EMPTY_VALUE:
                                                         _row[23] = atom_id
 
@@ -6357,7 +6371,8 @@ class NmrDpRemediation:
                                                 if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                         elif len_in_grp == 3:
                                             _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                else atom_id
                                         elif _row[23] in EMPTY_VALUE:
                                             _row[23] = atom_id
 
@@ -6461,7 +6476,8 @@ class NmrDpRemediation:
                                                         if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                                 elif len_in_grp == 3:
                                                     _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                        if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                                        if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                        else atom_id
                                                 elif _row[23] in EMPTY_VALUE:
                                                     _row[23] = atom_id
 
@@ -6803,7 +6819,8 @@ class NmrDpRemediation:
                                                 try:
                                                     orig_asym_id = row[orig_asym_id_col]
                                                     orig_seq_id = int(row[orig_seq_id_col])
-                                                    _item = next((item for item in entity_assembly if item['auth_asym_id'] == orig_asym_id), None)
+                                                    _item = next((item for item in entity_assembly
+                                                                  if item['auth_asym_id'] == orig_asym_id), None)
                                                     if _item is not None:
                                                         _entity_assembly_id = _item['entity_assembly_id']
                                                         _entity_id = _item['entity_id']
@@ -6841,7 +6858,8 @@ class NmrDpRemediation:
                                                                           and v[2] == _entity_id), None)
                                                         if __seq_key is not None and comp_id == __seq_key[2]:
                                                             comp_id = __seq_key[2]
-                                                            _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, _seq_id, _seq_id
+                                                            _row[1], _row[2], _row[3], _row[4] =\
+                                                                _entity_assembly_id, _entity_id, _seq_id, _seq_id
                                                             _seq_key = (__seq_key[0], __seq_key[1])
                                                             _row[16], _row[17], _row[18], _row[19] =\
                                                                 __seq_key[0], __seq_key[1], comp_id, atom_id
@@ -6943,11 +6961,13 @@ class NmrDpRemediation:
                                                 _entity_id = item['entity_id']
 
                                                 __seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                                  if v[0] == _entity_assembly_id and v[1] == seq_id and v[2] == _entity_id), None)
+                                                                  if v[0] == _entity_assembly_id and v[1] == seq_id
+                                                                  and v[2] == _entity_id), None)
                                                 if __seq_key is not None:
                                                     found = True
                                                     comp_id = __seq_key[2]
-                                                    _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
+                                                    _row[1], _row[2], _row[3], _row[4] =\
+                                                        _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
                                                     _seq_key = (__seq_key[0], __seq_key[1])
                                                     _row[16], _row[17], _row[18], _row[19] =\
                                                         __seq_key[0], __seq_key[1], comp_id, atom_id
@@ -6991,7 +7011,8 @@ class NmrDpRemediation:
                                                     if cc_type == __cc_type:  # DAOTHER-9198
                                                         found = True
                                                         comp_id = __seq_key[2]
-                                                        _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, __seq_key[1], __seq_key[1]
+                                                        _row[1], _row[2], _row[3], _row[4] =\
+                                                            entity_assembly_id, entity_id, __seq_key[1], __seq_key[1]
                                                         _seq_key = (__seq_key[0], __seq_key[1])
                                                         _row[16], _row[17], _row[18], _row[19] =\
                                                             __seq_key[0], __seq_key[1], comp_id, atom_id
@@ -7145,7 +7166,9 @@ class NmrDpRemediation:
 
                             atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
                             if len(atom_ids) == 0 or atom_ids[0] not in self.__reg.csStat.getAllAtoms(comp_id):
-                                atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__reg.ccU))
+                                atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id,
+                                                                               translateToStdAtomName(atom_id, comp_id,
+                                                                                                      ccU=self.__reg.ccU))
                             len_atom_ids = len(atom_ids)
                             if len_atom_ids == 0 or comp_id_bmrb_only or _row[24] == 'UNMAPPED':
                                 _row[6] = atom_id
@@ -8186,7 +8209,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8207,7 +8231,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8254,7 +8279,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8275,7 +8301,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8322,7 +8349,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8343,7 +8371,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8390,7 +8419,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8411,7 +8441,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8458,7 +8489,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8479,7 +8511,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8526,7 +8559,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8547,7 +8581,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8594,7 +8629,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8615,7 +8651,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8662,7 +8699,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8683,7 +8721,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8730,7 +8769,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id)
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -8750,7 +8790,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id)
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -8796,7 +8837,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8817,7 +8859,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8864,7 +8907,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8885,7 +8929,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -8933,7 +8978,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id,
                                           csLoops=self.__reg.lp_data['chem_shift'])
 
             if listener is not None:
@@ -8955,7 +9001,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id,
                                                   csLoops=self.__reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
@@ -9002,7 +9049,8 @@ class NmrDpRemediation:
 
             listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self.__reg.entry_id)
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -9022,7 +9070,8 @@ class NmrDpRemediation:
 
                     listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                  entryId=self.__reg.entry_id)
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -9113,7 +9162,8 @@ class NmrDpRemediation:
                                 ps['chain_id'] = chain_mapping[ps['chain_id']]
 
                         seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                                                                poly_seq_model, poly_seq_rst, seq_align)
 
                     trimSequenceAlignment(seq_align, chain_assign)
 
@@ -9600,7 +9650,9 @@ class NmrDpRemediation:
             entity_assembly = {}
             for item in self.__reg.caC['entity_assembly']:
                 _auth_asym_id = 'auth_asym_id' if 'fixed_auth_asym_id' not in item else 'fixed_auth_asym_id'
-                entity_assembly[str(item['entity_assembly_id'])] = {'entity_id': item['entity_id'], 'auth_asym_id': item[_auth_asym_id].split(',')[0]}
+                entity_assembly[str(item['entity_assembly_id'])] =\
+                    {'entity_id': item['entity_id'],
+                     'auth_asym_id': item[_auth_asym_id].split(',')[0]}
 
         create_sf_dict = True
 
@@ -9856,7 +9908,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -9876,7 +9929,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -9915,7 +9969,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -9935,7 +9990,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -9974,7 +10030,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -9994,7 +10051,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10033,7 +10091,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10053,7 +10112,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10092,7 +10152,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10112,7 +10173,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10151,7 +10213,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10171,7 +10234,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10210,7 +10274,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10230,7 +10295,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10269,7 +10335,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10289,7 +10356,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10328,7 +10396,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10348,7 +10417,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11364,7 +11434,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = reader.getReasons()
@@ -11384,7 +11455,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                         if listener is not None:
                             reasons = reader.getReasons()
@@ -11446,7 +11518,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -11469,7 +11542,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -11514,7 +11588,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -11537,7 +11612,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -11582,7 +11658,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -11605,7 +11682,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -11650,7 +11728,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -11673,7 +11752,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -11725,7 +11805,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -11747,7 +11828,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -11778,7 +11860,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=__list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -11829,7 +11912,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -11850,7 +11934,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -11880,7 +11965,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=__list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -11946,7 +12032,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -11964,7 +12051,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -11991,7 +12079,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=__list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12039,7 +12128,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12062,7 +12152,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12107,7 +12198,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12130,7 +12222,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12174,7 +12267,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     deal_res_warn_message(file_name, listener, ignore_error)
@@ -12222,7 +12316,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12239,7 +12334,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -12265,7 +12361,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=__list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12316,7 +12413,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12334,7 +12432,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -12361,7 +12460,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=__list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12410,7 +12510,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12429,7 +12530,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -12457,7 +12559,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=__list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12502,7 +12605,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12525,7 +12629,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12577,7 +12682,8 @@ class NmrDpRemediation:
 
                 listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter, entryId=self.__reg.entry_id)
+                                              listIdCounter=self.__reg.list_id_counter,
+                                              entryId=self.__reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12599,7 +12705,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -12630,7 +12737,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__reg.entry_id)
+                                                      listIdCounter=__list_id_counter,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12707,7 +12815,8 @@ class NmrDpRemediation:
                                 ps['chain_id'] = chain_mapping[ps['chain_id']]
 
                         seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                                                                poly_seq_model, poly_seq_rst, seq_align)
 
                     trimSequenceAlignment(seq_align, chain_assign)
 
@@ -13336,7 +13445,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 if None not in (parser_err_listener, listener)\
@@ -13362,7 +13472,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -13412,7 +13523,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 if None not in (parser_err_listener, listener)\
@@ -13439,7 +13551,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -13488,7 +13601,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -13519,7 +13633,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -13568,7 +13683,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -13599,7 +13715,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -13648,7 +13765,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -13679,7 +13797,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -13728,7 +13847,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -13759,7 +13879,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -13810,7 +13931,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -13842,7 +13964,8 @@ class NmrDpRemediation:
                     listener, parser_err_listener, lexer_err_listener =\
                         reader.parse(file_path, self.__reg.cifPath,
                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                     listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                     listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                     entryId=self.__reg.entry_id,
                                      csLoops=self.__reg.lp_data['chem_shift'])
 
                     _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -13873,7 +13996,8 @@ class NmrDpRemediation:
                         listener, parser_err_listener, lexer_err_listener =\
                             reader.parse(file_path, self.__reg.cifPath,
                                          createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                         listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                         listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                         entryId=self.__reg.entry_id,
                                          csLoops=self.__reg.lp_data['chem_shift'])
 
                         _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -13933,7 +14057,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -13982,7 +14107,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -14013,7 +14139,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -14063,7 +14190,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
@@ -14088,7 +14216,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -14138,7 +14267,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -14170,7 +14300,8 @@ class NmrDpRemediation:
                     listener, parser_err_listener, lexer_err_listener =\
                         reader.parse(file_path, self.__reg.cifPath,
                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                     listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                     listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                     entryId=self.__reg.entry_id,
                                      csLoops=self.__reg.lp_data['chem_shift'])
 
                     _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -14211,7 +14342,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -14260,7 +14392,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -14291,7 +14424,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -14341,7 +14475,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id,
                                  csLoops=self.__reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -14373,7 +14508,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id,
                                                       csLoops=self.__reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
@@ -14422,7 +14558,8 @@ class NmrDpRemediation:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -14452,7 +14589,8 @@ class NmrDpRemediation:
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__reg.entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -14502,7 +14640,8 @@ class NmrDpRemediation:
 
                     # prevent duplication of spectral peak list
                     data_file_name = get_first_sf_tag(sf['saveframe'], 'Data_file_name')
-                    if data_file_name not in EMPTY_VALUE and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
+                    if data_file_name not in EMPTY_VALUE\
+                       and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
                         continue
 
                     try:
@@ -14531,7 +14670,8 @@ class NmrDpRemediation:
             file_type = 'nm-pea-any'
 
             seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                                                    poly_seq_model, poly_seq_rst, seq_align)
 
             if chain_assign is not None:
 
@@ -14553,7 +14693,8 @@ class NmrDpRemediation:
                                 ps['chain_id'] = chain_mapping[ps['chain_id']]
 
                         seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                                                                poly_seq_model, poly_seq_rst, seq_align)
 
                     trimSequenceAlignment(seq_align, chain_assign)
 
@@ -16449,7 +16590,9 @@ class NmrDpRemediation:
                             prev_id = _id
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
-                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE else None
+                            upper_limit =\
+                                float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE\
+                                else None
 
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
@@ -16592,7 +16735,9 @@ class NmrDpRemediation:
                             prev_id = _id
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
-                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE else None
+                            upper_limit =\
+                                float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in EMPTY_VALUE\
+                                else None
 
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
@@ -17665,7 +17810,8 @@ class NmrDpRemediation:
 
         # resolve CYANA distance subtype
 
-        dat = cf_loop.get_tag(['Constraint_filename', 'Software_name', 'Block_ID', 'Constraint_type', 'Constraint_subtype', 'Constraint_subsubtype'])
+        dat = cf_loop.get_tag(['Constraint_filename', 'Software_name', 'Block_ID',
+                               'Constraint_type', 'Constraint_subtype', 'Constraint_subsubtype'])
 
         for dist_subtype in ['NOE', 'ROE', 'hydrogen bond', 'disulfide bond', 'diselenide bond']:
             cyana_subtype = {}
@@ -18081,7 +18227,8 @@ class NmrDpRemediation:
                         f"Please verify {desc} and re-upload valid restraint file(s)."
 
                     self.__reg.report.error.appendDescription('missing_mandatory_content',
-                                                              {'file_name': os.path.basename(self.__reg.dstPath), 'description': err})
+                                                              {'file_name': os.path.basename(self.__reg.dstPath),
+                                                               'description': err})
 
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}\n")

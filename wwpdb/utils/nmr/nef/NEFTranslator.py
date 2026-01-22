@@ -14,7 +14,8 @@
 # 05-Feb-2020  M. Yokochi - convert 'HN' in amino acids to 'H' while NEF->NMR-STAR translation (v2.0.3)
 # 05-Feb-2020  M. Yokochi - rescue NEF atom_id w/o wild card notation in methyl group (v2.0.3)
 # 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methyne/methyl group (v2.0.3)
-# 26-Feb-2020  M. Yokochi - additional support for abnormal NEF atom nomenclature, e.g. HDy% in ASN, HEy% in GLN, seen in CCPN_2mtv_docr.nef (v2.0.4)
+# 26-Feb-2020  M. Yokochi - additional support for abnormal NEF atom nomenclature, e.g. HDy% in ASN, HEy% in GLN, seen in CCPN_2mtv_docr.nef
+#                           (v2.0.4)
 # 04-Mar-2020  M. Yokochi - support 'default' of key items and 'default-from' of data items (v2.0.4)
 # 05-Mar-2020  M. Yokochi - support alternative enumeration definition, 'enum-alt' (v2.0.5, DAOTHER-5485)
 # 05-Mar-2020  M. Yokochi - bidirectional convert between restraint_origin (NEF) and Content_type (NMR-STAR) (v2.0.6, DAOTHER-5485)
@@ -60,7 +61,8 @@
 # 19-Nov-2020  M. Yokochi - add support for HEM, HEB, HEC methyl groups (v2.9.3, DAOTHER-6366)
 # 25-Jan-2021  M. Yokochi - add 'positive-int-as-str' value type to simplify code for Entity_assembly_ID, and chain_code (v2.9.4)
 # 04-Feb-2021  M. Yokochi - support 3 letter chain code (v2.9.5, DAOTHER-5896, DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
-# 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (v2.9.6, DAOTHER-6694)
+# 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case
+#                           (v2.9.6, DAOTHER-6694)
 # 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (v2.9.7, DAOTHER-6327)
 # 25-Mar-2021  M. Yokochi - fix crash during NMR-STAR to NEF atom name conversion (v2.9.8, DAOTHER-6128,
 #                           bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS, nef_atom_id: Hx%, Hy% point to [H11A, H12, H13],
@@ -103,7 +105,8 @@
 # 28-Jun-2024  M. Yokochi - throw error for key items with empty value (v3.6.2, DAOTHER-9520, 2nd case)
 # 03-Jul-2024  M. Yokochi - convert protonated DC/C residue to valid DNR/CH respectively because of existence of H3/H3+ assignment (v3.6.3)
 # 08-Aug-2024  M. Yokochi - remove deprecated function (star_data_to_nmrstar)
-#                           remove dependency of CSV resource files (NEF_NMRSTAR_equivalence.csv, NEF_mandatory.csv, NMR-STAR_mandatory.csv) (v4.0.0)
+#                           remove dependency of CSV resource files (NEF_NMRSTAR_equivalence.csv, NEF_mandatory.csv, NMR-STAR_mandatory.csv)
+#                           (v4.0.0)
 # 08-Aug-2024  M. Yokochi - conform to the NEF specification 3.3 (sf_framecode must start with sf_category) and
 #                           preserve the original NMR-STAR frame codes provided by author through bidirectional conversion (v4.0.0, DAOTHER-9623)
 # 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2 (v4.1.0)
@@ -111,7 +114,8 @@
 # 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
 # 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
 # 09-Apr-2025  M. Yokochi - permit missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
-# 23-May-2025  M. Yokochi - resolve pseudo atom name of non-standard residue based on local CCD derived from the coordinated (v4.5.0, DAOTHER-10105)
+# 23-May-2025  M. Yokochi - resolve pseudo atom name of non-standard residue based on local CCD derived from the coordinated
+#                           (v4.5.0, DAOTHER-10105)
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
 ##
@@ -453,7 +457,8 @@ class NEFTranslator:
                          ]
 
         # nef tag, nmr-star auth tag, nmr-star tag
-        self.tagMap = [('_nef_program_script.program_name', '_Software_applied_methods.Software_name', '_Software_applied_methods.Software_name'),
+        self.tagMap = [('_nef_program_script.program_name',
+                        '_Software_applied_methods.Software_name', '_Software_applied_methods.Software_name'),
                        ('_nef_program_script.script_name', '_Software_applied_methods.Script_name', '_Software_applied_methods.Script_name'),
                        ('_nef_program_script.script', '_Software_applied_methods.Script', '_Software_applied_methods.Script'),
                        ('_nef_run_history.run_number', '_History.Run_number', '_History.Run_number'),
@@ -490,8 +495,10 @@ class NEFTranslator:
                        ('_nef_covalent_links.sequence_code_2', '_Bond.Auth_seq_ID_2', '_Bond.Comp_index_ID_2'),
                        ('_nef_covalent_links.residue_name_2', '_Bond.Auth_comp_ID_2', '_Bond.Comp_ID_2'),
                        ('_nef_covalent_links.atom_name_2', '_Bond.Auth_atom_ID_2', '_Bond.Atom_ID_2'),
-                       ('_nef_chemical_shift_list.sf_category', '_Assigned_chem_shift_list.Sf_category', '_Assigned_chem_shift_list.Sf_category'),
-                       ('_nef_chemical_shift_list.sf_framecode', '_Assigned_chem_shift_list.Sf_framecode', '_Assigned_chem_shift_list.Sf_framecode'),
+                       ('_nef_chemical_shift_list.sf_category',
+                        '_Assigned_chem_shift_list.Sf_category', '_Assigned_chem_shift_list.Sf_category'),
+                       ('_nef_chemical_shift_list.sf_framecode',
+                        '_Assigned_chem_shift_list.Sf_framecode', '_Assigned_chem_shift_list.Sf_framecode'),
                        ('_nef_chemical_shift_list.atom_chemical_shift_units', '', ''),
                        ('_nef_chemical_shift.chain_code', '_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Entity_assembly_ID'),
                        ('_nef_chemical_shift.sequence_code', '_Atom_chem_shift.Auth_seq_ID', '_Atom_chem_shift.Comp_index_ID'),
@@ -501,7 +508,8 @@ class NEFTranslator:
                        ('_nef_chemical_shift.isotope_number', '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Atom_isotope_number'),
                        ('_nef_chemical_shift.value', '_Atom_chem_shift.Val', '_Atom_chem_shift.Val'),
                        ('_nef_chemical_shift.value_uncertainty', '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Val_err'),
-                       ('_nef_distance_restraint_list.sf_category', '_Gen_dist_constraint_list.Sf_category', '_Gen_dist_constraint_list.Sf_category'),
+                       ('_nef_distance_restraint_list.sf_category',
+                        '_Gen_dist_constraint_list.Sf_category', '_Gen_dist_constraint_list.Sf_category'),
                        ('_nef_distance_restraint_list.sf_framecode',
                         '_Gen_dist_constraint_list.Sf_framecode', '_Gen_dist_constraint_list.Sf_framecode'),
                        ('_nef_distance_restraint_list.potential_type',
@@ -512,12 +520,16 @@ class NEFTranslator:
                        ('_nef_distance_restraint.restraint_id', '_Gen_dist_constraint.ID', '_Gen_dist_constraint.ID'),
                        ('_nef_distance_restraint.restraint_combination_id',
                         '_Gen_dist_constraint.Combination_ID', '_Gen_dist_constraint.Combination_ID'),
-                       ('_nef_distance_restraint.chain_code_1', '_Gen_dist_constraint.Auth_asym_ID_1', '_Gen_dist_constraint.Entity_assembly_ID_1'),
-                       ('_nef_distance_restraint.sequence_code_1', '_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Comp_index_ID_1'),
+                       ('_nef_distance_restraint.chain_code_1',
+                        '_Gen_dist_constraint.Auth_asym_ID_1', '_Gen_dist_constraint.Entity_assembly_ID_1'),
+                       ('_nef_distance_restraint.sequence_code_1',
+                        '_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Comp_index_ID_1'),
                        ('_nef_distance_restraint.residue_name_1', '_Gen_dist_constraint.Auth_comp_ID_1', '_Gen_dist_constraint.Comp_ID_1'),
                        ('_nef_distance_restraint.atom_name_1', '_Gen_dist_constraint.Auth_atom_ID_1', '_Gen_dist_constraint.Atom_ID_1'),
-                       ('_nef_distance_restraint.chain_code_2', '_Gen_dist_constraint.Auth_asym_ID_2', '_Gen_dist_constraint.Entity_assembly_ID_2'),
-                       ('_nef_distance_restraint.sequence_code_2', '_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Comp_index_ID_2'),
+                       ('_nef_distance_restraint.chain_code_2',
+                        '_Gen_dist_constraint.Auth_asym_ID_2', '_Gen_dist_constraint.Entity_assembly_ID_2'),
+                       ('_nef_distance_restraint.sequence_code_2',
+                        '_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Comp_index_ID_2'),
                        ('_nef_distance_restraint.residue_name_2', '_Gen_dist_constraint.Auth_comp_ID_2', '_Gen_dist_constraint.Comp_ID_2'),
                        ('_nef_distance_restraint.atom_name_2', '_Gen_dist_constraint.Auth_atom_ID_2', '_Gen_dist_constraint.Atom_ID_2'),
                        ('_nef_distance_restraint.weight', '_Gen_dist_constraint.Weight', '_Gen_dist_constraint.Weight'),
@@ -548,26 +560,34 @@ class NEFTranslator:
                         '_Torsion_angle_constraint.Auth_asym_ID_1', '_Torsion_angle_constraint.Entity_assembly_ID_1'),
                        ('_nef_dihedral_restraint.sequence_code_1',
                         '_Torsion_angle_constraint.Auth_seq_ID_1', '_Torsion_angle_constraint.Comp_index_ID_1'),
-                       ('_nef_dihedral_restraint.residue_name_1', '_Torsion_angle_constraint.Auth_comp_ID_1', '_Torsion_angle_constraint.Comp_ID_1'),
-                       ('_nef_dihedral_restraint.atom_name_1', '_Torsion_angle_constraint.Auth_atom_ID_1', '_Torsion_angle_constraint.Atom_ID_1'),
+                       ('_nef_dihedral_restraint.residue_name_1',
+                        '_Torsion_angle_constraint.Auth_comp_ID_1', '_Torsion_angle_constraint.Comp_ID_1'),
+                       ('_nef_dihedral_restraint.atom_name_1',
+                        '_Torsion_angle_constraint.Auth_atom_ID_1', '_Torsion_angle_constraint.Atom_ID_1'),
                        ('_nef_dihedral_restraint.chain_code_2',
                         '_Torsion_angle_constraint.Auth_asym_ID_2', '_Torsion_angle_constraint.Entity_assembly_ID_2'),
                        ('_nef_dihedral_restraint.sequence_code_2',
                         '_Torsion_angle_constraint.Auth_seq_ID_2', '_Torsion_angle_constraint.Comp_index_ID_2'),
-                       ('_nef_dihedral_restraint.residue_name_2', '_Torsion_angle_constraint.Auth_comp_ID_2', '_Torsion_angle_constraint.Comp_ID_2'),
-                       ('_nef_dihedral_restraint.atom_name_2', '_Torsion_angle_constraint.Auth_atom_ID_2', '_Torsion_angle_constraint.Atom_ID_2'),
+                       ('_nef_dihedral_restraint.residue_name_2',
+                        '_Torsion_angle_constraint.Auth_comp_ID_2', '_Torsion_angle_constraint.Comp_ID_2'),
+                       ('_nef_dihedral_restraint.atom_name_2',
+                        '_Torsion_angle_constraint.Auth_atom_ID_2', '_Torsion_angle_constraint.Atom_ID_2'),
                        ('_nef_dihedral_restraint.chain_code_3',
                         '_Torsion_angle_constraint.Auth_asym_ID_3', '_Torsion_angle_constraint.Entity_assembly_ID_3'),
                        ('_nef_dihedral_restraint.sequence_code_3',
                         '_Torsion_angle_constraint.Auth_seq_ID_3', '_Torsion_angle_constraint.Comp_index_ID_3'),
-                       ('_nef_dihedral_restraint.residue_name_3', '_Torsion_angle_constraint.Auth_comp_ID_3', '_Torsion_angle_constraint.Comp_ID_3'),
-                       ('_nef_dihedral_restraint.atom_name_3', '_Torsion_angle_constraint.Auth_atom_ID_3', '_Torsion_angle_constraint.Atom_ID_3'),
+                       ('_nef_dihedral_restraint.residue_name_3',
+                        '_Torsion_angle_constraint.Auth_comp_ID_3', '_Torsion_angle_constraint.Comp_ID_3'),
+                       ('_nef_dihedral_restraint.atom_name_3',
+                        '_Torsion_angle_constraint.Auth_atom_ID_3', '_Torsion_angle_constraint.Atom_ID_3'),
                        ('_nef_dihedral_restraint.chain_code_4',
                         '_Torsion_angle_constraint.Auth_asym_ID_4', '_Torsion_angle_constraint.Entity_assembly_ID_4'),
                        ('_nef_dihedral_restraint.sequence_code_4',
                         '_Torsion_angle_constraint.Auth_seq_ID_4', '_Torsion_angle_constraint.Comp_index_ID_4'),
-                       ('_nef_dihedral_restraint.residue_name_4', '_Torsion_angle_constraint.Auth_comp_ID_4', '_Torsion_angle_constraint.Comp_ID_4'),
-                       ('_nef_dihedral_restraint.atom_name_4', '_Torsion_angle_constraint.Auth_atom_ID_4', '_Torsion_angle_constraint.Atom_ID_4'),
+                       ('_nef_dihedral_restraint.residue_name_4',
+                        '_Torsion_angle_constraint.Auth_comp_ID_4', '_Torsion_angle_constraint.Comp_ID_4'),
+                       ('_nef_dihedral_restraint.atom_name_4',
+                        '_Torsion_angle_constraint.Auth_atom_ID_4', '_Torsion_angle_constraint.Atom_ID_4'),
                        ('_nef_dihedral_restraint.weight', '_Torsion_angle_constraint.Weight', '_Torsion_angle_constraint.Weight'),
                        ('_nef_dihedral_restraint.target_value',
                         '_Torsion_angle_constraint.Angle_target_val', '_Torsion_angle_constraint.Angle_target_val'),
@@ -586,8 +606,10 @@ class NEFTranslator:
                        ('_nef_rdc_restraint_list.sf_category', '_RDC_constraint_list.Sf_category', '_RDC_constraint_list.Sf_category'),
                        ('_nef_rdc_restraint_list.sf_framecode', '_RDC_constraint_list.Sf_framecode', '_RDC_constraint_list.Sf_framecode'),
                        ('_nef_rdc_restraint_list.potential_type', '_RDC_constraint_list.Potential_type', '_RDC_constraint_list.Potential_type'),
-                       ('_nef_rdc_restraint_list.restraint_origin', '_RDC_constraint_list.Constraint_type', '_RDC_constraint_list.Constraint_type'),
-                       ('_nef_rdc_restraint_list.tensor_magnitude', '_RDC_constraint_list.Tensor_magnitude', '_RDC_constraint_list.Tensor_magnitude'),
+                       ('_nef_rdc_restraint_list.restraint_origin',
+                        '_RDC_constraint_list.Constraint_type', '_RDC_constraint_list.Constraint_type'),
+                       ('_nef_rdc_restraint_list.tensor_magnitude',
+                        '_RDC_constraint_list.Tensor_magnitude', '_RDC_constraint_list.Tensor_magnitude'),
                        ('_nef_rdc_restraint_list.tensor_rhombicity',
                         '_RDC_constraint_list.Tensor_rhombicity', '_RDC_constraint_list.Tensor_rhombicity'),
                        ('_nef_rdc_restraint_list.tensor_chain_code',
@@ -611,12 +633,15 @@ class NEFTranslator:
                        ('_nef_rdc_restraint.target_value', '_RDC_constraint.Target_value', '_RDC_constraint.Target_value'),
                        ('_nef_rdc_restraint.target_value_uncertainty',
                         '_RDC_constraint.Target_value_uncertainty', '_RDC_constraint.Target_value_uncertainty'),
-                       ('_nef_rdc_restraint.lower_linear_limit', '_RDC_constraint.RDC_lower_linear_limit', '_RDC_constraint.RDC_lower_linear_limit'),
+                       ('_nef_rdc_restraint.lower_linear_limit',
+                        '_RDC_constraint.RDC_lower_linear_limit', '_RDC_constraint.RDC_lower_linear_limit'),
                        ('_nef_rdc_restraint.lower_limit', '_RDC_constraint.RDC_lower_bound', '_RDC_constraint.RDC_lower_bound'),
                        ('_nef_rdc_restraint.upper_limit', '_RDC_constraint.RDC_upper_bound', '_RDC_constraint.RDC_upper_bound'),
-                       ('_nef_rdc_restraint.upper_linear_limit', '_RDC_constraint.RDC_upper_linear_limit', '_RDC_constraint.RDC_upper_linear_limit'),
+                       ('_nef_rdc_restraint.upper_linear_limit',
+                        '_RDC_constraint.RDC_upper_linear_limit', '_RDC_constraint.RDC_upper_linear_limit'),
                        ('_nef_rdc_restraint.scale', '_RDC_constraint.RDC_val_scale_factor', '_RDC_constraint.RDC_val_scale_factor'),
-                       ('_nef_rdc_restraint.distance_dependent', '_RDC_constraint.RDC_distant_dependent', '_RDC_constraint.RDC_distant_dependent'),
+                       ('_nef_rdc_restraint.distance_dependent',
+                        '_RDC_constraint.RDC_distant_dependent', '_RDC_constraint.RDC_distant_dependent'),
                        ('_nef_nmr_spectrum.sf_category', '_Spectral_peak_list.Sf_category', '_Spectral_peak_list.Sf_category'),
                        ('_nef_nmr_spectrum.sf_framecode', '_Spectral_peak_list.Sf_framecode', '_Spectral_peak_list.Sf_framecode'),
                        ('_nef_nmr_spectrum.num_dimensions',
@@ -650,35 +675,50 @@ class NEFTranslator:
                        ('_nef_peak.height', '_Peak_row_format.Height', '_Peak_row_format.Height'),
                        ('_nef_peak.height_uncertainty', '_Peak_row_format.Height_uncertainty', '_Peak_row_format.Height_uncertainty'),
                        ('_nef_peak.position_1', '_Peak_row_format.Position_1', '_Peak_row_format.Position_1'),
-                       ('_nef_peak.position_uncertainty_1', '_Peak_row_format.Position_uncertainty_1', '_Peak_row_format.Position_uncertainty_1'),
+                       ('_nef_peak.position_uncertainty_1',
+                        '_Peak_row_format.Position_uncertainty_1', '_Peak_row_format.Position_uncertainty_1'),
                        ('_nef_peak.position_2', '_Peak_row_format.Position_2', '_Peak_row_format.Position_2'),
-                       ('_nef_peak.position_uncertainty_2', '_Peak_row_format.Position_uncertainty_2', '_Peak_row_format.Position_uncertainty_2'),
+                       ('_nef_peak.position_uncertainty_2',
+                        '_Peak_row_format.Position_uncertainty_2', '_Peak_row_format.Position_uncertainty_2'),
                        ('_nef_peak.position_3', '_Peak_row_format.Position_3', '_Peak_row_format.Position_3'),
-                       ('_nef_peak.position_uncertainty_3', '_Peak_row_format.Position_uncertainty_3', '_Peak_row_format.Position_uncertainty_3'),
+                       ('_nef_peak.position_uncertainty_3',
+                        '_Peak_row_format.Position_uncertainty_3', '_Peak_row_format.Position_uncertainty_3'),
                        ('_nef_peak.position_4', '_Peak_row_format.Position_4', '_Peak_row_format.Position_4'),
-                       ('_nef_peak.position_uncertainty_4', '_Peak_row_format.Position_uncertainty_4', '_Peak_row_format.Position_uncertainty_4'),
+                       ('_nef_peak.position_uncertainty_4',
+                        '_Peak_row_format.Position_uncertainty_4', '_Peak_row_format.Position_uncertainty_4'),
                        ('_nef_peak.position_5', '_Peak_row_format.Position_5', '_Peak_row_format.Position_5'),
-                       ('_nef_peak.position_uncertainty_5', '_Peak_row_format.Position_uncertainty_5', '_Peak_row_format.Position_uncertainty_5'),
+                       ('_nef_peak.position_uncertainty_5',
+                        '_Peak_row_format.Position_uncertainty_5', '_Peak_row_format.Position_uncertainty_5'),
                        ('_nef_peak.position_6', '_Peak_row_format.Position_6', '_Peak_row_format.Position_6'),
-                       ('_nef_peak.position_uncertainty_6', '_Peak_row_format.Position_uncertainty_6', '_Peak_row_format.Position_uncertainty_6'),
+                       ('_nef_peak.position_uncertainty_6',
+                        '_Peak_row_format.Position_uncertainty_6', '_Peak_row_format.Position_uncertainty_6'),
                        ('_nef_peak.position_7', '_Peak_row_format.Position_7', '_Peak_row_format.Position_7'),
-                       ('_nef_peak.position_uncertainty_7', '_Peak_row_format.Position_uncertainty_7', '_Peak_row_format.Position_uncertainty_7'),
+                       ('_nef_peak.position_uncertainty_7',
+                        '_Peak_row_format.Position_uncertainty_7', '_Peak_row_format.Position_uncertainty_7'),
                        ('_nef_peak.position_8', '_Peak_row_format.Position_8', '_Peak_row_format.Position_8'),
-                       ('_nef_peak.position_uncertainty_8', '_Peak_row_format.Position_uncertainty_8', '_Peak_row_format.Position_uncertainty_8'),
+                       ('_nef_peak.position_uncertainty_8',
+                        '_Peak_row_format.Position_uncertainty_8', '_Peak_row_format.Position_uncertainty_8'),
                        ('_nef_peak.position_9', '_Peak_row_format.Position_9', '_Peak_row_format.Position_9'),
-                       ('_nef_peak.position_uncertainty_9', '_Peak_row_format.Position_uncertainty_9', '_Peak_row_format.Position_uncertainty_9'),
+                       ('_nef_peak.position_uncertainty_9',
+                        '_Peak_row_format.Position_uncertainty_9', '_Peak_row_format.Position_uncertainty_9'),
                        ('_nef_peak.position_10', '_Peak_row_format.Position_10', '_Peak_row_format.Position_10'),
-                       ('_nef_peak.position_uncertainty_10', '_Peak_row_format.Position_uncertainty_10', '_Peak_row_format.Position_uncertainty_10'),
+                       ('_nef_peak.position_uncertainty_10',
+                        '_Peak_row_format.Position_uncertainty_10', '_Peak_row_format.Position_uncertainty_10'),
                        ('_nef_peak.position_11', '_Peak_row_format.Position_11', '_Peak_row_format.Position_11'),
-                       ('_nef_peak.position_uncertainty_11', '_Peak_row_format.Position_uncertainty_11', '_Peak_row_format.Position_uncertainty_11'),
+                       ('_nef_peak.position_uncertainty_11',
+                        '_Peak_row_format.Position_uncertainty_11', '_Peak_row_format.Position_uncertainty_11'),
                        ('_nef_peak.position_12', '_Peak_row_format.Position_12', '_Peak_row_format.Position_12'),
-                       ('_nef_peak.position_uncertainty_12', '_Peak_row_format.Position_uncertainty_12', '_Peak_row_format.Position_uncertainty_12'),
+                       ('_nef_peak.position_uncertainty_12',
+                        '_Peak_row_format.Position_uncertainty_12', '_Peak_row_format.Position_uncertainty_12'),
                        ('_nef_peak.position_13', '_Peak_row_format.Position_13', '_Peak_row_format.Position_13'),
-                       ('_nef_peak.position_uncertainty_13', '_Peak_row_format.Position_uncertainty_13', '_Peak_row_format.Position_uncertainty_13'),
+                       ('_nef_peak.position_uncertainty_13',
+                        '_Peak_row_format.Position_uncertainty_13', '_Peak_row_format.Position_uncertainty_13'),
                        ('_nef_peak.position_14', '_Peak_row_format.Position_14', '_Peak_row_format.Position_14'),
-                       ('_nef_peak.position_uncertainty_14', '_Peak_row_format.Position_uncertainty_14', '_Peak_row_format.Position_uncertainty_14'),
+                       ('_nef_peak.position_uncertainty_14',
+                        '_Peak_row_format.Position_uncertainty_14', '_Peak_row_format.Position_uncertainty_14'),
                        ('_nef_peak.position_15', '_Peak_row_format.Position_15', '_Peak_row_format.Position_15'),
-                       ('_nef_peak.position_uncertainty_15', '_Peak_row_format.Position_uncertainty_15', '_Peak_row_format.Position_uncertainty_15'),
+                       ('_nef_peak.position_uncertainty_15',
+                        '_Peak_row_format.Position_uncertainty_15', '_Peak_row_format.Position_uncertainty_15'),
                        ('_nef_peak.chain_code_1', '_Peak_row_format.Auth_asym_ID_1', '_Peak_row_format.Entity_assembly_ID_1'),
                        ('_nef_peak.sequence_code_1', '_Peak_row_format.Auth_seq_ID_1', '_Peak_row_format.Comp_index_ID_1'),
                        ('_nef_peak.residue_name_1', '_Peak_row_format.Auth_comp_ID_1', '_Peak_row_format.Comp_ID_1'),
@@ -2695,7 +2735,8 @@ class NEFTranslator:
                                                           if sa['ref_chain_id'] == ref_chain_id
                                                           and sa['test_chain_id'] == test_chain_id)
                                                 np = next(np for np in cif_np if np['auth_chain_id'] == ref_chain_id)
-                                                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                for ref_seq_id, mid_code, test_seq_id\
+                                                        in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                                     if mid_code == '|' and test_seq_id is not None:
                                                         rev_seq_key = (test_chain_id, test_seq_id)
                                                         if rev_seq_key in rev_seq:
@@ -2834,8 +2875,10 @@ class NEFTranslator:
 
                                     auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                                     pdb_seq_id_col = loop.tags.index('PDB_residue_no') if 'PDB_residue_no' in loop.tags else -1
-                                    orig_chain_id_col = loop.tags.index('Original_PDB_strand_ID') if 'Original_PDB_strand_ID' in loop.tags else -1
-                                    orig_seq_id_col = loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in loop.tags else -1
+                                    orig_chain_id_col =\
+                                        loop.tags.index('Original_PDB_strand_ID') if 'Original_PDB_strand_ID' in loop.tags else -1
+                                    orig_seq_id_col =\
+                                        loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in loop.tags else -1
 
                                     # 2n7k
                                     cs_of_single_poly = len(chain_id_set) == 1 and len(alt_chain_id_set) == 1\
@@ -2873,7 +2916,8 @@ class NEFTranslator:
                                                 ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
                                                 # if 'identical_auth_chain_id' in ps:
                                                 #    continue
-                                                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                for ref_seq_id, mid_code, test_seq_id\
+                                                        in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                                     if mid_code == '|' and test_seq_id is not None:
                                                         rev_seq_key = (test_chain_id, test_seq_id)
                                                         if rev_seq_key in rev_seq:
@@ -3084,7 +3128,8 @@ class NEFTranslator:
                                     pass
                                 elif cif_np is not None:
                                     ligands = 0
-                                    np = next((np for np in cif_np if np['auth_chain_id'] == auth_asym_id and auth_seq_id in np['auth_seq_id']), None)
+                                    np = next((np for np in cif_np
+                                               if np['auth_chain_id'] == auth_asym_id and auth_seq_id in np['auth_seq_id']), None)
                                     if np is not None:
                                         if auth_comp_id in np['comp_id']:
                                             ligands = 1
@@ -3113,7 +3158,8 @@ class NEFTranslator:
                                                     break
                                         elif ligands > 1:
                                             for np in cif_np:
-                                                if 'alt_comp_id' in np and auth_comp_id in np['alt_comp_id'] and auth_seq_id in np['auth_seq_id']:
+                                                if 'alt_comp_id' in np and auth_comp_id in np['alt_comp_id']\
+                                                   and auth_seq_id in np['auth_seq_id']:
                                                     fill_ligand(loop, idx, np)
                                                     break
 
@@ -3162,7 +3208,8 @@ class NEFTranslator:
                         if row[1] in lig_to_chain_id:
                             row[2] = lig_to_chain_id[row[1]]
                         else:
-                            row[2] = def_chain_id if row[2] in EMPTY_VALUE else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
+                            row[2] = def_chain_id if row[2] in EMPTY_VALUE\
+                                else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
 
             elif lp_category == '_Atom_chem_shift' and self.__remediation_mode\
                     and set(tags) & set(loop.tags) == set(tags)\
@@ -3377,7 +3424,8 @@ class NEFTranslator:
                                         for c in range(1, MAX_CONFLICT_ATTEMPT):
                                             seq_align, _ = alignPolymerSequenceWithConflicts(self.__pA, cif_ps, nmr_ps, c)
                                             if len(seq_align) > 0:
-                                                chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                                                chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star',
+                                                                                        cif_ps, nmr_ps, seq_align)
                                                 for ca in chain_assign:
                                                     if ca['matched'] > 0 and ca['conflict'] <= c and ca['sequence_coverage'] >= LOW_SEQ_COVERAGE:
                                                         valid = True
@@ -3396,7 +3444,8 @@ class NEFTranslator:
                                                           if sa['ref_chain_id'] == ref_chain_id
                                                           and sa['test_chain_id'] == test_chain_id)
                                                 ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
-                                                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                for ref_seq_id, mid_code, test_seq_id\
+                                                        in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                                     if mid_code == '|' and test_seq_id is not None:
                                                         rev_seq_key = (test_chain_id, test_seq_id)
                                                         if rev_seq_key in rev_seq:
@@ -3435,11 +3484,12 @@ class NEFTranslator:
                                                             _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
                                                             _offset = _seq_id - int(row[seq_id_col])
                                                             break
-                                                        _comp_id = next((_comp_id for _seq_id, _auth_seq_id, _comp_id, _auth_comp_id, _alt_comp_id
-                                                                         in zip(ps['seq_id'], ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'],
-                                                                                ps['alt_comp_id'] if 'alt_comp_id' in ps else ps['auth_comp_id'])
-                                                                         if _k[1] in (_seq_id, _auth_seq_id)
-                                                                         and _k[2] in (_comp_id, _auth_comp_id, _alt_comp_id)), None)
+                                                        _comp_id =\
+                                                            next((_comp_id for _seq_id, _auth_seq_id, _comp_id, _auth_comp_id, _alt_comp_id
+                                                                  in zip(ps['seq_id'], ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'],
+                                                                         ps['alt_comp_id'] if 'alt_comp_id' in ps else ps['auth_comp_id'])
+                                                                  if _k[1] in (_seq_id, _auth_seq_id)
+                                                                  and _k[2] in (_comp_id, _auth_comp_id, _alt_comp_id)), None)
                                                         if _comp_id is not None and _comp_id not in STD_MON_DICT:
                                                             _k = (_rev_seq[0], _rev_seq[1], _comp_id)
                                                             if _k in auth_to_star_seq:
@@ -3540,7 +3590,8 @@ class NEFTranslator:
                         if row[1] in lig_to_chain_id:
                             row[2] = lig_to_chain_id[row[1]]
                         else:
-                            row[2] = def_chain_id if row[2] in EMPTY_VALUE else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
+                            row[2] = def_chain_id if row[2] in EMPTY_VALUE\
+                                else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
 
             elif set(tags) & set(loop.tags) == set(tags):
                 seq_data = loop.get_tag(tags)
@@ -4042,7 +4093,8 @@ class NEFTranslator:
                                          row[0].strip() if isinstance(row[0], str) else str(row[0]), row[1]) for row in seq_data),
                                     key=itemgetter(0, 1))
 
-                chk_dict = {(row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0])): row[1] for row in seq_data}
+                chk_dict = {(row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0])):
+                            row[1] for row in seq_data}
 
                 for row in seq_data:
                     chk_key = (row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0]))
@@ -5294,7 +5346,8 @@ class NEFTranslator:
                                 except (ValueError, TypeError):
                                     if 'default-from' in k and k['default-from'] == 'self':
                                         row[j] = ent[name] = letterToDigit(val, 1)
-                                    elif 'default-from' in k and k['default-from'] in tags and row[tags.index(k['default-from'])] not in EMPTY_VALUE:
+                                    elif 'default-from' in k and k['default-from'] in tags\
+                                            and row[tags.index(k['default-from'])] not in EMPTY_VALUE:
                                         row[j] = ent[name] = letterToDigit(row[tags.index(k['default-from'])], 1)
                                         if ent[name] > 8 and not self.__remediation_mode and 'default' in k:
                                             row[j] = ent[name] = int(k['default'])
@@ -5572,7 +5625,8 @@ class NEFTranslator:
                                 if val in EMPTY_VALUE:
                                     if 'default-from' in k and k['default-from'] == 'self':
                                         val = indexToLetter(letterToDigit(val, 1) - 1)
-                                    elif 'default-from' in k and k['default-from'] in tags and row[tags.index(k['default-from'])] not in EMPTY_VALUE:
+                                    elif 'default-from' in k and k['default-from'] in tags\
+                                            and row[tags.index(k['default-from'])] not in EMPTY_VALUE:
                                         val = row[tags.index(k['default-from'])]
                                     elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
                                         val = indexToLetter(letterToDigit(val, 1) - 1)
@@ -5588,7 +5642,8 @@ class NEFTranslator:
                                     if 'uppercase' in k and k['uppercase']:
                                         val = val.upper()
                                     row[j] = ent[name] = val
-                                if ('remove-bad-pattern' in k and k['remove-bad-pattern']) or ('clear-bad-pattern' in k and k['clear-bad-pattern']):
+                                if ('remove-bad-pattern' in k and k['remove-bad-pattern'])\
+                                   or ('clear-bad-pattern' in k and k['clear-bad-pattern']):
                                     if isinstance(val, str) and BAD_EXPR_PAT.match(val):
                                         if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                             remove_bad_pattern = True
@@ -6508,7 +6563,8 @@ class NEFTranslator:
         return data
 
     def check_sf_tag(self, star_data: pynmrstar.Saveframe, file_type: str, category: str, tag_items: List[dict], allowed_tags: List[str] = None,
-                     enforce_non_zero: bool = False, enforce_sign: bool = False, enforce_range: bool = False, enforce_enum: bool = False) -> dict:
+                     enforce_non_zero: bool = False, enforce_sign: bool = False,
+                     enforce_range: bool = False, enforce_enum: bool = False) -> dict:
         """ Extract saveframe tags with sanity check.
             @author: Masashi Yokochi
             @return: list of extracted saveframe tags
@@ -7049,13 +7105,16 @@ class NEFTranslator:
         atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
 
         if details is not None and atom_id[-1] not in ('%', '*'):
-            _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '%', coord_atom_site, methyl_only)
+            _atom_list, _ambiguity_code, _details =\
+                self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '%', coord_atom_site, methyl_only)
             if _details is None:
                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
             elif atom_id[0] in PROTON_BEGIN_CODE or len_atom_id > 1:
-                atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '*', coord_atom_site, methyl_only)
+                atom_list, ambiguity_code, details =\
+                    self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '*', coord_atom_site, methyl_only)
                 if details is not None:
-                    atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
+                    atom_list, ambiguity_code, details =\
+                        self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
                     # 2l8r, comp_id=APR, atom_id=Q5D -> ['H5R1', 'H5R2']
                     if details is not None and atom_id[0] in ('Q', 'M'):
                         protons = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
@@ -7150,7 +7209,8 @@ class NEFTranslator:
             atom_id = re.sub('%%', '%', atom_id)
 
         if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
-            atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
+            atom_list, ambiguity_code, details =\
+                self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
             return (atom_list, ambiguity_code, details)
 
         len_atom_id = len(atom_id)
@@ -7158,8 +7218,9 @@ class NEFTranslator:
         if atom_id[0] in ('M', 'Q') or (isLikePheOrTyr(comp_id, self.__ccU) and atom_id in ('HR', 'HR%', 'HR*')):
 
             if atom_id.startswith('QQ'):
-                atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[2:] + ('%' if nucleotide else '*'),
-                                                                                         details, coord_atom_site, methyl_only)
+                atom_list, ambiguity_code, details =\
+                    self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[2:] + ('%' if nucleotide else '*'),
+                                                        details, coord_atom_site, methyl_only)
                 if details is not None and comp_id not in STD_MON_DICT and self.__csStat.peptideLike(comp_id)\
                    and atom_id[2] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                     grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[2])
@@ -7183,7 +7244,8 @@ class NEFTranslator:
                 atom_list = []
                 details = None
                 for qr_atom in qr_atoms:
-                    _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, qr_atom, details, coord_atom_site, methyl_only)
+                    _atom_list, ambiguity_code, details =\
+                        self.get_star_atom_for_ligand_remap(comp_id, qr_atom, details, coord_atom_site, methyl_only)
                     atom_list.extend(_atom_list)
                 if len(atom_list) >= 4:
                     return (atom_list, ambiguity_code, details)
@@ -7218,7 +7280,8 @@ class NEFTranslator:
                     return (atom_list, ambiguity_code, details)
 
         if len_atom_id > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
-            atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
+            atom_list, ambiguity_code, details =\
+                self.get_star_atom_for_ligand_remap(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
             return (atom_list, ambiguity_code, details)
 
         atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
@@ -7229,9 +7292,11 @@ class NEFTranslator:
             if _details is None:
                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
-        if details is not None and comp_id not in STD_MON_DICT and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
+        if details is not None and comp_id not in STD_MON_DICT and self.__csStat.peptideLike(comp_id)\
+           and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
            and len_atom_id > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
-           and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '*') and not (atom_id[-1].isdigit() and atom_id[-2].isdigit()))):
+           and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '*')
+                                      and not (atom_id[-1].isdigit() and atom_id[-2].isdigit()))):
             grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, atom_id)
             if len(grk_atoms) > 0:
                 atom_list = []
@@ -7595,7 +7660,8 @@ class NEFTranslator:
                     _atom_id = 'H' + atom_id[1:] + '*'
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
                                    'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
-                _atom_list, _ambiguity_code, _details = self.get_star_atom_for_ligand_remap(comp_id, _atom_id, details, coord_atom_site, methyl_only)
+                _atom_list, _ambiguity_code, _details =\
+                    self.get_star_atom_for_ligand_remap(comp_id, _atom_id, details, coord_atom_site, methyl_only)
                 if len(_atom_list) > 0 and _atom_list[0][-1] not in ('%', '*') and _atom_list[0] in coord_atom_site['atom_id']:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                     return (atom_list, ambiguity_code, details)
@@ -7784,7 +7850,8 @@ class NEFTranslator:
                                         if cca is not None:
                                             if cca[self.__ccU.ccaAromaticFlag] == 'Y':
                                                 aliphatic = False
-                                        branch = [branch for branch in self.__ccU.getBondedAtoms(comp_id, k, exclProton=True) if branch in _branch]
+                                        branch = [branch for branch in self.__ccU.getBondedAtoms(comp_id, k, exclProton=True)
+                                                  if branch in _branch]
                                         if len(branch) == 2:
                                             for b in branch:
                                                 protons.extend(self.__ccU.getBondedAtoms(comp_id, b, onlyProton=True))
@@ -7828,7 +7895,8 @@ class NEFTranslator:
                 key = (comp_id, atom_id, details, False, methyl_only)
                 self.__cachedDictForValidStarAtomInXplor[key] = (_atom_list, ambiguity_code, details)
 
-    def get_valid_star_atom(self, comp_id: str, atom_id: str, details: Optional[str] = None, leave_unmatched: bool = True, methyl_only: bool = False
+    def get_valid_star_atom(self, comp_id: str, atom_id: str, details: Optional[str] = None,
+                            leave_unmatched: bool = True, methyl_only: bool = False
                             ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @author: Masashi Yokochi
@@ -7862,7 +7930,8 @@ class NEFTranslator:
                     _atom_id = 'H' + atom_id[1:] + '*'
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
                                    'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
-                _atom_list, _ambiguity_code, _details = self.get_star_atom_for_ligand_remap(comp_id, _atom_id, details, coord_atom_site, methyl_only)
+                _atom_list, _ambiguity_code, _details =\
+                    self.get_star_atom_for_ligand_remap(comp_id, _atom_id, details, coord_atom_site, methyl_only)
                 if len(_atom_list) > 0 and _atom_list[0][-1] not in ('%', '*') and _atom_list[0] in coord_atom_site['atom_id']:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                     return (atom_list, ambiguity_code, details)
@@ -7926,7 +7995,8 @@ class NEFTranslator:
                             atom_list = []
                             details = None
                             for grk_atom in grk_atoms:
-                                _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
+                                _atom_list, ambiguity_code, details =\
+                                    self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                 atom_list.extend(_atom_list)
                             if len(atom_list) >= 4:
                                 return (atom_list, ambiguity_code, details)
@@ -7969,7 +8039,8 @@ class NEFTranslator:
                                 atom_list = []
                                 details = None
                                 for grk_atom in grk_atoms:
-                                    _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
+                                    _atom_list, ambiguity_code, details =\
+                                        self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                     atom_list.extend(_atom_list)
                                 if len(atom_list) >= min_len:
                                     return (atom_list, ambiguity_code, details)
@@ -7989,7 +8060,8 @@ class NEFTranslator:
                         if len(atom_list) >= min_len:
                             return (atom_list, ambiguity_code, details)
 
-            if len_atom_id > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
+            if len_atom_id > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id))
+                                    or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
@@ -8000,7 +8072,8 @@ class NEFTranslator:
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
-            if details is not None and comp_id not in STD_MON_DICT and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
+            if details is not None and comp_id not in STD_MON_DICT and self.__csStat.peptideLike(comp_id)\
+               and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
                and len_atom_id > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
                and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '*')
                                           and not (atom_id[-1].isdigit() and atom_id[-2].isdigit()))):
@@ -8011,7 +8084,8 @@ class NEFTranslator:
                         _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, None, leave_unmatched, methyl_only)
                         atom_list.extend(_atom_list)
 
-            if details is not None and self.__csStat.peptideLike(comp_id) and len_atom_id > 2 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+            if details is not None and self.__csStat.peptideLike(comp_id)\
+               and len_atom_id > 2 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                 if atom_id[2] in ('A', 'B'):
                     _details = None
                     for n in ['1', '2'] if atom_id[2] == 'A' else ['3', '2']:
@@ -8070,7 +8144,8 @@ class NEFTranslator:
                and not self.__annotation_mode:  # and nef_atom[0] in ('%', '*'):
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
                                    'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
-                _atom_list, _ambiguity_code, _details = self.get_star_atom_for_ligand_remap(comp_id, nef_atom, details, coord_atom_site, methyl_only)
+                _atom_list, _ambiguity_code, _details =\
+                    self.get_star_atom_for_ligand_remap(comp_id, nef_atom, details, coord_atom_site, methyl_only)
                 if len(_atom_list) > 0 and _atom_list[0][-1] not in ('%', '*') and _atom_list[0] in coord_atom_site['atom_id']:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                     return (atom_list, ambiguity_code, details)
@@ -8402,7 +8477,8 @@ class NEFTranslator:
                      ) -> Tuple[List[str], Optional[str], Optional[dict]]:
         """ Return list of all instanced atom_id of given NMR-STAR atoms with ambiguity code and CS value in a given comp_id.
             @author: Masashi Yokochi
-            @return: list of instanced atom_id of given NMR-STAR atoms, descriptions, and atom conversion dictionary for conversion of other loops
+            @return: list of instanced atom_id of given NMR-STAR atoms, descriptions, and atom conversion dictionary
+                     for conversion of other loops
         """
 
         if comp_id in EMPTY_VALUE:
@@ -8454,7 +8530,8 @@ class NEFTranslator:
                         elif (atom_id in ('HR', 'HR%', 'HR*') or atom_id.startswith('QR') or atom_id.startswith('QX'))\
                                 and self.__remediation_mode:  # DAOTHER-8663
                             qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
-                                                  if atom_id[0] in PROTON_BEGIN_CODE and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+                                                  if atom_id[0] in PROTON_BEGIN_CODE
+                                                  and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                             if len(qr_atoms) > 0:
                                 for qr_atom in qr_atoms:
                                     _a = copy.copy(a)
@@ -8530,7 +8607,8 @@ class NEFTranslator:
                             else:
 
                                 has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list
-                                                         if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
+                                                         if _a['atom_id'] in methyl_h_list
+                                                         and (_a['value'] is None or _a['value'] == _value)]) == 3
 
                                 if has_methyl_proton:
 
@@ -8602,8 +8680,10 @@ class NEFTranslator:
 
                                     if has_methyl_proton and has_methyl_proton_2:
 
-                                        methyl_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list), None)
-                                        methyl_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2), None)
+                                        methyl_proton_value = next((_a['value'] for _a in star_atom_list
+                                                                    if _a['atom_id'] in methyl_h_list), None)
+                                        methyl_proton_value_2 = next((_a['value'] for _a in star_atom_list
+                                                                      if _a['atom_id'] in methyl_h_list_2), None)
 
                                         if None not in (methyl_proton_value, methyl_proton_value_2)\
                                            and float(methyl_proton_value_2) < float(methyl_proton_value):
@@ -8698,8 +8778,9 @@ class NEFTranslator:
 
                                     else:
 
-                                        nef_atom_prefix = 'x' if (atom_id == geminal_h_list[0] and geminal_h_list[0] < geminal_h_list[1]) or\
-                                                                 (atom_id == geminal_h_list[1] and geminal_h_list[1] < geminal_h_list[0]) else 'y'
+                                        nef_atom_prefix =\
+                                            'x' if (atom_id == geminal_h_list[0] and geminal_h_list[0] < geminal_h_list[1])\
+                                            or (atom_id == geminal_h_list[1] and geminal_h_list[1] < geminal_h_list[0]) else 'y'
                                         nef_atom = atom_id[:-1] + nef_atom_prefix
 
                                         atom_list.append(nef_atom)
@@ -10624,17 +10705,20 @@ class NEFTranslator:
 
                     elif num_dim == 13:
 
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]):
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8],
+                                                      a[9], a[10], a[11], a[12]):
                             buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 14:
 
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]):
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8],
+                                                      a[9], a[10], a[11], a[12], a[13]):
                             buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 15:
 
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14]):
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8],
+                                                      a[9], a[10], a[11], a[12], a[13], a[14]):
                             buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                 keys = set()
@@ -11871,7 +11955,8 @@ class NEFTranslator:
 
                 if saveframe.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
                     cs_list_id = self.__star2nef_peak_can(saveframe, sf)
-                    if cs_list_id is not None and (len(sf.get_tag('chemical_shift_list')) == 0 or sf.get_tag('chemical_shift_list') in EMPTY_VALUE):
+                    if cs_list_id is not None and (len(sf.get_tag('chemical_shift_list')) == 0
+                                                   or sf.get_tag('chemical_shift_list') in EMPTY_VALUE):
                         for cs_sf in star_data:
                             if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts'\
                                and cs_sf.get_tag('ID')[0] == cs_list_id and cs_sf.name not in EMPTY_VALUE:
@@ -11918,17 +12003,20 @@ class NEFTranslator:
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag,
-                                           tag[1] if tag[1] not in ALT_DIST_CONSTRAINT_TYPES['nef'] else ALT_DIST_CONSTRAINT_TYPES['nef'][tag[1]])
+                                           tag[1] if tag[1] not in ALT_DIST_CONSTRAINT_TYPES['nef']
+                                           else ALT_DIST_CONSTRAINT_TYPES['nef'][tag[1]])
                         elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag,
-                                           tag[1] if tag[1] not in ALT_DIHED_CONSTRAINT_TYPES['nef'] else ALT_DIHED_CONSTRAINT_TYPES['nef'][tag[1]])
+                                           tag[1] if tag[1] not in ALT_DIHED_CONSTRAINT_TYPES['nef']
+                                           else ALT_DIHED_CONSTRAINT_TYPES['nef'][tag[1]])
                         elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag,
-                                           tag[1] if tag[1] not in ALT_RDC_CONSTRAINT_TYPES['nef'] else ALT_RDC_CONSTRAINT_TYPES['nef'][tag[1]])
+                                           tag[1] if tag[1] not in ALT_RDC_CONSTRAINT_TYPES['nef']
+                                           else ALT_RDC_CONSTRAINT_TYPES['nef'][tag[1]])
                         else:
                             nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if nef_tag is not None:

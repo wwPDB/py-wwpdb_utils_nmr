@@ -749,7 +749,8 @@ class BaseLinearMRParserListener():
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.reasons is None and any(True for f in self.f
-                                                    if '[Atom not found]' in f or '[Sequence mismatch]' in f or 'Invalid atom nomenclature' in f):
+                                                    if '[Atom not found]' in f or '[Sequence mismatch]' in f
+                                                    or 'Invalid atom nomenclature' in f):
 
                         seqIdRemap = []
 
@@ -832,7 +833,8 @@ class BaseLinearMRParserListener():
                                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
                         if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
-                            polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
+                            polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.pA, self.polySeq, self.__polySeqRst,
+                                                                                     self.__chainAssign)
 
                             if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                 self.__polySeqRst = polySeqRst
@@ -939,9 +941,10 @@ class BaseLinearMRParserListener():
                                             continue
                                         if mid_code == '|':
                                             try:
-                                                seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                                   in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                                   if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                                seq_id_mapping[test_seq_id] =\
+                                                    next(auth_seq_id for auth_seq_id, seq_id
+                                                         in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                         if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                             except StopIteration:
                                                 if uniq_ps:
                                                     seq_id_mapping[test_seq_id] = ref_seq_id
@@ -977,7 +980,8 @@ class BaseLinearMRParserListener():
 
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
-                                        seqIdRemap = self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                        seqIdRemap =\
+                                            self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
                                         if len(seqIdRemap) != len(seqIdRemapFailed)\
                                            or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
                                            or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
@@ -1212,7 +1216,8 @@ class BaseLinearMRParserListener():
         return dstFunc
 
     def validateDistanceRangeWithIndex(self, index: int, group: int, weight: float, scale: float, target_value: Optional[float],
-                                       lower_limit: Optional[float], upper_limit: Optional[float], omit_dist_limit_outlier: bool) -> Optional[dict]:
+                                       lower_limit: Optional[float], upper_limit: Optional[float], omit_dist_limit_outlier: bool
+                                       ) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -1752,7 +1757,8 @@ class BaseLinearMRParserListener():
                                                           if _seqId == seqId and _compId == compId)
                                 if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCompId, cifCheck=self.hasCoord)
-                                    atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                    atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping,
+                                                                     seqId, origCompId, atomId, coordAtomSite)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
@@ -1948,7 +1954,8 @@ class BaseLinearMRParserListener():
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
+                                      or self.__multiPolymer):
             for ps in self.polySeq:
                 if preferNonPoly or pure_ambig:
                     continue
@@ -2431,7 +2438,8 @@ class BaseLinearMRParserListener():
                                                           if _seqId == seqId and _compId == compId)
                                 if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCompId, cifCheck=self.hasCoord)
-                                    atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                    atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping,
+                                                                     seqId, origCompId, atomId, coordAtomSite)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
@@ -2658,7 +2666,8 @@ class BaseLinearMRParserListener():
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
+                                      or self.__multiPolymer):
             for ps in self.polySeq:
                 if preferNonPoly or pure_ambig:
                     continue
@@ -2989,7 +2998,8 @@ class BaseLinearMRParserListener():
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
+                                      or self.__multiPolymer):
             for ps in self.polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None and fixedChainId != chainId:
@@ -3211,7 +3221,8 @@ class BaseLinearMRParserListener():
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
+                                      or self.__multiPolymer):
             for ps in self.polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None and chainId != fixedChainId:
@@ -3587,7 +3598,8 @@ class BaseLinearMRParserListener():
                                                           if _seqId == seqId and _compId == compId)
                                 if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCompId, cifCheck=self.hasCoord)
-                                    atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                    atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping,
+                                                                     seqId, origCompId, atomId, coordAtomSite)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
@@ -3809,7 +3821,8 @@ class BaseLinearMRParserListener():
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or self.__multiPolymer):
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
+                                      or self.__multiPolymer):
             for ps in self.polySeq:
                 if preferNonPoly:
                     continue
@@ -3949,7 +3962,8 @@ class BaseLinearMRParserListener():
                 else:
                     self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index, g=group)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
-                updatePolySeqRst(self.__polySeqRstFailed, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
+                updatePolySeqRst(self.__polySeqRstFailed,
+                                 self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
 
         elif any(True for ca in chainAssign if ca[0] == refChainId) and any(True for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
@@ -4075,7 +4089,8 @@ class BaseLinearMRParserListener():
                 elif self.reasons is not None and 'branched_remap' in self.reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.__mrAtomNameMapping,
+                                                                  _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomIdSet, _atomId = [], []
             skip = False
@@ -4095,14 +4110,16 @@ class BaseLinearMRParserListener():
                             hvyAtomId = None
                             for canHvyAtomId in hvyAtomIdList:
                                 if isStructConn(self.cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
-                                                representativeModelId=self.representativeModelId, representativeAltId=self.representativeAltId,
+                                                representativeModelId=self.representativeModelId,
+                                                representativeAltId=self.representativeAltId,
                                                 modelNumName=self.modelNumName):
                                     hvyAtomId = canHvyAtomId
                                     break
                             if hvyAtomId is not None:
                                 for _atomId_ in atomIdList:
                                     if isStructConn(self.cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
-                                                    representativeModelId=self.representativeModelId, representativeAltId=self.representativeAltId,
+                                                    representativeModelId=self.representativeModelId,
+                                                    representativeAltId=self.representativeAltId,
                                                     modelNumName=self.modelNumName):
                                         _atomId.append(_atomId_)
                         if len(_atomId) > 1:
@@ -4252,7 +4269,8 @@ class BaseLinearMRParserListener():
 
             for cifAtomId in _atomId:
 
-                if seqKey in self.__coordUnobsRes and cifCompId in STD_MON_DICT and self.reasons is not None and 'non_poly_remap' in self.reasons:
+                if seqKey in self.__coordUnobsRes and cifCompId in STD_MON_DICT\
+                   and self.reasons is not None and 'non_poly_remap' in self.reasons:
                     if self.ccU.updateChemCompDict(cifCompId):
                         try:
                             next(cca for cca in self.ccU.lastAtomList
@@ -4352,7 +4370,8 @@ class BaseLinearMRParserListener():
                 elif self.reasons is not None and 'branched_remap' in self.reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.__mrAtomNameMapping,
+                                                                  _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomIdSet, _atomId = [], []
             skip = False
@@ -4372,14 +4391,16 @@ class BaseLinearMRParserListener():
                             hvyAtomId = None
                             for canHvyAtomId in hvyAtomIdList:
                                 if isStructConn(self.cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
-                                                representativeModelId=self.representativeModelId, representativeAltId=self.representativeAltId,
+                                                representativeModelId=self.representativeModelId,
+                                                representativeAltId=self.representativeAltId,
                                                 modelNumName=self.modelNumName):
                                     hvyAtomId = canHvyAtomId
                                     break
                             if hvyAtomId is not None:
                                 for _atomId_ in atomIdList:
                                     if isStructConn(self.cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
-                                                    representativeModelId=self.representativeModelId, representativeAltId=self.representativeAltId,
+                                                    representativeModelId=self.representativeModelId,
+                                                    representativeAltId=self.representativeAltId,
                                                     modelNumName=self.modelNumName):
                                         _atomId.append(_atomId_)
                         if len(_atomId) > 1:
@@ -4517,7 +4538,8 @@ class BaseLinearMRParserListener():
 
             for cifAtomId in _atomId:
 
-                if seqKey in self.__coordUnobsRes and cifCompId in STD_MON_DICT and self.reasons is not None and 'non_poly_remap' in self.reasons:
+                if seqKey in self.__coordUnobsRes and cifCompId in STD_MON_DICT\
+                   and self.reasons is not None and 'non_poly_remap' in self.reasons:
                     if self.ccU.updateChemCompDict(cifCompId):
                         try:
                             next(cca for cca in self.ccU.lastAtomList
@@ -4853,7 +4875,8 @@ class BaseLinearMRParserListener():
                         if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
                             if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
                                or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
-                               or (compId in STD_MON_DICT and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                               or (compId in STD_MON_DICT
+                                   and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                                    and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                         or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                                 ext_seq = True
@@ -6153,7 +6176,8 @@ class BaseLinearMRParserListener():
 
         restraint_name = getRestraintName(self.cur_subtype)
 
-        sf_framecode = (f'{self.software_name}_' if self.software_name not in EMPTY_VALUE else '') + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = (f'{self.software_name}_' if self.software_name not in EMPTY_VALUE else '')\
+            + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode,

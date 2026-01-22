@@ -59,7 +59,8 @@
 # 22 Feb-2022  M. Yokochi - add 'complemented_chemical_shift' warning type (DAOTHER-7681, issue #1)
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraints (DAOTHER-7690, NMR restraint remediation)
 # 22-Mar-2022  M. Yokochi - add 'nm-res-ros' file type for ROSETTA restraint format (DAOTHER-7690)
-# 23-Mar-2022  M. Yokochi - add 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data' warning types (DAOTHER-7690)
+# 23-Mar-2022  M. Yokochi - add 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data' warning types
+#                           (DAOTHER-7690)
 # 13-Apr-2022  M. Yokochi - add 'label_scheme' option to select label_*_id or auth_*_id scheme of the coordinate file (NMR restraint remediation)
 # 14 Apr-2022  M. Yokochi - add 'nm-res-mr' file type for NMR restraint remediation and V5.13
 # 17-May-2022  M. Yokochi - add 'nm-res-bio' file type for BIOSYM restraint format (DAOTHER-7825, NMR restraint remediation)
@@ -108,8 +109,8 @@
 #                           and 'nm-shi-xea' file_types (v4.4.0, DAOTHER-9785)
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
 # 24-Apr-2025  M. Yokochi - add NmrDpReportOutputStatistics class for standalone NMR data conversion service (DAOTHER-9785)
-# 25-Apr-2025  M. Yokochi - add 'unparsed_data' error to block conversion due to unparsed data with error in standalone NMR data conversion service
-#                           (DAOTHER-9785)
+# 25-Apr-2025  M. Yokochi - add 'unparsed_data' error to block conversion due to unparsed data with error
+#                           in standalone NMR data conversion service (DAOTHER-9785)
 # 28-May-2025  M. Yokochi - add 'conflicted_peak_list' and 'inconsistent_peak_list' warning types (DAOTHER-10010)
 # 29-May-2025  M. Yokochi - add 'unsupported_peak_list' warning type (DAOTHER-10099)
 # 06-Aug-2025  M. Yokochi - add 'nm-res-sch' file type for SCHRODINGER/ASL restraint format (DAOTHER-7902, 10172, NMR data remediation)
@@ -921,7 +922,8 @@ class NmrDpReport:
                         continue
                     saveframe_tag[k.lower()] = v
 
-            chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
+            chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'],
+                                    'loop': loop, 'saveframe_tag': saveframe_tag})
 
         return chem_shift_refs
 
@@ -1273,7 +1275,8 @@ class NmrDpReport:
                 for _ca in _chain_assigns:
 
                     if (_ca['test_chain_id'] == cif_chain_id and label_scheme) or\
-                       ((_ca['test_auth_chain_id'] if 'test_auth_chain_id' in _ca else _ca['test_chain_id']) == cif_chain_id and not label_scheme):
+                       ((_ca['test_auth_chain_id'] if 'test_auth_chain_id' in _ca
+                         else _ca['test_chain_id']) == cif_chain_id and not label_scheme):
 
                         if 'unmapped_sequence' in _ca:
 
@@ -1329,7 +1332,8 @@ class NmrDpReport:
 
         return None
 
-    def getAverageRMSDWithinRange(self, cif_chain_id: str, cif_beg_seq_id: int, cif_end_seq_id: int, label_scheme: bool = True) -> Optional[float]:
+    def getAverageRMSDWithinRange(self, cif_chain_id: str, cif_beg_seq_id: int, cif_end_seq_id: int, label_scheme: bool = True
+                                  ) -> Optional[float]:
         """ Calculate average RMSD of alpha carbons/phosphates within a given range in the ensemble.
         """
 
@@ -2468,7 +2472,8 @@ class NmrDpReportError:
             return None
 
         try:
-            c = next(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
+            c = next(c for c in self.__contents[item]
+                     if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
             return c['description']
         except StopIteration:
             return None
@@ -2538,7 +2543,8 @@ class NmrDpReportError:
         if self.__contents is None:
             return
 
-        items = [item for item in self.__contents.keys() if item != 'total' and (self.__contents[item] is None or len(self.__contents[item]) == 0)]
+        items = [item for item in self.__contents.keys()
+                 if item != 'total' and (self.__contents[item] is None or len(self.__contents[item]) == 0)]
 
         for item in items:
             del self.__contents[item]
@@ -2833,7 +2839,8 @@ class NmrDpReportWarning:
             return None
 
         try:
-            c = next(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
+            c = next(c for c in self.__contents[item]
+                     if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
             return c['description']
         except StopIteration:
             return None
@@ -2969,7 +2976,8 @@ class NmrDpReportWarning:
         if self.__contents is None:
             return
 
-        items = [item for item in self.__contents.keys() if item != 'total' and (self.__contents[item] is None or len(self.__contents[item]) == 0)]
+        items = [item for item in self.__contents.keys()
+                 if item != 'total' and (self.__contents[item] is None or len(self.__contents[item]) == 0)]
 
         for item in items:
             del self.__contents[item]

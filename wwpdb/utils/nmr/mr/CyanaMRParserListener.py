@@ -378,7 +378,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
 
-                    elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                    elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX\
+                            and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
                         if self.applyPdbStatCap:
@@ -628,8 +629,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                     if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                       and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                            or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                       and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                             and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.reasons['model_chain_id_ext']
+                                and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                         self.allowZeroUpperLimit = True
                 self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -1002,7 +1005,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
 
-                    elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                    elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX\
+                            and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
                         if self.applyPdbStatCap:
@@ -1249,8 +1253,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                     if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                       and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                            or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                       and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                             and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.reasons['model_chain_id_ext']
+                                and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                         self.allowZeroUpperLimit = True
                 self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -1646,7 +1652,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
                         if not isinstance(atomId, str):
-                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                           if atomId.match(cca[self.ccU.ccaAtomId])), None)
                             if atomId is None:
                                 resKey = (seqId, _compId)
                                 if resKey not in self.extResKey:
@@ -1800,7 +1807,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                             _cifCompId = cifCompId if offset == 0\
                                                 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
                                                       if _cifSeqId in ps['auth_seq_id'] else None)
-                                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
+                                            seqKey, coordAtomSite =\
+                                                self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                                             if coordAtomSite is not None:
                                                 cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
                                                                   if _cifAtomId in coordAtomSite['atom_id']), None)
@@ -1818,7 +1826,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "Please update the sequence in the Macromolecules page.")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}.")
+                                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
+                                                  f"for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
@@ -1992,7 +2001,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                              if cca[self.ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
                                 if _cifCompId is None and not self.allow_ext_seq:
@@ -2002,7 +2012,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "Please update the sequence in the Macromolecules page.")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}.")
+                                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
+                                                  f"for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
@@ -4820,7 +4831,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
 
-                    elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
+                    elif (0.0 if self.file_ext in ('upl', 'lol') else 1.8) <= value <= DIST_ERROR_MAX\
+                            and DIST_RANGE_MIN <= value2 <= DIST_RANGE_MAX:
                         upper_limit = value2
                         lower_limit = value
                         if self.applyPdbStatCap:
@@ -5074,8 +5086,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                     if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                       and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                            or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                       and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                             and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.reasons['model_chain_id_ext']
+                                and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                         self.allowZeroUpperLimit = True
                 self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -5399,18 +5413,21 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.exitDistance_w_chain_restraint(ctx)
 
     # Enter a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraints.
-    def enterTorsion_angle_w_chain_restraints(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintsContext):  # pylint: disable=unused-argument
+    def enterTorsion_angle_w_chain_restraints(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintsContext
+                                              ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dihed'
         self.cur_dist_type = ''
 
         self.cur_subtype_altered = False
 
     # Exit a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraints.
-    def exitTorsion_angle_w_chain_restraints(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintsContext):  # pylint: disable=unused-argument
+    def exitTorsion_angle_w_chain_restraints(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintsContext
+                                             ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraint.
-    def enterTorsion_angle_w_chain_restraint(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintContext):  # pylint: disable=unused-argument
+    def enterTorsion_angle_w_chain_restraint(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintContext
+                                             ):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -5531,7 +5548,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
                         if not isinstance(atomId, str):
-                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                           if atomId.match(cca[self.ccU.ccaAtomId])), None)
                             if atomId is None:
                                 resKey = (seqId, _compId)
                                 if resKey not in self.extResKey:
@@ -5682,7 +5700,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                             _cifCompId = cifCompId if offset == 0\
                                                 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
                                                       if _cifSeqId in ps['auth_seq_id'] else None)
-                                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
+                                            seqKey, coordAtomSite =\
+                                                self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                                             if coordAtomSite is not None:
                                                 cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
                                                                   if _cifAtomId in coordAtomSite['atom_id']), None)
@@ -5700,7 +5719,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "Please update the sequence in the Macromolecules page.")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}.")
+                                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
+                                                  f"for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
@@ -5874,7 +5894,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                              if cca[self.ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
                                 if _cifCompId is None and not self.allow_ext_seq:
@@ -5884,7 +5905,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "Please update the sequence in the Macromolecules page.")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}.")
+                                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
+                                                  f"for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "

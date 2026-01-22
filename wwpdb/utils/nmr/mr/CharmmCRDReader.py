@@ -167,7 +167,8 @@ class CharmmCRDReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -194,7 +195,8 @@ class CharmmCRDReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")

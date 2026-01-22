@@ -1042,7 +1042,8 @@ class NmrDpValidation:
                                 self.__reg.has_legacy_sf_issue = True
 
                                 self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                           allowEmpty=allow_empty, hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
+                                                                           allowEmpty=allow_empty,
+                                                                           hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                                 _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
 
@@ -1069,7 +1070,8 @@ class NmrDpValidation:
                     else:
 
                         if not self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                          allowEmpty=allow_empty, hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
+                                                                          allowEmpty=allow_empty,
+                                                                          hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
                             is_done = False
 
                     if _csPath is not None:
@@ -1115,7 +1117,8 @@ class NmrDpValidation:
                 if self.__reg.op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
                     _csPath = csPath + '.cif2str'
-                    if not self.__reg.c2S.convert(csPath, _csPath, originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):
+                    if not self.__reg.c2S.convert(csPath, _csPath,
+                                                  originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):
                         _csPath = csPath
 
                     csPath = _csPath
@@ -1281,7 +1284,8 @@ class NmrDpValidation:
                             self.__reg.has_legacy_sf_issue = True
 
                             self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                       allowEmpty=allow_empty, hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
+                                                                       allowEmpty=allow_empty,
+                                                                       hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                             _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
 
@@ -1308,7 +1312,8 @@ class NmrDpValidation:
                 else:
 
                     if not self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                      allowEmpty=allow_empty, hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
+                                                                      allowEmpty=allow_empty,
+                                                                      hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
                         is_done = False
 
                 if _csPath is not None:
@@ -1451,7 +1456,8 @@ class NmrDpValidation:
                             if star_data_type == 'Saveframe':
                                 self.__reg.has_legacy_sf_issue = True
 
-                                self.__reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message,
+                                self.__reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type,
+                                                                           mrPath, file_subtype, message,
                                                                            hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                                 _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
@@ -1473,7 +1479,8 @@ class NmrDpValidation:
 
                     else:
 
-                        if not self.__reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message,
+                        if not self.__reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type,
+                                                                          mrPath, file_subtype, message,
                                                                           hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
                             is_done = False
 
@@ -1816,7 +1823,8 @@ class NmrDpValidation:
                     err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
 
                     if self.__reg.validation_server and lp_category == '_Chem_comp_assembly':
-                        err = f"A saveframe with a category {lp_category!r} is missing that indicates {file_name!r} is not NMR unified data file. "\
+                        err = f"A saveframe with a category {lp_category!r} is missing "\
+                            f"that indicates {file_name!r} is not NMR unified data file. "\
                             f"Please re-upload the file as an usual assigned chemical shift file."
 
                     self.__reg.report.error.appendDescription('missing_mandatory_content',
@@ -1909,7 +1917,8 @@ class NmrDpValidation:
                             cs_file_path = os.path.join(dir_path, cs_file_name)
 
                             if not os.path.exists(cs_file_path):
-                                self.__reg.star_data[0].write_to_file(cs_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+                                self.__reg.star_data[0].write_to_file(cs_file_path,
+                                                                      show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
                                 compress_as_gzip_file(cs_file_path, cs_file_path + '.gz')
 
@@ -2245,11 +2254,15 @@ class NmrDpValidation:
                                                                              ],
                                                                             [{'name': 'PDB_model_num', 'type': 'int',
                                                                               'value': self.__reg.representative_model_id},
-                                                                             {'name': 'auth_asym_id_1', 'type': 'str', 'value': auth_cif_chain_id},
-                                                                             {'name': 'auth_seq_id_1', 'type': 'int', 'value': auth_beg_cif_seq_id},
+                                                                             {'name': 'auth_asym_id_1', 'type': 'str',
+                                                                              'value': auth_cif_chain_id},
+                                                                             {'name': 'auth_seq_id_1', 'type': 'int',
+                                                                              'value': auth_beg_cif_seq_id},
                                                                              {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                                             {'name': 'auth_asym_id_2', 'type': 'str', 'value': auth_cif_chain_id},
-                                                                             {'name': 'auth_seq_id_2', 'type': 'int', 'value': auth_end_cif_seq_id},
+                                                                             {'name': 'auth_asym_id_2', 'type': 'str',
+                                                                              'value': auth_cif_chain_id},
+                                                                             {'name': 'auth_seq_id_2', 'type': 'int',
+                                                                              'value': auth_end_cif_seq_id},
                                                                              {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
                                                                              ])
 
@@ -2432,7 +2445,8 @@ class NmrDpValidation:
                                                                 'type': 'int', 'value': cif_seq_id_1},
                                                                {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
                                                                 'type': 'str', 'value': cif_atom_id_1},
-                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                               {'name': 'label_alt_id', 'type': 'enum',
+                                                                'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
             atom_site_2 = self.__reg.cR.getDictListWithFilter('atom_site',
@@ -2443,7 +2457,8 @@ class NmrDpValidation:
                                                                 'type': 'int', 'value': cif_seq_id_2},
                                                                {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
                                                                 'type': 'str', 'value': cif_atom_id_2},
-                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                               {'name': 'label_alt_id', 'type': 'enum',
+                                                                'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
         except Exception as e:
@@ -2521,8 +2536,10 @@ class NmrDpValidation:
                                                               [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                                {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                                {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                               {'name': model_num_name, 'type': 'int', 'value': self.__reg.representative_model_id},
-                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                               {'name': model_num_name, 'type': 'int',
+                                                                'value': self.__reg.representative_model_id},
+                                                               {'name': 'label_alt_id', 'type': 'enum',
+                                                                'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
             except Exception as e:
@@ -2562,8 +2579,10 @@ class NmrDpValidation:
                                                                  {'name': 'Cartn_z', 'type': 'range-float',
                                                                   'range': {'min_exclusive': (o[2] - CUTOFF_AROMATIC),
                                                                             'max_exclusive': (o[2] + CUTOFF_AROMATIC)}},
-                                                                 {'name': model_num_name, 'type': 'int', 'value': self.__reg.representative_model_id},
-                                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                                 {'name': model_num_name, 'type': 'int',
+                                                                  'value': self.__reg.representative_model_id},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': (self.__reg.representative_alt_id,)}
                                                                  ])
 
             except Exception as e:
@@ -2871,8 +2890,10 @@ class NmrDpValidation:
                                                               [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                                {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                                {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                               {'name': model_num_name, 'type': 'int', 'value': self.__reg.representative_model_id},
-                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                               {'name': model_num_name, 'type': 'int',
+                                                                'value': self.__reg.representative_model_id},
+                                                               {'name': 'label_alt_id', 'type': 'enum',
+                                                                'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
             except Exception as e:
@@ -2913,8 +2934,10 @@ class NmrDpValidation:
                                                                  {'name': 'Cartn_z', 'type': 'range-float',
                                                                   'range': {'min_exclusive': (o[2] - CUTOFF_PARAMAGNETIC),
                                                                             'max_exclusive': (o[2] + CUTOFF_PARAMAGNETIC)}},
-                                                                 {'name': model_num_name, 'type': 'int', 'value': self.__reg.representative_model_id},
-                                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                                 {'name': model_num_name, 'type': 'int',
+                                                                  'value': self.__reg.representative_model_id},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': (self.__reg.representative_alt_id,)}
                                                                  ])
 
             except Exception as e:
@@ -3235,8 +3258,10 @@ class NmrDpValidation:
                                                                {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                                {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
                                                                {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                               {'name': model_num_name, 'type': 'int', 'value': self.__reg.representative_model_id},
-                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                               {'name': model_num_name, 'type': 'int',
+                                                                'value': self.__reg.representative_model_id},
+                                                               {'name': 'label_alt_id', 'type': 'enum',
+                                                                'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
             except Exception as e:
@@ -3325,7 +3350,8 @@ class NmrDpValidation:
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                              {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                              {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
             except Exception as e:
@@ -3434,7 +3460,8 @@ class NmrDpValidation:
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                              {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                              {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
             except Exception as e:
@@ -3564,7 +3591,8 @@ class NmrDpValidation:
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                              {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                              {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
             except Exception as e:
@@ -3694,12 +3722,14 @@ class NmrDpValidation:
                         for ps2 in poly_seq2:
                             chain_id = ps2['chain_id']
 
-                            if chain_id not in ref_chain_ids and not ('identical_chain_id' in ps2 and chain_id not in ps2['identical_chain_id']):
+                            if chain_id not in ref_chain_ids\
+                               and not ('identical_chain_id' in ps2 and chain_id not in ps2['identical_chain_id']):
                                 return False
 
                             for ps1 in poly_seq1:
 
-                                if ps1['chain_id'] != chain_id and not ('identical_chain_id' in ps2 and ps1['chain_id'] in ps2['identical_chain_id']):
+                                if ps1['chain_id'] != chain_id\
+                                   and not ('identical_chain_id' in ps2 and ps1['chain_id'] in ps2['identical_chain_id']):
                                     continue
 
                                 for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
@@ -4116,7 +4146,8 @@ class NmrDpValidation:
 
                                     modified = True
 
-                        elif values == _values and isIdenticalRestraint(_atoms1, self.__reg.nefT) and isIdenticalRestraint(_atoms2, self.__reg.nefT):
+                        elif values == _values and isIdenticalRestraint(_atoms1, self.__reg.nefT)\
+                                and isIdenticalRestraint(_atoms2, self.__reg.nefT):
                             sf_item['id'] -= 1
                             duplicated = True
 
@@ -4724,7 +4755,8 @@ class NmrDpValidation:
                                and self.isNmrAtomName(comp_id, atom_id) and not content_subtype.startswith('spectral_peak'):
                                 atom_id_ = self.getRepAtomId(comp_id, atom_id)
 
-                                if file_type == 'nmr-star' and self.__reg.combined_mode and self.__reg.transl_pseudo_name and atom_id != atom_id_:
+                                if file_type == 'nmr-star' and self.__reg.combined_mode and self.__reg.transl_pseudo_name\
+                                   and atom_id != atom_id_:
 
                                     warn = f"Conventional psuedo atom {comp_id}:{atom_id} is translated to {atom_id_!r} "\
                                         "according to the IUPAC atom nomenclature."
@@ -5069,7 +5101,8 @@ class NmrDpValidation:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__reg.remediation_mode and 1 in isotope_nums and atom_id[0] in PSE_PRO_BEGIN_CODE:  # DAOTHER-8663, 8751, 9520
+                            if self.__reg.remediation_mode and 1 in isotope_nums\
+                               and atom_id[0] in PSE_PRO_BEGIN_CODE:  # DAOTHER-8663, 8751, 9520
                                 continue
 
                             err = f"Invalid atom name {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
@@ -5555,7 +5588,8 @@ class NmrDpValidation:
 
             lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
                                                  allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
-                                                 test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
+                                                 test_on_index=True, enforce_non_zero=True, enforce_sign=True,
+                                                 enforce_range=True, enforce_enum=True,
                                                  enforce_allowed_tags=(file_type == 'nmr-star' and not self.__reg.bmrb_only),
                                                  excl_missing_data=self.__reg.excl_missing_data)[0]
 
@@ -5887,8 +5921,9 @@ class NmrDpValidation:
                                 conflict = True
 
                             elif r > max_inclusive * INCONSIST_OVER_CONFLICTED:
-                                discrepancy += f"{dname} |{_val_1}-{_val_2}| = {r:.1f} is out of typical range, "\
-                                               f"{max_inclusive * INCONSIST_OVER_CONFLICTED}{'°' if content_subtype == 'dihed_restraint' else 'Hz'}, "
+                                discrepancy +=\
+                                    f"{dname} |{_val_1}-{_val_2}| = {r:.1f} is out of typical range, "\
+                                    f"{max_inclusive * INCONSIST_OVER_CONFLICTED}{'°' if content_subtype == 'dihed_restraint' else 'Hz'}, "
                                 inconsist = True
 
                     if conflict:
@@ -6045,7 +6080,8 @@ class NmrDpValidation:
                             if index_tag is None or index_tag not in row:
                                 err = f"{child_key_name} {str(row[child_key_name])!r} must be {parent_key}."
                             else:
-                                err = f"[Check row of {index_tag} {row[index_tag]}] {child_key_name} {row[child_key_name]!r} must be {parent_key}."
+                                err = f"[Check row of {index_tag} {row[index_tag]}] {child_key_name} {row[child_key_name]!r} "\
+                                    f"must be {parent_key}."
 
                             if row[child_key_name] in sf_framecode_dict:
                                 err = err[0:-1] + f" to point the parent {sf_framecode!r} saveframe. "\
@@ -6247,9 +6283,10 @@ class NmrDpValidation:
                             if auth_comp_id not in EMPTY_VALUE and auth_atom_id not in EMPTY_VALUE and orig_atom_name not in EMPTY_VALUE\
                                and auth_atom_id != orig_atom_name:
                                 try:
-                                    atom_map = next(atom_map for atom_map in self.__reg.mr_atom_name_mapping
-                                                    if atom_map['auth_seq_id'] == auth_seq_id and atom_map['auth_comp_id'] == auth_comp_id
-                                                    and atom_map['auth_atom_id'] == auth_atom_id and atom_map['original_atom_id'] == auth_atom_id)
+                                    atom_map =\
+                                        next(atom_map for atom_map in self.__reg.mr_atom_name_mapping
+                                             if atom_map['auth_seq_id'] == auth_seq_id and atom_map['auth_comp_id'] == auth_comp_id
+                                             and atom_map['auth_atom_id'] == auth_atom_id and atom_map['original_atom_id'] == auth_atom_id)
                                     atom_map['original_atom_id'] = orig_atom_name
                                 except StopIteration:
                                     pass
@@ -6365,7 +6402,8 @@ class NmrDpValidation:
                                 if na is None and pa is None:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
-                                        + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) is not within expected range "\
+                                        + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) "\
+                                        "is not within expected range "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."
 
                                     err_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
@@ -6694,7 +6732,8 @@ class NmrDpValidation:
                                 if na is None and pa is None:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
-                                        + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) is not within expected range "\
+                                        + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) "\
+                                        "is not within expected range "\
                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."
 
                                     err_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
@@ -6779,10 +6818,12 @@ class NmrDpValidation:
                                             if self.__reg.verbose:
                                                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() ++ Warning  - {warn}\n")
 
-                                            if self.__reg.bmrb_only and self.__reg.leave_intl_note and file_type == 'nmr-star' and details_col != -1:
+                                            if self.__reg.bmrb_only and self.__reg.leave_intl_note and file_type == 'nmr-star'\
+                                               and details_col != -1:
                                                 _details = loop.data[idx][details_col]
                                                 details = f"{full_value_name} {value} is not within expected range "\
-                                                    f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
+                                                    f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, "\
+                                                    f"Z_score {z_score:.2f}). "\
                                                     "The nearest aromatic ring "\
                                                     f"({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                                     f"is located at a distance of {na['ring_distance']}Å, "\
@@ -7102,7 +7143,8 @@ class NmrDpValidation:
                                     f"is located at a distance of {na['ring_distance']}Å, "\
                                     f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                if (na['ring_angle'] - MAGIC_ANGLE) * z_score > 0.0 or self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
+                                if (na['ring_angle'] - MAGIC_ANGLE) * z_score > 0.0\
+                                   or self.__reg.nonblk_anomalous_cs or self.__reg.remediation_mode:
 
                                     self.__reg.report.warning.appendDescription('anomalous_data'
                                                                                 if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0
@@ -7196,7 +7238,8 @@ class NmrDpValidation:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                     + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) "\
-                                    f"must be verified (avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f})."
+                                    f"must be verified (avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, "\
+                                    f"Z_score {z_score:.2f})."
 
                                 warn_alt = f"Verify chemical shift value for {chain_id}:{seq_id}:{comp_id}:{atom_name} "\
                                     f"({value} ppm, {sigma:.2f} sigma), "\
@@ -7797,7 +7840,8 @@ class NmrDpValidation:
                             err = idx_msg + "Found inter-chain RDC vector; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
                                 f"in a loop {lp_category}. "\
-                                "However, it might be an artificial RDC constraint on solid-state NMR applied to symmetric samples such as fibrils.\n"
+                                "However, it might be an artificial RDC constraint on solid-state NMR "\
+                                "applied to symmetric samples such as fibrils.\n"
 
                             self.__reg.report.warning.appendDescription('anomalous_rdc_vector',
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -8093,7 +8137,8 @@ class NmrDpValidation:
                         f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) "\
                         "can not be verified with the assigned chemical shift values "\
                         f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CA {ca_chem_shift_1} ppm, "\
-                        f"{nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CB {cb_chem_shift_1} ppm, redox_state_pred {disulf['redox_state_pred_1']})."
+                        f"{nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CB {cb_chem_shift_1} ppm, "\
+                        f"redox_state_pred {disulf['redox_state_pred_1']})."
 
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -8112,7 +8157,8 @@ class NmrDpValidation:
                         f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) "\
                         "can not be verified with the assigned chemical shift values "\
                         f"({nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CA {ca_chem_shift_2} ppm, "\
-                        f"{nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CB {cb_chem_shift_2} ppm, redox_state_pred {disulf['redox_state_pred_2']})."
+                        f"{nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CB {cb_chem_shift_2} ppm, "\
+                        f"redox_state_pred {disulf['redox_state_pred_2']})."
 
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -8400,7 +8446,8 @@ class NmrDpValidation:
                         f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) "\
                         "can not be verified with the assigned chemical shift values "\
                         f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CA {ca_chem_shift_1} ppm, "\
-                        f"{nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CB {cb_chem_shift_1} ppm, redox_state_pred {other['redox_state_pred_1']})."
+                        f"{nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1}:CB {cb_chem_shift_1} ppm, "\
+                        f"redox_state_pred {other['redox_state_pred_1']})."
 
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -8419,7 +8466,8 @@ class NmrDpValidation:
                         f"({nmr_chain_id_1}:{nmr_seq_id_1}:{nmr_comp_id_1} - {nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}) "\
                         "can not be verified with the assigned chemical shift values "\
                         f"({nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CA {ca_chem_shift_2} ppm, "\
-                        f"{nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CB {cb_chem_shift_2} ppm, redox_state_pred {other['redox_state_pred_2']})."
+                        f"{nmr_chain_id_2}:{nmr_seq_id_2}:{nmr_comp_id_2}:CB {cb_chem_shift_2} ppm, "\
+                        f"redox_state_pred {other['redox_state_pred_2']})."
 
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
 
@@ -8652,7 +8700,8 @@ class NmrDpValidation:
 
                             if _variant_[0] not in ('-', '+'):
 
-                                warn = f"Residue variant {_variant_!r} should start with either '-' or '+' symbol according to the NEF sepcification."
+                                warn = f"Residue variant {_variant_!r} should start with "\
+                                    "either '-' or '+' symbol according to the NEF sepcification."
 
                                 self.__reg.report.warning.appendDescription('atom_nomenclature_mismatch',
                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -8744,7 +8793,8 @@ class NmrDpValidation:
 
                                     checked = False
                                     if atom_id_[0] in PROTON_BEGIN_CODE:
-                                        cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == atom_id_), None)
+                                        cca = next((cca for cca in self.__reg.ccU.lastAtomList
+                                                    if cca[self.__reg.ccU.ccaAtomId] == atom_id_), None)
                                         bonded_to = self.__reg.ccU.getBondedAtoms(comp_id, atom_id_)
                                         peptide_like = self.__reg.csStat.peptideLike(comp_id)
                                         if cca is not None and len(bonded_to) > 0:
@@ -8757,8 +8807,8 @@ class NmrDpValidation:
                                                 err = "Atom ("\
                                                     + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id,
                                                                                   comp_id_name, comp_id, atom_id_name, atom_name)\
-                                                    + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinates. "\
-                                                    + "Please re-upload the model file."
+                                                    + f") which is a {variant_name} {_variant_!r} is not properly instantiated "\
+                                                    "in the coordinates. Please re-upload the model file."
 
                                     if self.__reg.remediation_mode and checked:
                                         continue
@@ -8972,34 +9022,37 @@ class NmrDpValidation:
                             auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
                             if auth_asym_id is not None:
                                 sa = next((sa for sa in seq_align
-                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']
-                                           and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
+                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                           and seq_id in sa['test_seq_id'] and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
                                 if sa is not None:
                                     _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                                        if test_seq_id == seq_id), None)
+                                    auth_seq_id =\
+                                        next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                              if test_seq_id == seq_id), None)
 
                         if None in (auth_asym_id, auth_seq_id) and br_seq_align is not None:
                             auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
                             if auth_asym_id is not None:
                                 sa = next((sa for sa in br_seq_align
-                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']
-                                           and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
+                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                           and seq_id in sa['test_seq_id'] and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
                                 if sa is not None:
                                     _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                                        if test_seq_id == seq_id), None)
+                                    auth_seq_id =\
+                                        next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                              if test_seq_id == seq_id), None)
 
                         if None in (auth_asym_id, auth_seq_id) and np_seq_align is not None:
                             auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
                             if auth_asym_id is not None:
                                 sa = next((sa for sa in np_seq_align
-                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id and seq_id in sa['test_seq_id']
-                                           and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
+                                           if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                           and seq_id in sa['test_seq_id'] and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
                                 if sa is not None:
                                     _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                                    auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
-                                                        if test_seq_id == seq_id), None)
+                                    auth_seq_id =\
+                                        next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                              if test_seq_id == seq_id), None)
 
                     return auth_asym_id, auth_seq_id
 
@@ -9177,7 +9230,8 @@ class NmrDpValidation:
 
                 if has_key_seq or has_auth_seq:
 
-                    has_auth_atom_name = len(auth_atom_name_names) > 0 and set(auth_atom_name_names) & set(loop.tags) == set(auth_atom_name_names)
+                    has_auth_atom_name = len(auth_atom_name_names) > 0\
+                        and set(auth_atom_name_names) & set(loop.tags) == set(auth_atom_name_names)
 
                     if valid_auth_seq:
 
@@ -9585,7 +9639,7 @@ class NmrDpValidation:
 
                                     try:
 
-                                        entity_assembly_id, comp_index_id, _, _ = auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+                                        entity_assembly_id, comp_index_id, _, _ = auth_to_star_seq[seq_key]
 
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
@@ -10210,7 +10264,8 @@ class NmrDpValidation:
 
                             chain_id, seq_id = auth_asym_id, auth_seq_id
 
-                            _assign, warn = assignCoordPolymerSequenceWithChainId(self.__reg.caC, self.__reg.nefT, chain_id, seq_id, comp_id, atom_id)
+                            _assign, warn = assignCoordPolymerSequenceWithChainId(self.__reg.caC, self.__reg.nefT,
+                                                                                  chain_id, seq_id, comp_id, atom_id)
 
                             if warn is not None:
 
@@ -11748,7 +11803,8 @@ class NmrDpValidation:
                                  and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                 # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                 cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                and cca_row[6] == _seq_key[1]), None)
                                 if cca_row is not None:
                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                 if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
@@ -11769,7 +11825,8 @@ class NmrDpValidation:
                                         comp_id = _comp_id
                                         # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                         cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                        and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                         atom_id = __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
@@ -11778,7 +11835,8 @@ class NmrDpValidation:
                                         comp_id = _comp_id
                                         # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                         cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                        and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                         break
@@ -11854,7 +11912,8 @@ class NmrDpValidation:
                                          and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                         # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                         cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                        and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                         if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
@@ -11875,8 +11934,8 @@ class NmrDpValidation:
                                                 comp_id = _comp_id
                                                 # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                                 cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                                if cca_row[4] == comp_id
-                                                                and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                                if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                                and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                                 atom_id = __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
@@ -11885,8 +11944,8 @@ class NmrDpValidation:
                                                 comp_id = _comp_id
                                                 # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                                 cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                                if cca_row[4] == comp_id
-                                                                and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                                if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                                and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
                                                 break
@@ -12440,8 +12499,9 @@ class NmrDpValidation:
                                 modified = True
 
                     elif self.__reg.nonblk_bad_nterm\
-                            and (seq_id == 1 or cif_seq_id == 1 or ((seq_key[0], seq_key[1] - 1)
-                                                                    if seq_key is not None else (cif_chain_id, cif_seq_id - 1)) in coord_unobs_res)\
+                            and (seq_id == 1 or cif_seq_id == 1
+                                 or ((seq_key[0], seq_key[1] - 1)
+                                     if seq_key is not None else (cif_chain_id, cif_seq_id - 1)) in coord_unobs_res)\
                             and atom_id_ == 'P':
                         continue
 
@@ -12600,7 +12660,8 @@ class NmrDpValidation:
                                                            'category': lp_category, 'description': err})
 
                 if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - {err}\n")
+                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
+                                         f"++ Error  - {err}\n")
 
             try:
 
@@ -12739,8 +12800,10 @@ class NmrDpValidation:
 
                             if position < min_points[j] or position > max_points[j]:
 
-                                err = f"[Check row of {id_tag} {row[id_tag]}] {position_names[j]} {position} is not within expected range "\
-                                    f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs_positions[j]}). "\
+                                err = f"[Check row of {id_tag} {row[id_tag]}] {position_names[j]} {position} "\
+                                    "is not within expected range "\
+                                    f"(min_position {min_points[j]}, max_position {max_points[j]}, "\
+                                    f"absolute_peak_positions {abs_positions[j]}). "\
                                     "Please check for reference frequency and spectral width."
 
                                 self.__reg.report.warning.appendDescription('anomalous_data',
@@ -12748,15 +12811,18 @@ class NmrDpValidation:
                                                                              'category': lp_category, 'description': err})
 
                                 if self.__reg.verbose:
-                                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ Warning  - {err}\n")
+                                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
+                                                         f"++ Warning  - {err}\n")
 
                             if None in (min_limits[j], max_limits[j]):
                                 continue
 
                             if position < min_limits[j] or position > max_limits[j]:
 
-                                err = f"[Check row of {id_tag} {row[id_tag]}] {position_names[j]} {position} is not within expected range "\
-                                    f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs_positions[j]}), "\
+                                err = f"[Check row of {id_tag} {row[id_tag]}] {position_names[j]} {position} "\
+                                    "is not within expected range "\
+                                    f"(min_position {min_limits[j]}, max_position {max_limits[j]}, "\
+                                    f"absolute_peak_positions {abs_positions[j]}), "\
                                     f"which exceeds limit of current probe design ({HARD_PROBE_LIMIT / 1000.0} kHz). "\
                                     "Please check for reference frequency and spectral width."
 
@@ -12775,7 +12841,8 @@ class NmrDpValidation:
                                                           "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - {str(e)}\n")
+                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
+                                         f"++ Error  - {str(e)}\n")
 
         if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension_transfer')\
            or (file_type == 'nmr-star' and lp_category == '_Spectral_dim_transfer'):
@@ -12791,7 +12858,8 @@ class NmrDpValidation:
                                                                    'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
+                                                 f"++ ValueError  - {err}\n")
 
     def testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name: str, file_type: str, sf_framecode: str,
                                                       num_dim: int, lp_category: str, aux_data: List[List[dict]],
@@ -12814,7 +12882,8 @@ class NmrDpValidation:
                                                            'category': lp_category, 'description': err})
 
                 if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - {err}\n")
+                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                         f"++ Error  - {err}\n")
 
             try:
 
@@ -12934,7 +13003,8 @@ class NmrDpValidation:
                                                                          'category': lp_category, 'description': warn})
 
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Warning  - {warn}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                                     f"++ Warning  - {warn}\n")
 
                         if None in (min_limits[j], max_limits[j]):
                             continue
@@ -12962,8 +13032,8 @@ class NmrDpValidation:
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                            'category': lp_category, 'description': str(e).strip("'")})
 
-                self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ LookupError  - "
-                                     f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
+                self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                     f"++ LookupError  - {file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
             except ValueError as e:
 
@@ -12972,7 +13042,8 @@ class NmrDpValidation:
                                                            'category': lp_category, 'description': str(e).strip("'")})
 
                 if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {str(e)}\n")
+                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                         f"++ ValueError  - {str(e)}\n")
 
             except Exception as e:
 
@@ -12981,7 +13052,8 @@ class NmrDpValidation:
                                                           "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - {str(e)}\n")
+                    self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                         f"++ Error  - {str(e)}\n")
 
         if lp_category == '_Spectral_dim_transfer':
 
@@ -12996,7 +13068,8 @@ class NmrDpValidation:
                                                                    'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                                 f"++ ValueError  - {err}\n")
 
     def __hasCoordSeq(self, nmr_chain_id: str, nmr_seq_id: str) -> bool:
         """ Return whether a given sequence is in the coordinates.
@@ -13157,8 +13230,10 @@ class NmrDpValidation:
                                                                {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                                {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
                                                                {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                               {'name': model_num_name, 'type': 'int', 'value': self.__reg.representative_model_id},
-                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                               {'name': model_num_name, 'type': 'int',
+                                                                'value': self.__reg.representative_model_id},
+                                                               {'name': 'label_alt_id', 'type': 'enum',
+                                                                'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
             except Exception as e:
@@ -13247,7 +13322,8 @@ class NmrDpValidation:
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                              {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                              {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
             except Exception as e:
@@ -13356,7 +13432,8 @@ class NmrDpValidation:
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                              {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                              {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
             except Exception as e:
@@ -13486,7 +13563,8 @@ class NmrDpValidation:
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                              {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                              {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__reg.representative_alt_id,)}
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
             except Exception as e:
@@ -13621,12 +13699,15 @@ class NmrDpValidation:
 
                 if has_err:
                     status = 'Error'
-                    ent['error_descriptions'] = self.__reg.report.error.getCombinedDescriptions(file_name, sf_framecode, original_file_name)
+                    ent['error_descriptions'] =\
+                        self.__reg.report.error.getCombinedDescriptions(file_name, sf_framecode, original_file_name)
                     if has_warn:
-                        ent['warning_descriptions'] = self.__reg.report.warning.getCombinedDescriptions(file_name, sf_framecode, original_file_name)
+                        ent['warning_descriptions'] =\
+                            self.__reg.report.warning.getCombinedDescriptions(file_name, sf_framecode, original_file_name)
                 elif has_warn:
                     status = 'Warning'
-                    ent['warning_descriptions'] = self.__reg.report.warning.getCombinedDescriptions(file_name, sf_framecode, original_file_name)
+                    ent['warning_descriptions'] =\
+                        self.__reg.report.warning.getCombinedDescriptions(file_name, sf_framecode, original_file_name)
                 else:
                     status = 'OK'
 
@@ -13884,13 +13965,16 @@ class NmrDpValidation:
                                     redundant.add(int(index))
 
                     if content_subtype == 'dist_restraint':
-                        self.__calculateStatsOfDistanceRestraint(file_list_id, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent)
+                        self.__calculateStatsOfDistanceRestraint(file_list_id, sf_framecode,
+                                                                 lp_data, conflict_id_set, inconsistent, redundant, ent)
 
                     elif content_subtype == 'dihed_restraint':
-                        self.__calculateStatsOfDihedralRestraint(file_list_id, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent)
+                        self.__calculateStatsOfDihedralRestraint(file_list_id, sf_framecode,
+                                                                 lp_data, conflict_id_set, inconsistent, redundant, ent)
 
                     elif content_subtype == 'rdc_restraint':
-                        self.__calculateStatsOfRdcRestraint(file_list_id, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent)
+                        self.__calculateStatsOfRdcRestraint(file_list_id, sf_framecode,
+                                                            lp_data, conflict_id_set, inconsistent, redundant, ent)
 
             if content_subtype.startswith('spectral_peak'):
 
@@ -15066,15 +15150,17 @@ class NmrDpValidation:
                                     if ne2_chem_shift is not None:
                                         shifts += f"NE2 {ne2_chem_shift} ppm, "
 
-                                    warn = f"Tautomeric state {his['tautomeric_state']} of {chain_id}:{seq_id}:{comp_id} can not be verified with "\
-                                        f"the assigned chemical shift values ({shifts}tautomeric_state_pred {his['tautomeric_state_pred']})."
+                                    warn = f"Tautomeric state {his['tautomeric_state']} of {chain_id}:{seq_id}:{comp_id} "\
+                                        "can not be verified with the assigned chemical shift values "\
+                                        f"({shifts}tautomeric_state_pred {his['tautomeric_state_pred']})."
 
                                     self.__reg.report.warning.appendDescription(item,
                                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                                  'description': warn})
 
                                     if self.__reg.verbose:
-                                        self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                        self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
+                                                             f"++ Warning  - {warn}\n")
 
                             his_tautomeric_state.append(his)
 
@@ -16224,7 +16310,9 @@ class NmrDpValidation:
                             transposed[k].append(count_of_val[k])
 
                     if len(range_of_vals) > 1:
-                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dist_ann}
+                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals,
+                                                           'number_of_values': transposed,
+                                                           'annotations': dist_ann}
 
             if file_type == 'nmr-star' and self.__reg.star_data_type[file_list_id] == 'Entry':
                 lp_category = LP_CATEGORIES[file_type][content_subtype]
@@ -17478,7 +17566,8 @@ class NmrDpValidation:
                         if comp_id not in phi_psi_value:
                             phi_psi_value[comp_id] = []
 
-                        phi_psi_value[comp_id].append([phi['value'], psi['value'], phi['chain_id'] + ':' + str(phi['seq_id']) + ':' + phi['comp_id']])
+                        phi_psi_value[comp_id].append([phi['value'], psi['value'],
+                                                       phi['chain_id'] + ':' + str(phi['seq_id']) + ':' + phi['comp_id']])
 
                         if (phi['error'] is not None) or (psi['error'] is not None):
 
@@ -17728,7 +17817,9 @@ class NmrDpValidation:
                             transposed[k].append(count_of_val[k])
 
                     if len(range_of_vals) > 1:
-                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dihed_ann}
+                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals,
+                                                           'number_of_values': transposed,
+                                                           'annotations': dihed_ann}
 
             if file_type == 'nmr-star' and self.__reg.star_data_type[file_list_id] == 'Entry':
                 lp_category = LP_CATEGORIES[file_type][content_subtype]
@@ -18170,7 +18261,9 @@ class NmrDpValidation:
                             transposed[k].append(count_of_val[k])
 
                     if len(range_of_vals) > 1:
-                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': rdc_ann}
+                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals,
+                                                           'number_of_values': transposed,
+                                                           'annotations': rdc_ann}
 
             if file_type == 'nmr-star' and self.__reg.star_data_type[file_list_id] == 'Entry':
                 lp_category = LP_CATEGORIES[file_type][content_subtype]
@@ -18253,16 +18346,20 @@ class NmrDpValidation:
                             dim_1 = sp_dim_trans['dimension_1']
                             dim_2 = sp_dim_trans['dimension_2']
                             mag_link.append((dim_1, dim_2))
-                        ent['spectral_dim_transfer'].append({'id_1': sp_dim_trans['dimension_1'], 'id_2': sp_dim_trans['dimension_2'],
-                                                             'indirect': sp_dim_trans.get('is_indirect'), 'type': sp_dim_trans.get('transfer_type')})
+                        ent['spectral_dim_transfer'].append({'id_1': sp_dim_trans['dimension_1'],
+                                                             'id_2': sp_dim_trans['dimension_2'],
+                                                             'indirect': sp_dim_trans.get('is_indirect'),
+                                                             'type': sp_dim_trans.get('transfer_type')})
                     else:
                         if sp_dim_trans['Type'] == 'onebond':
                             # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
                             dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                             dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                             mag_link.append((dim_1, dim_2))
-                        ent['spectral_dim_transfer'].append({'id_1': sp_dim_trans['Spectral_dim_ID_1'], 'id_2': sp_dim_trans['Spectral_dim_ID_2'],
-                                                             'indirect': sp_dim_trans.get('Indirect'), 'type': sp_dim_trans.get('Type')})
+                        ent['spectral_dim_transfer'].append({'id_1': sp_dim_trans['Spectral_dim_ID_1'],
+                                                             'id_2': sp_dim_trans['Spectral_dim_ID_2'],
+                                                             'indirect': sp_dim_trans.get('Indirect'),
+                                                             'type': sp_dim_trans.get('Type')})
 
             aux_data = next((lp['data'] for lp in self.__reg.aux_data[content_subtype]
                              if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
@@ -18555,7 +18652,8 @@ class NmrDpValidation:
 
             if aux_data is not None:
                 for sp_dim_trans in aux_data:
-                    if sp_dim_trans['Type'] == 'onebond':  # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
+                    if sp_dim_trans['Type'] == 'onebond':
+                        # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
                         dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                         dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                         mag_link.append((dim_1, dim_2))

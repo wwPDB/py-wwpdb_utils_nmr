@@ -470,7 +470,8 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
                                     f'{L1} {L2} {L3} {L4} -> ',
-                                    details if details is not None or None in (L1, L2, L3, L4) or (has_assignments and not has_multiple_assignments)
+                                    details if details is not None or None in (L1, L2, L3, L4)
+                                    or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3} {L4}')
 
         finally:
@@ -872,7 +873,8 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
                                     f'{L1} {L2} {L3} {L4} -> ',
-                                    details if details is not None or None in (L1, L2, L3, L4) or (has_assignments and not has_multiple_assignments)
+                                    details if details is not None or None in (L1, L2, L3, L4)
+                                    or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3} {L4}')
 
         finally:

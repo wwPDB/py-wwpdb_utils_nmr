@@ -8908,7 +8908,8 @@ class NmrDpUtility:
                     if len(revision_history) > 1:
                         self.__reg.versioned_atom_name_mapping =\
                             retrieveAtomNameMappingFromRevisions(self.__reg.cR, self.__reg.cahceDirPath, extended_pdb_id, revision_history,
-                                                                 self.__reg.representative_model_id, self.__reg.representative_alt_id)
+                                                                 self.__reg.representative_model_id, self.__reg.representative_alt_id,
+                                                                 self.__reg.csStat)
 
                     internal_cif_file = os.path.join(self.__reg.cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V1')
                     internal_cif_file0 = os.path.join(self.__reg.cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V0')
@@ -9073,7 +9074,8 @@ class NmrDpUtility:
                             self.__reg.internal_atom_name_mapping[ver] =\
                                 retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath, revision_history,
                                                                     f'{internal_cif_file_prefix}{ver}',
-                                                                    self.__reg.representative_model_id, self.__reg.representative_alt_id)
+                                                                    self.__reg.representative_model_id, self.__reg.representative_alt_id,
+                                                                    self.__reg.csStat)
 
                     if os.path.exists(internal_cif_file0):
                         major = max(revision_history)
@@ -9081,7 +9083,8 @@ class NmrDpUtility:
                         revision_history[major] = minor
                         self.__reg.internal_atom_name_mapping[0] =\
                             retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath, revision_history, internal_cif_file0,
-                                                                self.__reg.representative_model_id, self.__reg.representative_alt_id)
+                                                                self.__reg.representative_model_id, self.__reg.representative_alt_id,
+                                                                self.__reg.csStat)
 
                         try:
 
@@ -9170,7 +9173,8 @@ class NmrDpUtility:
                                 self.__reg.internal_atom_name_mapping[-1] =\
                                     retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath,
                                                                         revision_history, other_internal_cif_file,
-                                                                        self.__reg.representative_model_id, self.__reg.representative_alt_id)
+                                                                        self.__reg.representative_model_id, self.__reg.representative_alt_id,
+                                                                        self.__reg.csStat)
 
                         except Exception as e:
                             print(str(e))
@@ -9229,7 +9233,8 @@ class NmrDpUtility:
                         if os.path.exists(internal_cif_file):
                             self.__reg.internal_atom_name_mapping[1] =\
                                 retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath, {0: 0}, internal_cif_file,
-                                                                    self.__reg.representative_model_id, self.__reg.representative_alt_id)
+                                                                    self.__reg.representative_model_id, self.__reg.representative_alt_id,
+                                                                    self.__reg.csStat)
 
                     except Exception:
                         pass

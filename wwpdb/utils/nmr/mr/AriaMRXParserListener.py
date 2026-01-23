@@ -22,7 +22,7 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
                                                EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
@@ -64,7 +64,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
                                    EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
@@ -443,7 +443,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if name == 'weight':
                         self.__cur_contrib_weight = float(string)
 
-                elif self.__cur_path in ('/noe_restraint_list/peak/contribution/spin_system/atom', '/data_set/restraint_list/restraint/contribution/atom'):
+                elif self.__cur_path in ('/noe_restraint_list/peak/contribution/spin_system/atom',
+                                         '/data_set/restraint_list/restraint/contribution/atom'):
 
                     if name == 'segid' and len(string) > 0:
                         self.__segid = string
@@ -664,8 +665,10 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                     if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                       and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                            or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                       and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                             and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.reasons['model_chain_id_ext']
+                                and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                         self.allowZeroUpperLimit = True
                 self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -750,7 +753,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
-                    if self.__restraint_key is not None and isDefinedInterChainRestraint(atoms, self.__restraint_key, self.symmetric, self.polySeq):
+                    if self.__restraint_key is not None\
+                       and isDefinedInterChainRestraint(atoms, self.__restraint_key, self.symmetric, self.polySeq):
                         continue
                     if isIdenticalRestraint(atoms, self.nefT):
                         continue
@@ -913,7 +917,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
                         if not isinstance(atomId, str):
-                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                           if atomId.match(cca[self.ccU.ccaAtomId])), None)
                             if atomId is None:
                                 resKey = (seqId, _compId)
                                 if resKey not in self.extResKey:
@@ -996,7 +1001,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             return
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                                    if _cifSeqId in ps['auth_seq_id'] else None)
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
 
@@ -1030,7 +1036,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             self.ccU.updateChemCompDict(_cifCompId)
 
                             if isinstance(atomId, str):
-                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                  if cca[self.ccU.ccaAtomId] == atomId), None)
                                 if cifAtomId is None:
                                     if ord == 0:
                                         _cifSeqId += seqOffset[ord + 1] - offset
@@ -1052,16 +1059,21 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
                                                           if any(True for b in self.ccU.lastBonds
-                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId and b[self.ccU.ccbAtomId2] == _cifAtomId)
-                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId
+                                                                      and b[self.ccU.ccbAtomId2] == _cifAtomId)
+                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId
+                                                                         and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
                                         if cifAtomId is None:
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
                                             _cifCompId = cifCompId if offset == 0\
-                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
-                                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
+                                                else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                      if _cifSeqId in ps['auth_seq_id'] else None)
+                                            seqKey, coordAtomSite =\
+                                                self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                                             if coordAtomSite is not None:
-                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
+                                                                  if _cifAtomId in coordAtomSite['atom_id']), None)
 
                                     else:
                                         cifAtomId = cifAtomIds[0]
@@ -1074,7 +1086,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in MONDICT3:
+                                elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
                                 else:
@@ -1222,7 +1234,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         atomSelection = []
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                                    if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             idx = ps['auth_seq_id'].index(cifSeqId)
@@ -1249,7 +1262,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                              if cca[self.ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
                                 if _cifCompId is None and not self.allow_ext_seq:
@@ -1257,7 +1271,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
                                                   f"of chain {chainId} of the coordinates. "
                                                   "Please update the sequence in the Macromolecules page.")
-                                elif _compId in MONDICT3:
+                                elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
                                 else:

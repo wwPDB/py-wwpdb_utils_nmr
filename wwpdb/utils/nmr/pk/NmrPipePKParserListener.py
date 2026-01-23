@@ -274,12 +274,14 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if x_ppm is not None and x_hz is not None and cur_spectral_dim[1]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[1]['value_first_point'], float):
-                cur_spectral_dim[1]['obs_freq_hint'].append(float(roundString(str(x_hz / (cur_spectral_dim[1]['value_first_point'] - x_ppm)),
-                                                                              getMaxEffDigits([str(x_ppm), str(x_hz)]))))
+                cur_spectral_dim[1]['obs_freq_hint'].append(
+                    float(roundString(str(x_hz / (cur_spectral_dim[1]['value_first_point'] - x_ppm)),
+                                      getMaxEffDigits([str(x_ppm), str(x_hz)]))))
             if y_ppm is not None and y_hz is not None and cur_spectral_dim[2]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[2]['value_first_point'], float):
-                cur_spectral_dim[2]['obs_freq_hint'].append(float(roundString(str(y_hz / (cur_spectral_dim[2]['value_first_point'] - y_ppm)),
-                                                                              getMaxEffDigits([str(y_ppm), str(y_hz)]))))
+                cur_spectral_dim[2]['obs_freq_hint'].append(
+                    float(roundString(str(y_hz / (cur_spectral_dim[2]['value_first_point'] - y_ppm)),
+                                      getMaxEffDigits([str(y_ppm), str(y_hz)]))))
 
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = None
@@ -425,16 +427,19 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if x_ppm is not None and x_hz is not None and cur_spectral_dim[1]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[1]['value_first_point'], float):
-                cur_spectral_dim[1]['obs_freq_hint'].append(float(roundString(str(x_hz / (cur_spectral_dim[1]['value_first_point'] - x_ppm)),
-                                                                              getMaxEffDigits([str(x_ppm), str(x_hz)]))))
+                cur_spectral_dim[1]['obs_freq_hint'].append(
+                    float(roundString(str(x_hz / (cur_spectral_dim[1]['value_first_point'] - x_ppm)),
+                                      getMaxEffDigits([str(x_ppm), str(x_hz)]))))
             if y_ppm is not None and y_hz is not None and cur_spectral_dim[2]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[2]['value_first_point'], float):
-                cur_spectral_dim[2]['obs_freq_hint'].append(float(roundString(str(y_hz / (cur_spectral_dim[2]['value_first_point'] - y_ppm)),
-                                                                              getMaxEffDigits([str(y_ppm), str(y_hz)]))))
+                cur_spectral_dim[2]['obs_freq_hint'].append(
+                    float(roundString(str(y_hz / (cur_spectral_dim[2]['value_first_point'] - y_ppm)),
+                                      getMaxEffDigits([str(y_ppm), str(y_hz)]))))
             if z_ppm is not None and z_hz is not None and cur_spectral_dim[3]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[3]['value_first_point'], float):
-                cur_spectral_dim[3]['obs_freq_hint'].append(float(roundString(str(z_hz / (cur_spectral_dim[3]['value_first_point'] - z_ppm)),
-                                                                              getMaxEffDigits([str(z_ppm), str(z_hz)]))))
+                cur_spectral_dim[3]['obs_freq_hint'].append(
+                    float(roundString(str(z_hz / (cur_spectral_dim[3]['value_first_point'] - z_ppm)),
+                                      getMaxEffDigits([str(z_ppm), str(z_hz)]))))
 
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = asis3 = None
@@ -589,20 +594,24 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if x_ppm is not None and x_hz is not None and cur_spectral_dim[1]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[1]['value_first_point'], float):
-                cur_spectral_dim[1]['obs_freq_hint'].append(float(roundString(str(x_hz / (cur_spectral_dim[1]['value_first_point'] - x_ppm)),
-                                                                              getMaxEffDigits([str(x_ppm), str(x_hz)]))))
+                cur_spectral_dim[1]['obs_freq_hint'].append(
+                    float(roundString(str(x_hz / (cur_spectral_dim[1]['value_first_point'] - x_ppm)),
+                                      getMaxEffDigits([str(x_ppm), str(x_hz)]))))
             if y_ppm is not None and y_hz is not None and cur_spectral_dim[2]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[2]['value_first_point'], float):
-                cur_spectral_dim[2]['obs_freq_hint'].append(float(roundString(str(y_hz / (cur_spectral_dim[2]['value_first_point'] - y_ppm)),
-                                                                              getMaxEffDigits([str(y_ppm), str(y_hz)]))))
+                cur_spectral_dim[2]['obs_freq_hint'].append(
+                    float(roundString(str(y_hz / (cur_spectral_dim[2]['value_first_point'] - y_ppm)),
+                                      getMaxEffDigits([str(y_ppm), str(y_hz)]))))
             if z_ppm is not None and z_hz is not None and cur_spectral_dim[3]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[3]['value_first_point'], float):
-                cur_spectral_dim[3]['obs_freq_hint'].append(float(roundString(str(z_hz / (cur_spectral_dim[3]['value_first_point'] - z_ppm)),
-                                                                              getMaxEffDigits([str(z_ppm), str(z_hz)]))))
+                cur_spectral_dim[3]['obs_freq_hint'].append(
+                    float(roundString(str(z_hz / (cur_spectral_dim[3]['value_first_point'] - z_ppm)),
+                                      getMaxEffDigits([str(z_ppm), str(z_hz)]))))
             if a_ppm is not None and a_hz is not None and cur_spectral_dim[4]['spectrometer_frequency'] is None\
                and isinstance(cur_spectral_dim[4]['value_first_point'], float):
-                cur_spectral_dim[4]['obs_freq_hint'].append(float(roundString(str(a_hz / (cur_spectral_dim[4]['value_first_point'] - a_ppm)),
-                                                                              getMaxEffDigits([str(a_ppm), str(a_hz)]))))
+                cur_spectral_dim[4]['obs_freq_hint'].append(
+                    float(roundString(str(a_hz / (cur_spectral_dim[4]['value_first_point'] - a_ppm)),
+                                      getMaxEffDigits([str(a_ppm), str(a_hz)]))))
 
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = asis3 = asis4 = None

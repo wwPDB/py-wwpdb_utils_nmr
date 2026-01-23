@@ -24,7 +24,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def __test_nmr_cs_str_consistency(self, entry_id):
         entry_dir_path = self.data_dir_path
-        self.nmr_dp_util.addInput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file_path for cs_file_path in self.cs_file_path[entry_id]], type='file_list')
+        self.nmr_dp_util.addInput(name='chem_shift_file_path_list',
+                                  value=[entry_dir_path + cs_file_path for cs_file_path in self.cs_file_path[entry_id]],
+                                  type='file_list')
         self.nmr_dp_util.addInput(name='coordinate_file_path', value=self.model_file[entry_id], type='file')
         self.nmr_dp_util.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.nmr_dp_util.addInput(name='nonblk_bad_nterm', value=True, type='param')

@@ -318,89 +318,166 @@ class OneDepAnnTasks:
         #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
         #             self.__sfTagMap.append(tag_map)
         # """
-        self.__sfTagMap = [('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_13C_err', '_Assigned_chem_shift_list', 'Chem_shift_13C_err', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_15N_err', '_Assigned_chem_shift_list', 'Chem_shift_15N_err', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_19F_err', '_Assigned_chem_shift_list', 'Chem_shift_19F_err', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_1H_err', '_Assigned_chem_shift_list', 'Chem_shift_1H_err', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_2H_err', '_Assigned_chem_shift_list', 'Chem_shift_2H_err', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_31P_err', '_Assigned_chem_shift_list', 'Chem_shift_31P_err', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id', '_Assigned_chem_shift_list', 'Chem_shift_reference_ID', 1, None),
+        self.__sfTagMap = [('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_13C_err',
+                            '_Assigned_chem_shift_list', 'Chem_shift_13C_err', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_15N_err',
+                            '_Assigned_chem_shift_list', 'Chem_shift_15N_err', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_19F_err',
+                            '_Assigned_chem_shift_list', 'Chem_shift_19F_err', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_1H_err',
+                            '_Assigned_chem_shift_list', 'Chem_shift_1H_err', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_2H_err',
+                            '_Assigned_chem_shift_list', 'Chem_shift_2H_err', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_31P_err',
+                            '_Assigned_chem_shift_list', 'Chem_shift_31P_err', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id',
+                            '_Assigned_chem_shift_list', 'Chem_shift_reference_ID', 1, None),
                            # add pdbx_nmr_assigned_chem_shift_list.chem_shift_reference_label
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_label', '_Assigned_chem_shift_list', 'Chem_shift_reference_label', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Assigned_chem_shift_list', 'Sample_condition_list_ID', 1, None),
-                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_label', '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'data_file_name', '_Assigned_chem_shift_list', 'Data_file_name', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'details', '_Assigned_chem_shift_list', 'Details', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'entry_id', '_Assigned_chem_shift_list', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'error_derivation_method', '_Assigned_chem_shift_list', 'Error_derivation_method', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'id', '_Assigned_chem_shift_list', 'ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'label', '_Assigned_chem_shift_list', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'carbon_shifts_flag', '_Chem_shift_reference', 'Carbon_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'details', '_Chem_shift_reference', 'Details', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'entry_id', '_Chem_shift_reference', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'id', '_Chem_shift_reference', 'ID', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'label', '_Chem_shift_reference', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'nitrogen_shifts_flag', '_Chem_shift_reference', 'Nitrogen_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'other_shifts_flag', '_Chem_shift_reference', 'Other_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'phosphorus_shifts_flag', '_Chem_shift_reference', 'Phosphorus_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'proton_shifts_flag', '_Chem_shift_reference', 'Proton_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_software', 'software_label', '_Software', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_ensemble', 'average_constraint_violations_per_residue', '_Constraint_stat_list', 'Constr_violations_per_residue_avg', 1, None),
-                           ('pdbx_nmr_ensemble', 'average_constraints_per_residue', '_Constraint_stat_list', 'Constraints_per_residue_avg', 1, None),
-                           ('pdbx_nmr_ensemble', 'conformer_selection_criteria', '_Conformer_stat_list', 'Conformer_selection_criteria', 1, None),
-                           ('pdbx_nmr_ensemble', 'conformers_calculated_total_number', '_Conformer_stat_list', 'Conformer_calculated_total_num', 1, None),
-                           ('pdbx_nmr_ensemble', 'conformers_submitted_total_number', '_Conformer_stat_list', 'Conformer_submitted_total_num', 1, None),
-                           ('pdbx_nmr_ensemble', 'distance_constraint_violation_method', '_Constraint_stat_list', 'Dist_constr_violat_stat_calc_method', 1, None),
-                           ('pdbx_nmr_ensemble', 'entry_id', '_Conformer_stat_list', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_ensemble', 'representative_conformer', '_Conformer_stat_list', 'Representative_conformer', 1, None),
-                           # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_label',
+                            '_Assigned_chem_shift_list', 'Chem_shift_reference_label', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id',
+                            '_Assigned_chem_shift_list', 'Sample_condition_list_ID', 1, None),
+                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id',
+                           #  '_Sample_condition_list', 'ID', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_label',
+                            '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'data_file_name',
+                            '_Assigned_chem_shift_list', 'Data_file_name', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'details',
+                            '_Assigned_chem_shift_list', 'Details', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'entry_id',
+                            '_Assigned_chem_shift_list', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'error_derivation_method',
+                            '_Assigned_chem_shift_list', 'Error_derivation_method', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'id',
+                            '_Assigned_chem_shift_list', 'ID', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'label',
+                            '_Assigned_chem_shift_list', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'details',
+                            '_Chem_shift_reference', 'Details', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'entry_id',
+                            '_Chem_shift_reference', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'id',
+                            '_Chem_shift_reference', 'ID', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'label',
+                            '_Chem_shift_reference', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'proton_shifts_flag',
+                            '_Chem_shift_reference', 'Proton_shifts_flag', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'carbon_shifts_flag',
+                            '_Chem_shift_reference', 'Carbon_shifts_flag', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'nitrogen_shifts_flag',
+                            '_Chem_shift_reference', 'Nitrogen_shifts_flag', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'phosphorus_shifts_flag',
+                            '_Chem_shift_reference', 'Phosphorus_shifts_flag', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'other_shifts_flag',
+                            '_Chem_shift_reference', 'Other_shifts_flag', 1, None),
+                           ('pdbx_nmr_chem_shift_software', 'software_label',
+                            '_Software', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_ensemble', 'average_constraint_violations_per_residue',
+                            '_Constraint_stat_list', 'Constr_violations_per_residue_avg', 1, None),
+                           ('pdbx_nmr_ensemble', 'average_constraints_per_residue',
+                            '_Constraint_stat_list', 'Constraints_per_residue_avg', 1, None),
+                           ('pdbx_nmr_ensemble', 'conformer_selection_criteria',
+                            '_Conformer_stat_list', 'Conformer_selection_criteria', 1, None),
+                           ('pdbx_nmr_ensemble',
+                            'conformers_calculated_total_number',
+                            '_Conformer_stat_list', 'Conformer_calculated_total_num', 1, None),
+                           ('pdbx_nmr_ensemble',
+                            'conformers_submitted_total_number',
+                            '_Conformer_stat_list', 'Conformer_submitted_total_num', 1, None),
+                           ('pdbx_nmr_ensemble', 'distance_constraint_violation_method',
+                            '_Constraint_stat_list', 'Dist_constr_violat_stat_calc_method', 1, None),
+                           ('pdbx_nmr_ensemble', 'entry_id',
+                            '_Conformer_stat_list', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_ensemble', 'representative_conformer',
+                            '_Conformer_stat_list', 'Representative_conformer', 1, None),
+                           # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id',
+                           #  '_Sample_condition_list', 'ID', 1, None),
                            # replaced by
-                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'Sf_framecode', 1, None),
-                           # ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_representative', 'conformer_id', '_Conformer_stat_list', 'Representative_conformer', 1, None),
-                           ('pdbx_nmr_representative', 'entry_id', '_Conformer_stat_list', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_representative', 'selection_criteria', '_Conformer_stat_list', 'Rep_conformer_selection_criteria', 1, None),
-                           ('pdbx_nmr_sample_details', 'contents', '_Sample', 'Details', 1, 0),
-                           ('pdbx_nmr_sample_details', 'solution_id', '_Sample', 'ID', 1, None),
-                           ('pdbx_nmr_sample_details', 'solvent_system', '_Sample', 'Solvent_system', 1, None),
-                           ('pdbx_nmr_sample_details', 'type', '_Sample', 'Type', 1, None),
+                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id',
+                            '_Sample_condition_list', 'Sf_framecode', 1, None),
+                           # ('pdbx_nmr_exptl_sample_conditions', 'label',
+                           #  '_Sample_condition_list', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_representative', 'conformer_id',
+                            '_Conformer_stat_list', 'Representative_conformer', 1, None),
+                           ('pdbx_nmr_representative', 'entry_id',
+                            '_Conformer_stat_list', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_representative', 'selection_criteria',
+                            '_Conformer_stat_list', 'Rep_conformer_selection_criteria', 1, None),
+                           ('pdbx_nmr_sample_details', 'contents',
+                            '_Sample', 'Details', 1, 0),
+                           ('pdbx_nmr_sample_details', 'solution_id',
+                            '_Sample', 'ID', 1, None),
+                           ('pdbx_nmr_sample_details', 'solvent_system',
+                            '_Sample', 'Solvent_system', 1, None),
+                           ('pdbx_nmr_sample_details', 'type',
+                            '_Sample', 'Type', 1, None),
                            # add pdbx_nmr_sample_details.label
-                           ('pdbx_nmr_sample_details', 'label', '_Sample', 'Sf_framecode', 1, None),
-                           # ('pdbx_nmr_software', 'authors', '_Software', 'ID', 5, None),
-                           ('pdbx_nmr_software', 'details', '_Software', 'Details', 1, None),
-                           ('pdbx_nmr_software', 'details', '_Spectral_peak_list', 'Text_data_format', 1, None),
+                           ('pdbx_nmr_sample_details', 'label',
+                            '_Sample', 'Sf_framecode', 1, None),
+                           # ('pdbx_nmr_software', 'authors',
+                           #  '_Software', 'ID', 5, None),
+                           ('pdbx_nmr_software', 'details',
+                            '_Software', 'Details', 1, None),
+                           ('pdbx_nmr_software', 'details',
+                            '_Spectral_peak_list', 'Text_data_format', 1, None),
                            # map_code '-11' indicates children loops has metadata to be merged
-                           ('pdbx_nmr_software', 'name', '_Software', 'Name', -11, None),
-                           # ('pdbx_nmr_software', 'name', '_Software', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_software', 'ordinal', '_Software', 'ID', 1, None),
-                           ('pdbx_nmr_software', 'version', '_Software', 'Version', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'conditions_id', '_Spectral_peak_list', 'Sample_condition_list_ID', 1, None),
+                           ('pdbx_nmr_software', 'name',
+                            '_Software', 'Name', -11, None),
+                           # ('pdbx_nmr_software', 'name',
+                           #  '_Software', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_software', 'ordinal',
+                            '_Software', 'ID', 1, None),
+                           ('pdbx_nmr_software', 'version',
+                            '_Software', 'Version', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'conditions_id',
+                            '_Spectral_peak_list', 'Sample_condition_list_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_list.conditions_label
-                           ('pdbx_nmr_spectral_peak_list', 'conditions_label', '_Spectral_peak_list', 'Sample_condition_list_label', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'data_file_name', '_Spectral_peak_list', 'Data_file_name', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'details', '_Spectral_peak_list', 'Details', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'entry_id', '_Spectral_peak_list', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'experiment_id', '_Spectral_peak_list', 'Experiment_ID', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'id', '_Spectral_peak_list', 'ID', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'number_of_spectral_dimensions', '_Spectral_peak_list', 'Number_of_spectral_dimensions', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'solution_id', '_Spectral_peak_list', 'Sample_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'conditions_label',
+                            '_Spectral_peak_list', 'Sample_condition_list_label', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'data_file_name',
+                            '_Spectral_peak_list', 'Data_file_name', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'details',
+                            '_Spectral_peak_list', 'Details', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'entry_id',
+                            '_Spectral_peak_list', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'experiment_id',
+                            '_Spectral_peak_list', 'Experiment_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'id',
+                            '_Spectral_peak_list', 'ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'number_of_spectral_dimensions',
+                            '_Spectral_peak_list', 'Number_of_spectral_dimensions', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'solution_id',
+                            '_Spectral_peak_list', 'Sample_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_list.solution_label
-                           ('pdbx_nmr_spectral_peak_list', 'solution_label', '_Spectral_peak_list', 'Sample_label', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'solution_label',
+                            '_Spectral_peak_list', 'Sample_label', 1, None),
                            # add pdbx_nmr_spectral_peak_list.assigned_chem_shift_list_id
-                           ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_id', '_Spectral_peak_list', 'Assigned_chem_shift_list_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list',
+                            'assigned_chem_shift_list_id',
+                            '_Spectral_peak_list', 'Assigned_chem_shift_list_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_list.assigned_chem_shift_list_label
-                           ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_label', '_Spectral_peak_list', 'Assigned_chem_shift_list_label', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Software', 'Details', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Spectral_peak_list', 'Text_data_format', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_label',
+                            '_Spectral_peak_list', 'Assigned_chem_shift_list_label', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'text_data_format',
+                            '_Software', 'Details', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'text_data_format',
+                            '_Spectral_peak_list', 'Text_data_format', 1, None),
                            # add pdbx_nmr_spectral_peak_list.label
-                           ('pdbx_nmr_spectral_peak_list', 'label', '_Spectral_peak_list', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_spectrometer', 'details', '_NMR_spectrometer', 'Details', 1, None),
-                           ('pdbx_nmr_spectrometer', 'field_strength', '_NMR_spectrometer', 'Field_strength', 1, None),
-                           ('pdbx_nmr_spectrometer', 'manufacturer', '_NMR_spectrometer', 'Manufacturer', 1, None),
-                           ('pdbx_nmr_spectrometer', 'model', '_NMR_spectrometer', 'Model', 1, None),
-                           ('pdbx_nmr_spectrometer', 'name', '_NMR_spectrometer', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_spectrometer', 'spectrometer_id', '_NMR_spectrometer', 'ID', 1, None)
+                           ('pdbx_nmr_spectral_peak_list', 'label',
+                            '_Spectral_peak_list', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_spectrometer', 'details',
+                            '_NMR_spectrometer', 'Details', 1, None),
+                           ('pdbx_nmr_spectrometer', 'field_strength',
+                            '_NMR_spectrometer', 'Field_strength', 1, None),
+                           ('pdbx_nmr_spectrometer', 'manufacturer',
+                            '_NMR_spectrometer', 'Manufacturer', 1, None),
+                           ('pdbx_nmr_spectrometer', 'model',
+                            '_NMR_spectrometer', 'Model', 1, None),
+                           ('pdbx_nmr_spectrometer', 'name',
+                            '_NMR_spectrometer', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_spectrometer', 'spectrometer_id',
+                            '_NMR_spectrometer', 'ID', 1, None)
                            ]
 
         self.__uniqSfTagMap = []
@@ -457,7 +534,8 @@ class OneDepAnnTasks:
         #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
         #             self.__lpTagMap.append(tag_map)
         # """
-        self.__lpTagMap = [('pdbx_nmr_chem_shift_experiment', 'assigned_chem_shift_list_id', '_Chem_shift_experiment', 'Assigned_chem_shift_list_ID', 1, None),
+        self.__lpTagMap = [('pdbx_nmr_chem_shift_experiment', 'assigned_chem_shift_list_id',
+                            '_Chem_shift_experiment', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'entry_id', '_Chem_shift_experiment', 'Entry_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'experiment_name', '_Chem_shift_experiment', 'Experiment_name', 1, None),
@@ -473,7 +551,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_chem_shift_ref', 'entry_id', '_Chem_shift_ref', 'Entry_ID', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'external_ref_axis', '_Chem_shift_ref', 'External_ref_axis', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'external_ref_loc', '_Chem_shift_ref', 'External_ref_loc', 1, None),
-                           ('pdbx_nmr_chem_shift_ref', 'external_ref_sample_geometry', '_Chem_shift_ref', 'External_ref_sample_geometry', 1, None),
+                           ('pdbx_nmr_chem_shift_ref', 'external_ref_sample_geometry',
+                            '_Chem_shift_ref', 'External_ref_sample_geometry', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'indirect_shift_ratio', '_Chem_shift_ref', 'Indirect_shift_ratio', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'mol_common_name', '_Chem_shift_ref', 'Mol_common_name', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'rank', '_Chem_shift_ref', 'Rank', 1, None),
@@ -481,7 +560,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_chem_shift_ref', 'ref_method', '_Chem_shift_ref', 'Ref_method', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'ref_type', '_Chem_shift_ref', 'Ref_type', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'solvent', '_Chem_shift_ref', 'Solvent', 1, None),
-                           ('pdbx_nmr_chem_shift_software', 'assigned_chem_shift_list_id', '_Chem_shift_software', 'Assigned_chem_shift_list_ID', 1, None),
+                           ('pdbx_nmr_chem_shift_software',
+                            'assigned_chem_shift_list_id', '_Chem_shift_software', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_software', 'entry_id', '_Chem_shift_software', 'Entry_ID', 1, None),
                            ('pdbx_nmr_chem_shift_software', 'software_id', '_Chem_shift_software', 'Software_ID', 1, None),
                            ('pdbx_nmr_constraint_file', 'constraint_filename', '_Constraint_file', 'Constraint_filename', 1, None),
@@ -506,7 +586,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_exptl_sample', 'concentration_units', '_Sample_component', 'Concentration_val_units', 1, None),
                            ('pdbx_nmr_exptl_sample', 'isotopic_labeling', '_Sample_component', 'Isotopic_labeling', 1, None),
                            ('pdbx_nmr_exptl_sample', 'solution_id', '_Sample_component', 'Sample_ID', 1, None),
-                           # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_variable', 'Sample_condition_list_ID', 1, None),
+                           # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id',
+                           #  '_Sample_condition_variable', 'Sample_condition_list_ID', 1, None),
                            # replaced by
                            ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_variable', 'Sample_condition_list_ID',
                             33, '_Sample_condition_list.Sf_framecode'),
@@ -515,8 +596,10 @@ class OneDepAnnTasks:
                             -33, '_Sample_condition_list.Sf_framecode'),
                            ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength', '_Sample_condition_variable', 'Type', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength', '_Sample_condition_variable', 'Val', -22, 0),
-                           ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_err', '_Sample_condition_variable', 'Val_err', -22, None),
-                           ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_units', '_Sample_condition_variable', 'Val_units', -22, None),
+                           ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_err',
+                            '_Sample_condition_variable', 'Val_err', -22, None),
+                           ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_units',
+                            '_Sample_condition_variable', 'Val_units', -22, None),
                            ('pdbx_nmr_exptl_sample_conditions', 'pH', '_Sample_condition_variable', 'Type', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'pH', '_Sample_condition_variable', 'Val', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'pH_err', '_Sample_condition_variable', 'Val_err', -22, None),
@@ -548,7 +631,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectral_dim', 'atom_isotope_number', '_Spectral_dim', 'Atom_isotope_number', 1, None),
                            ('pdbx_nmr_spectral_dim', 'atom_type', '_Spectral_dim', 'Atom_type', 1, None),
                            ('pdbx_nmr_spectral_dim', 'center_frequency_offset', '_Spectral_dim', 'Center_frequency_offset', 1, None),
-                           ('pdbx_nmr_spectral_dim', 'encoded_source_dimension_id', '_Spectral_dim', 'Encoded_reduced_dimension_ID', 1, None),
+                           ('pdbx_nmr_spectral_dim', 'encoded_source_dimension_id',
+                            '_Spectral_dim', 'Encoded_reduced_dimension_ID', 1, None),
                            ('pdbx_nmr_spectral_dim', 'encoding_code', '_Spectral_dim', 'Encoding_code', 1, None),
                            ('pdbx_nmr_spectral_dim', 'entry_id', '_Spectral_dim', 'Entry_ID', 1, None),
                            ('pdbx_nmr_spectral_dim', 'id', '_Spectral_dim', 'ID', 1, None),
@@ -559,15 +643,18 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectral_dim', 'sweep_width_units', '_Spectral_dim', 'Sweep_width_units', 1, None),
                            ('pdbx_nmr_spectral_dim', 'under_sampling_type', '_Spectral_dim', 'Under_sampling_type', 1, None),
                            # add pdbx_nmr_spectral_peak_software.spectral_peak_list_id
-                           ('pdbx_nmr_spectral_peak_software', 'spectral_peak_list_id', '_Spectral_peak_software', 'Spectral_peak_list_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_software', 'spectral_peak_list_id',
+                            '_Spectral_peak_software', 'Spectral_peak_list_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_software.software_id
                            ('pdbx_nmr_spectral_peak_software', 'spectral_peak_list_id', '_Spectral_peak_software', 'Software_ID', 1, None),
                            ('pdbx_nmr_spectrometer', 'field_strength', '_NMR_spectrometer_view', 'Field_strength', 1, None),
                            ('pdbx_nmr_spectrometer', 'manufacturer', '_NMR_spectrometer_view', 'Manufacturer', 1, None),
                            ('pdbx_nmr_spectrometer', 'model', '_NMR_spectrometer_view', 'Model', 1, None),
                            ('pdbx_nmr_spectrometer', 'spectrometer_id', '_NMR_spectrometer_view', 'ID', 1, None),
-                           ('pdbx_nmr_systematic_chem_shift_offset', 'assigned_chem_shift_list_id', '_Systematic_chem_shift_offset', 'Assigned_chem_shift_list_ID', 1, None),
-                           ('pdbx_nmr_systematic_chem_shift_offset', 'atom_isotope_number', '_Systematic_chem_shift_offset', 'Atom_isotope_number', 1, None),
+                           ('pdbx_nmr_systematic_chem_shift_offset', 'assigned_chem_shift_list_id',
+                            '_Systematic_chem_shift_offset', 'Assigned_chem_shift_list_ID', 1, None),
+                           ('pdbx_nmr_systematic_chem_shift_offset', 'atom_isotope_number',
+                            '_Systematic_chem_shift_offset', 'Atom_isotope_number', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'atom_type', '_Systematic_chem_shift_offset', 'Atom_type', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'entry_id', '_Systematic_chem_shift_offset', 'Entry_ID', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'type', '_Systematic_chem_shift_offset', 'Type', 1, None),
@@ -593,7 +680,8 @@ class OneDepAnnTasks:
                     break
             self.__uniqLpCatMap[cif_category] = (sf_tag_prefix, lp_categories)
 
-        # adit_item_tbl_o.csv is derived from onedep2bmrb @see https://github.com/bmrb-io/onedep2bmrb/blob/master/testfiles/adit_item_tbl_o.csv
+        # adit_item_tbl_o.csv is derived from onedep2bmrb
+        # @see https://github.com/bmrb-io/onedep2bmrb/blob/master/testfiles/adit_item_tbl_o.csv
 
         # """
         # self.__defSfTag = []
@@ -1300,7 +1388,9 @@ class OneDepAnnTasks:
 
         for page in NMRIF_PAGES:
 
-            for sf_category, sf_tag_prefix, new_flag in zip(NMRIF_SF_CATEGORIES[page], NMRIF_SF_TAG_PREFIXES[page], NMRIF_SF_NEW_FLAG[page]):
+            for sf_category, sf_tag_prefix, new_flag in zip(NMRIF_SF_CATEGORIES[page],
+                                                            NMRIF_SF_TAG_PREFIXES[page],
+                                                            NMRIF_SF_NEW_FLAG[page]):
 
                 cif_categories = set(tag_map[0] for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix)
                 if len(cif_categories) == 0:
@@ -1316,7 +1406,8 @@ class OneDepAnnTasks:
                         has_cif_category = True
                         break
                     if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} saveframe category does not exist in NMRIF\n")
+                        self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - "
+                                             f"{cif_category!r} saveframe category does not exist in NMRIF\n")
                 if not has_cif_category:
                     continue
 
@@ -1344,7 +1435,8 @@ class OneDepAnnTasks:
 
                 elif sf_category not in self.__reg.sf_category_list:
                     if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_category!r} category does not exist in NMR data\n")
+                        self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - "
+                                             f"{sf_category!r} category does not exist in NMR data\n")
                     continue
 
                 sf_tag_maps = [tag_map for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix]
@@ -1369,7 +1461,8 @@ class OneDepAnnTasks:
                 if len(list_ids) == 0:
                     if not insert_one:
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {sf_id_map[0]}.{sf_id_map[1]} is not set in NMRIF\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - "
+                                                 f"{sf_id_map[0]}.{sf_id_map[1]} is not set in NMRIF\n")
                         continue
                     list_ids.append(1)
 
@@ -1401,7 +1494,8 @@ class OneDepAnnTasks:
                                         sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
                                     except KeyError:
                                         pass
-                                    if sf_framecode in EMPTY_VALUE or sf_framecode.isdigit() or sf_framecode in sf_framecodes or ' ' in sf_framecode:
+                                    if sf_framecode in EMPTY_VALUE or sf_framecode.isdigit() or sf_framecode in sf_framecodes\
+                                       or ' ' in sf_framecode:
                                         sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
                                     sf_framecodes.append(sf_framecode)
                                     if sf is None:
@@ -1422,21 +1516,25 @@ class OneDepAnnTasks:
                                                     set_sf_tag(sf, 'ID', list_id_dict[list_id])
                                                 else:
                                                     try:
-                                                        sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', str(list_id))[0]
+                                                        sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID',
+                                                                                                          str(list_id))[0]
                                                         set_sf_tag(sf, 'ID', str(list_id))
                                                     except IndexError:
                                                         try:
-                                                            sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', list_id)[0]
+                                                            sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID',
+                                                                                                              list_id)[0]
                                                             set_sf_tag(sf, 'ID', str(list_id))
                                                         except IndexError:
                                                             sf = None
                                             except KeyError:
                                                 try:
-                                                    sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', str(list_id_dict[list_id]))[0]
+                                                    sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID',
+                                                                                                      str(list_id_dict[list_id]))[0]
                                                     set_sf_tag(sf, 'ID', list_id_dict[list_id])
                                                 except IndexError:
                                                     try:
-                                                        sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', list_id_dict[list_id])[0]
+                                                        sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID',
+                                                                                                          list_id_dict[list_id])[0]
                                                     except IndexError:
                                                         sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
                                                         sf.add_tag('Sf_framecode', sf_framecode)
@@ -1449,7 +1547,8 @@ class OneDepAnnTasks:
                                         set_sf_tag(sf, 'Entry_ID', self.__reg.entry_id)
 
                                     for tag_map in sf_tag_maps:
-                                        if tag_map[0] == cif_category and tag_map[1] in row and tag_map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
+                                        if tag_map[0] == cif_category and tag_map[1] in row\
+                                           and tag_map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
                                             if row[tag_map[1]] in EMPTY_VALUE:
                                                 _id = get_first_sf_tag(sf, tag_map[3])
                                                 if isinstance(_id, int) or len(_id) > 0:
@@ -1479,14 +1578,18 @@ class OneDepAnnTasks:
                                             sf.add_tag(def_sf_tag, '.')
                                             continue
                                         try:
-                                            parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', parent_list_id)[0]
+                                            parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID',
+                                                                                                     parent_list_id)[0]
                                             parent_sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode')
                                             if len(parent_sf_framecode) > 0:
                                                 sf.add_tag(def_sf_tag, f'${parent_sf_framecode}')
                                         except IndexError:
                                             try:
-                                                parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
-                                                                                                         if isinstance(parent_list_id, str) else str(parent_list_id))[0]
+                                                parent_sf =\
+                                                    master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID',
+                                                                                                 int(parent_list_id)
+                                                                                                 if isinstance(parent_list_id, str)
+                                                                                                 else str(parent_list_id))[0]
                                                 parent_sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode')
                                                 if len(parent_sf_framecode) > 0:
                                                     sf.add_tag(def_sf_tag, f'${parent_sf_framecode}')
@@ -1517,7 +1620,8 @@ class OneDepAnnTasks:
                             master_entry.add_saveframe(sf)
                         else:
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - Could not identify loop category for {sf_category!r}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - "
+                                                     f"Could not identify loop category for {sf_category!r}\n")
                         continue
 
                     if reset and has_uniq_sf_tag:
@@ -1528,7 +1632,8 @@ class OneDepAnnTasks:
                         lp = None
 
                         cif_categories = set(tag_map[0] for tag_map in self.__lpTagMap if tag_map[2] == lp_category)
-                        lp_tag_dict = {tag_map[3]: (tag_map[1], tag_map[4]) for tag_map in self.__lpTagMap if tag_map[2] == lp_category and tag_map[4] != -33}
+                        lp_tag_dict = {tag_map[3]: (tag_map[1], tag_map[4]) for tag_map in self.__lpTagMap
+                                       if tag_map[2] == lp_category and tag_map[4] != -33}
                         if 'Entry_ID' not in lp_tag_dict.keys():
                             lp_tag_dict['Entry_ID'] = (None, None)
                         lp_tags = list(lp_tag_dict.keys())
@@ -1536,7 +1641,8 @@ class OneDepAnnTasks:
                         for cif_category in cif_categories:
                             if not nmrif.hasCategory(cif_category) or nmrif.getRowLength(cif_category) == 0:
                                 if self.__reg.verbose:
-                                    self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} loop category does not exist in NMRIF\n")
+                                    self.__reg.log.write(f"+{self.__class_name__}.perform() ++ Warning  - "
+                                                         f"{cif_category!r} loop category does not exist in NMRIF\n")
 
                         list_id_tag = f'{sf_tag_prefix[1:]}_ID'
                         lp_list_id_tag = lp_tag_dict[list_id_tag][0] if list_id_tag in lp_tag_dict else None
@@ -1613,7 +1719,8 @@ class OneDepAnnTasks:
                                                 if entry_id_col != -1:
                                                     _row[entry_id_col] = self.__reg.entry_id
                                                 if type_col != -1:
-                                                    _row[type_col] = _type.replace('_', ' ')  # ionic_strength (NMRIF) -> ionic strength (NMR-STAR)
+                                                    # ionic_strength (NMRIF) -> ionic strength (NMR-STAR)
+                                                    _row[type_col] = _type.replace('_', ' ')
                                                 if val_col != -1:
                                                     _row[val_col] = _val
                                                 if val_err_col != -1 and f'{_type}_err' in row:
@@ -1646,11 +1753,13 @@ class OneDepAnnTasks:
                                                     if map_code != -22:
                                                         _row[col] = row[cif_tag]
                                                         # replace too long value of _pdbx_nmr_software.authors if possible
-                                                        if page == 'software' and bmrb_annotation and lp_category == '_Vendor' and tag == 'Name'\
-                                                           and len(_row[col]) > 80 and get_first_sf_tag(sf, 'Name').lower() in software_vendor:
+                                                        if page == 'software' and bmrb_annotation and lp_category == '_Vendor'\
+                                                           and tag == 'Name' and len(_row[col]) > 80\
+                                                           and get_first_sf_tag(sf, 'Name').lower() in software_vendor:
                                                             _row[col] = software_vendor[get_first_sf_tag(sf, 'Name').lower()]
                                                         has_uniq_lp_row = True
-                                                    else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    # @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    else:
                                                         if cif_tag.endswith('range'):
                                                             if row[cif_tag] not in EMPTY_VALUE:
                                                                 try:
@@ -1693,7 +1802,8 @@ class OneDepAnnTasks:
                                                     col = lp.tags.index(tag)
                                                     if map_code != -22:
                                                         _row[col] = row[cif_tag]
-                                                    else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    # @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    else:
                                                         if cif_tag.endswith('range'):
                                                             if row[cif_tag] not in EMPTY_VALUE:
                                                                 try:
@@ -1956,7 +2066,8 @@ class OneDepAnnTasks:
                                     except KeyError:
                                         continue
 
-                                    lp_tag_maps = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category]
+                                    lp_tag_maps = [tag_map for tag_map in self.__lpTagMap
+                                                   if tag_map[0] == cif_category and tag_map[2] == lp_category]
                                     lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
                                     lp_tags = [tag_map[3] for tag_map in lp_tag_maps]
                                     lp_map_codes = [tag_map[4] for tag_map in lp_tag_maps]
@@ -2000,10 +2111,12 @@ class OneDepAnnTasks:
                                                     tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item)
                                                     if tag_map[3] not in lp_tags:
                                                         continue
-                                                    _row[lp_cif_tags.index(tag_map[1])] = list_id if has_list_id_tag and tag_map[3] == list_id_tag\
+                                                    _row[lp_cif_tags.index(tag_map[1])] =\
+                                                        list_id if has_list_id_tag and tag_map[3] == list_id_tag\
                                                         else row[lp_tags.index(tag_map[3])]
                                                     if tag_map[4] == 33:
-                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item and tag_map[4] == -33), None)
+                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps
+                                                                         if tag_map[1] == cif_item and tag_map[4] == -33), None)
                                                         if _tag_map is not None:
                                                             _row[lp_cif_tags.index(tag_map[1])] = row[lp_tags.index(tag_map[3])]
                                                 _row = replace_none(_row)
@@ -2011,8 +2124,10 @@ class OneDepAnnTasks:
 
                                         else:
                                             _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
-                                            _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
-                                            _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
+                                            _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps
+                                                                  if tag_map[3] == tag) for tag in _lp_tags]
+                                            _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps
+                                                                 if tag_map[3] == tag) for tag in _lp_tags]
 
                                             dat = lp.get_tag(_lp_tags)
 
@@ -2040,10 +2155,12 @@ class OneDepAnnTasks:
                                                     tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item)
                                                     if tag_map[3] not in _lp_tags:
                                                         continue
-                                                    _row[lp_cif_tags.index(tag_map[1])] = list_id if has_list_id_tag and tag_map[3] == list_id_tag\
+                                                    _row[lp_cif_tags.index(tag_map[1])] =\
+                                                        list_id if has_list_id_tag and tag_map[3] == list_id_tag\
                                                         else row[_lp_tags.index(tag_map[3])]
                                                     if tag_map[4] == 33:
-                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item and tag_map[4] == -33), None)
+                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps
+                                                                         if tag_map[1] == cif_item and tag_map[4] == -33), None)
                                                         if _tag_map is not None:
                                                             _row[lp_cif_tags.index(tag_map[1])] = row[_lp_tags.index(tag_map[3])]
                                                 _row = replace_none(_row)
@@ -2062,8 +2179,10 @@ class OneDepAnnTasks:
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
                                         _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
-                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
-                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps
+                                                              if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps
+                                                             if tag_map[3] == tag) for tag in _lp_tags]
 
                                         dat = lp.get_tag(_lp_tags)
 
@@ -2094,7 +2213,8 @@ class OneDepAnnTasks:
                                                 if has_list_id_tag and tag_map[3] == list_id_tag:
                                                     _row[lp_cif_tags.index(tag_map[1])] = list_id
                                                 if tag_map[4] == 33:
-                                                    _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item and tag_map[4] == -33), None)
+                                                    _tag_map = next((tag_map for tag_map in lp_tag_maps
+                                                                     if tag_map[1] == cif_item and tag_map[4] == -33), None)
                                                     if _tag_map is not None:
                                                         _row[lp_cif_tags.index(_tag_map[1])] = row[_lp_tags.index(tag_map[3])]
                                                 elif tag_map[4] != -22:
@@ -2121,8 +2241,10 @@ class OneDepAnnTasks:
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
                                         _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
-                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
-                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps
+                                                              if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps
+                                                             if tag_map[3] == tag) for tag in _lp_tags]
 
                                         dat = lp.get_tag(_lp_tags)
 
@@ -2159,9 +2281,11 @@ class OneDepAnnTasks:
                                                     _val_units = _row[_lp_tags.index('Val_units')]
                                                 else:
                                                     tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[3] == lp_tag)
-                                                    row[lp_cif_tags.index(tag_map[1])] = list_id if lp_tag == list_id_tag else _row[lp_tags.index(lp_tag)]
+                                                    row[lp_cif_tags.index(tag_map[1])] =\
+                                                        list_id if lp_tag == list_id_tag else _row[lp_tags.index(lp_tag)]
                                                     if tag_map[4] == 33:
-                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[3] == lp_tag and tag_map[4] == -33), None)
+                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps
+                                                                         if tag_map[3] == lp_tag and tag_map[4] == -33), None)
                                                         if _tag_map is not None:
                                                             row[lp_cif_tags.index(_tag_map[1])] = _row[lp_tags.index(lp_tag)]
 
@@ -2190,7 +2314,8 @@ class OneDepAnnTasks:
                                         except KeyError:
                                             continue
 
-                                        lp_tag_maps[lp_idx] = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category]
+                                        lp_tag_maps[lp_idx] = [tag_map for tag_map in self.__lpTagMap
+                                                               if tag_map[0] == cif_category and tag_map[2] == lp_category]
                                         lp_tags[lp_idx] = [tag_map[3] for tag_map in lp_tag_maps[lp_idx]]
                                         if list_id_tag not in lp_tags[lp_idx]:
                                             lps[lp_idx] = None
@@ -2219,8 +2344,10 @@ class OneDepAnnTasks:
 
                                             if len(missing_lp_tags) == 0:
                                                 _lp_tags = lp_tags[lp_idx]
-                                                _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == tag) for tag in _lp_tags]
-                                                _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == tag) for tag in _lp_tags]
+                                                _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps[lp_idx]
+                                                                      if tag_map[3] == tag) for tag in _lp_tags]
+                                                _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps[lp_idx]
+                                                                     if tag_map[3] == tag) for tag in _lp_tags]
 
                                                 dat = lp.get_tag(_lp_tags)
 
@@ -2247,15 +2374,18 @@ class OneDepAnnTasks:
                                                         tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item)
                                                         row[lp_items.index(lp_item)] = list_id if lp_item == list_id_tag else _row[idx]
                                                         if tag_map[4] == 33:
-                                                            _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item and tag_map[4] == -33), None)
+                                                            _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx]
+                                                                             if tag_map[3] == lp_item and tag_map[4] == -33), None)
                                                             if _tag_map is not None:
                                                                 row[lp_cif_tags.index(_tag_map[1])] = _row[idx]
                                                     break
 
                                             else:
                                                 _lp_tags = [tag for tag in lp_tags[lp_idx] if tag not in missing_lp_tags]
-                                                _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == tag) for tag in _lp_tags]
-                                                _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == tag) for tag in _lp_tags]
+                                                _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps[lp_idx]
+                                                                      if tag_map[3] == tag) for tag in _lp_tags]
+                                                _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps[lp_idx]
+                                                                     if tag_map[3] == tag) for tag in _lp_tags]
 
                                                 dat = lp.get_tag(_lp_tags)
 
@@ -2282,7 +2412,8 @@ class OneDepAnnTasks:
                                                         tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item)
                                                         row[lp_items.index(lp_item)] = list_id if lp_item == list_id_tag else _row[idx]
                                                         if tag_map[4] == 33:
-                                                            _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item and tag_map[4] == -33), None)
+                                                            _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx]
+                                                                             if tag_map[3] == lp_item and tag_map[4] == -33), None)
                                                             if _tag_map is not None:
                                                                 row[lp_cif_tags.index(_tag_map[1])] = _row[idx]
                                                     break
@@ -2316,7 +2447,8 @@ class OneDepAnnTasks:
                     for cif_category, lp_categories in lp_cat_map:
 
                         for lp_category in lp_categories:
-                            lp_tag_maps = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category and tag_map[4] == -11]
+                            lp_tag_maps = [tag_map for tag_map in self.__lpTagMap
+                                           if tag_map[0] == cif_category and tag_map[2] == lp_category and tag_map[4] == -11]
                             lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
                             sf_lp_cif_tags.extend(lp_cif_tags)
 
@@ -2343,7 +2475,8 @@ class OneDepAnnTasks:
                                 except KeyError:
                                     continue
 
-                                lp_tag_maps = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category and tag_map[4] == -11]
+                                lp_tag_maps = [tag_map for tag_map in self.__lpTagMap
+                                               if tag_map[0] == cif_category and tag_map[2] == lp_category and tag_map[4] == -11]
                                 lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
                                 lp_tags = [tag_map[3] for tag_map in lp_tag_maps]
 

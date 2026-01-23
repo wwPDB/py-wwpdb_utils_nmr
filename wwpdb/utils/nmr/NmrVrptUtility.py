@@ -51,7 +51,7 @@ try:
                                                LARGE_ASYM_ID,
                                                LEN_MAJOR_ASYM_ID,
                                                EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
@@ -81,7 +81,7 @@ except ImportError:
                                    LARGE_ASYM_ID,
                                    LEN_MAJOR_ASYM_ID,
                                    EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
@@ -334,7 +334,8 @@ def angle_target_values(target_value: Optional[float], target_value_uncertainty:
             if target_value_clock >= 360.0:
                 target_value_clock -= 360.0
 
-            if has_valid_lower_linear_limit or has_valid_upper_linear_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
+            # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
+            if has_valid_lower_linear_limit or has_valid_upper_linear_limit:
                 target_value_vote_aclock = target_value_vote_clock = 0
 
                 if has_valid_lower_linear_limit:
@@ -1124,7 +1125,7 @@ class NmrVrptUtility:
             return True
 
         def get_tempfile_name(suffix: str = ''):
-            return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # pylint: disable=protected-access
+            return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # noqa: E501, pylint: disable=protected-access,line-too-long
 
         if NMR_STR_FILE_PATH_KEY in self.__inputParamDict:
 
@@ -1352,7 +1353,7 @@ class NmrVrptUtility:
                     comp_name_unchecked = False
                     if _auth_atom_id == 'pdbx_auth_atom_name':
                         for c in coord:
-                            if c['auth_comp_id'] is not None and c['auth_comp_id'] not in MONDICT3\
+                            if c['auth_comp_id'] is not None and c['auth_comp_id'] not in STD_MON_DICT\
                                and c['alt_auth_comp_id'] is not None and c['auth_comp_id'] != c['alt_auth_comp_id']:
                                 _auth_atom_id_ = 'alt_auth_atom_id'
                                 break
@@ -1371,7 +1372,8 @@ class NmrVrptUtility:
 
                     coordinates_per_model[atom_key] = to_np_array(c)
 
-                    # DAOTHER-9200 for wwpdb.apps.validation.src.wrapper.restraintsanalysis.generate_formated_output (MISSING ATOM IN MODEL KeyError)
+                    # DAOTHER-9200 for wwpdb.apps.validation.src.wrapper.restraintsanalysis.generate_formated_output
+                    # (MISSING ATOM IN MODEL KeyError)
                     if _auth_atom_id == 'pdbx_auth_atom_name' and c['auth_atom_id'] != c['alt_auth_atom_id']:
                         _atom_key = (c['auth_asym_id'], c['auth_seq_id'], c['auth_comp_id'],
                                      c['alt_auth_atom_id'], c['pdbx_PDB_ins_code'])
@@ -1392,7 +1394,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
 
             self.__atomIdList = self.__coordinates = None
@@ -1513,7 +1516,8 @@ class NmrVrptUtility:
                     if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
                         if 'HOH' not in (comp_id_1, comp_id_2):
-                            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - "
+                                             f"distance restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1546,7 +1550,8 @@ class NmrVrptUtility:
                                            lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - "
+                                         f"distance restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1617,7 +1622,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
 
             self.__distRestDict = self.__distRestSeqDict = None
@@ -1755,7 +1761,8 @@ class NmrVrptUtility:
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
                        or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
                         if angle_type not in ('PPA', 'UNNAMED'):
-                            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - "
+                                             f"dihedral angle restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1772,7 +1779,8 @@ class NmrVrptUtility:
                                             lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - "
+                                         f"dihedral angle restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1818,7 +1826,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
 
             self.__dihedRestDict = self.__dihedRestSeqDict = None
@@ -1855,7 +1864,8 @@ class NmrVrptUtility:
                 list_id = int(sf_tag[0]['ID'])
 
                 try:
-                    rdc_type = sf_tag[0]['Details']  # e.g. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1, RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
+                    # e.g. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1, RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
+                    rdc_type = sf_tag[0]['Details']
                     if rdc_type in (None, '', '.', '?', 'null'):
                         rdc_type = 'UNNAMED'
                 except KeyError:
@@ -1932,7 +1942,8 @@ class NmrVrptUtility:
 
                     if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
-                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() "
+                                         f"++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1951,7 +1962,8 @@ class NmrVrptUtility:
                                           lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() "
+                                         f"++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1991,7 +2003,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - {str(e)}\n")
 
             self.__rdcRestDict = self.__rdcRestSeqDict = None
@@ -2284,7 +2297,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__distRestViolDict = self.__distRestUnmapped = None
@@ -2465,7 +2479,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__dihedRestViolDict = self.__dihedRestUnmapped = None
@@ -2533,7 +2548,8 @@ class NmrVrptUtility:
                             atom_present = False
 
                         if atom_present:
-                            # """ TODO: rdc() should return calculated RDC value for a given vector using the RDC alignment tensor of rest_key[0]
+                            # """ TODO: rdc() should return calculated RDC value for a given vector
+                            # using the RDC alignment tensor of rest_key[0]
                             # r = rdc(rest_key[0], pos_1, pos_2)
                             # rdc_list_set[bound_key].append(r)
                             # """
@@ -2626,7 +2642,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__rdcRestViolDict = self.__rdcRestUnmapped = None
@@ -2904,7 +2921,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
@@ -2940,8 +2958,10 @@ class NmrVrptUtility:
                         angle_type_set.add(r['angle_type'])
                 angle_type = list(angle_type_set) + [any_type]
             except IndexError:
-                self.__log.write(f"Dihedral angle analysis failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
-                self.__results['error_message_angle'] = 'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
+                self.__log.write("Dihedral angle analysis failed due to data error in the dihedral angle restraints. "
+                                 f"{self.__dihedRestDict.values()}\n")
+                self.__results['error_message_angle'] =\
+                    'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
                 self.__results['angle'] = False
                 return True
 
@@ -3147,7 +3167,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
@@ -3375,7 +3396,8 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False

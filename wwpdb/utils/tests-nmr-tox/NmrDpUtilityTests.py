@@ -251,7 +251,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(os.path.join(TESTOUTPUT, "2l9r-nef2str-str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "2l9r-nef2str-str.str"))
         self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "2l9r-nef2str-str-nef2str.str"), type="file")
-        self.utility.addOutput(name="report_file_path", value=os.path.join(TESTOUTPUT, "2l9r-nef2str-str-str-deposit-log.json"), type="file")
+        self.utility.addOutput(name="report_file_path",
+                               value=os.path.join(TESTOUTPUT, "2l9r-nef2str-str-str-deposit-log.json"),
+                               type="file")
         self.utility.addOutput(name="entry_id", value="2l9r", type="param")
         self.utility.addOutput(name="insert_entry_id_to_loops", value=True, type="param")
         self.utility.setVerbose(False)
@@ -308,7 +310,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(os.path.join(TESTOUTPUT, "2l9r-cys-nef2str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "2l9r-cys-next.nef"))
         self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "2l9r-cys-nef2str.str"), type="file")
-        self.utility.addOutput(name="report_file_path", value=os.path.join(TESTOUTPUT, "2l9r-cys-nef2str-str-deposit-log.json"), type="file")
+        self.utility.addOutput(name="report_file_path",
+                               value=os.path.join(TESTOUTPUT, "2l9r-cys-nef2str-str-deposit-log.json"),
+                               type="file")
         self.utility.addOutput(name="entry_id", value="NEED_ACC_NO", type="param")
         self.utility.setVerbose(False)
 
@@ -328,7 +332,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(os.path.join(TESTOUTPUT, "mth1743-test-20190919-nef2str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "mth1743-test-20190919-next.nef"))
         self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "mth1743-test-20190919-nef2str.str"), type="file")
-        self.utility.addOutput(name="report_file_path", value=os.path.join(TESTOUTPUT, "mth1743-test-20190919-nef2str-str-deposit-log.json"), type="file")
+        self.utility.addOutput(name="report_file_path",
+                               value=os.path.join(TESTOUTPUT, "mth1743-test-20190919-nef2str-str-deposit-log.json"),
+                               type="file")
         self.utility.addOutput(name="entry_id", value="NEED_ACC_NO", type="param")
         self.utility.setVerbose(False)
 
@@ -348,7 +354,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(os.path.join(TESTOUTPUT, "ccpn_2mtv_docr-nef2str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "ccpn_2mtv_docr-next.nef"))
         self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "ccpn_2mtv_docr-nef2str.str"), type="file")
-        self.utility.addOutput(name="report_file_path", value=os.path.join(TESTOUTPUT, "ccpn_2mtv_docr-nef2str-str-deposit-log.json"), type="file")
+        self.utility.addOutput(name="report_file_path",
+                               value=os.path.join(TESTOUTPUT, "ccpn_2mtv_docr-nef2str-str-deposit-log.json"),
+                               type="file")
         self.utility.addOutput(name="entry_id", value="NEED_ACC_NO", type="param")
         self.utility.setVerbose(False)
 
@@ -383,7 +391,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(os.path.join(TESTOUTPUT, "2l9rnonstandard-nef2str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "2l9rnonstandard-next.nef"))
         self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "2l9rnonstandard-nef2str.str"), type="file")
-        self.utility.addOutput(name="report_file_path", value=os.path.join(TESTOUTPUT, "2l9rnonstandard-nef2str-str-deposit-log.json"), type="file")
+        self.utility.addOutput(name="report_file_path",
+                               value=os.path.join(TESTOUTPUT, "2l9rnonstandard-nef2str-str-deposit-log.json"),
+                               type="file")
         self.utility.addOutput(name="entry_id", value="NEED_ACC_NO", type="param")
         self.utility.setVerbose(False)
 
@@ -424,7 +434,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(os.path.join(self.data_dir_path, "24642_2mqq-clean.str"))
         self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "2mqq.cif"), type="file")
-        self.utility.addInput(name="report_file_path", value=os.path.join(TESTOUTPUT, "24642_2mqq-str2str-consistency-log.json"), type="file")
+        self.utility.addInput(name="report_file_path",
+                              value=os.path.join(TESTOUTPUT, "24642_2mqq-str2str-consistency-log.json"),
+                              type="file")
         self.utility.setLog(os.path.join(TESTOUTPUT, "24642-str2str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "24642_2mqq-clean-next.str"))
         self.utility.addOutput(name="entry_id", value="2mqq", type="param")
@@ -443,7 +455,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(os.path.join(self.data_dir_path, "2la6-chem-shift-ref.str"))
         self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "2la6.cif"), type="file")
-        self.utility.addInput(name="report_file_path", value=os.path.join(TESTOUTPUT, "2la6-chem-shift-ref-consistency-log.json"), type="file")
+        self.utility.addInput(name="report_file_path",
+                              value=os.path.join(TESTOUTPUT, "2la6-chem-shift-ref-consistency-log.json"),
+                              type="file")
         self.utility.setLog(os.path.join(TESTOUTPUT, "2la6-chem-shift-ref-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "2la6-chem-shift-ref-next.str"))
         self.utility.addOutput(name="entry_id", value="2la6", type="param")

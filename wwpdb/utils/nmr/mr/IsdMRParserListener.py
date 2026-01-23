@@ -235,7 +235,8 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if self.createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
             sf['loop'].data[-1] = resetMemberId(self.cur_subtype, sf['loop'].data[-1])
 
-    def __splitAtomSelectionExpr(self, atomSelection: str) -> Tuple[Optional[int], Optional[str], Optional[str]]:  # pylint: disable=no-self-use
+    def __splitAtomSelectionExpr(self, atomSelection: str
+                                 ) -> Tuple[Optional[int], Optional[str], Optional[str]]:  # pylint: disable=no-self-use
         """ Split ISD atom selection expression.
         """
 

@@ -38,7 +38,7 @@ from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                ELEMENT_SYMBOLS,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                PSE_PRO_BEGIN_CODE,
                                                AMINO_PROTON_CODE,
@@ -68,7 +68,7 @@ try:
                                                NMR_STAR_AUX_LP_KEY_ITEMS,
                                                NMR_STAR_AUX_LP_DATA_ITEMS,
                                                MAX_ALLOWED_EXT_SEQ,
-                                               MAX_OFFSET_ATTEMPT,
+                                               GLOBAL_OFFSET_ATTEMPT,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_MED,
@@ -87,7 +87,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    ELEMENT_SYMBOLS,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    PSE_PRO_BEGIN_CODE,
                                    AMINO_PROTON_CODE,
@@ -117,7 +117,7 @@ except ImportError:
                                    NMR_STAR_AUX_LP_KEY_ITEMS,
                                    NMR_STAR_AUX_LP_DATA_ITEMS,
                                    MAX_ALLOWED_EXT_SEQ,
-                                   MAX_OFFSET_ATTEMPT,
+                                   GLOBAL_OFFSET_ATTEMPT,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_MED,
@@ -349,7 +349,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                 if _atomId + '2' in _refAtomIdList and not unambig:
                     return _atomId + '%'
 
-            if lenRefCompId == 3 and refCompId in MONDICT3 and lenAtomId > 1:
+            if lenRefCompId == 3 and refCompId in STD_MON_DICT and lenAtomId > 1:
                 candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
                 if len(candidates) == 1 and len(candidates[0]) == lenAtomId + 1 and candidates[0][-1].isdigit():
                     return candidates[0]
@@ -361,7 +361,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                     if atomId.startswith('QP'):
                         if 'H' + atomId[2:] + '2' in _refAtomIdList:
                             return 'H' + atomId[2:] + '%'
-                        if refCompId in MONDICT3:  # 2n9e
+                        if refCompId in STD_MON_DICT:  # 2n9e
                             return 'H' + atomId[2:] + '%'
                     elif atomId in ('QCD', 'QCE') and isLikePheOrTyr(refCompId, ccU):  # 2js7 - peak list
                         return atomId[1:] + '%'
@@ -409,21 +409,25 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                 return 'H' + atomId[2:]
 
         elif refCompId == 'ASN' and (atomId.startswith('HND')
-                                     or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+                                     or ((atomId.startswith('HN') or atomId.startswith('HG'))
+                                         and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HND1':
                 return 'HD21'
             if atomId == 'HND2':
                 return 'HD22'
-            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
+            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG'))
+                                   and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
                 return 'HD2'
 
         elif refCompId == 'GLN' and (atomId.startswith('HNE')
-                                     or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+                                     or ((atomId.startswith('HN') or atomId.startswith('HD'))
+                                         and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HNE1':
                 return 'HE21'
             if atomId == 'HNE2':
                 return 'HE22'
-            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#')) and not unambig:
+            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD'))
+                                   and atomId[-1] in ('%', '*', '#')) and not unambig:
                 return 'HE2'  # 5xdi
 
         elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
@@ -553,7 +557,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
             if atomId == 'QPG' and refCompId == 'OUI':
                 return 'HG1'
 
-        if lenRefCompId == 3 and refCompId in MONDICT3:
+        if lenRefCompId == 3 and refCompId in STD_MON_DICT:
             if atomId in ('O1', 'OT1'):
                 return 'O'
             if atomId == 'O2' or atomId.startswith('OT'):
@@ -1053,7 +1057,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                 if len(candidates) == 1:
                     return candidates[0]
 
-            if lenRefCompId == 3 and refCompId in MONDICT3 and lenAtomId > 1:
+            if lenRefCompId == 3 and refCompId in STD_MON_DICT and lenAtomId > 1:
                 candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
                 if len(candidates) == 1 and len(candidates[0]) == lenAtomId + 1 and candidates[0][-1].isdigit():
                     return candidates[0]
@@ -1067,7 +1071,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                             return 'H' + atomId[2:] + '%'
                         if 'H' + atomId[2:] + '2' in _refAtomIdList:
                             return 'H' + atomId[2:] + '%'
-                        if refCompId in MONDICT3:  # 2n9e
+                        if refCompId in STD_MON_DICT:  # 2n9e
                             return 'H' + atomId[2:] + '%'
                     elif atomId in ('QCD', 'QCE') and isLikePheOrTyr(refCompId, ccU):  # 2js7 - peak list
                         return atomId[1:] + '%'
@@ -1132,21 +1136,25 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                 return 'H' + atomId[2:]
 
         elif refCompId == 'ASN' and (atomId.startswith('HND')
-                                     or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+                                     or ((atomId.startswith('HN') or atomId.startswith('HG'))
+                                         and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HND1':
                 return 'HD21'
             if atomId == 'HND2':
                 return 'HD22'
-            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
+            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG'))
+                                   and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
                 return 'HD2'
 
         elif refCompId == 'GLN' and (atomId.startswith('HNE')
-                                     or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+                                     or ((atomId.startswith('HN') or atomId.startswith('HD'))
+                                         and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HNE1':
                 return 'HE21'
             if atomId == 'HNE2':
                 return 'HE22'
-            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#')) and not unambig:
+            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD'))
+                                   and atomId[-1] in ('%', '*', '#')) and not unambig:
                 return 'HE2'  # 5xdi
 
         elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
@@ -1276,7 +1284,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
             if atomId == 'QPG' and refCompId == 'OUI':
                 return 'HG1'
 
-        if lenRefCompId == 3 and refCompId in MONDICT3:
+        if lenRefCompId == 3 and refCompId in STD_MON_DICT:
             if atomId in ('O1', 'OT1'):
                 return 'O'
             if atomId == 'O2' or atomId.startswith('OT'):
@@ -1522,7 +1530,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
             nh2 = ccU.getRepAminoProtons(refCompId)
             if len(nh2) == 1:
                 return nh2[0][:-1] + '%'
-        if lenAtomId > 1 and atomId[-1] not in ('%', '*', '#') and refCompId not in MONDICT3:
+        if lenAtomId > 1 and atomId[-1] not in ('%', '*', '#') and refCompId not in STD_MON_DICT:
             canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
             if len(canAtomIdList) > 0:
 
@@ -2142,12 +2150,12 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
     if lenCompId > 3:
         compId3 = compId[:3]
 
-        if compId3 in MONDICT3:
+        if compId3 in STD_MON_DICT:
             return compId3
 
         compId3 = compId[1:]  # 1e8e
 
-        if compId3 in MONDICT3 and compId[0] != 'P':  # 2lyw: PGLU -> PCA
+        if compId3 in STD_MON_DICT and compId[0] != 'P':  # 2lyw: PGLU -> PCA
             return compId3
 
     if compId[-1] in ('5', '3'):
@@ -2160,7 +2168,7 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
 
         _compId = compId[:-1]
 
-        if _compId in MONDICT3:
+        if _compId in STD_MON_DICT:
             return _compId
 
         if _compId == 'HC':
@@ -2169,17 +2177,18 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
     if compId.startswith('R') and lenCompId > 1 and compId[1] in ('A', 'C', 'G', 'U'):
         _compId = compId[1:]
 
-        if _compId in MONDICT3:
+        if _compId in STD_MON_DICT:
             return _compId
 
         if refCompId is not None and lenRefCompId == 1 and _compId[-1] in ('5', '3'):
             _compId = _compId[:-1]
 
-            if _compId in MONDICT3:
+            if _compId in STD_MON_DICT:
                 return _compId
 
-    if refCompId is not None and refCompId in MONDICT3 and lenRefCompId == 3:
-        if lenCompId >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: ASM -> ASP + ZN, 2n6j: TYZ -> TYR
+    if refCompId is not None and refCompId in STD_MON_DICT and lenRefCompId == 3:
+        # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: ASM -> ASP + ZN, 2n6j: TYZ -> TYR
+        if lenCompId >= 3 and compId[:2] == refCompId[:2]:
             return refCompId
         if 'Z' in compId and compId[0] == refCompId[0]:  # 2n6j: GZC, GZL -> GLU + ZN,
             return refCompId
@@ -2393,17 +2402,21 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          }
 
         # key items of loop
-        _keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+        _keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                   'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                                   'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
-                     'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                     'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                   'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                  {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                                   'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
@@ -2414,19 +2427,23 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
-                     'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                     'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                                     'default': REPRESENTATIVE_ASYM_ID},
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                     {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
                                     {'name': 'auth_comp_id', 'type': 'int', 'alt_name': 'auth_comp_id'},
                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}
                                     ],
-                     'mis_poly_link': [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                     'mis_poly_link': [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id',
+                                        'default': REPRESENTATIVE_ASYM_ID},
                                        {'name': 'auth_seq_id_1', 'type': 'int'},
-                                       {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                       {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id',
+                                        'default': REPRESENTATIVE_ASYM_ID},
                                        {'name': 'auth_seq_id_2', 'type': 'int'}
                                        ],
-                     'mod_residue': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                     'mod_residue': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                                      'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
@@ -2650,7 +2667,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                                 ps['auth_seq_id'].insert(pos, authSeqId)
                                 ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
+                                # avoid doulble inserts to 'auth_comp_id'
+                                if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                     ps['auth_comp_id'].insert(pos, '.')
 
                             ps['seq_id'] = list(range(1, len(ps['auth_seq_id']) + 1))
@@ -2740,7 +2758,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                                     ps['auth_seq_id'].insert(pos, auth_seq_id_)
                                     ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                    if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
+                                    # avoid doulble inserts to 'auth_comp_id'
+                                    if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                         ps['auth_comp_id'].insert(pos, '.')
 
                                 ps['seq_id'] = list(range(1, len(ps['auth_seq_id']) + 1))
@@ -2899,7 +2918,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         chainIds.append(item['alt_chain_id'])
 
                 if has_ins_code:
-                    sortedSeq = sorted(set((item['alt_chain_id'], int(item['seq_id']), item['ins_code'], item['alt_comp_id']) for item in coord),
+                    sortedSeq = sorted(set((item['alt_chain_id'], int(item['seq_id']),
+                                            item['ins_code'], item['alt_comp_id']) for item in coord),
                                        key=itemgetter(1))
 
                     for c in chainIds:
@@ -3056,7 +3076,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 for np in nonPoly:
                     if 'alt_comp_id' in np and 'alt_auth_seq_id' in np:
                         authChainId = np['auth_chain_id']
-                        for authSeqId, compId, altAuthSeqId, altCompId in zip(np['auth_seq_id'], np['comp_id'], np['alt_auth_seq_id'], np['alt_comp_id']):
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(np['auth_seq_id'], np['comp_id'],
+                                                                              np['alt_auth_seq_id'], np['alt_comp_id']):
                             for ps in polySeq:
                                 if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
                                     for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
@@ -3069,7 +3090,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 for br in branched:
                     if 'alt_comp_id' in br and 'alt_auth_seq_id' in br:
                         authChainId = br['auth_chain_id']
-                        for authSeqId, compId, altAuthSeqId, altCompId in zip(br['auth_seq_id'], br['comp_id'], br['alt_auth_seq_id'], br['alt_comp_id']):
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(br['auth_seq_id'], br['comp_id'],
+                                                                              br['alt_auth_seq_id'], br['alt_comp_id']):
                             for ps in polySeq:
                                 if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
                                     for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
@@ -3134,7 +3156,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
             modelNumName = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in tags else 'ndb_model'
         authAsymId = 'auth_asym_id'
         if cR.hasItem('atom_site', 'pdbx_auth_asym_id'):
-            coord = cR.getDictListWithFilter('atom_site', [{'name': 'auth_asym_id', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
+            coord = cR.getDictListWithFilter('atom_site', [{'name': 'auth_asym_id', 'type': 'str',
+                                                            'default': REPRESENTATIVE_ASYM_ID},
                                                            {'name': 'pdbx_auth_asym_id', 'type': 'str'}])
             auth_asym_id_set, pdbx_auth_asym_id_set = set(), set()
             for c in coord:
@@ -3162,7 +3185,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          ]
 
             if authAsymId != 'auth_asym_id':  # DAOTHER-8817
-                dataItems.append({'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID})
+                dataItems.append({'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                                  'default': REPRESENTATIVE_ASYM_ID})
             if altAuthCompId is not None:
                 dataItems.append({'name': altAuthCompId, 'type': 'str', 'alt_name': 'alt_comp_id'})
             if altAuthAtomId is not None:
@@ -3246,25 +3270,32 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 for seqId in seqIds:
                     seqKey = (chainId, seqId)
                     compId = next(c['comp_id'] for c in coord
-                                  if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId)
+                                  if c['chain_id'] == chainId and c['seq_id'] is not None
+                                  and c['seq_id'] == seqId)
                     atomIds = [c['atom_id'] for c in coord
-                               if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                               if c['chain_id'] == chainId and c['seq_id'] is not None
+                               and c['seq_id'] == seqId and c['comp_id'] == compId]
                     typeSymbols = [c['type_symbol'] for c in coord
-                                   if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                                   if c['chain_id'] == chainId and c['seq_id'] is not None
+                                   and c['seq_id'] == seqId and c['comp_id'] == compId]
                     authChainId = chainId
                     if authAsymId != 'auth_asym_id':  # DAOTHER-8817
                         authChainId = next(c['auth_chain_id'] for c in coord
-                                           if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId)
+                                           if c['chain_id'] == chainId and c['seq_id'] is not None
+                                           and c['seq_id'] == seqId and c['comp_id'] == compId)
                     coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
                     if altAuthCompId is not None:
                         altCompIds = [c['comp_id'] for c in coord
-                                      if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                                      if c['chain_id'] == chainId and c['seq_id'] is not None
+                                      and c['seq_id'] == seqId and c['comp_id'] == compId]
                         coordAtomSite[seqKey]['alt_comp_id'] = altCompIds
                     if altAuthAtomId is not None:
                         altAtomIds = [c['alt_atom_id'] for c in coord
-                                      if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                                      if c['chain_id'] == chainId and c['seq_id'] is not None
+                                      and c['seq_id'] == seqId and c['comp_id'] == compId]
                         coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
-                    altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
+                    altSeqId = next((c['alt_seq_id'] for c in coord
+                                     if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                     if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
                         if isinstance(authToLabelChain[chainId], str):
                             _seqKey = (authToLabelChain[chainId], int(altSeqId))
@@ -3298,25 +3329,32 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             if found:
                                 break
                     compIds = list(set(c['comp_id'] for c in coord
-                                       if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId))
+                                       if c['chain_id'] == chainId and c['seq_id'] is not None
+                                       and c['seq_id'] == seqId))
                     if len(compIds) > 1:  # 2kny: split implict ins_code of atom_site
                         coordAtomSite[seqKey]['split_comp_id'] = compIds
                         for compId in compIds:
                             seqKey = (chainId, seqId, compId)
                             atomIds = [c['atom_id'] for c in coord
-                                       if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                                       if c['chain_id'] == chainId and c['seq_id'] is not None
+                                       and c['seq_id'] == seqId and c['comp_id'] == compId]
                             typeSymbols = [c['type_symbol'] for c in coord
-                                           if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
-                            coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols, 'split_comp_id': compIds}
+                                           if c['chain_id'] == chainId and c['seq_id'] is not None
+                                           and c['seq_id'] == seqId and c['comp_id'] == compId]
+                            coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId, 'atom_id': atomIds,
+                                                     'type_symbol': typeSymbols, 'split_comp_id': compIds}
                             if altAuthCompId is not None:
                                 altCompIds = [c['comp_id'] for c in coord
-                                              if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                                              if c['chain_id'] == chainId and c['seq_id'] is not None
+                                              and c['seq_id'] == seqId and c['comp_id'] == compId]
                                 coordAtomSite[seqKey]['alt_comp_id'] = altCompIds
                             if altAuthAtomId is not None:
                                 altAtomIds = [c['alt_atom_id'] for c in coord
-                                              if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                                              if c['chain_id'] == chainId and c['seq_id'] is not None
+                                              and c['seq_id'] == seqId and c['comp_id'] == compId]
                                 coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
-                            altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
+                            altSeqId = next((c['alt_seq_id'] for c in coord
+                                             if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                             if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
                                 if isinstance(authToLabelChain[chainId], str):
                                     _seqKey = (authToLabelChain[chainId], int(altSeqId))
@@ -3340,7 +3378,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     coordAtomSite[altKey] = coordAtomSite[seqKey]
 
                     # DAOTHER-8817
-                    if compId not in MONDICT3:
+                    if compId not in STD_MON_DICT:
 
                         if compId not in chemCompAtom:
                             chemCompAtom[compId] = atomIds
@@ -3358,7 +3396,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                            ]
 
-                            resCoordDict = {c['atom_id']: to_np_array(c) for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
+                            resCoordDict = {c['atom_id']: to_np_array(c)
+                                            for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
 
                             chemCompBond[compId], chemCompTopo[compId] = {}, {}
 
@@ -3384,7 +3423,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             for heavy in atomIds:
                                 if heavy[0] not in PROTON_BEGIN_CODE:
                                     for heavy2 in atomIds:
-                                        if heavy2[0] not in PROTON_BEGIN_CODE and heavy2 != heavy and heavy in resCoordDict and heavy2 in resCoordDict:
+                                        if heavy2[0] not in PROTON_BEGIN_CODE and heavy2 != heavy\
+                                           and heavy in resCoordDict and heavy2 in resCoordDict:
                                             _distance = numpy.linalg.norm(resCoordDict[heavy] - resCoordDict[heavy2])
 
                                             if _distance < 2.5:
@@ -3424,7 +3464,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 filterItemByRepModelId = [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}]
 
                 unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_atoms',
-                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                   'default': REPRESENTATIVE_ASYM_ID},
                                                   {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                   {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
@@ -3454,7 +3495,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 filterItemByRepModelId = [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}]
 
                 unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                   'default': REPRESENTATIVE_ASYM_ID},
                                                   {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                   {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
                                                   ],
@@ -3637,13 +3679,16 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         has_ins_code = cR.hasItem('pdbx_poly_seq_scheme', 'pdb_ins_code')
 
                         dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id',
+                                      'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'seq_id', 'type': 'int'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                      {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                     {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'},  # DAOTHER-8817
-                                     {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
+                                     {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id',
+                                      'default-from': 'mon_id'},  # DAOTHER-8817
+                                     {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id',
+                                      'default-from': 'mon_id'}
                                      ]
 
                         if has_ins_code:
@@ -3720,7 +3765,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                      'seq_id': ps['seq_id'][idx],
                                                      'auth_seq_id': authSeqId,
                                                      'alt_seq_id': authSeqId,
-                                                     'comp_id': ps['comp_id'][idx],  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                                     # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                                     'comp_id': ps['comp_id'][idx],
                                                      'auth_comp_id': ps['auth_comp_id'][idx],
                                                      'alt_comp_id': ps['auth_comp_id'][idx],
                                                      'ins_code': None})
@@ -3766,11 +3812,13 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             for item in mappings:
                                 has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                    (entityAssemblyId, item['seq_id'], entityId, True)
                                 authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                 if has_ins_code_val:
                                     authToInsCode[seqKey] = item['ins_code']
-                                authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                authToEntityType[seqKey] = entityPolyType
                                 if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                     _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
                                     authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
@@ -3781,11 +3829,13 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 if extSeq['auth_chain_id'] not in authAsymIds:
                                     continue
                                 seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
-                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                    (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                 authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
-                                authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                authToEntityType[seqKey] = entityPolyType
                                 ext_mappings += 1
-                                if extSeq['chain_id'] not in MONDICT3:
+                                if extSeq['chain_id'] not in STD_MON_DICT:
                                     nstdMonomer = 'yes'
                                 ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
@@ -3793,7 +3843,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                 if altKey not in authToStarSeq:
                                     has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                        (entityAssemblyId, item['seq_id'], entityId, True)
                                     if has_ins_code_val:
                                         authToInsCode[altKey] = item['ins_code']
                                     authToEntityType[altKey] = entityPolyType
@@ -3806,13 +3857,18 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     continue
                                 altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
                                 if altKey not in authToStarSeq:
-                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                        (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                     authToEntityType[altKey] = entityPolyType
 
-                            entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                                   'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                   'entity_desc': entityDesc, 'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
-                                                   'entity_copies': entityCopies, 'entity_ec': entityEC,
+                            entityAssembly.append({'entity_assembly_id': entityAssemblyId,
+                                                   'entity_id': entityId,
+                                                   'entity_type': entityType,
+                                                   'entity_src_method': entitySrcMethod,
+                                                   'entity_desc': entityDesc,
+                                                   'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
+                                                   'entity_copies': entityCopies,
+                                                   'entity_ec': entityEC,
                                                    'entity_parent': entityParent,
                                                    'entity_mutation': entityMutation,
                                                    'entity_fragment': entityFragment,
@@ -3860,11 +3916,13 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                 continue
                                             has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
                                             seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                            authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                            authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                                (entityAssemblyId, item['seq_id'], entityId, True)
                                             authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                             if has_ins_code_val:
                                                 authToInsCode[seqKey] = item['ins_code']
-                                            authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                            # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                            authToEntityType[seqKey] = entityPolyType
                                             if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                                 _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
                                                 authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
@@ -3875,11 +3933,13 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                             if extSeq['chain_id'] != labelAsymId:
                                                 continue
                                             seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
-                                            authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                            authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                                (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                             authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
-                                            authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                            # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                            authToEntityType[seqKey] = entityPolyType
                                             ext_mappings += 1
-                                            if extSeq['chain_id'] not in MONDICT3:
+                                            if extSeq['chain_id'] not in STD_MON_DICT:
                                                 nstdMonomer = 'yes'
                                             ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
@@ -3889,7 +3949,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                             altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                             if altKey not in authToStarSeq:
                                                 has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                                authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                                authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                                    (entityAssemblyId, item['seq_id'], entityId, True)
                                                 if has_ins_code_val:
                                                     authToInsCode[altKey] = item['ins_code']
                                                 authToEntityType[altKey] = entityPolyType
@@ -3902,13 +3963,18 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                 continue
                                             altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
                                             if altKey not in authToStarSeq:
-                                                authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                                authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                                    (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                                 authToEntityType[altKey] = entityPolyType
 
-                                        entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                                               'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                               'entity_desc': entityDesc, 'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
-                                                               'entity_copies': entityCopies, 'entity_ec': entityEC,
+                                        entityAssembly.append({'entity_assembly_id': entityAssemblyId,
+                                                               'entity_id': entityId,
+                                                               'entity_type': entityType,
+                                                               'entity_src_method': entitySrcMethod,
+                                                               'entity_desc': entityDesc,
+                                                               'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
+                                                               'entity_copies': entityCopies,
+                                                               'entity_ec': entityEC,
                                                                'entity_parent': entityParent,
                                                                'entity_mutation': entityMutation,
                                                                'entity_fragment': entityFragment,
@@ -3935,11 +4001,13 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 if item['auth_asym_id'] == _authAsymId:
                                     has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
                                     seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                    authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                    authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                        (entityAssemblyId, item['seq_id'], entityId, True)
                                     authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                     if has_ins_code_val:
                                         authToInsCode[seqKey] = item['ins_code']
-                                    authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    authToEntityType[seqKey] = entityPolyType
                                     if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                         _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
                                         authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
@@ -3951,11 +4019,13 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             for extSeq in nmrExtPolySeq:
                                 if extSeq['auth_chain_id'] == _authAsymId:
                                     seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
-                                    authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                    authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                        (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                     authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
-                                    authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    authToEntityType[seqKey] = entityPolyType
                                     ext_mappings += 1
-                                    if extSeq['chain_id'] not in MONDICT3:
+                                    if extSeq['chain_id'] not in STD_MON_DICT:
                                         nstdMonomer = 'yes'
                                     ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
@@ -3964,7 +4034,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                     if altKey not in authToStarSeq:
                                         has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                        authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                        authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                            (entityAssemblyId, item['seq_id'], entityId, True)
                                         if has_ins_code_val:
                                             authToInsCode[altKey] = item['ins_code']
                                         authToEntityType[altKey] = entityPolyType
@@ -3976,13 +4047,18 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 if extSeq['auth_chain_id'] == _authAsymId:
                                     altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
                                     if altKey not in authToStarSeq:
-                                        authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                        authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                            (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                         authToEntityType[altKey] = entityPolyType
 
-                            entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                                   'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                   'entity_desc': entityDesc, 'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
-                                                   'entity_copies': 1, 'entity_ec': entityEC,
+                            entityAssembly.append({'entity_assembly_id': entityAssemblyId,
+                                                   'entity_id': entityId,
+                                                   'entity_type': entityType,
+                                                   'entity_src_method': entitySrcMethod,
+                                                   'entity_desc': entityDesc,
+                                                   'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
+                                                   'entity_copies': 1,
+                                                   'entity_ec': entityEC,
                                                    'entity_parent': entityParent,
                                                    'entity_mutation': entityMutation,
                                                    'entity_fragment': entityFragment,
@@ -4041,7 +4117,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             for item in mappings:
                                 has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                    (entityAssemblyId, item['seq_id'], entityId, False)
                                 authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                 if has_ins_code_val:
                                     authToInsCode[seqKey] = item['ins_code']
@@ -4056,7 +4133,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                 if altKey not in authToStarSeq:
                                     has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                        (entityAssemblyId, item['seq_id'], entityId, True)
                                     if has_ins_code_val:
                                         authToInsCode[altKey] = item['ins_code']
                                     authToEntityType[altKey] = entityPolyType
@@ -4064,9 +4142,12 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
                                         authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
 
-                            entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                                   'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                   'entity_desc': entityDesc, 'entity_fw': entityFW,
+                            entityAssembly.append({'entity_assembly_id': entityAssemblyId,
+                                                   'entity_id': entityId,
+                                                   'entity_type': entityType,
+                                                   'entity_src_method': entitySrcMethod,
+                                                   'entity_desc': entityDesc,
+                                                   'entity_fw': entityFW,
                                                    'entity_copies': entityCopies,
                                                    'entity_details': entityDetails,
                                                    'entity_role': entityRole,
@@ -4084,7 +4165,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     if item['auth_asym_id'] == _authAsymId:
                                         has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                        authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                                        authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                            (entityAssemblyId, item['seq_id'], entityId, False)
                                         if has_ins_code_val:
                                             authToInsCode[seqKey] = item['ins_code']
                                         authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
@@ -4099,7 +4181,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
                                             has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                            authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                            authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                                (entityAssemblyId, item['seq_id'], entityId, True)
                                             if has_ins_code_val:
                                                 authToInsCode[altKey] = item['ins_code']
                                             authToEntityType[altKey] = entityPolyType
@@ -4107,9 +4190,12 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                 _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
                                                 authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
 
-                                entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                                       'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                       'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                entityAssembly.append({'entity_assembly_id': entityAssemblyId,
+                                                       'entity_id': entityId,
+                                                       'entity_type': entityType,
+                                                       'entity_src_method': entitySrcMethod,
+                                                       'entity_desc': entityDesc,
+                                                       'entity_fw': entityFW,
                                                        'entity_copies': 1,
                                                        'entity_details': entityDetails,
                                                        'entity_role': entityRole,
@@ -4124,13 +4210,16 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         has_ins_code = cR.hasItem('pdbx_nonpoly_scheme', 'pdb_ins_code')
 
                         dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                     {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_asym_id',
+                                      'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                      {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                     {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'},  # DAOTHER-8817
-                                     {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
+                                     {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id',
+                                      'default-from': 'mon_id'},  # DAOTHER-8817
+                                     {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id',
+                                      'default-from': 'mon_id'}
                                      ]
 
                         if has_ins_code:
@@ -4145,7 +4234,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         for idx, item in enumerate(mappings):
                             has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
                             seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                            authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, idx + 1, entityId, True)
+                            authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                (entityAssemblyId, idx + 1, entityId, True)
                             authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                             if has_ins_code_val:
                                 authToInsCode[seqKey] = item['ins_code']
@@ -4168,7 +4258,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                             if altKey not in authToStarSeq:
                                 has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, idx + 1, entityId, False)
+                                authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                    (entityAssemblyId, idx + 1, entityId, False)
                                 if has_ins_code_val:
                                     authToInsCode[altKey] = item['ins_code']
                                 authToEntityType[altKey] = entityType
@@ -4187,9 +4278,12 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             if item['label_asym_id'] not in labelAsymIds:
                                 labelAsymIds.append(item['label_asym_id'])
 
-                        entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
-                                               'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                               'entity_desc': entityDesc, 'entity_fw': entityFW,
+                        entityAssembly.append({'entity_assembly_id': entityAssemblyId,
+                                               'entity_id': entityId,
+                                               'entity_type': entityType,
+                                               'entity_src_method': entitySrcMethod,
+                                               'entity_desc': entityDesc,
+                                               'entity_fw': entityFW,
                                                'entity_copies': entityCopies,
                                                'entity_details': entityDetails,
                                                'entity_role': entityRole,
@@ -4750,11 +4844,11 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in MONDICT3 or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            if _compId in STD_MON_DICT or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
                 _atomId = atomIds[0]
                 if _atomId in EMPTY_VALUE:
                     return None
-                if _compId not in MONDICT3:
+                if _compId not in STD_MON_DICT:
                     _atomId = translateToStdAtomName(_atomId, _compId, ccU=nefT.ccU)
                 _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atomId)
                 if len(_atomId) > 0 and details is None:
@@ -4775,7 +4869,8 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in MONDICT3 or _compId == 'ACE' or not isPolySeq:  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            if _compId in STD_MON_DICT or _compId == 'ACE' or not isPolySeq:
                 failed = False
                 for atomId in atomIds:
                     if atomId in EMPTY_VALUE:
@@ -5379,7 +5474,7 @@ def isLikePheOrTyr(compId: str, ccU) -> bool:
     if compId in ('PHE', 'TYR'):
         return True
 
-    if compId in MONDICT3:
+    if compId in STD_MON_DICT:
         return False
 
     if ccU.updateChemCompDict(compId):
@@ -5399,7 +5494,7 @@ def isLikeHis(compId: str, ccU) -> bool:
     if compId == 'HIS':
         return True
 
-    if compId in MONDICT3:
+    if compId in STD_MON_DICT:
         return False
 
     if ccU.updateChemCompDict(compId):
@@ -5810,17 +5905,23 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
 
         atom_site_1 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
-                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id', 'type': 'str', 'value': asymId1},
-                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id', 'type': 'int', 'value': seqId1},
-                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id', 'type': 'str', 'value': atomId1},
+                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id',
+                                                 'type': 'str', 'value': asymId1},
+                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id',
+                                                 'type': 'int', 'value': seqId1},
+                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id',
+                                                 'type': 'str', 'value': atomId1},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
         atom_site_2 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
-                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id', 'type': 'str', 'value': asymId2},
-                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id', 'type': 'int', 'value': seqId2},
-                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id', 'type': 'str', 'value': atomId2},
+                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id',
+                                                 'type': 'str', 'value': asymId2},
+                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id',
+                                                 'type': 'int', 'value': seqId2},
+                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id',
+                                                 'type': 'str', 'value': atomId2},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
@@ -6471,7 +6572,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
         return starAtom
 
     if seqId is not None and offsetHolder is not None:
-        for offset in range(1, MAX_OFFSET_ATTEMPT):
+        for offset in range(1, GLOBAL_OFFSET_ATTEMPT):
             seqKey = (chainId, seqId + offset, compId)
             if has_aux_atom:
                 auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
@@ -6480,7 +6581,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
                 if chainId in offsetHolder and offset < offsetHolder[chainId]:
                     break
                 offsetHolder[chainId] = offset
-                if has_aux_atom and compId in MONDICT3 and auxCompId in MONDICT3:
+                if has_aux_atom and compId in STD_MON_DICT and auxCompId in STD_MON_DICT:
                     offsetHolder[f'_{chainId}'] = offset
                 atom['seq_id'] = seqId + offset
                 return starAtom
@@ -6492,7 +6593,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
                 if chainId in offsetHolder and -offset < offsetHolder[chainId]:
                     break
                 offsetHolder[chainId] = -offset
-                if has_aux_atom and compId in MONDICT3 and auxCompId in MONDICT3:
+                if has_aux_atom and compId in STD_MON_DICT and auxCompId in STD_MON_DICT:
                     offsetHolder[f'_{chainId}'] = -offset
                 atom['seq_id'] = seqId - offset
                 return starAtom
@@ -6503,13 +6604,13 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
         _auxSeqKey = next((_auxSeqKey for _auxSeqKey in authToStarSeq if auxChainId == _auxSeqKey[0] and auxSeqId == _auxSeqKey[1]), None)
 
     if _seqKey is not None and (not has_aux_atom or (has_aux_atom and _auxSeqKey is not None)):
-        if compId in EMPTY_VALUE or compId not in MONDICT3:
+        if compId in EMPTY_VALUE or compId not in STD_MON_DICT:
             starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[_seqKey]
             if compId in EMPTY_VALUE or compId != _seqKey[2]:
                 atom['comp_id'] = starAtom['comp_id'] = _seqKey[2]
             return starAtom
 
-    if offsetHolder is not None and chainId in offsetHolder and compId in MONDICT3:
+    if offsetHolder is not None and chainId in offsetHolder and compId in STD_MON_DICT:
         del offsetHolder[chainId]
 
     return None
@@ -6538,7 +6639,7 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
             if seqKey in authToInsCode:
                 return authToInsCode[seqKey]
 
-        for offset in range(1, MAX_OFFSET_ATTEMPT):
+        for offset in range(1, GLOBAL_OFFSET_ATTEMPT):
             seqKey = (chainId, seqId + offset, compId)
             if seqKey in authToInsCode:
                 offsetHolder[chainId] = offset
@@ -6551,7 +6652,7 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
     _seqKey = next((_seqKey for _seqKey in authToInsCode if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
 
     if _seqKey is not None:
-        if compId in EMPTY_VALUE or compId not in MONDICT3:
+        if compId in EMPTY_VALUE or compId not in STD_MON_DICT:
             if compId in EMPTY_VALUE or compId != _seqKey[2]:
                 atom['comp_id'] = _seqKey[2]
             return authToInsCode[_seqKey]
@@ -7229,7 +7330,8 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
     return row
 
 
-def getAltPkRow(pkSubtype: str, _indexId: int, indexId: int, listId: int, entryId: str, dstFunc: dict, details: Optional[str] = None) -> Optional[List[Any]]:
+def getAltPkRow(pkSubtype: str, _indexId: int, indexId: int, listId: int, entryId: str, dstFunc: dict, details: Optional[str] = None
+                ) -> Optional[List[Any]]:
     """ Return row data for a _Peak loop.
         @return: data array
     """
@@ -8759,7 +8861,8 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                 compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                 if compId in compIds:
                     cifCompId = compId
-                    origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                    origCompId = next(origCompId for _seqId, _compId, origCompId
+                                      in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                       if _seqId == seqId and _compId == compId)
             if compId in (cifCompId, origCompId):
                 if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -8794,8 +8897,10 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                                 compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                                 if compId in compIds:
                                     cifCompId = compId
-                                    origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                      if _seqId == seqId and _compId == compId)
+                                    origCompId =\
+                                        next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'],
+                                                                                               ps['comp_id'], ps['auth_comp_id'])
+                                             if _seqId == seqId and _compId == compId)
                             if compId in (cifCompId, origCompId):
                                 if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((chainId, seqId_, cifCompId, True))
@@ -8841,7 +8946,7 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                         chainAssign.add((chainId, seqId, cifCompId, False))
                 else:
                     _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
-                    if len(_atomId) > 0 and (details is None or compId not in MONDICT3):
+                    if len(_atomId) > 0 and (details is None or compId not in STD_MON_DICT):
                         chainAssign.add((chainId, seqId, cifCompId, False))
 
     if len(chainAssign) == 0:
@@ -8860,7 +8965,8 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                         compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                         if compId in compIds:
                             cifCompId = compId
-                            origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                            origCompId = next(origCompId for _seqId, _compId, origCompId
+                                              in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                               if _seqId == seqId and _compId == compId)
                     if compId in (cifCompId, origCompId):
                         if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -8885,7 +8991,7 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                         else:
                             _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
-                            if len(_atomId) > 0 and (details is None or compId not in MONDICT3):
+                            if len(_atomId) > 0 and (details is None or compId not in STD_MON_DICT):
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
 
     if len(chainAssign) == 0 and altPolySeq is not None:
@@ -8989,7 +9095,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
         else:
             _atomId = []
             if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
-                pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in MONDICT3 else re.compile(fr'H{atomId[1:]}\S?$')
+                pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in STD_MON_DICT else re.compile(fr'H{atomId[1:]}\S?$')
                 atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
                 if len(atomIdList) > 1:
                     hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
@@ -9064,7 +9170,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
                     pass
 
         lenAtomId = len(_atomId)
-        if compId != cifCompId and compId in MONDICT3 and cifCompId in MONDICT3:
+        if compId != cifCompId and compId in STD_MON_DICT and cifCompId in STD_MON_DICT:
             multiChain = insCode = False
             if len(chainAssign) > 0:
                 chainIds = [ca[0] for ca in chainAssign]
@@ -9103,7 +9209,9 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
             if _atomSelection not in atomSelection:
                 atomSelection.append(_atomSelection)
 
-            warningMessage = testCoordAtomIdConsistency(caC, nefT.ccU, authChainId, chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
+            warningMessage = testCoordAtomIdConsistency(caC, nefT.ccU,
+                                                        authChainId, chainId, cifSeqId, cifCompId, cifAtomId,
+                                                        seqKey, coordAtomSite, enableWarning)
             if warningMessage is not None and warningMessage.startswith('Ignorable'):
                 warningMessage = None
                 atomSelection.pop()
@@ -9168,7 +9276,8 @@ def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
                         coordAtomSite = coordAtomSites[_seqKey]
                     elif seqKey in coordAtomSites:
                         coordAtomSite = coordAtomSites[seqKey]
-                    else:  # DAOTHER-10105: handle inconsistency between auth_asym_id and pdbx_auth_asym_id due to chain split while annotation
+                    # DAOTHER-10105: handle inconsistency between auth_asym_id and pdbx_auth_asym_id due to chain split while annotation
+                    else:
                         for _chainId in caC['label_to_auth_chain']:
                             if _chainId == chainId:
                                 continue
@@ -9260,8 +9369,9 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                     if chainId in LARGE_ASYM_ID:
                         if seqKey in caC['coord_unobs_atom']\
                                 and (atomId in caC['coord_unobs_atom'][seqKey]['atom_ids']
-                                     or (atomId[0] in PROTON_BEGIN_CODE and any(True for bondedTo in ccU.getBondedAtoms(compId, atomId, exclProton=True)
-                                                                                if bondedTo in caC['coord_unobs_atom'][seqKey]['atom_ids']))):
+                                     or (atomId[0] in PROTON_BEGIN_CODE
+                                         and any(True for bondedTo in ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                                 if bondedTo in caC['coord_unobs_atom'][seqKey]['atom_ids']))):
                             return 'Ignorable missing atom'
                         return f"[Atom not found] "\
                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates."

@@ -40,9 +40,13 @@ class TestNmrDpUtility(unittest.TestCase):
         pass
 
     def __test_nmr_str_consistency(self, entry_id):
-        self.utility.addInput(name='chem_shift_file_path_list', value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[entry_id]], type='file_list')
+        self.utility.addInput(name='chem_shift_file_path_list',
+                              value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[entry_id]],
+                              type='file_list')
         if len(self.mr_file_path[entry_id]) == 1:
-            self.utility.addInput(name='restraint_file_path_list', value=[self.data_dir_path + self.mr_file_path[entry_id][0]], type='file_list')
+            self.utility.addInput(name='restraint_file_path_list',
+                                  value=[self.data_dir_path + self.mr_file_path[entry_id][0]],
+                                  type='file_list')
         else:
             mr_path_list = []
             for mr_path in self.mr_file_path[entry_id]:
@@ -68,9 +72,11 @@ class TestNmrDpUtility(unittest.TestCase):
         if report['error'] is None:
             print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{entry_id}: {status}, {error_type}")

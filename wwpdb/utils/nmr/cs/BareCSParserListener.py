@@ -19,13 +19,13 @@ from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+    from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
                                                ASSIGNMENT_HALF_SPIN_NUCLEUS)
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.cs.BareCSParser import BareCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
 except ImportError:
-    from nmr.NmrDpConstant import (MONDICT3,
+    from nmr.NmrDpConstant import (STD_MON_DICT,
                                    ASSIGNMENT_HALF_SPIN_NUCLEUS)
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.cs.BareCSParser import BareCSParser
@@ -97,7 +97,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.__col_name.append(col_name)
             if col_name in cs_atom_like_names or col_name.endswith('#') or col_name.endswith('#'):
                 self.__col_order.append('atom_name_instance')
-            elif col_name.startswith('Q') or col_name.startswith('M') and 'H' + col_name[1:].replace('%', '2').replace('#', '2') in cs_atom_like_names:
+            elif col_name.startswith('Q')\
+                    or (col_name.startswith('M') and 'H' + col_name[1:].replace('%', '2').replace('#', '2') in cs_atom_like_names):
                 self.__col_order.append('atom_name_instance')
             elif (col_name.endswith('%') or col_name.endswith('#')) and col_name[:-1] + '2' in cs_atom_like_names:
                 self.__col_order.append('atom_name_instance')
@@ -206,8 +207,10 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                     continue
                                 self.__col_order[idx] = 'residue_name'
 
-            if not ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name_instance' in self.__col_order)
-                    or ('value' in self.__col_order and ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name' in self.__col_order)
+            if not ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order)
+                     and 'atom_name_instance' in self.__col_order)
+                    or ('value' in self.__col_order and ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order)
+                                                          and 'atom_name' in self.__col_order)
                                                          or ('assignment' in self.__col_order and 'atom_name' not in self.__col_order)))):
                 return
 
@@ -231,26 +234,28 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
                             elif isinstance(self.anySelection[idx], str):
-                                if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
+                                if self.__col_order.count('residue_name') == 0\
+                                   and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[1])
                                     comp_id = g[0]
                                     if len(comp_id) == 1:
                                         if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             try:
-                                                comp_id = next(k for k, v in MONDICT3.items() if v == comp_id)
+                                                comp_id = next(k for k, v in STD_MON_DICT.items() if v == comp_id)
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             comp_id = 'D' + comp_id
-                                elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
+                                elif self.__col_order.count('residue_name') == 0\
+                                        and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__rev_reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[0])
                                     comp_id = g[1]
                                     if len(comp_id) == 1:
                                         if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             try:
-                                                comp_id = next(k for k, v in MONDICT3.items() if v == comp_id)
+                                                comp_id = next(k for k, v in STD_MON_DICT.items() if v == comp_id)
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -274,7 +279,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                     atom_ids.append(self.__col_name[idx])
                                     values.append(value)
                         elif order == 'details':
-                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                           else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
                         details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
 
@@ -334,26 +340,28 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
                             elif isinstance(self.anySelection[idx], str):
-                                if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
+                                if self.__col_order.count('residue_name') == 0\
+                                   and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[1])
                                     comp_id = g[0]
                                     if len(comp_id) == 1:
                                         if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             try:
-                                                comp_id = next(k for k, v in MONDICT3.items() if v == comp_id)
+                                                comp_id = next(k for k, v in STD_MON_DICT.items() if v == comp_id)
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             comp_id = 'D' + comp_id
-                                elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
+                                elif self.__col_order.count('residue_name') == 0\
+                                        and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__rev_reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[0])
                                     comp_id = g[1]
                                     if len(comp_id) == 1:
                                         if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                             try:
-                                                comp_id = next(k for k, v in MONDICT3.items() if v == comp_id)
+                                                comp_id = next(k for k, v in STD_MON_DICT.items() if v == comp_id)
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -410,7 +418,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 else:
                                     figure_of_merits.append(None)
                         elif order == 'details':
-                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                           else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
                         details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
 
@@ -425,7 +434,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 _seq_id = seq_id
                 auth_seq_id_map = {}
 
-                for atom_id, value, value_uncertainty, occupancy, figure_of_merit in zip(atom_ids, values, value_uncertainties, occupancies, figure_of_merits):
+                for atom_id, value, value_uncertainty, occupancy, figure_of_merit in zip(atom_ids, values, value_uncertainties,
+                                                                                         occupancies, figure_of_merits):
                     self.atomSelectionSets.clear()
 
                     dstFunc = self.validateCsValue(self.cur_line_num, value, value_uncertainty, occupancy, figure_of_merit)
@@ -512,7 +522,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 else:
                                     figure_of_merits.append(None)
                         elif order == 'details':
-                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                           else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
                         details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
 
@@ -524,7 +535,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 if len(assignments) == 0:
                     return
 
-                for L, value, value_uncertainty, occupancy, figure_of_merit in zip(assignments, values, value_uncertainties, occupancies, figure_of_merits):
+                for L, value, value_uncertainty, occupancy, figure_of_merit in zip(assignments, values, value_uncertainties,
+                                                                                   occupancies, figure_of_merits):
                     self.atomSelectionSets.clear()
 
                     dstFunc = self.validateCsValue(self.cur_line_num, value, value_uncertainty, occupancy, figure_of_merit)

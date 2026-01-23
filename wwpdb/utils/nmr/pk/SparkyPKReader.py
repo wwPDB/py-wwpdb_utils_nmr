@@ -184,7 +184,8 @@ class SparkyPKReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -227,7 +228,8 @@ class SparkyPKReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -267,27 +269,48 @@ if __name__ == "__main__":
                      '../../tests-nmr/mock-data-remediation/5z5x/5z5x.cif')
 
     reasons_ = {'non_poly_remap': {'SER': {37: {'chain_id': 'A', 'seq_id': 102, 'original_chain_id': None}}}}
-    mrAtomNameMapping_ = [{'auth_atom_id': 'H44', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H44', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H432', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H432', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H431', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H431', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H421', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H421', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H422', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H422', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H41', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H41', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H381', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H381', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H382', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H382', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H371', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H371', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H372', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H372', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H36', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H36', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H33', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H33', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H32', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H32', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H311', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H311', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H312', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H312', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H313', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H313', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H301', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H301', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H302', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H302', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H303', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H303', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H281', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H281', 'original_comp_id': 'PNS', 'original_seq_id': 102},
-                          {'auth_atom_id': 'H282', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H282', 'original_comp_id': 'PNS', 'original_seq_id': 102}]
+    mrAtomNameMapping_ = [{'auth_atom_id': 'H44', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H44', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H432', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H432', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H431', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H431', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H421', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H421', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H422', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H422', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H41', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H41', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H381', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H381', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H382', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H382', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H371', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H371', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H372', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H372', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H36', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H36', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H33', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H33', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H32', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H32', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H311', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H311', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H312', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H312', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H313', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H313', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H301', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H301', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H302', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H302', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H303', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H303', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H281', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H281', 'original_comp_id': 'PNS', 'original_seq_id': 102},
+                          {'auth_atom_id': 'H282', 'auth_comp_id': 'PNS', 'auth_seq_id': 102,
+                           'original_atom_id': 'H282', 'original_comp_id': 'PNS', 'original_seq_id': 102}]
     reader = SparkyPKReader(True, reasons=reasons_, mrAtomNameMapping=mrAtomNameMapping_)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2ll8/bmr18032/work/data/holo_Nnoesy.list.str',

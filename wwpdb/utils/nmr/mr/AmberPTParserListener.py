@@ -20,7 +20,7 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 from typing import IO, List, Tuple, Optional
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+    from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID)
@@ -32,7 +32,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
 except ImportError:
-    from nmr.NmrDpConstant import (MONDICT3,
+    from nmr.NmrDpConstant import (STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID)
@@ -225,7 +225,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         del residuePointer2[0]
         residuePointer2.append(self.__residuePointer[-1] + 1000)
 
-        chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1  # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
+        # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
+        chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1
         chainId = indexToLetter(chainIndex)
 
         terminus = [atomName.endswith('T') for atomName in self.__atomName]
@@ -255,7 +256,7 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
                 break
             if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                 hasSegCompId = True
-            if not hasSegCompId and compId not in MONDICT3 and self.mrAtomNameMapping is not None and atomName[0] in PROTON_BEGIN_CODE:
+            if not hasSegCompId and compId not in STD_MON_DICT and self.mrAtomNameMapping is not None and atomName[0] in PROTON_BEGIN_CODE:
                 _, compId, _atomName = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId, compId, atomName)
                 if _atomName != atomName:
                     atomName = _atomName
@@ -342,7 +343,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.angleEquilValueStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#angle_force_constant_statement.
-    def enterAngle_force_constant_statement(self, ctx: AmberPTParser.Angle_force_constant_statementContext):  # pylint: disable=unused-argument
+    def enterAngle_force_constant_statement(self, ctx: AmberPTParser.Angle_force_constant_statementContext
+                                            ):  # pylint: disable=unused-argument
         self.angleForceConstantStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#angle_force_constant_statement.
@@ -352,7 +354,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.angleForceConstantStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#angles_inc_hydrogen_statement.
-    def enterAngles_inc_hydrogen_statement(self, ctx: AmberPTParser.Angles_inc_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterAngles_inc_hydrogen_statement(self, ctx: AmberPTParser.Angles_inc_hydrogen_statementContext
+                                           ):  # pylint: disable=unused-argument
         self.anglesIncHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#angles_inc_hydrogen_statement.
@@ -362,7 +365,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.anglesIncHydrogenStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#angles_without_hydrogen_statement.
-    def enterAngles_without_hydrogen_statement(self, ctx: AmberPTParser.Angles_without_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterAngles_without_hydrogen_statement(self, ctx: AmberPTParser.Angles_without_hydrogen_statementContext
+                                               ):  # pylint: disable=unused-argument
         self.anglesWithoutHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#angles_without_hydrogen_statement.
@@ -432,7 +436,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.bondEquilValueStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#bond_force_constant_statement.
-    def enterBond_force_constant_statement(self, ctx: AmberPTParser.Bond_force_constant_statementContext):  # pylint: disable=unused-argument
+    def enterBond_force_constant_statement(self, ctx: AmberPTParser.Bond_force_constant_statementContext
+                                           ):  # pylint: disable=unused-argument
         self.bondForceConstantStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#bond_force_constant_statement.
@@ -452,7 +457,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.bondsIncHydrogenStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#bonds_without_hydrogen_statement.
-    def enterBonds_without_hydrogen_statement(self, ctx: AmberPTParser.Bonds_without_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterBonds_without_hydrogen_statement(self, ctx: AmberPTParser.Bonds_without_hydrogen_statementContext
+                                              ):  # pylint: disable=unused-argument
         self.bondsWithoutHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#bonds_without_hydrogen_statement.
@@ -542,7 +548,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.cmapIndexStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#dihedral_force_constant_statement.
-    def enterDihedral_force_constant_statement(self, ctx: AmberPTParser.Dihedral_force_constant_statementContext):  # pylint: disable=unused-argument
+    def enterDihedral_force_constant_statement(self, ctx: AmberPTParser.Dihedral_force_constant_statementContext
+                                               ):  # pylint: disable=unused-argument
         self.dihedralForceConstantStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#dihedral_force_constant_statement.
@@ -552,7 +559,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.dihedralForceConstantStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#dihedral_periodicity_statement.
-    def enterDihedral_periodicity_statement(self, ctx: AmberPTParser.Dihedral_periodicity_statementContext):  # pylint: disable=unused-argument
+    def enterDihedral_periodicity_statement(self, ctx: AmberPTParser.Dihedral_periodicity_statementContext
+                                            ):  # pylint: disable=unused-argument
         self.dihedralPeriodicityStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#dihedral_periodicity_statement.
@@ -572,7 +580,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.dihedralPhaseStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#dihedrals_inc_hydrogen_statement.
-    def enterDihedrals_inc_hydrogen_statement(self, ctx: AmberPTParser.Dihedrals_inc_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterDihedrals_inc_hydrogen_statement(self, ctx: AmberPTParser.Dihedrals_inc_hydrogen_statementContext
+                                              ):  # pylint: disable=unused-argument
         self.dihedralsIncHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#dihedrals_inc_hydrogen_statement.
@@ -582,7 +591,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.dihedralsIncHydrogenStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#dihedrals_without_hydrogen_statement.
-    def enterDihedrals_without_hydrogen_statement(self, ctx: AmberPTParser.Dihedrals_without_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterDihedrals_without_hydrogen_statement(self, ctx: AmberPTParser.Dihedrals_without_hydrogen_statementContext
+                                                  ):  # pylint: disable=unused-argument
         self.dihedralsWithoutHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#dihedrals_without_hydrogen_statement.
@@ -592,7 +602,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.dihedralsWithoutHydrogenStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#excluded_atoms_list_statement.
-    def enterExcluded_atoms_list_statement(self, ctx: AmberPTParser.Excluded_atoms_list_statementContext):  # pylint: disable=unused-argument
+    def enterExcluded_atoms_list_statement(self, ctx: AmberPTParser.Excluded_atoms_list_statementContext
+                                           ):  # pylint: disable=unused-argument
         self.excludedAtomsListStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#excluded_atoms_list_statement.
@@ -662,7 +673,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.joinArrayStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#lennard_jones_acoef_statement.
-    def enterLennard_jones_acoef_statement(self, ctx: AmberPTParser.Lennard_jones_acoef_statementContext):  # pylint: disable=unused-argument
+    def enterLennard_jones_acoef_statement(self, ctx: AmberPTParser.Lennard_jones_acoef_statementContext
+                                           ):  # pylint: disable=unused-argument
         self.lennardJonesAcoefStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#lennard_jones_acoef_statement.
@@ -672,7 +684,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.lennardJonesAcoefStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#lennard_jones_bcoef_statement.
-    def enterLennard_jones_bcoef_statement(self, ctx: AmberPTParser.Lennard_jones_bcoef_statementContext):  # pylint: disable=unused-argument
+    def enterLennard_jones_bcoef_statement(self, ctx: AmberPTParser.Lennard_jones_bcoef_statementContext
+                                           ):  # pylint: disable=unused-argument
         self.lennardJonesBcoefStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#lennard_jones_bcoef_statement.
@@ -692,7 +705,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.massStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#nonbonded_parm_index_statement.
-    def enterNonbonded_parm_index_statement(self, ctx: AmberPTParser.Nonbonded_parm_index_statementContext):  # pylint: disable=unused-argument
+    def enterNonbonded_parm_index_statement(self, ctx: AmberPTParser.Nonbonded_parm_index_statementContext
+                                            ):  # pylint: disable=unused-argument
         self.nonbondedParmIndexStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#nonbonded_parm_index_statement.
@@ -702,7 +716,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.nonbondedParmIndexStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#number_excluded_atoms_statement.
-    def enterNumber_excluded_atoms_statement(self, ctx: AmberPTParser.Number_excluded_atoms_statementContext):  # pylint: disable=unused-argument
+    def enterNumber_excluded_atoms_statement(self, ctx: AmberPTParser.Number_excluded_atoms_statementContext
+                                             ):  # pylint: disable=unused-argument
         self.numberExcludedAtomsStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#number_excluded_atoms_statement.
@@ -866,7 +881,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.titleStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#tree_chain_classification_statement.
-    def enterTree_chain_classification_statement(self, ctx: AmberPTParser.Tree_chain_classification_statementContext):  # pylint: disable=unused-argument
+    def enterTree_chain_classification_statement(self, ctx: AmberPTParser.Tree_chain_classification_statementContext
+                                                 ):  # pylint: disable=unused-argument
         self.treeChainClassificationStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#tree_chain_classification_statement.

@@ -137,7 +137,8 @@ class CnsMRReader:
         self.__sll_pred = sll_pred
 
     def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
-              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None, entryId: Optional[str] = None
+              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
+              entryId: Optional[str] = None
               ) -> Tuple[Optional[CnsMRParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
         """ Parse CNS MR file.
             @return: CnsMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
@@ -191,7 +192,8 @@ class CnsMRReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -229,7 +231,8 @@ class CnsMRReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -700,7 +703,8 @@ if __name__ == "__main__":
 
     reasons_ = {'segment_id_mismatch': {'G2': 'A', 'GDP': 'A'},
                 'segment_id_match_stats': {'G2': {'A': 5122}, 'GDP': {'A': -146}},
-                'segment_id_poly_type_stats': {'G2': {'polymer': 5101, 'non-poly': 40, 'non-polymer': 0}, 'GDP': {'polymer': 11, 'non-poly': 0, 'non-polymer': 0}},
+                'segment_id_poly_type_stats': {'G2': {'polymer': 5101, 'non-poly': 40, 'non-polymer': 0},
+                                               'GDP': {'polymer': 11, 'non-poly': 0, 'non-polymer': 0}},
                 'np_seq_id_remap': [{'chain_id': 'A', 'seq_id_dict': {1: 179}}],
                 'non_poly_remap': {'GDP': {179: {'chain_id': 'A', 'seq_id': 179, 'original_chain_id': 'A'}}}}
     reader = CnsMRReader(True, reasons=reasons_)
@@ -900,16 +904,26 @@ if __name__ == "__main__":
     reasons_ = {'global_sequence_offset': {'B': -115},
                 'global_auth_sequence_offset': {'B': -115},
                 'seq_id_remap': [{'chain_id': 'A', 'seq_id_dict': {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10,
-                                                                   11: 11, 12: 12, 13: 13, 14: 14, 15: 15, 16: 16, 17: 17, 18: 18, 19: 19, 20: 20,
-                                                                   21: 21, 22: 22, 23: 23, 24: 24, 25: 25, 26: 26, 27: 310, 28: 311, 29: 312, 30: 313,
-                                                                   31: 314, 32: 315, 33: 326, 34: 327, 35: 328, 36: 329, 37: 330, 38: 331, 39: 332, 40: 333,
-                                                                   41: 334, 42: 335, 43: 336, 44: 337, 45: 338, 46: 339, 47: 340, 48: 341, 49: 342, 50: 343,
-                                                                   51: 344, 52: 345, 53: 346, 54: 347, 55: 348, 56: 349, 57: 350, 58: 351, 59: 352, 60: 353,
-                                                                   61: 354, 62: 355, 63: 356, 64: 357, 65: 358, 66: 359, 67: 360, 68: 361, 69: 362, 70: 363,
-                                                                   71: 364, 72: 365, 73: 366, 74: 367, 75: 368, 76: 369, 77: 370, 78: 371, 79: 372, 80: 373,
-                                                                   81: 392, 82: 393, 83: 502, 84: 503, 85: 504, 86: 505, 87: 506, 88: 507, 89: 508, 90: 509,
-                                                                   91: 510, 92: 511, 93: 512, 94: 513, 95: 514, 96: 515, 97: 516, 98: 517, 99: 518, 100: 519,
-                                                                   101: 520, 102: 521, 103: 522, 104: 523, 105: 524, 106: 525, 107: 526, 108: 527, 109: 528, 110: 529,
+                                                                   11: 11, 12: 12, 13: 13, 14: 14, 15: 15,
+                                                                   16: 16, 17: 17, 18: 18, 19: 19, 20: 20,
+                                                                   21: 21, 22: 22, 23: 23, 24: 24, 25: 25,
+                                                                   26: 26, 27: 310, 28: 311, 29: 312, 30: 313,
+                                                                   31: 314, 32: 315, 33: 326, 34: 327, 35: 328,
+                                                                   36: 329, 37: 330, 38: 331, 39: 332, 40: 333,
+                                                                   41: 334, 42: 335, 43: 336, 44: 337, 45: 338,
+                                                                   46: 339, 47: 340, 48: 341, 49: 342, 50: 343,
+                                                                   51: 344, 52: 345, 53: 346, 54: 347, 55: 348,
+                                                                   56: 349, 57: 350, 58: 351, 59: 352, 60: 353,
+                                                                   61: 354, 62: 355, 63: 356, 64: 357, 65: 358,
+                                                                   66: 359, 67: 360, 68: 361, 69: 362, 70: 363,
+                                                                   71: 364, 72: 365, 73: 366, 74: 367, 75: 368,
+                                                                   76: 369, 77: 370, 78: 371, 79: 372, 80: 373,
+                                                                   81: 392, 82: 393, 83: 502, 84: 503, 85: 504,
+                                                                   86: 505, 87: 506, 88: 507, 89: 508, 90: 509,
+                                                                   91: 510, 92: 511, 93: 512, 94: 513, 95: 514,
+                                                                   96: 515, 97: 516, 98: 517, 99: 518, 100: 519,
+                                                                   101: 520, 102: 521, 103: 522, 104: 523, 105: 524,
+                                                                   106: 525, 107: 526, 108: 527, 109: 528, 110: 529,
                                                                    111: 530, 112: 531, 113: 532, 114: 548, 115: 549}}]}
     reader = CnsMRReader(True, reasons=reasons_)
     reader.setDebugMode(True)
@@ -1095,16 +1109,23 @@ if __name__ == "__main__":
 
     reasons_ = {'segment_id_mismatch': {'PHD': 'A', 'H3K': 'B'},
                 'segment_id_match_stats': {'PHD': {'A': 1425}, 'H3K': {'A': -1424, 'B': 32}},
-                'segment_id_poly_type_stats': {'PHD': {'polymer': 1457, 'non-poly': 0, 'non-polymer': 0}, 'H3K': {'polymer': 0, 'non-poly': 0, 'non-polymer': 0}},
+                'segment_id_poly_type_stats': {'PHD': {'polymer': 1457, 'non-poly': 0, 'non-polymer': 0},
+                                               'H3K': {'polymer': 0, 'non-poly': 0, 'non-polymer': 0}},
                 'non_poly_remap': {'ZN': {401: {'chain_id': 'A', 'seq_id': 361, 'original_chain_id': 'A'},
                                           402: {'chain_id': 'A', 'seq_id': 362, 'original_chain_id': 'A'}}},
-                'seq_id_remap': [{'chain_id': 'A', 'seq_id_dict': {1: 306, 2: 307, 3: 308, 4: 309, 5: 310, 6: 311, 7: 312, 8: 313, 9: 314, 10: 315,
-                                                                   11: 316, 12: 317, 13: 318, 14: 319, 15: 320, 16: 321, 17: 322, 18: 323, 19: 324, 20: 325,
-                                                                   21: 326, 22: 327, 23: 328, 24: 329, 25: 330, 26: 331, 27: 332, 28: 333, 29: 334, 30: 335,
-                                                                   31: 336, 32: 337, 33: 338, 34: 339, 35: 340, 36: 341, 37: 342, 38: 343, 39: 344, 40: 345,
-                                                                   41: 346, 42: 347, 43: 348, 44: 349, 45: 350, 46: 351, 47: 352, 48: 353, 49: 354, 50: 355,
+                'seq_id_remap': [{'chain_id': 'A', 'seq_id_dict': {1: 306, 2: 307, 3: 308, 4: 309, 5: 310,
+                                                                   6: 311, 7: 312, 8: 313, 9: 314, 10: 315,
+                                                                   11: 316, 12: 317, 13: 318, 14: 319, 15: 320,
+                                                                   16: 321, 17: 322, 18: 323, 19: 324, 20: 325,
+                                                                   21: 326, 22: 327, 23: 328, 24: 329, 25: 330,
+                                                                   26: 331, 27: 332, 28: 333, 29: 334, 30: 335,
+                                                                   31: 336, 32: 337, 33: 338, 34: 339, 35: 340,
+                                                                   36: 341, 37: 342, 38: 343, 39: 344, 40: 345,
+                                                                   41: 346, 42: 347, 43: 348, 44: 349, 45: 350,
+                                                                   46: 351, 47: 352, 48: 353, 49: 354, 50: 355,
                                                                    51: 356, 52: 357, 53: 358, 54: 359, 55: 360}},
-                                 {'chain_id': 'B', 'seq_id_dict': {1: 363, 2: 364, 3: 365, 4: 366, 5: 367, 6: 368, 7: 369, 8: 370, 9: 371, 10: 372}}]}
+                                 {'chain_id': 'B', 'seq_id_dict': {1: 363, 2: 364, 3: 365, 4: 366, 5: 367,
+                                                                   6: 368, 7: 369, 8: 370, 9: 371, 10: 372}}]}
     reader = CnsMRReader(True, reasons=reasons_)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mnz/2mnz-trimmed.mr',
@@ -1117,29 +1138,52 @@ if __name__ == "__main__":
                      '../../tests-nmr/mock-data-remediation/4apd/4apd.cif')
     print(reader_listener.getReasonsForReparsing())
 
-    mrAtomNameMapping_ = [{'auth_atom_id': 'HC1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HC2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HC3', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI3', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HA', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HA', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HB1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HB1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HB2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HB2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HD1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HD1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HE1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HE1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HZ', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HZ', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HE2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HE2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'HD2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HD2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
-                          {'auth_atom_id': 'H', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HN', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HA', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HA', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HB', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HB', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HG12', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG12', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HG11', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG11', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HG23', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG23', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HG21', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG21', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HG22', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG22', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HD11', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HD11', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HD12', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HD12', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HD13', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HD13', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HQ', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HQ', 'original_comp_id': 'ITZ', 'original_seq_id': 6}]
+    mrAtomNameMapping_ = [{'auth_atom_id': 'HC1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HI1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HC2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HI2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HC3', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HI3', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HA', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HA', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HB1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HB1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HB2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HB2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HD1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HD1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HE1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HE1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HZ', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HZ', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HE2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HE2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HD2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3,
+                           'original_atom_id': 'HD2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'H', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HN', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HA', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HA', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HB', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HB', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG12', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HG12', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG11', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HG11', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG23', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HG23', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG21', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HG21', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG22', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HG22', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HD11', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HD11', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HD12', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HD12', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HD13', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HD13', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HQ', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7,
+                           'original_atom_id': 'HQ', 'original_comp_id': 'ITZ', 'original_seq_id': 6}]
     reader = CnsMRReader(True, mrAtomNameMapping=mrAtomNameMapping_)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
@@ -1147,29 +1191,52 @@ if __name__ == "__main__":
                      '../../tests-nmr/mock-data-remediation/7l98/7l98.cif')
     print(reader_listener.getReasonsForReparsing())
 
-    mrAtomNameMapping_ = [{'auth_atom_id': 'H8', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAM', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'H9', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAI', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HAI', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAJ', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'H112', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAE', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'H111', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAF', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HAG', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAG', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'H12', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAH', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HAL', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAL', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HAK', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAK', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'H14', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAN', 'original_comp_id': '4FU', 'original_seq_id': 6},
-                          {'auth_atom_id': 'HAC', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAC', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'HAB', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAB', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'HAA', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAA', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'HAF', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAF', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'HAD', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAD', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'HAE', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAE', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'HAL', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAL', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'HAH', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAH', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'HAG', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'HAG', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'H', 'auth_comp_id': '4G6', 'auth_seq_id': 24, 'original_atom_id': 'H', 'original_comp_id': '4G6', 'original_seq_id': 24},
-                          {'auth_atom_id': 'H1', 'auth_comp_id': 'ACE', 'auth_seq_id': 30, 'original_atom_id': 'HA2', 'original_comp_id': 'ACE', 'original_seq_id': 30},
-                          {'auth_atom_id': 'H2', 'auth_comp_id': 'ACE', 'auth_seq_id': 30, 'original_atom_id': 'HA3', 'original_comp_id': 'ACE', 'original_seq_id': 30},
-                          {'auth_atom_id': 'H3', 'auth_comp_id': 'ACE', 'auth_seq_id': 30, 'original_atom_id': 'HA1', 'original_comp_id': 'ACE', 'original_seq_id': 30}]
+    mrAtomNameMapping_ = [{'auth_atom_id': 'H8', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAM', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'H9', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAI', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HAI', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAJ', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'H112', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAE', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'H111', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAF', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HAG', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAG', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'H12', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAH', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HAL', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAL', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HAK', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAK', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'H14', 'auth_comp_id': '4FU', 'auth_seq_id': 6,
+                           'original_atom_id': 'HAN', 'original_comp_id': '4FU', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HAC', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAC', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'HAB', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAB', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'HAA', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAA', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'HAF', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAF', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'HAD', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAD', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'HAE', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAE', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'HAL', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAL', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'HAH', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAH', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'HAG', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'HAG', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'H', 'auth_comp_id': '4G6', 'auth_seq_id': 24,
+                           'original_atom_id': 'H', 'original_comp_id': '4G6', 'original_seq_id': 24},
+                          {'auth_atom_id': 'H1', 'auth_comp_id': 'ACE', 'auth_seq_id': 30,
+                           'original_atom_id': 'HA2', 'original_comp_id': 'ACE', 'original_seq_id': 30},
+                          {'auth_atom_id': 'H2', 'auth_comp_id': 'ACE', 'auth_seq_id': 30,
+                           'original_atom_id': 'HA3', 'original_comp_id': 'ACE', 'original_seq_id': 30},
+                          {'auth_atom_id': 'H3', 'auth_comp_id': 'ACE', 'auth_seq_id': 30,
+                           'original_atom_id': 'HA1', 'original_comp_id': 'ACE', 'original_seq_id': 30}]
     reader = CnsMRReader(True, mrAtomNameMapping=mrAtomNameMapping_)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

@@ -72,7 +72,8 @@ class BareCSReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__polySeq = polySeq
-        self.__entityAssembly = entityAssembly  # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        self.__entityAssembly = entityAssembly
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU

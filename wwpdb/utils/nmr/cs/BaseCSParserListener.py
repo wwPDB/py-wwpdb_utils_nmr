@@ -371,7 +371,8 @@ class BaseCSParserListener():
 
                 self.seqAlign, _ = alignPolymerSequence(self.pA, self.polySeq, self.polySeqCs,
                                                         resolvedMultimer=self.reasons is not None)
-                self.chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.polySeqCs, self.seqAlign)
+                self.chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type,
+                                                                  self.polySeq, self.polySeqCs, self.seqAlign)
 
                 if len(self.seqAlign) == 0:
                     for c in range(1, MAX_CONFLICT_ATTEMPT):
@@ -483,7 +484,8 @@ class BaseCSParserListener():
 
                         if len(self.polySeq) == 1 and len(self.polySeqCs) == 1:
                             polySeqCs, chainIdMapping, _ =\
-                                splitPolySeqRstForExactNoes(self.pA, self.polySeq, self.polySeqCs, self.chainAssign)
+                                splitPolySeqRstForExactNoes(self.pA, self.polySeq, self.polySeqCs,
+                                                            self.chainAssign)
 
                             if polySeqCs is not None:
                                 self.polySeqCs = polySeqCs
@@ -528,7 +530,8 @@ class BaseCSParserListener():
                                             try:
                                                 seq_id_mapping[test_seq_id] =\
                                                     next(auth_seq_id for auth_seq_id, seq_id
-                                                         in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id'],
+                                                         in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model
+                                                                               else 'seq_id'],
                                                                 poly_seq_model['seq_id'])
                                                          if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                             except StopIteration:
@@ -537,7 +540,8 @@ class BaseCSParserListener():
 
                                     offset = None
                                     offsets = [v - k for k, v in seq_id_mapping.items()]
-                                    if len(offsets) > 0 and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                    if len(offsets) > 0\
+                                       and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
                                         offsets = collections.Counter(offsets).most_common()
                                         if len(offsets) > 1:
                                             offset = offsets[0][0]
@@ -560,14 +564,16 @@ class BaseCSParserListener():
                                     if any(True for k, v in seq_id_mapping.items() if k != v)\
                                        and not any(True for k, v in seq_id_mapping.items()
                                                    if v in poly_seq_model['seq_id']
-                                                   and k == poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id']
+                                                   and k == poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model
+                                                                           else 'seq_id']
                                                    [poly_seq_model['seq_id'].index(v)]):
                                         offsets = [v - k for k, v in seq_id_mapping.items()]
                                         offsets = collections.Counter(offsets).most_common()
                                         if len(offsets) == 1:
                                             offset = offsets[0][0]
                                             seq_id_mapping = {ref_seq_id - offset: ref_seq_id for ref_seq_id
-                                                              in poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id']}
+                                                              in poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model
+                                                                                else 'seq_id']}
                                         item = {'chain_id': ref_chain_id,
                                                 'seq_id_dict': seq_id_mapping,
                                                 'comp_id_set': list(set(poly_seq_model['comp_id']))}
@@ -621,8 +627,9 @@ class BaseCSParserListener():
 
                                     if len(seqIdRemapFailed) > 0:
                                         if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
-                                            seqIdRemap =\
-                                                self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                            seqIdRemap = []
+                                            if 'seq_id_remap' in self.reasonsForReParsing:
+                                                seqIdRemap = self.reasonsForReParsing['seq_id_remap']
                                             if len(seqIdRemap) != len(seqIdRemapFailed)\
                                                or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
@@ -903,7 +910,8 @@ class BaseCSParserListener():
 
             resIdTest = ASSIGNMENT_RESID_PAT.search(term)
             if resIdTest:
-                if term[0] == 'D' and len(term) == 3 and term[-1] in ('5', '3') and translateToStdResName(term, ccU=self.ccU) in self.compIdSet:
+                if term[0] == 'D' and len(term) == 3 and term[-1] in ('5', '3')\
+                   and translateToStdResName(term, ccU=self.ccU) in self.compIdSet:
                     pass
                 else:
                     resIdLike[idx] = True
@@ -928,7 +936,8 @@ class BaseCSParserListener():
                             resNameSpan[idx] = (index, index + len(compId))
                             minIndex = index
 
-            if hasOneLetterCodeSet and not useOneLetterCodeSet and resNameLike[idx] and len(term[resNameSpan[idx][0]:resNameSpan[idx][1]]) > 1:
+            if hasOneLetterCodeSet and not useOneLetterCodeSet and resNameLike[idx]\
+               and len(term[resNameSpan[idx][0]:resNameSpan[idx][1]]) > 1:
                 hasOneLetterCodeSet = False
 
             if with_compid is not None and len(with_compid) > 1:
@@ -1060,7 +1069,8 @@ class BaseCSParserListener():
                         # resolve concatenation of residue number and XPLOR-NIH atom nomenclature of proton,
                         # D1391HB -> res_id:139, res_name:'ASP', atom_name:'1HB'
                         # seen in 8e1d/bmr31038/work/data/D_1000267621_nmr-peaks-upload_P6.dat.V1
-                        if self.hasPolySeq and resIdLike[idx] and resNameLike[idx] and resIdSpan[idx][1] == term.rindex(elem) and elem == 'H'\
+                        if self.hasPolySeq and resIdLike[idx] and resNameLike[idx]\
+                           and resIdSpan[idx][1] == term.rindex(elem) and elem == 'H'\
                            and term[resIdSpan[idx][1] - 1] in ('1', '2', '3') and resIdSpan[idx][1] - resIdSpan[idx][0] > 3:
                             _resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
                             _compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
@@ -1124,7 +1134,8 @@ class BaseCSParserListener():
                                 if not ligand:
                                     continue
                         if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
-                           and ((index + 3 < len(term) and term[index + 3].isdigit() or (index + 4 < len(term) and term[index + 4].isdigit()))):
+                           and ((index + 3 < len(term) and term[index + 3].isdigit()
+                                 or (index + 4 < len(term) and term[index + 4].isdigit()))):
                             continue
                         if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                             continue
@@ -1685,7 +1696,8 @@ class BaseCSParserListener():
                         term = _str[idx]
                         if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
                            and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]\
-                           and any(True for _idx in range(idx + 1, lenStr) if __atomNameLike[_idx] or _atomNameLike[_idx] or atomNameLike[_idx]):
+                           and any(True for _idx in range(idx + 1, lenStr)
+                                   if __atomNameLike[_idx] or _atomNameLike[_idx] or atomNameLike[_idx]):
                             ___atomNameLike[idx] = False
                         else:
                             resNameLike[idx] = False
@@ -1873,7 +1885,8 @@ class BaseCSParserListener():
                 atomName = term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]
                 if self.hasPolySeq:
                     if segId is None and resName is None:
-                        chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName, src_index)
+                        chainAssign =\
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
                             if self.__defaultSegId is None:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
@@ -1934,10 +1947,9 @@ class BaseCSParserListener():
                                     # if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                                     if self.reasons is None:
-                                        if 'default_seg_id' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['default_seg_id'] = {}
-                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id']:
-                                            self.reasonsForReParsing['default_seg_id'][self.cur_list_id] = self.__defaultSegId
+                                        r = self.__getNamedReasonsForReparsing('default_seg_id')
+                                        if self.cur_list_id not in r:
+                                            r[self.cur_list_id] = self.__defaultSegId
                                 else:
                                     idx = 0
                                 segId = chainAssign[idx][0]
@@ -1975,7 +1987,8 @@ class BaseCSParserListener():
                 atomName = term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
                 if self.hasPolySeq:
                     if segId is None and resName is None:
-                        chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName, src_index)
+                        chainAssign =\
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
                             if self.__defaultSegId is None:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
@@ -2036,10 +2049,9 @@ class BaseCSParserListener():
                                     # if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                                     if self.reasons is None:
-                                        if 'default_seg_id' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['default_seg_id'] = {}
-                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id']:
-                                            self.reasonsForReParsing['default_seg_id'][self.cur_list_id] = self.__defaultSegId
+                                        r = self.__getNamedReasonsForReparsing('default_seg_id')
+                                        if self.cur_list_id not in r:
+                                            r[self.cur_list_id] = self.__defaultSegId
                                 else:
                                     idx = 0
                                 segId = chainAssign[idx][0]
@@ -2077,7 +2089,8 @@ class BaseCSParserListener():
                 atomName = term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
                 if self.hasPolySeq:
                     if segId is None and resName is None:
-                        chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName, src_index)
+                        chainAssign =\
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
                             if self.__defaultSegId is None:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
@@ -2138,10 +2151,9 @@ class BaseCSParserListener():
                                     # if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                                     if self.reasons is None:
-                                        if 'default_seg_id' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['default_seg_id'] = {}
-                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id']:
-                                            self.reasonsForReParsing['default_seg_id'][self.cur_list_id] = self.__defaultSegId
+                                        r = self.__getNamedReasonsForReparsing('default_seg_id')
+                                        if self.cur_list_id not in r:
+                                            r[self.cur_list_id] = self.__defaultSegId
                                 else:
                                     idx = 0
                                 segId = chainAssign[idx][0]
@@ -2181,7 +2193,8 @@ class BaseCSParserListener():
                 atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
                 if self.hasPolySeq:
                     if segId is None and resName is None:
-                        chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName, src_index)
+                        chainAssign =\
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
                             if self.__defaultSegId is None:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
@@ -2242,10 +2255,9 @@ class BaseCSParserListener():
                                     # if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                                     if self.reasons is None:
-                                        if 'default_seg_id' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['default_seg_id'] = {}
-                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id']:
-                                            self.reasonsForReParsing['default_seg_id'][self.cur_list_id] = self.__defaultSegId
+                                        r = self.__getNamedReasonsForReparsing('default_seg_id')
+                                        if self.cur_list_id not in r:
+                                            r[self.cur_list_id] = self.__defaultSegId
                                 else:
                                     idx = 0
                                 segId = chainAssign[idx][0]
@@ -2345,10 +2357,9 @@ class BaseCSParserListener():
                                         # if self.__defaultSegId is None:
                                         self.__defaultSegId = chainAssign[idx][0]
                                         if self.reasons is None:
-                                            if 'default_seg_id' not in self.reasonsForReParsing:
-                                                self.reasonsForReParsing['default_seg_id'] = {}
-                                            if self.cur_list_id not in self.reasonsForReParsing['default_seg_id']:
-                                                self.reasonsForReParsing['default_seg_id'][self.cur_list_id] = self.__defaultSegId
+                                            r = self.__getNamedReasonsForReparsing('default_seg_id')
+                                            if self.cur_list_id not in r:
+                                                r[self.cur_list_id] = self.__defaultSegId
                                     else:
                                         idx = 0
                                     segId = chainAssign[idx][0]
@@ -2421,7 +2432,8 @@ class BaseCSParserListener():
                     return ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
         if 'Check the 1th row of' in self.getCurrentAssignment(-1) and isFirstTrial and isPolySeq\
            and (self.reasons is None
-                or not ('seq_id_remap' in self.reasons or 'chain_seq_id_remap' in self.reasons or 'ext_chain_seq_id_remap' in self.reasons)):
+                or not ('seq_id_remap' in self.reasons or 'chain_seq_id_remap' in self.reasons
+                        or 'ext_chain_seq_id_remap' in self.reasons)):
             try:
                 if not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])
                            for _ps in self.polySeq):
@@ -2660,7 +2672,8 @@ class BaseCSParserListener():
                         if comp_id_unmatched_with(ps, cifCompId):
                             continue
                         if cifCompId != compId:
-                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
+                            compIds = [_compId for _seqId, _compId
+                                       in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
                                        if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
@@ -2703,7 +2716,8 @@ class BaseCSParserListener():
                         if comp_id_unmatched_with(ps, cifCompId):
                             continue
                         if cifCompId != compId:
-                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
+                            compIds = [_compId for _seqId, _compId
+                                       in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
                                        if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
@@ -3021,7 +3035,8 @@ class BaseCSParserListener():
                         if comp_id_unmatched_with(ps, cifCompId):
                             continue
                         if cifCompId != compId:
-                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
+                            compIds = [_compId for _seqId, _compId
+                                       in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
                                        if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
@@ -3064,7 +3079,8 @@ class BaseCSParserListener():
                         if comp_id_unmatched_with(ps, cifCompId):
                             continue
                         if cifCompId != compId:
-                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
+                            compIds = [_compId for _seqId, _compId
+                                       in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
                                        if _seqId == seqId]
                             if compId in compIds:
                                 cifCompId = compId
@@ -3532,7 +3548,8 @@ class BaseCSParserListener():
                 if details is not None:
                     if atomId != __atomId:
                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, __atomId, leave_unmatched=True)
-                    elif len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in PSE_PRO_BEGIN_CODE or atomId[0] in ('C', 'N', 'P', 'F')):
+                    elif len(atomId) > 1 and not atomId[-1].isalpha()\
+                            and (atomId[0] in PSE_PRO_BEGIN_CODE or atomId[0] in ('C', 'N', 'P', 'F')):
                         _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
                         if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                             _atomId = [_atomId[int(atomId[-1]) - 1]]
@@ -3927,12 +3944,17 @@ class BaseCSParserListener():
                 f"(list_id={self.cur_list_id}, index={n}), {self.__def_err_sf_framecode}] "
         return ''
 
+    def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        if name in self.reasonsForReParsing:
+            return self.reasonsForReParsing[name]
+        self.reasonsForReParsing[name] = {}
+        return self.reasonsForReParsing[name]
+
     def __setLocalSeqScheme(self):
-        if 'local_seq_scheme' not in self.reasonsForReParsing:
-            self.reasonsForReParsing['local_seq_scheme'] = {}
+        r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.cur_subtype == 'chem_shift':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.cur_list_id, self.chemShifts)] = preferAuthSeq
+            r[(self.cur_subtype, self.cur_list_id, self.chemShifts)] = preferAuthSeq
         if not preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
@@ -3980,7 +4002,8 @@ class BaseCSParserListener():
 
         restraint_name = getRestraintName(self.cur_subtype)
 
-        sf_framecode = (f'{self.software_name}_' if self.software_name is not None else '') + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = (f'{self.software_name}_' if self.software_name is not None else '')\
+            + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName)
 

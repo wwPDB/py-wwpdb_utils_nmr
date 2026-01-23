@@ -7,7 +7,8 @@
 # 20-Nov-2020  M. Yokochi - add unit test for HEM, HEB, HEC (DAOTHER-6366)
 # 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 22-Apr-2024  M. Yokochi - add unit test to verify BMRB CS statistics are filtered by CCD (DAOTHER-9317)
-# 22-Apr-2024  M. Yokochi - add unit test to update BMRB CS statistics from https://bmrb.io/ftp/pub/bmrb/statistics/chem_shifts/ (DAOTHER-9317)
+# 22-Apr-2024  M. Yokochi - add unit test to update BMRB CS statistics from https://bmrb.io/ftp/pub/bmrb/statistics/chem_shifts/
+#                           (DAOTHER-9317)
 ##
 import unittest
 

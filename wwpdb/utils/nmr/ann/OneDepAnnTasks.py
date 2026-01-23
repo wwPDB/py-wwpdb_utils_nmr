@@ -337,27 +337,42 @@ class OneDepAnnTasks:
                             '_Assigned_chem_shift_list', 'Chem_shift_reference_label', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id',
                             '_Assigned_chem_shift_list', 'Sample_condition_list_ID', 1, None),
-                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list',
-                            'conditions_label', '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'data_file_name', '_Assigned_chem_shift_list', 'Data_file_name', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'details', '_Assigned_chem_shift_list', 'Details', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'entry_id', '_Assigned_chem_shift_list', 'Entry_ID', 1, None),
+                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id',
+                           #  '_Sample_condition_list', 'ID', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_label',
+                            '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'data_file_name',
+                            '_Assigned_chem_shift_list', 'Data_file_name', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'details',
+                            '_Assigned_chem_shift_list', 'Details', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'entry_id',
+                            '_Assigned_chem_shift_list', 'Entry_ID', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'error_derivation_method',
                             '_Assigned_chem_shift_list', 'Error_derivation_method', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'id', '_Assigned_chem_shift_list', 'ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'label', '_Assigned_chem_shift_list', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'carbon_shifts_flag', '_Chem_shift_reference', 'Carbon_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'details', '_Chem_shift_reference', 'Details', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'entry_id', '_Chem_shift_reference', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'id', '_Chem_shift_reference', 'ID', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'label', '_Chem_shift_reference', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'nitrogen_shifts_flag', '_Chem_shift_reference', 'Nitrogen_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'other_shifts_flag', '_Chem_shift_reference', 'Other_shifts_flag', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'id',
+                            '_Assigned_chem_shift_list', 'ID', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'label',
+                            '_Assigned_chem_shift_list', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'details',
+                            '_Chem_shift_reference', 'Details', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'entry_id',
+                            '_Chem_shift_reference', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'id',
+                            '_Chem_shift_reference', 'ID', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'label',
+                            '_Chem_shift_reference', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'proton_shifts_flag',
+                            '_Chem_shift_reference', 'Proton_shifts_flag', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'carbon_shifts_flag',
+                            '_Chem_shift_reference', 'Carbon_shifts_flag', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'nitrogen_shifts_flag',
+                            '_Chem_shift_reference', 'Nitrogen_shifts_flag', 1, None),
                            ('pdbx_nmr_chem_shift_reference', 'phosphorus_shifts_flag',
                             '_Chem_shift_reference', 'Phosphorus_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_reference', 'proton_shifts_flag', '_Chem_shift_reference', 'Proton_shifts_flag', 1, None),
-                           ('pdbx_nmr_chem_shift_software', 'software_label', '_Software', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_chem_shift_reference', 'other_shifts_flag',
+                            '_Chem_shift_reference', 'Other_shifts_flag', 1, None),
+                           ('pdbx_nmr_chem_shift_software', 'software_label',
+                            '_Software', 'Sf_framecode', 1, None),
                            ('pdbx_nmr_ensemble', 'average_constraint_violations_per_residue',
                             '_Constraint_stat_list', 'Constr_violations_per_residue_avg', 1, None),
                            ('pdbx_nmr_ensemble', 'average_constraints_per_residue',
@@ -365,65 +380,104 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_ensemble', 'conformer_selection_criteria',
                             '_Conformer_stat_list', 'Conformer_selection_criteria', 1, None),
                            ('pdbx_nmr_ensemble',
-                            'conformers_calculated_total_number', '_Conformer_stat_list', 'Conformer_calculated_total_num', 1, None),
+                            'conformers_calculated_total_number',
+                            '_Conformer_stat_list', 'Conformer_calculated_total_num', 1, None),
                            ('pdbx_nmr_ensemble',
-                            'conformers_submitted_total_number', '_Conformer_stat_list', 'Conformer_submitted_total_num', 1, None),
+                            'conformers_submitted_total_number',
+                            '_Conformer_stat_list', 'Conformer_submitted_total_num', 1, None),
                            ('pdbx_nmr_ensemble', 'distance_constraint_violation_method',
                             '_Constraint_stat_list', 'Dist_constr_violat_stat_calc_method', 1, None),
-                           ('pdbx_nmr_ensemble', 'entry_id', '_Conformer_stat_list', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_ensemble', 'representative_conformer', '_Conformer_stat_list', 'Representative_conformer', 1, None),
-                           # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
+                           ('pdbx_nmr_ensemble', 'entry_id',
+                            '_Conformer_stat_list', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_ensemble', 'representative_conformer',
+                            '_Conformer_stat_list', 'Representative_conformer', 1, None),
+                           # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id',
+                           #  '_Sample_condition_list', 'ID', 1, None),
                            # replaced by
-                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'Sf_framecode', 1, None),
-                           # ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_representative', 'conformer_id', '_Conformer_stat_list', 'Representative_conformer', 1, None),
+                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id',
+                            '_Sample_condition_list', 'Sf_framecode', 1, None),
+                           # ('pdbx_nmr_exptl_sample_conditions', 'label',
+                           #  '_Sample_condition_list', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_representative', 'conformer_id',
+                            '_Conformer_stat_list', 'Representative_conformer', 1, None),
                            ('pdbx_nmr_representative', 'entry_id',
                             '_Conformer_stat_list', 'Entry_ID', 1, None),
                            ('pdbx_nmr_representative', 'selection_criteria',
                             '_Conformer_stat_list', 'Rep_conformer_selection_criteria', 1, None),
-                           ('pdbx_nmr_sample_details', 'contents', '_Sample', 'Details', 1, 0),
-                           ('pdbx_nmr_sample_details', 'solution_id', '_Sample', 'ID', 1, None),
-                           ('pdbx_nmr_sample_details', 'solvent_system', '_Sample', 'Solvent_system', 1, None),
-                           ('pdbx_nmr_sample_details', 'type', '_Sample', 'Type', 1, None),
+                           ('pdbx_nmr_sample_details', 'contents',
+                            '_Sample', 'Details', 1, 0),
+                           ('pdbx_nmr_sample_details', 'solution_id',
+                            '_Sample', 'ID', 1, None),
+                           ('pdbx_nmr_sample_details', 'solvent_system',
+                            '_Sample', 'Solvent_system', 1, None),
+                           ('pdbx_nmr_sample_details', 'type',
+                            '_Sample', 'Type', 1, None),
                            # add pdbx_nmr_sample_details.label
-                           ('pdbx_nmr_sample_details', 'label', '_Sample', 'Sf_framecode', 1, None),
-                           # ('pdbx_nmr_software', 'authors', '_Software', 'ID', 5, None),
-                           ('pdbx_nmr_software', 'details', '_Software', 'Details', 1, None),
-                           ('pdbx_nmr_software', 'details', '_Spectral_peak_list', 'Text_data_format', 1, None),
+                           ('pdbx_nmr_sample_details', 'label',
+                            '_Sample', 'Sf_framecode', 1, None),
+                           # ('pdbx_nmr_software', 'authors',
+                           #  '_Software', 'ID', 5, None),
+                           ('pdbx_nmr_software', 'details',
+                            '_Software', 'Details', 1, None),
+                           ('pdbx_nmr_software', 'details',
+                            '_Spectral_peak_list', 'Text_data_format', 1, None),
                            # map_code '-11' indicates children loops has metadata to be merged
-                           ('pdbx_nmr_software', 'name', '_Software', 'Name', -11, None),
-                           # ('pdbx_nmr_software', 'name', '_Software', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_software', 'ordinal', '_Software', 'ID', 1, None),
-                           ('pdbx_nmr_software', 'version', '_Software', 'Version', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'conditions_id', '_Spectral_peak_list', 'Sample_condition_list_ID', 1, None),
+                           ('pdbx_nmr_software', 'name',
+                            '_Software', 'Name', -11, None),
+                           # ('pdbx_nmr_software', 'name',
+                           #  '_Software', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_software', 'ordinal',
+                            '_Software', 'ID', 1, None),
+                           ('pdbx_nmr_software', 'version',
+                            '_Software', 'Version', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'conditions_id',
+                            '_Spectral_peak_list', 'Sample_condition_list_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_list.conditions_label
-                           ('pdbx_nmr_spectral_peak_list', 'conditions_label', '_Spectral_peak_list', 'Sample_condition_list_label', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'data_file_name', '_Spectral_peak_list', 'Data_file_name', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'details', '_Spectral_peak_list', 'Details', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'entry_id', '_Spectral_peak_list', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'experiment_id', '_Spectral_peak_list', 'Experiment_ID', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'id', '_Spectral_peak_list', 'ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'conditions_label',
+                            '_Spectral_peak_list', 'Sample_condition_list_label', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'data_file_name',
+                            '_Spectral_peak_list', 'Data_file_name', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'details',
+                            '_Spectral_peak_list', 'Details', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'entry_id',
+                            '_Spectral_peak_list', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'experiment_id',
+                            '_Spectral_peak_list', 'Experiment_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'id',
+                            '_Spectral_peak_list', 'ID', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'number_of_spectral_dimensions',
                             '_Spectral_peak_list', 'Number_of_spectral_dimensions', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'solution_id', '_Spectral_peak_list', 'Sample_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'solution_id',
+                            '_Spectral_peak_list', 'Sample_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_list.solution_label
-                           ('pdbx_nmr_spectral_peak_list', 'solution_label', '_Spectral_peak_list', 'Sample_label', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'solution_label',
+                            '_Spectral_peak_list', 'Sample_label', 1, None),
                            # add pdbx_nmr_spectral_peak_list.assigned_chem_shift_list_id
                            ('pdbx_nmr_spectral_peak_list',
-                            'assigned_chem_shift_list_id', '_Spectral_peak_list', 'Assigned_chem_shift_list_ID', 1, None),
+                            'assigned_chem_shift_list_id',
+                            '_Spectral_peak_list', 'Assigned_chem_shift_list_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_list.assigned_chem_shift_list_label
                            ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_label',
                             '_Spectral_peak_list', 'Assigned_chem_shift_list_label', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Software', 'Details', 1, None),
-                           ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Spectral_peak_list', 'Text_data_format', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'text_data_format',
+                            '_Software', 'Details', 1, None),
+                           ('pdbx_nmr_spectral_peak_list', 'text_data_format',
+                            '_Spectral_peak_list', 'Text_data_format', 1, None),
                            # add pdbx_nmr_spectral_peak_list.label
-                           ('pdbx_nmr_spectral_peak_list', 'label', '_Spectral_peak_list', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_spectrometer', 'details', '_NMR_spectrometer', 'Details', 1, None),
-                           ('pdbx_nmr_spectrometer', 'field_strength', '_NMR_spectrometer', 'Field_strength', 1, None),
-                           ('pdbx_nmr_spectrometer', 'manufacturer', '_NMR_spectrometer', 'Manufacturer', 1, None),
-                           ('pdbx_nmr_spectrometer', 'model', '_NMR_spectrometer', 'Model', 1, None),
-                           ('pdbx_nmr_spectrometer', 'name', '_NMR_spectrometer', 'Sf_framecode', 1, None),
-                           ('pdbx_nmr_spectrometer', 'spectrometer_id', '_NMR_spectrometer', 'ID', 1, None)
+                           ('pdbx_nmr_spectral_peak_list', 'label',
+                            '_Spectral_peak_list', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_spectrometer', 'details',
+                            '_NMR_spectrometer', 'Details', 1, None),
+                           ('pdbx_nmr_spectrometer', 'field_strength',
+                            '_NMR_spectrometer', 'Field_strength', 1, None),
+                           ('pdbx_nmr_spectrometer', 'manufacturer',
+                            '_NMR_spectrometer', 'Manufacturer', 1, None),
+                           ('pdbx_nmr_spectrometer', 'model',
+                            '_NMR_spectrometer', 'Model', 1, None),
+                           ('pdbx_nmr_spectrometer', 'name',
+                            '_NMR_spectrometer', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_spectrometer', 'spectrometer_id',
+                            '_NMR_spectrometer', 'ID', 1, None)
                            ]
 
         self.__uniqSfTagMap = []
@@ -542,8 +596,10 @@ class OneDepAnnTasks:
                             -33, '_Sample_condition_list.Sf_framecode'),
                            ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength', '_Sample_condition_variable', 'Type', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength', '_Sample_condition_variable', 'Val', -22, 0),
-                           ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_err', '_Sample_condition_variable', 'Val_err', -22, None),
-                           ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_units', '_Sample_condition_variable', 'Val_units', -22, None),
+                           ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_err',
+                            '_Sample_condition_variable', 'Val_err', -22, None),
+                           ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_units',
+                            '_Sample_condition_variable', 'Val_units', -22, None),
                            ('pdbx_nmr_exptl_sample_conditions', 'pH', '_Sample_condition_variable', 'Type', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'pH', '_Sample_condition_variable', 'Val', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'pH_err', '_Sample_condition_variable', 'Val_err', -22, None),
@@ -575,7 +631,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectral_dim', 'atom_isotope_number', '_Spectral_dim', 'Atom_isotope_number', 1, None),
                            ('pdbx_nmr_spectral_dim', 'atom_type', '_Spectral_dim', 'Atom_type', 1, None),
                            ('pdbx_nmr_spectral_dim', 'center_frequency_offset', '_Spectral_dim', 'Center_frequency_offset', 1, None),
-                           ('pdbx_nmr_spectral_dim', 'encoded_source_dimension_id', '_Spectral_dim', 'Encoded_reduced_dimension_ID', 1, None),
+                           ('pdbx_nmr_spectral_dim', 'encoded_source_dimension_id',
+                            '_Spectral_dim', 'Encoded_reduced_dimension_ID', 1, None),
                            ('pdbx_nmr_spectral_dim', 'encoding_code', '_Spectral_dim', 'Encoding_code', 1, None),
                            ('pdbx_nmr_spectral_dim', 'entry_id', '_Spectral_dim', 'Entry_ID', 1, None),
                            ('pdbx_nmr_spectral_dim', 'id', '_Spectral_dim', 'ID', 1, None),
@@ -623,7 +680,8 @@ class OneDepAnnTasks:
                     break
             self.__uniqLpCatMap[cif_category] = (sf_tag_prefix, lp_categories)
 
-        # adit_item_tbl_o.csv is derived from onedep2bmrb @see https://github.com/bmrb-io/onedep2bmrb/blob/master/testfiles/adit_item_tbl_o.csv
+        # adit_item_tbl_o.csv is derived from onedep2bmrb
+        # @see https://github.com/bmrb-io/onedep2bmrb/blob/master/testfiles/adit_item_tbl_o.csv
 
         # """
         # self.__defSfTag = []
@@ -1330,7 +1388,9 @@ class OneDepAnnTasks:
 
         for page in NMRIF_PAGES:
 
-            for sf_category, sf_tag_prefix, new_flag in zip(NMRIF_SF_CATEGORIES[page], NMRIF_SF_TAG_PREFIXES[page], NMRIF_SF_NEW_FLAG[page]):
+            for sf_category, sf_tag_prefix, new_flag in zip(NMRIF_SF_CATEGORIES[page],
+                                                            NMRIF_SF_TAG_PREFIXES[page],
+                                                            NMRIF_SF_NEW_FLAG[page]):
 
                 cif_categories = set(tag_map[0] for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix)
                 if len(cif_categories) == 0:
@@ -1456,11 +1516,13 @@ class OneDepAnnTasks:
                                                     set_sf_tag(sf, 'ID', list_id_dict[list_id])
                                                 else:
                                                     try:
-                                                        sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', str(list_id))[0]
+                                                        sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID',
+                                                                                                          str(list_id))[0]
                                                         set_sf_tag(sf, 'ID', str(list_id))
                                                     except IndexError:
                                                         try:
-                                                            sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', list_id)[0]
+                                                            sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID',
+                                                                                                              list_id)[0]
                                                             set_sf_tag(sf, 'ID', str(list_id))
                                                         except IndexError:
                                                             sf = None
@@ -1691,8 +1753,9 @@ class OneDepAnnTasks:
                                                     if map_code != -22:
                                                         _row[col] = row[cif_tag]
                                                         # replace too long value of _pdbx_nmr_software.authors if possible
-                                                        if page == 'software' and bmrb_annotation and lp_category == '_Vendor' and tag == 'Name'\
-                                                           and len(_row[col]) > 80 and get_first_sf_tag(sf, 'Name').lower() in software_vendor:
+                                                        if page == 'software' and bmrb_annotation and lp_category == '_Vendor'\
+                                                           and tag == 'Name' and len(_row[col]) > 80\
+                                                           and get_first_sf_tag(sf, 'Name').lower() in software_vendor:
                                                             _row[col] = software_vendor[get_first_sf_tag(sf, 'Name').lower()]
                                                         has_uniq_lp_row = True
                                                     # @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
@@ -2116,8 +2179,10 @@ class OneDepAnnTasks:
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
                                         _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
-                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
-                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps
+                                                              if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps
+                                                             if tag_map[3] == tag) for tag in _lp_tags]
 
                                         dat = lp.get_tag(_lp_tags)
 
@@ -2176,8 +2241,10 @@ class OneDepAnnTasks:
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
                                         _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
-                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
-                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps
+                                                              if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps
+                                                             if tag_map[3] == tag) for tag in _lp_tags]
 
                                         dat = lp.get_tag(_lp_tags)
 

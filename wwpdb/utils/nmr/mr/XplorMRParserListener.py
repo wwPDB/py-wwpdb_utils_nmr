@@ -479,7 +479,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
-    def enterDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
+    def enterDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext
+                                            ):  # pylint: disable=unused-argument
         self.in_block = True
 
         self.classification = '.'
@@ -491,7 +492,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.addSf('diffusion anisotropy restraint')
 
     # Exit a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
-    def exitDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
+    def exitDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext
+                                           ):  # pylint: disable=unused-argument
         self.in_block = False
 
         if self.createSfDict:
@@ -726,7 +728,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.noePotential = 'biharmonic'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'NOE' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'NOE' statements. "
                               f"Instead, set the default potential {self.noePotential!r}.")
 
         elif ctx.Averaging_methods():
@@ -742,7 +745,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.noeAverage = 'r-6'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method for the 'NOE' statements. "
+                              f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method "
+                              "for the 'NOE' statements. "
                               f"Instead, set the default method {self.noeAverage!r}.")
 
         elif ctx.SqExponent():
@@ -752,7 +756,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.squareExponent = self.evaluate[self.squareExponent]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.squareExponent = 2.0
             if self.squareExponent is None or self.squareExponent <= 0.0:
                 self.f.append("[Invalid data] "
@@ -767,7 +772,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.softExponent = self.evaluate[self.softExponent]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.softExponent!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.softExponent!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.softExponent = 2.0
             if self.softExponent is None or self.softExponent <= 0.0:
                 self.f.append("[Invalid data] "
@@ -782,7 +788,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.squareConstant = self.evaluate[self.squareConstant]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.squareConstant!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.squareConstant!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.squareConstant = 20.0
             if self.squareConstant is None or self.squareConstant <= 0.0:
                 self.f.append("[Invalid data] "
@@ -797,7 +804,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.squareOffset = self.evaluate[self.squareOffset]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.squareOffset!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.squareOffset!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.squareOffset = 0.0
             if self.squareOffset is None or self.squareOffset < 0.0:
                 self.f.append("[Invalid data] "
@@ -812,7 +820,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.rSwitch = self.evaluate[self.rSwitch]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.rSwitch = 10.0
             if self.rSwitch is None or self.rSwitch < 0.0:
                 self.f.append("[Invalid data] "
@@ -827,7 +836,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.scale = self.evaluate[self.scale]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.scale!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.scale = 1.0
             if self.scale is None or self.scale == 0.0:
                 self.f.append("[Range value warning] "
@@ -845,7 +855,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.asymptote = self.evaluate[self.asymptote]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.asymptote!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.asymptote!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.asymptote = 0.0
             if self.asymptote is None:
                 self.f.append("[Range value warning] "
@@ -865,7 +876,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.B_high = self.evaluate[self.B_high]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.B_high!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.B_high!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.B_high = 0.01
             if self.B_high is None:
                 self.f.append("[Range value warning] "
@@ -885,7 +897,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.ceiling = self.evaluate[self.ceiling]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.ceiling!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.ceiling!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.ceiling = 30.0
             if self.ceiling is None:
                 self.f.append("[Range value warning] "
@@ -905,7 +918,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.temperature = self.evaluate[self.temperature]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.temperature!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.temperature!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.temperature = 300.0
             if self.temperature is None:
                 self.f.append("[Range value warning] "
@@ -1043,7 +1057,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 self.exitTenso_assign(ctx)
                                 return
 
-                        elif abs(seq_id_1 - seq_id_2) == 1 and self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
+                        elif abs(seq_id_1 - seq_id_2) == 1\
+                                and self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
                                 ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
                                  or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')):
                             self.distRestraints -= 1
@@ -1165,8 +1180,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -1311,14 +1328,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append("[Unsupported data] "
                                   f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' "
-                                  f"where the symbol {self.scale!r} is not defined so that set the default value.")
+                                  f"where the symbol {self.scale!r} is not defined "
+                                  "so that set the default value.")
                     self.scale = 1.0
             if self.scale < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' must not be a negative value.")
+                              f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' "
+                              "must not be a negative value.")
             elif self.scale == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' should be a positive value.")
+                              f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' "
+                              "should be a positive value.")
 
         elif ctx.Reset():
             self.scale = 1.0
@@ -1508,7 +1528,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'SANIsotropy' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'SANIsotropy' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
@@ -1693,12 +1714,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             if chain_id_1 != chain_id_2:
                 if self.symmetric == 'no':
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps1 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                       "Found inter-chain RDC vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -1708,7 +1732,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1724,14 +1749,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 if self.symmetric == 'no':
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found zero RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -1742,12 +1769,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if atom_id_1[0] in PROTON_BEGIN_CODE and atom_id_2[0] in PROTON_BEGIN_CODE:
                             self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                           "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
-                                          f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "
-                                          "Did you accidentally select 'SANIsotropy' statement, instead of 'XDIPolar' statement of XPLOR-NIH?")
+                                          f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                          f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "
+                                          "Did you accidentally select 'SANIsotropy' statement, "
+                                          "instead of 'XDIPolar' statement of XPLOR-NIH?")
                         else:
                             self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                           "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
-                                          f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                          f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                          f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:
@@ -1809,7 +1839,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'XDIPolar' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'XDIPolar' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Averaging_methods():
@@ -1823,7 +1854,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.average = 'sum'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method for the 'XDIPolar' statements. "
+                              f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method "
+                              "for the 'XDIPolar' statements. "
                               f"Instead, set the default method {self.average!r}.")
 
         elif ctx.Scale():
@@ -1833,14 +1865,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.scale = self.evaluate[self.scale]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.scale!r} in the 'XDIPolar' statement is not defined so that set the default value.")
+                                  f"The symbol {self.scale!r} in the 'XDIPolar' statement is not defined "
+                                  "so that set the default value.")
                     self.scale = 1.0
             if self.scale < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' must not be a negative value.")
+                              f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' "
+                              "must not be a negative value.")
             elif self.scale == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' should be a positive value.")
+                              f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' "
+                              "should be a positive value.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2141,7 +2176,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain RDC vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
@@ -2151,7 +2187,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                       "Found inter-residue RDC vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2167,13 +2204,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                       "Found inter-residue RDC vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found zero RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2183,7 +2222,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                           "Found an RDC vector over multiple covalent bonds in the 'VEANgle' statement; "
-                                          f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                          f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                          f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             if self.createSfDict:
                 self.cur_subtype = 'dihed'
@@ -2333,7 +2373,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -2343,7 +2384,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2359,13 +2401,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero RDC vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2375,7 +2419,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                       "Found an RDC vector over multiple covalent bonds in the 'TENSOr' statement; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:
@@ -2426,7 +2471,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'ANISotropy' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'ANISotropy' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
@@ -2513,12 +2559,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps1 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain RDC vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
@@ -2528,7 +2577,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                       "Found inter-residue RDC vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2544,13 +2594,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                       "Found inter-residue RDC vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found zero RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2560,7 +2612,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                           "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "
-                                          f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                          f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                          f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             if self.createSfDict:
                 self.cur_subtype = 'dihed'
@@ -2632,14 +2685,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append("[Unsupported data] "
                                   f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "
-                                  f"where the symbol {self.planeWeight!r} is not defined so that set the default value.")
+                                  f"where the symbol {self.planeWeight!r} is not defined "
+                                  "so that set the default value.")
                     self.planeWeight = 300.0
             if self.planeWeight < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' must not be a negative value.")
+                              f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "
+                              "must not be a negative value.")
             elif self.planeWeight == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' should be a positive value.")
+                              f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "
+                              "should be a positive value.")
 
     # Exit a parse tree produced by XplorMRParser#group_statement.
     def exitGroup_statement(self, ctx: XplorMRParser.Group_statementContext):  # pylint: disable=unused-argument
@@ -2846,7 +2902,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.debug:
                 print(f"subtype={self.cur_subtype} (XADC) id={self.adistRestraints} "
                       f"atom1={atom1} atom2={atom2} "
-                      f"expectaion_value={self.adistExpectValue} max_distance={self.adistSizeMaxDist} force_constant={self.adistForceConst}")
+                      f"expectaion_value={self.adistExpectValue} max_distance={self.adistSizeMaxDist} "
+                      f"force_constant={self.adistForceConst}")
             if self.createSfDict and sf is not None:
                 sf['index_id'] += 1
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
@@ -2865,7 +2922,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'COUPling' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'COUPling' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
@@ -3008,7 +3066,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain J-coupling vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
@@ -3016,7 +3075,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                       "Found inter-residue J-coupling vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -3037,13 +3097,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                       "Found inter-residue J-coupling vector; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found zero J-coupling vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             if self.createSfDict:
@@ -3142,7 +3204,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'CARBon' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'CARBon' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
@@ -3372,7 +3435,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PROTONshift' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'PROTONshift' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
@@ -3683,12 +3747,14 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} atom6={atom6}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
-    def enterProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
+    def enterProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext
+                                            ):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
         self.g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
-    def exitProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
+    def exitProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext
+                                           ):  # pylint: disable=unused-argument
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] == 'H' or atom1['atom_id'].startswith('HA'):
                 pass
@@ -3711,14 +3777,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append("[Unsupported data] "
                                   f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' "
-                                  f"where the symbol {self.ramaScale!r} is not defined so that set the default value.")
+                                  f"where the symbol {self.ramaScale!r} is not defined "
+                                  "so that set the default value.")
                     self.ramaScale = 1.0
             if self.ramaScale < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' must not be a negative value.")
+                              f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' "
+                              "must not be a negative value.")
             elif self.ramaScale == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' should be a positive value.")
+                              f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' "
+                              "should be a positive value.")
 
         elif ctx.Cutoff():
             self.ramaCutoff = self.getNumber_s(ctx.number_s(0))
@@ -3852,18 +3921,22 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain dihedral angle vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found inter-residue dihedral angle vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -3878,13 +3951,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-residue dihedral angle vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero dihedral angle vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -3894,7 +3969,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found an dihedral angle vector over multiple covalent bonds in the 'RAMAchandran' statement; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
         if self.createSfDict:
@@ -3949,14 +4025,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append("[Unsupported data] "
                                   f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' "
-                                  f"where the symbol {self.radiScale!r} is not defined so that set the default value.")
+                                  f"where the symbol {self.radiScale!r} is not defined "
+                                  "so that set the default value.")
                     self.radiScale = 1.0
             if self.radiScale < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' must not be a negative value.")
+                              f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' "
+                              "must not be a negative value.")
             elif self.radiScale == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' should be a positive value.")
+                              f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' "
+                              "should be a positive value.")
 
         elif ctx.Reset():
             self.radiScale = 1.0
@@ -4055,7 +4134,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.diffPotential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DANIsotropy' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'DANIsotropy' statements. "
                               f"Instead, set the default potential {self.diffPotential!r}.")
 
         elif ctx.Type():
@@ -4140,19 +4220,23 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain diffusion anisotropy vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                 self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                               "Found inter-residue diffusion anisotropy vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -4168,13 +4252,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue diffusion anisotropy vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero diffusion anisotropy vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -4183,8 +4269,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                      "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      "Found a diffusion anisotropy vector over multiple covalent bonds "
+                                      "in the 'DANIsotropy' statement; "
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.createSfDict:
@@ -4450,7 +4538,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DCSA' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'DCSA' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Scale():
@@ -4461,14 +4550,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append("[Unsupported data] "
                                   f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' "
-                                  f"where the symbol {self.scale!r} is not defined so that set the default value.")
+                                  f"where the symbol {self.scale!r} is not defined "
+                                  "so that set the default value.")
                     self.scale = 1.0
             if self.scale < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' must not be a negative value.")
+                              f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' "
+                              "must not be a negative value.")
             elif self.scale == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' should be a positive value.")
+                              f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' "
+                              "should be a positive value.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -4730,7 +4822,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PCSA' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'PCSA' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Scale():
@@ -4741,14 +4834,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append("[Unsupported data] "
                                   f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' "
-                                  f"where the symbol {self.scale!r} is not defined so that set the default value.")
+                                  f"where the symbol {self.scale!r} is not defined "
+                                  "so that set the default value.")
                     self.scale = 1.0
             if self.scale < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' must not be a negative value.")
+                              f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' "
+                              "must not be a negative value.")
             elif self.scale == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' should be a positive value.")
+                              f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' "
+                              "should be a positive value.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -4825,7 +4921,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PMAGnetic' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for the 'PMAGnetic' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
@@ -4838,7 +4935,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"The classification of '{str(ctx.Kconst())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.")
+                              f"The classification of '{str(ctx.Kconst())}={_classification!r} "
+                              f"{self.getNumber_s(ctx.number_s(0))}' is unknown.")
                 return
             self.preParameterDict[_classification]['k_const'] = self.getNumber_s(ctx.number_s(0))
 
@@ -4846,7 +4944,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"The classification of '{str(ctx.Omega())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.")
+                              f"The classification of '{str(ctx.Omega())}={_classification!r} "
+                              f"{self.getNumber_s(ctx.number_s(0))}' is unknown.")
                 return
             self.preParameterDict[_classification]['omega'] = self.getNumber_s(ctx.number_s(0))
 
@@ -4854,7 +4953,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"The classification of '{str(ctx.Tauc())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.")
+                              f"The classification of '{str(ctx.Tauc())}={_classification!r} "
+                              f"{self.getNumber_s(ctx.number_s(0))}' is unknown.")
                 return
             self.preParameterDict[_classification]['tauc'] = self.getNumber_s(ctx.number_s(0))
 
@@ -5160,12 +5260,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -5175,7 +5278,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -5191,13 +5295,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero RDC vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -5207,7 +5313,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                       "Found an RDC vector over multiple covalent bonds in the 'XRDCoupling' statement; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:
@@ -5331,14 +5438,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain orientation vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                 self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                               "Found inter-residue orientation vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -5354,13 +5463,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue orientation vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero orientation vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -5370,7 +5481,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found an orientation vector over multiple covalent bonds in the 'XANGle' statement; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.createSfDict:
@@ -5487,19 +5599,23 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain CCR vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                 self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                               "Found inter-residue CCR vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -5515,13 +5631,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue CCR vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero CCR vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -5531,7 +5649,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found an CCR vector over multiple covalent bonds in the 'XCCR' statement; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.createSfDict:
@@ -6116,11 +6235,13 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append("[Unsupported data] "
                                   f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' "
-                                  f"where the symbol {self.ncsSigb!r} is not defined so that set the default value.")
+                                  f"where the symbol {self.ncsSigb!r} is not defined "
+                                  "so that set the default value.")
                     self.ncsSigb = 2.0
             if self.ncsSigb <= 0.0:
                 self.f.append("[Invalid data] "
-                              f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' must be a positive value.")
+                              f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' "
+                              "must be a positive value.")
 
         elif ctx.Weight():
             self.ncsWeight = self.getNumber_s(ctx.number_s())
@@ -6130,14 +6251,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 else:
                     self.f.append("[Unsupported data] "
                                   f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "
-                                  f"where the symbol {self.ncsWeight!r} is not defined so that set the default value.")
+                                  f"where the symbol {self.ncsWeight!r} is not defined "
+                                  "so that set the default value.")
                     self.ncsWeight = 300.0
             if self.ncsWeight < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' must not be a negative value.")
+                              f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "
+                              "must not be a negative value.")
             elif self.ncsWeight == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' should be a positive value.")
+                              f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "
+                              "should be a positive value.")
 
     # Exit a parse tree produced by XplorMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: XplorMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
@@ -6675,8 +6799,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 matrix = numpy.array([
                                     [float(oper['matrix[1][1]']), float(oper['matrix[1][2]']), float(oper['matrix[1][3]'])],
                                     [float(oper['matrix[2][1]']), float(oper['matrix[2][2]']), float(oper['matrix[2][3]'])],
-                                    [float(oper['matrix[3][1]']), float(oper['matrix[3][2]']), float(oper['matrix[3][3]'])]], dtype=float)
-                                vector = numpy.array([float(oper['vector[1]']), float(oper['vector[2]']), float(oper['vector[3]'])], dtype=float)
+                                    [float(oper['matrix[3][1]']), float(oper['matrix[3][2]']), float(oper['matrix[3][3]'])]],
+                                    dtype=float)
+                                vector = numpy.array([float(oper['vector[1]']),
+                                                      float(oper['vector[2]']),
+                                                      float(oper['vector[3]'])],
+                                                     dtype=float)
 
                                 if numpy.array_equal(matrix, identity) and numpy.array_equal(vector, zero):
                                     continue
@@ -6690,9 +6818,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         _origin =\
                                             self.cR.getDictListWithFilter('atom_site',
                                                                           CARTN_DATA_ITEMS,
-                                                                          [{'name': self.authAsymId, 'type': 'str', 'value': _atom['chain_id']},
-                                                                           {'name': self.authSeqId, 'type': 'int', 'value': _atom['seq_id']},
-                                                                           {'name': self.authAtomId, 'type': 'str', 'value': _atom['atom_id']},
+                                                                          [{'name': self.authAsymId, 'type': 'str',
+                                                                            'value': _atom['chain_id']},
+                                                                           {'name': self.authSeqId, 'type': 'int',
+                                                                            'value': _atom['seq_id']},
+                                                                           {'name': self.authAtomId, 'type': 'str',
+                                                                            'value': _atom['atom_id']},
                                                                            {'name': self.modelNumName, 'type': 'int',
                                                                             'value': self.representativeModelId},
                                                                            {'name': 'label_alt_id', 'type': 'enum',
@@ -6769,7 +6900,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                 if simpleNameIndex == 0 and ctx.Simple_names(0):
                     chainId = str(ctx.Simple_names(0))
-                    if self.reasons is not None and 'segment_id_mismatch' in self.reasons and chainId in self.reasons['segment_id_mismatch']\
+                    if self.reasons is not None and 'segment_id_mismatch' in self.reasons\
+                       and chainId in self.reasons['segment_id_mismatch']\
                        and self.reasons['segment_id_mismatch'][chainId] in self.reasons['segment_id_match_stats'][chainId]:
                         _chainId = self.reasons['segment_id_mismatch'][chainId]
                         _stats = self.reasons['segment_id_match_stats'][chainId]
@@ -6802,7 +6934,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     or self.reasons['segment_id_mismatch'][chainId] is not None):
                                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                               "Couldn't specify segment name "
-                                              f"'{chainId}' the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
+                                              f"'{chainId}' the coordinates.")
+                                # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
@@ -7373,7 +7506,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         origin = to_np_array(_origin)
 
                                         for _atomId in _nonBondedAtomIdSelect:
-                                            _cca = next((_cca for _cca in self.ccU.lastAtomList if _cca[self.ccU.ccaAtomId] == _atomId), None)
+                                            _cca = next((_cca for _cca in self.ccU.lastAtomList
+                                                         if _cca[self.ccU.ccaAtomId] == _atomId), None)
                                             if _cca is not None:
                                                 _neighbor = {'x': float(_cca[self.ccU.ccaCartnX]),
                                                              'y': float(_cca[self.ccU.ccaCartnY]),
@@ -7583,7 +7717,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor and __factor['atom_id'][0] is not None:
-                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2\
+                            else __factor['atom_id'][0][:2].upper()
                         if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0]
@@ -7925,7 +8060,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
-                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2\
+                            else __factor['atom_id'][0][:2].upper()
                         if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0]
@@ -7942,7 +8078,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'residue' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"The 'residue' clause has no effect for a conjunction of "
+                                          f"factor {self.getReadableFactor(__factor)} "
                                           f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Resname():
@@ -7987,7 +8124,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
-                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2\
+                            else __factor['atom_id'][0][:2].upper()
                         if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0]
@@ -8004,7 +8142,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'resname' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"The 'resname' clause has no effect for a conjunction of "
+                                          f"factor {self.getReadableFactor(__factor)} "
                                           f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.SegIdentifier():
@@ -8078,7 +8217,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             self.factor['alt_chain_id'] = chainId
                     if ctx.Simple_names(0):
                         chainId = str(ctx.Simple_names(0))
-                        if self.reasons is not None and 'segment_id_mismatch' in self.reasons and chainId in self.reasons['segment_id_mismatch']\
+                        if self.reasons is not None and 'segment_id_mismatch' in self.reasons\
+                           and chainId in self.reasons['segment_id_mismatch']\
                            and self.reasons['segment_id_mismatch'][chainId] in self.reasons['segment_id_match_stats'][chainId]:
                             _chainId = self.reasons['segment_id_mismatch'][chainId]
                             _stats = self.reasons['segment_id_match_stats'][chainId]
@@ -8168,7 +8308,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
-                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2 else __factor['atom_id'][0][:2].upper()
+                        __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2\
+                            else __factor['atom_id'][0][:2].upper()
                         if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                             pass
                         elif self.with_para and (('comp_id' in __factor and __factor['atom_id'][0] == __factor['comp_id'][0]

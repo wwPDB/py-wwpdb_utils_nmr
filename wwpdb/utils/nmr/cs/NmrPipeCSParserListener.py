@@ -168,7 +168,8 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
             return
 
         if len(comp_id) == 1 and not self.polyRibonucleotide and not self.polyDeoxyribonucleotide and self.polyPeptide:
-            comp_id = next((_comp_id for _comp_id in self.compIdSet if _comp_id in STD_MON_DICT and STD_MON_DICT[_comp_id] == comp_id), comp_id)
+            comp_id = next((_comp_id for _comp_id in self.compIdSet
+                            if _comp_id in STD_MON_DICT and STD_MON_DICT[_comp_id] == comp_id), comp_id)
 
         self.atomSelectionSets.clear()
 
@@ -243,7 +244,8 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
             return
 
         if len(comp_id) == 1 and not self.polyRibonucleotide and not self.polyDeoxyribonucleotide and self.polyPeptide:
-            comp_id = next((_comp_id for _comp_id in self.compIdSet if _comp_id in STD_MON_DICT and STD_MON_DICT[_comp_id] == comp_id), comp_id)
+            comp_id = next((_comp_id for _comp_id in self.compIdSet
+                            if _comp_id in STD_MON_DICT and STD_MON_DICT[_comp_id] == comp_id), comp_id)
 
         self.atomSelectionSets.clear()
 
@@ -318,7 +320,8 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
             return
 
         if len(comp_id) == 1 and not self.polyRibonucleotide and not self.polyDeoxyribonucleotide and self.polyPeptide:
-            comp_id = next((_comp_id for _comp_id in self.compIdSet if _comp_id in STD_MON_DICT and STD_MON_DICT[_comp_id] == comp_id), comp_id)
+            comp_id = next((_comp_id for _comp_id in self.compIdSet
+                            if _comp_id in STD_MON_DICT and STD_MON_DICT[_comp_id] == comp_id), comp_id)
 
         self.atomSelectionSets.clear()
 

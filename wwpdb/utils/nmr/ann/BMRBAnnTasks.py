@@ -1865,7 +1865,8 @@ class BMRBAnnTasks:
                                             break
                                         can_ligand_idx = idx
                             if can_ligand_idx is not None:
-                                entity = next(entity for entity_id, entity in entity_dict.items() if entity_id == non_polymer_types[0]['ligand'])
+                                entity = next(entity for entity_id, entity in entity_dict.items()
+                                              if entity_id == non_polymer_types[0]['ligand'])
                                 row = lp.data[can_ligand_idx]
                                 row[assembly_id_col] = entity['assembly_id']
                                 row[assembly_label_col] = entity['assembly_label']
@@ -1985,8 +1986,10 @@ class BMRBAnnTasks:
                             if '' not in unsorted_sample_types:
                                 unsorted_sample_types.append('')
                             continue
-                        if row[1] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid', 'carbohydrate', 'polysaccharide',
-                                      'reducing agent', 'chelating agent', 'salt', 'buffer', 'phospholipid', 'internal reference', 'solvent'):
+                        if row[1] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid',
+                                      'carbohydrate', 'polysaccharide',
+                                      'reducing agent', 'chelating agent', 'salt', 'buffer',
+                                      'phospholipid', 'internal reference', 'solvent'):
                             continue
                         if row[1] not in unsorted_sample_types:
                             unsorted_sample_types.append(row[1])
@@ -2011,7 +2014,8 @@ class BMRBAnnTasks:
                                     _lp.add_data(row)
                                     cur_id += 1
 
-                    for sample_type in ['reducing agent', 'chelating agent', 'salt', 'buffer', 'phospholipid', 'internal reference', 'solvent']:
+                    for sample_type in ['reducing agent', 'chelating agent', 'salt', 'buffer',
+                                        'phospholipid', 'internal reference', 'solvent']:
                         idx_dict = []
                         for idx, row in enumerate(data):
                             if row[1] not in EMPTY_VALUE and row[1] == sample_type:
@@ -2899,11 +2903,16 @@ class BMRBAnnTasks:
                 _sf.add_tag('Entry_ID', self.__reg.entry_id)
                 _sf.add_tag('ID', cs_ref_id)
                 _sf.add_tag('Name', '.')
-                _sf.add_tag('Proton_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
-                _sf.add_tag('Carbon_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C']) else 'no')
-                _sf.add_tag('Nitrogen_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N']) else 'no')
-                _sf.add_tag('Phosphorus_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P']) else 'no')
-                _sf.add_tag('Other_shifts_flag', 'yes' if any(n not in WELL_KNOWN_ISOTOPE_NUMBERS for n in isotope_numbers) else 'no')
+                _sf.add_tag('Proton_shifts_flag',
+                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
+                _sf.add_tag('Carbon_shifts_flag',
+                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C']) else 'no')
+                _sf.add_tag('Nitrogen_shifts_flag',
+                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N']) else 'no')
+                _sf.add_tag('Phosphorus_shifts_flag',
+                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P']) else 'no')
+                _sf.add_tag('Other_shifts_flag',
+                            'yes' if any(n not in WELL_KNOWN_ISOTOPE_NUMBERS for n in isotope_numbers) else 'no')
                 _sf.add_tag('Details', '.')
 
                 lp_category = '_Chem_shift_ref'

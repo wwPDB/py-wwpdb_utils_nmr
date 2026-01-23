@@ -567,20 +567,19 @@ class RosettaMRParserListener(ParseTreeListener):
     def exitRosetta_mr(self, ctx: RosettaMRParser.Rosetta_mrContext):  # pylint: disable=unused-argument
 
         def set_label_seq_scheme():
-            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                self.reasonsForReParsing['label_seq_scheme'] = {}
+            r = self.__getNamedReasonsForReparsing('label_seq_scheme')
             if self.distRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                r['dist'] = True
             if self.angRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['ang'] = True
+                r['ang'] = True
             if self.dihedRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['dihed'] = True
+                r['dihed'] = True
             if self.rdcRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['rdc'] = True
+                r['rdc'] = True
             if self.geoRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['geo'] = True
+                r['geo'] = True
             if self.ssbondRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['ssbond'] = True
+                r['ssbond'] = True
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
 
@@ -673,7 +672,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                 offset = None
                                 for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
                                     if seq_id is not None and seq_id not in seq_id_mapping:
-                                        _seq_id = next((_seq_id for _seq_id, _comp_id in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
+                                        _seq_id = next((_seq_id for _seq_id, _comp_id
+                                                        in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
                                                         if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
                                         if _seq_id is not None:
                                             offset = seq_id - _seq_id
@@ -808,18 +808,16 @@ class RosettaMRParserListener(ParseTreeListener):
 
                                         if any(True for k, v in seq_id_mapping.items() if k != v):
                                             if not any(v - k != offset for k, v in seq_id_mapping.items()):
-                                                if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
-                                                    self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
+                                                self.__getNamedReasonsForReparsing('global_auth_sequence_offset')[
+                                                    ref_chain_id] = offset
                                             else:
                                                 offsets = [v - k for k, v in seq_id_mapping.items()]
                                                 common_offsets = collections.Counter(offsets).most_common()
                                                 if common_offsets[0][1] > 1 and common_offsets[0][1] > common_offsets[1][1]\
                                                    and abs(common_offsets[0][0] - common_offsets[1][0]) == 1:
                                                     offset = common_offsets[0][0]
-                                                    if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
-                                                        self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                    self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
+                                                    self.__getNamedReasonsForReparsing('global_auth_sequence_offset')[
+                                                        ref_chain_id] = offset
                                                 else:
                                                     seq_id_mapping = {}
                                                     for ref_seq_id, mid_code, test_seq_id\
@@ -835,9 +833,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                                         offsets = {}
                                                         for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
                                                             offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
-                                                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                        self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
+                                                        self.__getNamedReasonsForReparsing('global_auth_sequence_offset')[
+                                                            ref_chain_id] = offsets
 
                                 if len(chainAssignFailed) == 0:
                                     valid_auth_seq = valid_label_seq = True
@@ -892,7 +889,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
                                     offset = None
                                     offsets = [v - k for k, v in seq_id_mapping.items()]
-                                    if len(offsets) > 0 and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                    if len(offsets) > 0 and ('gap_in_auth_seq' not in poly_seq_model
+                                                             or not poly_seq_model['gap_in_auth_seq']):
                                         offsets = collections.Counter(offsets).most_common()
                                         if len(offsets) > 1:
                                             offset = offsets[0][0]
@@ -964,7 +962,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                     if len(seqIdRemapFailed) > 0:
                                         if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
                                             seqIdRemap =\
-                                                self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                                self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing\
+                                                else []
                                             if len(seqIdRemap) != len(seqIdRemapFailed)\
                                                or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
@@ -993,7 +992,8 @@ class RosettaMRParserListener(ParseTreeListener):
                         if ps['auth_chain_id'] not in self.reasonsForReParsing['global_auth_sequence_offset']:
                             if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                                 offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
-                                if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
+                                if any(abs(seq_id - auth_seq_id - offset) > 20
+                                       for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
                                     failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed
                                                       if failed_ps['chain_id'] == ps['auth_chain_id']), None)
                                     if failed_ps is None:
@@ -1566,7 +1566,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                 f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' "
                                 f"should be within range {DIST_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
@@ -1702,7 +1703,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__reasons is not None:
                     if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
                        and seqId in self.__reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
+                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None,
+                                                                           chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                         if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
@@ -1769,15 +1771,11 @@ class RosettaMRParserListener(ParseTreeListener):
                         elif atomId in self.__uniqAtomIdToSeqKey:
                             seqKey = self.__uniqAtomIdToSeqKey[atomId]
                             if _seqId != seqKey[1] and seqKey in self.__coordAtomSite:
-                                if 'non_poly_remap' not in self.reasonsForReParsing:
-                                    self.reasonsForReParsing['non_poly_remap'] = {}
+                                r = self.__getNamedReasonsForReparsing('non_poly_remap')
                                 if cifCompId not in self.reasonsForReParsing['non_poly_remap']:
-                                    self.reasonsForReParsing['non_poly_remap'][cifCompId] = {}
+                                    r[cifCompId] = {}
                                 if _seqId not in self.reasonsForReParsing['non_poly_remap'][cifCompId]:
-                                    self.reasonsForReParsing['non_poly_remap'][cifCompId][_seqId] =\
-                                        {'chain_id': seqKey[0],
-                                         'seq_id': seqKey[1],
-                                         'original_chain_id': None}
+                                    r[cifCompId][_seqId] = {'chain_id': seqKey[0], 'seq_id': seqKey[1], 'original_chain_id': None}
             for np in self.__nonPolySeq:
                 chainId, seqId, _ = self.getRealChainSeqId(np, _seqId, False)
                 if self.__reasons is not None:
@@ -1805,7 +1803,8 @@ class RosettaMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         try:
-                            seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
+                            seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id'])
+                                         if _seqId == seqId)
                         except StopIteration:
                             pass
                     if atomId is None\
@@ -1847,7 +1846,8 @@ class RosettaMRParserListener(ParseTreeListener):
                             if atomId is not None and cifCompId not in STD_MON_DICT and self.__mrAtomNameMapping:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCheck=self.__hasCoord)
                                 origCompId = np['auth_comp_id'][idx]
-                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping,
+                                                                 seqId, origCompId, atomId, coordAtomSite)
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
@@ -2030,7 +2030,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__reasons is not None:
                     if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
                        and seqId in self.__reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
+                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'],
+                                                                           None, chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                         if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
@@ -2209,7 +2210,8 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__mrAtomNameMapping is not None and cifCompId not in STD_MON_DICT:
                 _atomId_ = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != _atomId_ and coordAtomSite is not None\
-                   and (_atomId_ in coordAtomSite['atom_id'] or (_atomId_.endswith('%') and _atomId_[:-1] + '2' in coordAtomSite['atom_id'])):
+                   and (_atomId_ in coordAtomSite['atom_id']
+                        or (_atomId_.endswith('%') and _atomId_[:-1] + '2' in coordAtomSite['atom_id'])):
                     atomId = _atomId_
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
@@ -2666,7 +2668,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
-            if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+            if cca is not None and seqKey not in self.__coordUnobsRes\
+               and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
@@ -2709,7 +2712,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
                         if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
                            or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
-                           or (compId in STD_MON_DICT and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                           or (compId in STD_MON_DICT
+                               and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                                and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                     or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                             ext_seq = True
@@ -3328,7 +3332,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                 f"{srcFunc}, the upper linear limit value='{upper_linear_limit}' "
                                 f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         if None not in (upper_limit, lower_limit)\
@@ -5135,7 +5140,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 if num_gaussians <= 0:
                     valid = False
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.")
+                                    f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' "
+                                    "must be a positive value.")
                 elif len(self.numberFSelection) > num_gaussians * 2 - 1 + fnum_offset:
                     func['mean'] = []
                     func['sd'] = []
@@ -5172,7 +5178,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 if num_gaussians <= 0:
                     valid = False
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' must be a positive value.")
+                                    f"{funcType} the number of Gaussian functions 'num_gaussians={num_gaussians}' "
+                                    "must be a positive value.")
                 elif len(self.numberFSelection) > num_gaussians * 3 - 1 + fnum_offset:
                     func['mean'] = []
                     func['sd'] = []
@@ -5316,7 +5323,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 if ps1 is None and ps2 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                     "Found inter-chain RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -5325,7 +5333,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 if ps1 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -5340,13 +5349,15 @@ class RosettaMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 "Found zero RDC vector; "
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -5356,7 +5367,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                         "Found an RDC vector over multiple covalent bonds; "
-                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.__createSfDict:
@@ -5418,11 +5430,13 @@ class RosettaMRParserListener(ParseTreeListener):
                     continue
                 if allow_ambig:
                     self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
-                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    "Ambiguous atom selection "
+                                    f"'{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
                                     f"{atom2['atom_id']}' found in {subtype_name} restraint.")
                     continue
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                "Ambiguous atom selection "
+                                f"'{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
                                 f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
 
@@ -5574,17 +5588,20 @@ class RosettaMRParserListener(ParseTreeListener):
             self.atomSelectionSet.clear()
             self.genResNumSelection.clear()
 
-    def enterAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext):  # pylint: disable=unused-argument
+    def enterAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext
+                                          ):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
 
         self.__cur_comment_inlined = True
 
     # Exit a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraints.
-    def exitAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext):  # pylint: disable=unused-argument
+    def exitAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext
+                                         ):  # pylint: disable=unused-argument
         self.__cur_comment_inlined = False
 
     # Enter a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraint.
-    def enterAtom_pair_w_chain_restraint(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintContext):  # pylint: disable=unused-argument
+    def enterAtom_pair_w_chain_restraint(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintContext
+                                         ):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
         self.stackFuncs.clear()
@@ -5861,22 +5878,27 @@ class RosettaMRParserListener(ParseTreeListener):
             return f"[Check the {self.ssbondRestraints}th row of disulfide bond restraints, {self.__def_err_sf_framecode}] "
         return ''
 
+    def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        if name in self.reasonsForReParsing:
+            return self.reasonsForReParsing[name]
+        self.reasonsForReParsing[name] = {}
+        return self.reasonsForReParsing[name]
+
     def __setLocalSeqScheme(self):
-        if 'local_seq_scheme' not in self.reasonsForReParsing:
-            self.reasonsForReParsing['local_seq_scheme'] = {}
+        r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.__cur_subtype == 'dist':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = preferAuthSeq
+            r[(self.__cur_subtype, self.distRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'ang':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.angRestraints)] = preferAuthSeq
+            r[(self.__cur_subtype, self.angRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'dihed':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = preferAuthSeq
+            r[(self.__cur_subtype, self.dihedRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'rdc':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = preferAuthSeq
+            r[(self.__cur_subtype, self.rdcRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'geo':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = preferAuthSeq
+            r[(self.__cur_subtype, self.geoRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'ssbond':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ssbondRestraints)] = preferAuthSeq
+            r[(self.__cur_subtype, self.ssbondRestraints)] = preferAuthSeq
         if not preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:

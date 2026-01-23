@@ -115,10 +115,11 @@ class TestNmrDpUtility(unittest.TestCase):
         pass
 
     def __test_nmr_cs_str_consistency(self, entry_id):
-        self.utility.addInput(name='chem_shift_file_path_list', value=[{'file_name': self.data_dir_path + cs_file_path,
-                                                                        'file_type': 'nmr-star',
-                                                                        'original_file_name': 'original_' + cs_file_path}
-                                                                       for cs_file_path in self.cs_file_path[entry_id]], type='file_dict_list')
+        self.utility.addInput(name='chem_shift_file_path_list',
+                              value=[{'file_name': self.data_dir_path + cs_file_path,
+                                      'file_type': 'nmr-star',
+                                      'original_file_name': 'original_' + cs_file_path}
+                                     for cs_file_path in self.cs_file_path[entry_id]], type='file_dict_list')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.model_file_path[entry_id], type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')

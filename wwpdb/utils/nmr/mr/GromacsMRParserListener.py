@@ -631,7 +631,8 @@ class GromacsMRParserListener(ParseTreeListener):
             if upper_limit > upper_linear_limit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
-                                f"The upper limit value='{upper_limit}' must be less than the upper linear limit value '{upper_linear_limit}'.")
+                                f"The upper limit value='{upper_limit}' must be less than "
+                                "the upper linear limit value '{upper_linear_limit}'.")
 
         if not validRange:
             return None
@@ -1321,7 +1322,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 if ps1 is None and ps2 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-chain RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -1330,7 +1332,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 if ps1 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-residue RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1345,13 +1348,15 @@ class GromacsMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-residue RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 "Found zero RDC vector; "
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -1361,7 +1366,8 @@ class GromacsMRParserListener(ParseTreeListener):
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                         "Found an RDC vector over multiple covalent bonds; "
-                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),

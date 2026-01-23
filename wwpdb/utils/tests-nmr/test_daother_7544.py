@@ -56,7 +56,8 @@ class TestNmrDpUtility(unittest.TestCase):
         else:
             ar_path_list = []
             for i, ar_path in enumerate(self.mr_file_path[entry_id]):
-                ar_path_list.append({'file_name': self.data_dir_path + ar_path, 'file_type': self.res_file_type[entry_id][i]})
+                ar_path_list.append({'file_name': self.data_dir_path + ar_path,
+                                     'file_type': self.res_file_type[entry_id][i]})
             self.utility.addInput(name='atypical_restraint_file_path_list', value=ar_path_list, type='file_dict_list')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.model_file_path[entry_id], type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')

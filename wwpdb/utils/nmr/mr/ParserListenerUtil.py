@@ -2667,7 +2667,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                                 ps['auth_seq_id'].insert(pos, authSeqId)
                                 ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
+                                # avoid doulble inserts to 'auth_comp_id'
+                                if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                     ps['auth_comp_id'].insert(pos, '.')
 
                             ps['seq_id'] = list(range(1, len(ps['auth_seq_id']) + 1))
@@ -2917,7 +2918,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         chainIds.append(item['alt_chain_id'])
 
                 if has_ins_code:
-                    sortedSeq = sorted(set((item['alt_chain_id'], int(item['seq_id']), item['ins_code'], item['alt_comp_id']) for item in coord),
+                    sortedSeq = sorted(set((item['alt_chain_id'], int(item['seq_id']),
+                                            item['ins_code'], item['alt_comp_id']) for item in coord),
                                        key=itemgetter(1))
 
                     for c in chainIds:
@@ -3394,7 +3396,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                            ]
 
-                            resCoordDict = {c['atom_id']: to_np_array(c) for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
+                            resCoordDict = {c['atom_id']: to_np_array(c)
+                                            for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
 
                             chemCompBond[compId], chemCompTopo[compId] = {}, {}
 
@@ -4003,7 +4006,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                     if has_ins_code_val:
                                         authToInsCode[seqKey] = item['ins_code']
-                                    authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    authToEntityType[seqKey] = entityPolyType
                                     if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                         _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
                                         authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
@@ -4018,7 +4022,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
                                         (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                     authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
-                                    authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    authToEntityType[seqKey] = entityPolyType
                                     ext_mappings += 1
                                     if extSeq['chain_id'] not in STD_MON_DICT:
                                         nstdMonomer = 'yes'
@@ -5900,17 +5905,23 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
 
         atom_site_1 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
-                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id', 'type': 'str', 'value': asymId1},
-                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id', 'type': 'int', 'value': seqId1},
-                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id', 'type': 'str', 'value': atomId1},
+                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id',
+                                                 'type': 'str', 'value': asymId1},
+                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id',
+                                                 'type': 'int', 'value': seqId1},
+                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id',
+                                                 'type': 'str', 'value': atomId1},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
         atom_site_2 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
-                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id', 'type': 'str', 'value': asymId2},
-                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id', 'type': 'int', 'value': seqId2},
-                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id', 'type': 'str', 'value': atomId2},
+                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id',
+                                                 'type': 'str', 'value': asymId2},
+                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id',
+                                                 'type': 'int', 'value': seqId2},
+                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id',
+                                                 'type': 'str', 'value': atomId2},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
@@ -8850,7 +8861,8 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                 compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                 if compId in compIds:
                     cifCompId = compId
-                    origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                    origCompId = next(origCompId for _seqId, _compId, origCompId
+                                      in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                       if _seqId == seqId and _compId == compId)
             if compId in (cifCompId, origCompId):
                 if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -9264,7 +9276,8 @@ def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
                         coordAtomSite = coordAtomSites[_seqKey]
                     elif seqKey in coordAtomSites:
                         coordAtomSite = coordAtomSites[seqKey]
-                    else:  # DAOTHER-10105: handle inconsistency between auth_asym_id and pdbx_auth_asym_id due to chain split while annotation
+                    # DAOTHER-10105: handle inconsistency between auth_asym_id and pdbx_auth_asym_id due to chain split while annotation
+                    else:
                         for _chainId in caC['label_to_auth_chain']:
                             if _chainId == chainId:
                                 continue

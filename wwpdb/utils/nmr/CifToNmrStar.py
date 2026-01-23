@@ -443,7 +443,8 @@ class CifToNmrStar:
                         previous_order = current_order
 
             if entry_id in EMPTY_VALUE:
-                entry_id = block_name_list[0].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
+                # DAOTHER-9511: replace white space in a datablock name to underscore
+                entry_id = block_name_list[0].strip().replace(' ', '_')
 
             _entry_id = entry_id.upper()
 

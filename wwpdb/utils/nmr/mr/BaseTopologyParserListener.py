@@ -204,8 +204,9 @@ class BaseTopologyParserListener():
 
                                     if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
-                                                                                  None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                                        _, _, atomId =\
+                                            retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                       None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -268,8 +269,9 @@ class BaseTopologyParserListener():
 
                                         if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
-                                                                                      None, compId, atomNum['auth_atom_id'], None, None, True)
+                                            _, _, atomId =\
+                                                retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                           None, compId, atomNum['auth_atom_id'], None, None, True)
                                         else:
                                             atomId = atomNum['auth_atom_id']
 
@@ -638,10 +640,12 @@ class BaseTopologyParserListener():
                                         atomNum['atom_id'] = atomId
                                         continue
                             atomNum['atom_id'] = atomNum['auth_atom_id']
-                            if atomNum['atom_id'] == "HO5'" and atomNum['seq_id'] == 1 and self.csStat.getTypeOfCompId(atomNum['comp_id'])[1]:
+                            if atomNum['atom_id'] == "HO5'" and atomNum['seq_id'] == 1\
+                               and self.csStat.getTypeOfCompId(atomNum['comp_id'])[1]:
                                 continue
                             self.__f.append(f"[Unknown atom name] "
-                                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "
+                                            f"{atomNum['auth_atom_id']!r} is not recognized "
+                                            f"as the atom name of {atomNum['comp_id']!r} residue "
                                             f"(the original residue label is {atomNum['auth_comp_id']!r}).")
                         elif self.__chemCompAtom is not None:
                             if 'comp_id' in atomNum and atomNum['comp_id'] in self.__chemCompAtom:
@@ -981,7 +985,8 @@ class BaseTopologyParserListener():
                         continue
                     seqId = v['seq_id']
                     authAtomId = v['auth_atom_id']
-                    _seqId_, _compId_, _atomId_ = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, seqId, authCompId, authAtomId)
+                    _seqId_, _compId_, _atomId_ = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                             seqId, authCompId, authAtomId)
                     if _seqId_ != seqId and _compId_ != authCompId:
                         v['seq_id'] = _seqId_
                         v['comp_id'] = _compId_

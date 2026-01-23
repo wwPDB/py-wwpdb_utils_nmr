@@ -66,7 +66,7 @@ from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
 
 from sklearn.cluster import DBSCAN
-from rmsd.calculate_rmsd import (centroid, check_reflections, rmsd,  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
+from rmsd.calculate_rmsd import (centroid, check_reflections, rmsd,  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,unused-import,line-too-long
                                  kabsch_rmsd, quaternion_rmsd,
                                  reorder_hungarian, reorder_brute, reorder_distance,
                                  quaternion_rotate)
@@ -1327,7 +1327,8 @@ class CifReader:
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
                                                                          'enum': polyPeptideChains},
-                                                                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': 'CA'},
+                                                                        {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                                         'value': 'CA'},
                                                                         {'name': 'label_alt_id', 'type': 'enum',
                                                                          'enum': (repAltId,)},
                                                                         {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
@@ -1344,7 +1345,8 @@ class CifReader:
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
                                                                          'enum': polyPeptideChains},
-                                                                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': 'C'},
+                                                                        {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                                         'value': 'C'},
                                                                         {'name': 'label_alt_id', 'type': 'enum',
                                                                          'enum': (repAltId,)},
                                                                         {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
@@ -1361,7 +1363,8 @@ class CifReader:
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
                                                                          'enum': polyPeptideChains},
-                                                                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': 'N'},
+                                                                        {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                                         'value': 'N'},
                                                                         {'name': 'label_alt_id', 'type': 'enum',
                                                                          'enum': (repAltId,)},
                                                                         {'name': 'type_symbol', 'type': 'str', 'value': 'N'}])
@@ -1386,12 +1389,13 @@ class CifReader:
                                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                    {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                    {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                   {'name': 'ndb_model'
-                                                                    if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                   {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                                    'type': 'int', 'alt_name': 'model_id'},
                                                                    {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                    ],
                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                   {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': 'P'},
+                                                                   {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                                    'value': 'P'},
                                                                    {'name': 'label_alt_id', 'type': 'enum',
                                                                     'enum': (repAltId,)},
                                                                    {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
@@ -1402,8 +1406,8 @@ class CifReader:
                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                    {'name': 'ndb_model'
-                                                                     if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                    {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                                     'type': 'int', 'alt_name': 'model_id'},
                                                                     {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                     ],
                                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': c},
@@ -1637,7 +1641,8 @@ class CifReader:
 
                     md5_set.add(md5)
 
-                    result = {'features': features, 'min_samples': min_samples, 'epsilon': epsilon, 'clusters': n_clusters, 'noise': n_noise}
+                    result = {'features': features, 'min_samples': min_samples, 'epsilon': epsilon,
+                              'clusters': n_clusters, 'noise': n_noise}
 
                     score = 0.0
 

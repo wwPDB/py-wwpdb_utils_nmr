@@ -207,7 +207,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                     continue
                                 self.__col_order[idx] = 'residue_name'
 
-            if not ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name_instance' in self.__col_order)
+            if not ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order)
+                     and 'atom_name_instance' in self.__col_order)
                     or ('value' in self.__col_order and ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order)
                                                           and 'atom_name' in self.__col_order)
                                                          or ('assignment' in self.__col_order and 'atom_name' not in self.__col_order)))):
@@ -233,7 +234,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
                             elif isinstance(self.anySelection[idx], str):
-                                if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
+                                if self.__col_order.count('residue_name') == 0\
+                                   and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[1])
                                     comp_id = g[0]
@@ -277,7 +279,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                     atom_ids.append(self.__col_name[idx])
                                     values.append(value)
                         elif order == 'details':
-                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                           else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
                         details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
 
@@ -337,7 +340,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
                             elif isinstance(self.anySelection[idx], str):
-                                if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
+                                if self.__col_order.count('residue_name') == 0\
+                                   and self.__reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__reduced_residue_name_pat.search(self.anySelection[idx]).groups()
                                     seq_id = int(g[1])
                                     comp_id = g[0]
@@ -414,7 +418,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 else:
                                     figure_of_merits.append(None)
                         elif order == 'details':
-                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                           else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
                         details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
 
@@ -517,7 +522,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 else:
                                     figure_of_merits.append(None)
                         elif order == 'details':
-                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                            details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                           else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
                         details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
 

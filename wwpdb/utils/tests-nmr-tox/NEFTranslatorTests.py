@@ -1371,7 +1371,7 @@ class TestNEFTranslator(unittest.TestCase):
         cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
         self.assertEqual(
-            self.neft.get_nef_seq(cs_loops[0], lp_category="nef_chemical_shift"),  # select the first cs loop by input sta_data
+            self.neft.get_nef_seq(cs_loops[0], lp_category="nef_chemical_shift"),
             [
                 [
                     {
@@ -2282,7 +2282,7 @@ class TestNEFTranslator(unittest.TestCase):
         cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
         self.assertEqual(
-            self.neft.get_star_seq(cs_loops[0], lp_category="Atom_chem_shift"),  # select the first cs loop by input sta_data
+            self.neft.get_star_seq(cs_loops[0], lp_category="Atom_chem_shift"),
             [
                 [
                     {
@@ -2523,7 +2523,7 @@ class TestNEFTranslator(unittest.TestCase):
         cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
         self.assertEqual(
-            self.neft.get_nef_comp_atom_pair(cs_loops[0], lp_category="nef_chemical_shift"),  # select the first cs loop by input sta_data
+            self.neft.get_nef_comp_atom_pair(cs_loops[0], lp_category="nef_chemical_shift"),
             [
                 [
                     {"comp_id": "ALA", "atom_id": ["C", "CA", "CB", "H", "HA", "HB%", "N"]},
@@ -2537,8 +2537,10 @@ class TestNEFTranslator(unittest.TestCase):
                     {"comp_id": "GLU", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HBX", "HBY", "HGX", "HGY", "N"]},
                     {"comp_id": "GLY", "atom_id": ["CA", "H", "HA2", "HA3", "N"]},
                     {"comp_id": "HIS", "atom_id": ["C", "CA", "CB", "CD2", "H", "HA", "HB2", "HB3", "HBX", "HBY", "HD2", "N"]},
-                    {"comp_id": "ILE", "atom_id": ["C", "CA", "CB", "CD1", "CG1", "CG2", "H", "HA", "HB", "HD1%", "HG1X", "HG1Y", "HG2%", "N"]},
-                    {"comp_id": "LEU", "atom_id": ["C", "CA", "CB", "CDX", "CDY", "CG", "H", "HA", "HBX", "HBY", "HDX%", "HDY%", "HG", "N"]},
+                    {"comp_id": "ILE", "atom_id": ["C", "CA", "CB", "CD1", "CG1", "CG2",
+                                                   "H", "HA", "HB", "HD1%", "HG1X", "HG1Y", "HG2%", "N"]},
+                    {"comp_id": "LEU", "atom_id": ["C", "CA", "CB", "CDX", "CDY", "CG",
+                                                   "H", "HA", "HBX", "HBY", "HDX%", "HDY%", "HG", "N"]},
                     {
                         "comp_id": "LYS",
                         "atom_id": [
@@ -2591,13 +2593,14 @@ class TestNEFTranslator(unittest.TestCase):
         cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
         self.assertEqual(
-            self.neft.get_star_comp_atom_pair(cs_loops[0], lp_category="Atom_chem_shift"),  # select the first cs loop by input sta_data
+            self.neft.get_star_comp_atom_pair(cs_loops[0], lp_category="Atom_chem_shift"),
             [
                 [
                     {"comp_id": "ALA", "atom_id": ["C", "CA", "CB", "H", "HA", "HB1", "HB2", "HB3", "N"]},
                     {"comp_id": "ARG", "atom_id": ["C", "CA", "CB", "CD", "CG", "H", "HA", "HB2", "HB3", "HD2", "HD3", "HG2", "HG3", "N"]},
                     {"comp_id": "ASN", "atom_id": ["C", "CA", "CB", "H", "HA", "HB2", "HB3", "HD21", "HD22", "N", "ND2"]},
-                    {"comp_id": "GLN", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HE21", "HE22", "HG2", "HG3", "N", "NE2"]},
+                    {"comp_id": "GLN", "atom_id": ["C", "CA", "CB", "CG",
+                                                   "H", "HA", "HB2", "HB3", "HE21", "HE22", "HG2", "HG3", "N", "NE2"]},
                     {"comp_id": "GLU", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HG2", "HG3", "N"]},
                     {"comp_id": "GLY", "atom_id": ["CA", "H", "HA2", "HA3", "N"]},
                     {"comp_id": "HIS", "atom_id": ["C", "CA", "CB", "CD2", "H", "HA", "HB2", "HB3", "HD2", "N"]},
@@ -2629,7 +2632,6 @@ class TestNEFTranslator(unittest.TestCase):
         cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
         self.assertEqual(
-            # select the first cs loop by input sta_data
             self.neft.get_nef_atom_type_from_cs_loop(cs_loops[0], lp_category="nef_chemical_shift"),
             [
                 [
@@ -2697,7 +2699,7 @@ class TestNEFTranslator(unittest.TestCase):
         cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
         self.assertEqual(
-            self.neft.get_star_atom_type_from_cs_loop(cs_loops[0], lp_category="Atom_chem_shift"),  # select the first cs loop by input sta_data
+            self.neft.get_star_atom_type_from_cs_loop(cs_loops[0], lp_category="Atom_chem_shift"),
             [
                 [
                     {
@@ -2758,15 +2760,17 @@ class TestNEFTranslator(unittest.TestCase):
         cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
         self.assertEqual(len(cs_loops), 1)  # assert single cs loop
         self.assertEqual(
-            self.neft.get_star_ambig_code_from_cs_loop(cs_loops[0], lp_category="Atom_chem_shift"),  # select the first cs loop by input sta_data
+            self.neft.get_star_ambig_code_from_cs_loop(cs_loops[0], lp_category="Atom_chem_shift"),
             [
                 [
                     {"comp_id": "ALA", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "H", "HA", "HB1", "HB2", "HB3", "N"]},
-                    {"comp_id": "ARG", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD", "CG", "H", "HA", "HD2", "HD3", "HG2", "HG3", "N"]},
+                    {"comp_id": "ARG", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD", "CG",
+                                                                    "H", "HA", "HD2", "HD3", "HG2", "HG3", "N"]},
                     {"comp_id": "ARG", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HD2", "HD3", "HG2", "HG3"]},
                     {"comp_id": "ASN", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "H", "HA", "N", "ND2"]},
                     {"comp_id": "ASN", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HD21", "HD22"]},
-                    {"comp_id": "GLN", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HG2", "HG3", "N", "NE2"]},
+                    {"comp_id": "GLN", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG",
+                                                                    "H", "HA", "HB2", "HB3", "HG2", "HG3", "N", "NE2"]},
                     {"comp_id": "GLN", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HE21", "HE22", "HG2", "HG3"]},
                     {"comp_id": "GLU", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "N"]},
                     {"comp_id": "GLU", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HG2", "HG3"]},
@@ -2777,7 +2781,8 @@ class TestNEFTranslator(unittest.TestCase):
                      ["C", "CA", "CB", "CD1", "CG1", "CG2", "H", "HA", "HB", "HD11", "HD12", "HD13", "HG21", "HG22", "HG23", "N"]},
                     {"comp_id": "ILE", "ambig_code": 2, "atom_id": ["HG12", "HG13"]},
                     {"comp_id": "LEU", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HG", "N"]},
-                    {"comp_id": "LEU", "ambig_code": 2, "atom_id": ["CD1", "CD2", "HB2", "HB3", "HD11", "HD12", "HD13", "HD21", "HD22", "HD23"]},
+                    {"comp_id": "LEU", "ambig_code": 2, "atom_id": ["CD1", "CD2", "HB2", "HB3",
+                                                                    "HD11", "HD12", "HD13", "HD21", "HD22", "HD23"]},
                     {"comp_id": "LYS", "ambig_code": 1, "atom_id":
                      ["C", "CA", "CB", "CD", "CE", "CG", "H", "HA", "HD2", "HD3", "HE2", "HE3", "HG2", "HG3", "N"]},
                     {"comp_id": "LYS", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HD2", "HD3", "HE2", "HE3", "HG2", "HG3"]},
@@ -2956,7 +2961,8 @@ class TestNEFTranslator(unittest.TestCase):
 
     def test_get_star_loop_tags(self):
         self.assertEqual(
-            self.neft.get_star_loop_tags(["_nef_program_script.program_name", "_nef_program_script.script_name", "_nef_program_script.script"]),
+            self.neft.get_star_loop_tags(["_nef_program_script.program_name", "_nef_program_script.script_name",
+                                          "_nef_program_script.script"]),
             ["_Software_applied_methods.Software_name", "_Software_applied_methods.Script_name", "_Software_applied_methods.Script"],
         )
         self.assertEqual(
@@ -3162,34 +3168,34 @@ class TestNEFTranslator(unittest.TestCase):
         ]
         data = [["A", "484", "THR", "N", "108.193", "0.4", "N", "15"]]
         data_out = [["A", 484, "THR", "N", "108.193", "0.4", "N", "15", 1, 113, "THR", "N", 1, None, None, None]]
-        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # noqa: E501, pylint: disable=protected-access,line-too-long
         data = [["A", "488", "ALA", "HB%", "1.625", "0.02", "H", "1"]]
         data_out = [
             ["A", 488, "ALA", "HB%", "1.625", "0.02", "H", "1", 1, 117, "ALA", "HB1", 1, None, None, None],
             ["A", 488, "ALA", "HB%", "1.625", "0.02", "H", "1", 1, 117, "ALA", "HB2", 1, None, None, None],
             ["A", 488, "ALA", "HB%", "1.625", "0.02", "H", "1", 1, 117, "ALA", "HB3", 1, None, None, None],
         ]
-        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # noqa: E501, pylint: disable=protected-access,line-too-long
         data = [["A", "493", "ILE", "HD1%", "0.996", "0.02", "H", "1"]]
         data_out = [
             ["A", 493, "ILE", "HD1%", "0.996", "0.02", "H", "1", 1, 122, "ILE", "HD11", 1, None, None, None],
             ["A", 493, "ILE", "HD1%", "0.996", "0.02", "H", "1", 1, 122, "ILE", "HD12", 1, None, None, None],
             ["A", 493, "ILE", "HD1%", "0.996", "0.02", "H", "1", 1, 122, "ILE", "HD13", 1, None, None, None],
         ]
-        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # noqa: E501, pylint: disable=protected-access,line-too-long
         data = [["A", "493", "ILE", "HG1x", "1.627", "0.02", "H", "1"]]
         data_out = [["A", 493, "ILE", "HG1x", "1.627", "0.02", "H", "1", 1, 122, "ILE", "HG12", 2, None, None, None]]
-        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # noqa: E501, pylint: disable=protected-access,line-too-long
         data = [["A", "493", "ILE", "HG1y", "1.536", "0.02", "H", "1"]]
         data_out = [["A", 493, "ILE", "HG1y", "1.536", "0.02", "H", "1", 1, 122, "ILE", "HG13", 2, None, None, None]]
-        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # noqa: E501, pylint: disable=protected-access,line-too-long
         data = [["A", "493", "ILE", "HG2%", "0.859", "0.02", "H", "1"]]
         data_out = [
             ["A", 493, "ILE", "HG2%", "0.859", "0.02", "H", "1", 1, 122, "ILE", "HG21", 1, None, None, None],
             ["A", 493, "ILE", "HG2%", "0.859", "0.02", "H", "1", 1, 122, "ILE", "HG22", 1, None, None, None],
             ["A", 493, "ILE", "HG2%", "0.859", "0.02", "H", "1", 1, 122, "ILE", "HG23", 1, None, None, None],
         ]
-        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)  # noqa: E501, pylint: disable=protected-access,line-too-long
 
     def test_get_seq_ident_tags(self):
         inputtags = [
@@ -3455,7 +3461,8 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertTrue(self.neft.validate_file(nefOut)[0])
 
     def test_check_mandatory_tags(self):
-        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(os.path.join(self.data_dir_path, "mth1743-test-20190919.nef"), "nef")
+        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(os.path.join(self.data_dir_path, "mth1743-test-20190919.nef"),
+                                                                          "nef")
         self.assertEqual(missing_sf_tags, ["_nef_distance_restraint_list.potential_type", "_nef_dihedral_restraint_list.potential_type"])
         self.assertEqual(missing_lp_tags, ["_nef_sequence.index", "_nef_distance_restraint.index",
                                            "_nef_distance_restraint.weight", "_nef_dihedral_restraint.index"])

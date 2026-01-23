@@ -252,14 +252,16 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     one_letter_na = False
                     if self.hasPolySeq\
                        and (compId1 in ('A', 'C', 'G', 'I', 'T', 'U') or compId2 in ('A', 'C', 'G', 'I', 'T', 'U')):
-                        chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0], False)
+                        chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                     atomId1.split('|', 1)[0], False)
                         for cifChainId, cifSeqId, cifCompId, isPolySeq in chainAssign1:
                             if isPolySeq:
                                 seqKey = (cifChainId, cifSeqId, cifCompId)
                                 if seqKey in self.authToEntityType and 'ribonucleotide' in self.authToEntityType[seqKey]:
                                     one_letter_na = True
                                     break
-                        chainAssign2, _ = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0], False)
+                        chainAssign2, _ = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                     atomId2.split('|', 1)[0], False)
                         for cifChainId, cifSeqId, cifCompId, isPolySeq in chainAssign2:
                             if isPolySeq:
                                 seqKey = (cifChainId, cifSeqId, cifCompId)
@@ -310,7 +312,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
                             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                               or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                                 isCco = False
 
                             if chain_id_1 != chain_id_2:
@@ -690,9 +693,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
-                        # print(f"constraint_type={getDistConstraintType(self.atomSelectionSet, dstFunc, self.csStat, self.originalFileName)}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
                             if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.csStat)\
@@ -802,7 +805,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
@@ -810,7 +814,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-residue scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -827,13 +832,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     else:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-residue scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found zero scalar coupling constant; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if self.createSfDict:
@@ -937,7 +944,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
                             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                               or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                                 isCco = False
 
                             if chain_id_1 != chain_id_2:
@@ -1314,7 +1322,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -1425,7 +1434,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
@@ -1433,7 +1443,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-residue scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1450,13 +1461,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     else:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-residue scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found zero scalar coupling constant; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if self.createSfDict:
@@ -2249,7 +2262,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -2258,7 +2272,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2273,13 +2288,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 else:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero RDC vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2289,7 +2306,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                       "Found an RDC vector over multiple covalent bonds; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:
@@ -2580,8 +2598,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                         atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                         atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -2693,7 +2713,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -2936,8 +2957,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                         atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                         atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -3052,7 +3075,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -3203,8 +3227,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                         atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                         atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -3317,7 +3343,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -3485,8 +3512,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                         atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                         atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -3598,7 +3627,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -3841,8 +3871,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                         atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                         atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -3957,7 +3989,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -4108,8 +4141,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                         self.retrieveLocalSeqScheme()
 
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                         atomId1.split('|', 1)[0])
+                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                         atomId2.split('|', 1)[0])
 
                         if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
@@ -4222,7 +4257,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -4359,8 +4395,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -4458,7 +4496,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
     def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
-        if (self.file_ext is not None and self.file_ext in ('upv', 'lov')) or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
+        if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
+           or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
             self.cur_subtype = 'noepk'
 
         self.cur_subtype_altered = False
@@ -4520,7 +4559,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                    and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                                        _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        _atomId, _, details =\
+                                            self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                                         if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                                             _atomId = [_atomId[int(atomId[-1]) - 1]]
 
@@ -4569,7 +4609,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                    and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                                        _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        _atomId, _, details =\
+                                            self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                                         if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                                             _atomId = [_atomId[int(atomId[-1]) - 1]]
 
@@ -4617,7 +4658,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                    and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                                        _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        _atomId, _, details =\
+                                            self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                                         if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                                             _atomId = [_atomId[int(atomId[-1]) - 1]]
 
@@ -4666,7 +4708,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                    and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                                        _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        _atomId, _, details =\
+                                            self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                                         if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                                             _atomId = [_atomId[int(atomId[-1]) - 1]]
 
@@ -4758,7 +4801,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
                             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                               or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                                 isCco = False
 
                             if chain_id_1 != chain_id_2:
@@ -5155,7 +5199,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
+                        print(f"subtype={self.cur_subtype} "
+                              f"id={self.distRestraints if self.cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -5273,7 +5318,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
@@ -5281,7 +5327,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-residue scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -5298,13 +5345,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     else:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-residue scalar coupling constant; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found zero scalar coupling constant; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if self.createSfDict:
@@ -5361,7 +5410,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
     def enterDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
-        if (self.file_ext is not None and self.file_ext in ('upv', 'lov')) or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
+        if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
+           or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
             self.cur_subtype = 'noepk'
 
         self.cur_subtype_altered = False
@@ -5388,7 +5438,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
     def enterDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
-        if (self.file_ext is not None and self.file_ext in ('upv', 'lov')) or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
+        if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
+           or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
             self.cur_subtype = 'noepk'
 
         self.cur_subtype_altered = False
@@ -6457,7 +6508,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     chainId1 = chainAssign1[0][0]
                     chainId2 = chainAssign2[0][0]
                     if chainId1 == chainId2:
-                        seqIdDict = next((remap['seq_id_dict'] for remap in self.reasons['seq_id_remap'] if remap['chain_id'] == chainId1), None)
+                        seqIdDict = next((remap['seq_id_dict'] for remap in self.reasons['seq_id_remap']
+                                          if remap['chain_id'] == chainId1), None)
                         if seqIdDict is not None:
                             seqIdDictKeys = seqIdDict.keys()
                             seqIdDictVals = seqIdDict.values()

@@ -300,7 +300,8 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
                                     f'{L1} {L2} -> ',
-                                    comment if comment is not None or None in (L1, L2) or (has_assignments and not has_multiple_assignments)
+                                    comment if comment is not None or None in (L1, L2)
+                                    or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2}')
 
         finally:
@@ -461,7 +462,8 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
                                     f'{L1} {L2} {L3} -> ',
-                                    comment if comment is not None or None in (L1, L2, L3) or (has_assignments and not has_multiple_assignments)
+                                    comment if comment is not None or None in (L1, L2, L3)
+                                    or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3}')
 
         finally:
@@ -766,7 +768,8 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
                                     f'{L1} {L2} -> ',
-                                    comment if comment is not None or None in (L1, L2) or (has_assignments and not has_multiple_assignments)
+                                    comment if comment is not None or None in (L1, L2)
+                                    or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2}')
 
         finally:
@@ -906,7 +909,8 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
                                     f'{L1} {L2} {L3} -> ',
-                                    comment if comment is not None or None in (L1, L2, L3) or (has_assignments and not has_multiple_assignments)
+                                    comment if comment is not None or None in (L1, L2, L3)
+                                    or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3}')
 
         finally:

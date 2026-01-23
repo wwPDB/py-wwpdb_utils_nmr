@@ -939,7 +939,8 @@ class NmrDpRemediation:
                                            or (file_type == 'nmr-star' and itName == 'Constraint_type'):
 
                                             lp_data = next((lp['data'] for lp in self.__reg.lp_data[content_subtype]
-                                                            if lp['file_name'] == file_name and lp['sf_framecode'] == w['sf_framecode']), None)
+                                                            if lp['file_name'] == file_name
+                                                            and lp['sf_framecode'] == w['sf_framecode']), None)
 
                                             if lp_data is None:
                                                 lp_category = LP_CATEGORIES[file_type][content_subtype]
@@ -1011,7 +1012,8 @@ class NmrDpRemediation:
                                            or (file_type == 'nmr-star' and itName == 'Potential_type'):
 
                                             lp_data = next((lp['data'] for lp in self.__reg.lp_data[content_subtype]
-                                                            if lp['file_name'] == file_name and lp['sf_framecode'] == w['sf_framecode']), None)
+                                                            if lp['file_name'] == file_name
+                                                            and lp['sf_framecode'] == w['sf_framecode']), None)
 
                                             if lp_data is None:
                                                 lp_category = LP_CATEGORIES[file_type][content_subtype]
@@ -1272,10 +1274,12 @@ class NmrDpRemediation:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() ++ Error  - {str(e)}\n")
+                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
+                                     f"++ Error  - {str(e)}\n")
 
             return False
 
@@ -1382,10 +1386,12 @@ class NmrDpRemediation:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() ++ Error  - {str(e)}\n")
+                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
+                                     f"++ Error  - {str(e)}\n")
 
             return False
 
@@ -1456,10 +1462,12 @@ class NmrDpRemediation:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testDistRestraintAsSymmetry() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsSymmetry() ++ Error  - {str(e)}\n")
+                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
+                                     f"++ Error  - {str(e)}\n")
 
             return False
 
@@ -1621,10 +1629,12 @@ class NmrDpRemediation:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - {str(e)}\n")
+                self.__reg.log.write(f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
+                                     f"++ Error  - {str(e)}\n")
 
             return False
 
@@ -2041,10 +2051,12 @@ class NmrDpRemediation:
             if isinstance(item['entity_copies'], int):
                 components_ex_water += item['entity_copies']
 
-        ligand_total = sum(len(item['label_asym_id'].split(',') if 'fixed_label_asym_id' not in item else item['fixed_label_asym_id'].split(','))
+        ligand_total = sum(len(item['label_asym_id'].split(',')
+                               if 'fixed_label_asym_id' not in item else item['fixed_label_asym_id'].split(','))
                            for item in entity_assembly
                            if item['entity_type'] == 'non-polymer' and 'ION' not in item['entity_desc'])
-        ion_total = sum(len(item['label_asym_id'].split(',') if 'fixed_label_asym_id' not in item else item['fixed_label_asym_id'].split(','))
+        ion_total = sum(len(item['label_asym_id'].split(',')
+                            if 'fixed_label_asym_id' not in item else item['fixed_label_asym_id'].split(','))
                         for item in entity_assembly
                         if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc'])
 
@@ -2066,7 +2078,8 @@ class NmrDpRemediation:
 
         chem_comp = self.__reg.cR.getDictList('chem_comp')
 
-        self.__paramag = len(chem_comp) > 0 and any(True for cc in chem_comp if cc['type'] == 'non-poly' and cc['id'] in PARAMAGNETIC_ELEMENTS)
+        self.__paramag = len(chem_comp) > 0\
+            and any(True for cc in chem_comp if cc['type'] == 'non-poly' and cc['id'] in PARAMAGNETIC_ELEMENTS)
 
         has_cys = any(True for cc in chem_comp
                       if ((cc['type'] == 'L-peptide linking' and cc['id'] == 'CYS')
@@ -2391,7 +2404,8 @@ class NmrDpRemediation:
                 seq_keys.add(seq_key)
 
                 if self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
+                   and any(True for d in self.__reg.nmr_ext_poly_seq
+                           if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
@@ -2412,7 +2426,8 @@ class NmrDpRemediation:
                             index += 1
 
                 if auth_asym_id in asym_to_orig_seq:
-                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
+                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items()
+                                         if _k == (auth_seq_id, comp_id)), comp_id)
                 else:
                     auth_comp_id = comp_id
 
@@ -2426,9 +2441,11 @@ class NmrDpRemediation:
 
                 if entity_type == 'polymer':
                     ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == auth_asym_id)
-                    nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
+                    nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id,
+                                                                                     label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
-                        nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
+                        nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0],
+                                                                                         label_scheme=False)
 
                     if nmr_ps is not None:
                         try:
@@ -2480,14 +2497,16 @@ class NmrDpRemediation:
                 index += 1
 
                 if row[seq_link_col] == 'end' and self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
+                   and any(True for d in self.__reg.nmr_ext_poly_seq
+                           if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
                     for d in self.__reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_key = (entity_assembly_id, _auth_seq_id)
-                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694:
+                            # 2l1f, DAOTHER-9694:
+                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
@@ -2642,7 +2661,8 @@ class NmrDpRemediation:
                 seq_keys.add(seq_key)
 
                 if self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
+                   and any(True for d in self.__reg.nmr_ext_poly_seq
+                           if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _offset = seq_id - auth_seq_id
@@ -2672,7 +2692,8 @@ class NmrDpRemediation:
                             index += 1
 
                 if auth_asym_id in asym_to_orig_seq:
-                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
+                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items()
+                                         if _k == (auth_seq_id, comp_id)), comp_id)
                 else:
                     auth_comp_id = comp_id
 
@@ -2689,9 +2710,11 @@ class NmrDpRemediation:
 
                 if entity_type == 'polymer':
                     ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == auth_asym_id)
-                    nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
+                    nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id,
+                                                                                     label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
-                        nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
+                        nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0],
+                                                                                         label_scheme=False)
 
                     if nmr_ps is not None:
                         try:
@@ -2753,7 +2776,8 @@ class NmrDpRemediation:
                 index += 1
 
                 if row[seq_link_col] == 'end' and self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
+                   and any(True for d in self.__reg.nmr_ext_poly_seq
+                           if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
                     for d in self.__reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
@@ -2762,7 +2786,8 @@ class NmrDpRemediation:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_id = _auth_seq_id + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
-                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694:
+                            # 2l1f, DAOTHER-9694:
+                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
@@ -2855,7 +2880,8 @@ class NmrDpRemediation:
                                 {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                 {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                 {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False, 'default': '1', 'default-from': 'parent'},
+                                {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False,
+                                 'default': '1', 'default-from': 'parent'},
                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                 ]
 
@@ -3072,7 +3098,8 @@ class NmrDpRemediation:
                                             _atom_id = b[self.__reg.ccU.ccbAtomId1] if b[self.__reg.ccU.ccbAtomId1] != atom_id\
                                                 else b[self.__reg.ccU.ccbAtomId2]
                                             if any(True for a in self.__reg.ccU.lastAtomList
-                                                   if _atom_id == a[self.__reg.ccU.ccaAtomId] and a[self.__reg.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                   if _atom_id == a[self.__reg.ccU.ccaAtomId]
+                                                   and a[self.__reg.ccU.ccaLeavingAtomFlag] == 'Y'):
                                                 leaving_atom_id = _atom_id
                                                 break
 
@@ -3514,7 +3541,8 @@ class NmrDpRemediation:
             ent_sf.add_tag('Nstd_linkage', None if entity_type != 'polymer' else item['nstd_linkage'])
             ent_sf.add_tag('Nonpolymer_comp_ID', None if entity_type not in ('non-polymer', 'water') else item['comp_id'])
             ent_sf.add_tag('Nonpolymer_comp_label', None if entity_type != 'non-polymer' else f"$chem_comp_{item['comp_id']}")
-            ent_sf.add_tag('Number_of_monomers', None if entity_type in ('non-polymer', 'water') else item['num_of_monomers'] + nmr_ext_monomers)
+            ent_sf.add_tag('Number_of_monomers',
+                           None if entity_type in ('non-polymer', 'water') else item['num_of_monomers'] + nmr_ext_monomers)
             ent_sf.add_tag('Number_of_nonpolymer_components', None if entity_type not in ('non-polymer', 'water') else 1)
             ent_sf.add_tag('Paramagnetic',
                            'no' if not self.__paramag or entity_type not in ('non-polymer', 'water')
@@ -3597,7 +3625,8 @@ class NmrDpRemediation:
                                  {'name': 'Type', 'type': 'enum',
                                   'enum': ('common', 'abbreviation', 'synonym')}
                                  ]
-                ecn_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                ecn_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True,
+                                   'default': '1', 'default-from': 'parent'},
                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
@@ -3630,7 +3659,8 @@ class NmrDpRemediation:
                                   'enum': ('IUPAC', 'CAS name', 'CAS registry number', 'BMRB',
                                            'Three letter code', 'Pfam', 'Swiss-Prot', 'EC', 'NCBI')}
                                  ]
-                esn_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                esn_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True,
+                                   'default': '1', 'default-from': 'parent'},
                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
@@ -3660,7 +3690,8 @@ class NmrDpRemediation:
 
                 ek_key_items = [{'name': 'Keyword', 'type': 'str'}
                                 ]
-                ek_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                ek_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True,
+                                  'default': '1', 'default-from': 'parent'},
                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                  ]
 
@@ -3803,7 +3834,8 @@ class NmrDpRemediation:
                                  {'name': 'Num', 'type': 'int'},
                                  {'name': 'Comp_index_ID', 'type': 'int'}
                                  ]
-                eps_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                eps_data_items = [{'name': 'Entity_ID', 'type': 'pointer-index', 'mandatory': True,
+                                   'default': '1', 'default-from': 'parent'},
                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
@@ -4067,7 +4099,8 @@ class NmrDpRemediation:
 
             allow_chain_id_mismatch = len(poly_seq) == 1
 
-            modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+            modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id,
+                                                                   sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         elif self.__reg.star_data_type[file_list_id] == 'Saveframe':
             sf = self.__reg.star_data[file_list_id]
@@ -4080,7 +4113,8 @@ class NmrDpRemediation:
 
             allow_chain_id_mismatch = len(poly_seq) == 1
 
-            modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+            modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id,
+                                                                   sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         else:
 
@@ -4097,7 +4131,8 @@ class NmrDpRemediation:
 
                 allow_chain_id_mismatch = len(poly_seq) == 1
 
-                modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+                modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id,
+                                                                       sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         return modified
 
@@ -4930,7 +4965,8 @@ class NmrDpRemediation:
                             for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                 if src_idx + offset < len(src_lp):
                                     row = src_lp.data[src_idx + offset]
-                                    if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                    if (row[seq_id_col] == str(_row[3])
+                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
                                         valid = True
@@ -4939,7 +4975,8 @@ class NmrDpRemediation:
                                             break
                                 if src_idx - offset >= 0:
                                     row = src_lp.data[src_idx - offset]
-                                    if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                    if (row[seq_id_col] == str(_row[3])
+                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
                                         valid = True
@@ -4964,7 +5001,8 @@ class NmrDpRemediation:
                            and atom_id not in _atom_site_atom_id:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
                                 cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                            if cca[self.__reg.ccU.ccaAtomId] == atom_id and cca[self.__reg.ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                            if cca[self.__reg.ccU.ccaAtomId] == atom_id
+                                            and cca[self.__reg.ccU.ccaLeavingAtomFlag] == 'N'), None)
                                 if cca is None:
                                     atom_id = 'H'
                                     if fill_auth_atom_id:
@@ -4977,7 +5015,8 @@ class NmrDpRemediation:
                                 and atom_id not in _atom_site_atom_id:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
                                 cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                            if cca[self.__reg.ccU.ccaAtomId] == atom_id and cca[self.__reg.ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                            if cca[self.__reg.ccU.ccaAtomId] == atom_id
+                                            and cca[self.__reg.ccU.ccaLeavingAtomFlag] == 'N'), None)
                                 if cca is None:
                                     atom_id = 'H1'
                                     if fill_auth_atom_id:
@@ -5330,7 +5369,8 @@ class NmrDpRemediation:
                             for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                 if src_idx + offset < len(src_lp):
                                     row = src_lp.data[src_idx + offset]
-                                    if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                    if (row[seq_id_col] == str(_row[3])
+                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
                                         or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
@@ -5340,7 +5380,8 @@ class NmrDpRemediation:
                                             break
                                 if src_idx - offset >= 0:
                                     row = src_lp.data[src_idx - offset]
-                                    if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                    if (row[seq_id_col] == str(_row[3])
+                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
                                         or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
@@ -5947,9 +5988,10 @@ class NmrDpRemediation:
                                         _seq_key = (seq_key[0], seq_key[1])
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                     else:
-                                        auth_asym_id, auth_comp_id = next(((_auth_asym_id, _auth_comp_id)
-                                                                           for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                                           if _auth_seq_id == auth_seq_id_), (auth_asym_id, auth_comp_id))
+                                        auth_asym_id, auth_comp_id =\
+                                            next(((_auth_asym_id, _auth_comp_id)
+                                                  for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                  if _auth_seq_id == auth_seq_id_), (auth_asym_id, auth_comp_id))
                                         seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                         if seq_key in auth_to_star_seq:
                                             _row[16] = row[auth_asym_id_col] = auth_asym_id
@@ -6005,7 +6047,8 @@ class NmrDpRemediation:
                                            and len(set(_coord_atom_site['alt_comp_id'])) > 1:
                                             _row[19] = atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
                                         else:
-                                            _row[19] = atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                            _row[19] = atom_id =\
+                                                _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                     elif 'split_comp_id' in _coord_atom_site:
                                         for _comp_id in _coord_atom_site['split_comp_id']:
                                             if _comp_id == comp_id:
@@ -6088,7 +6131,8 @@ class NmrDpRemediation:
                                                     if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                             elif len_in_grp == 3:
                                                 _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                    if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                    if ch3_name_in_xplor and atom_id[0] == 'H'\
+                                                    and atom_id[-1] in ('1', '2', '3')\
                                                     else atom_id
                                             elif _row[23] in EMPTY_VALUE:
                                                 _row[23] = atom_id
@@ -6169,7 +6213,8 @@ class NmrDpRemediation:
                                                             if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                                     elif len_in_grp == 3:
                                                         _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                            if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                            if ch3_name_in_xplor and atom_id[0] == 'H'\
+                                                            and atom_id[-1] in ('1', '2', '3')\
                                                             else atom_id
                                                     elif _row[23] in EMPTY_VALUE:
                                                         _row[23] = atom_id
@@ -6282,7 +6327,8 @@ class NmrDpRemediation:
                                     _row[18] = comp_id
                                     # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                     cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
-                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
+                                                    and cca_row[6] == _seq_key[1]), None)
                                     if cca_row is not None:
                                         _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
                                     if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
@@ -6308,7 +6354,8 @@ class NmrDpRemediation:
                                                             and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
-                                            row[19] = atom_id = __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                            row[19] = atom_id =\
+                                                __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
                                             _seq_key = __seq_key
                                             break
                                         if _atom_id in __coord_atom_site['atom_id']:
@@ -6371,7 +6418,8 @@ class NmrDpRemediation:
                                                 if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                         elif len_in_grp == 3:
                                             _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                if ch3_name_in_xplor and atom_id[0] == 'H'\
+                                                and atom_id[-1] in ('1', '2', '3')\
                                                 else atom_id
                                         elif _row[23] in EMPTY_VALUE:
                                             _row[23] = atom_id
@@ -6476,7 +6524,8 @@ class NmrDpRemediation:
                                                         if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                                 elif len_in_grp == 3:
                                                     _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                        if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                        if ch3_name_in_xplor and atom_id[0] == 'H'\
+                                                        and atom_id[-1] in ('1', '2', '3')\
                                                         else atom_id
                                                 elif _row[23] in EMPTY_VALUE:
                                                     _row[23] = atom_id
@@ -6567,7 +6616,8 @@ class NmrDpRemediation:
                                     item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
                                     if item is not None and poly_seq is not None\
-                                       and any(True for _ps in poly_seq if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                       and any(True for _ps in poly_seq
+                                               if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                         entity_assembly_id = item['entity_assembly_id']
                                         entity_id = item['entity_id']
 
@@ -6618,7 +6668,8 @@ class NmrDpRemediation:
 
                                 if len(can_auth_asym_id) == 0:
                                     can_auth_asym_id = [_auth_asym_id for _auth_asym_id, _auth_seq_id, _comp_id in auth_to_star_seq
-                                                        if _auth_seq_id == seq_id and _comp_id == retrieve_label_comp_id(seq_id, _orig_comp_id)]
+                                                        if _auth_seq_id == seq_id
+                                                        and _comp_id == retrieve_label_comp_id(seq_id, _orig_comp_id)]
                                     if len(can_auth_asym_id) > 0:
                                         _orig_comp_id = retrieve_label_comp_id(seq_id, _orig_comp_id)
 
@@ -6706,7 +6757,8 @@ class NmrDpRemediation:
                                                                 if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                                         elif len_in_grp == 3:
                                                             _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3')\
+                                                                if ch3_name_in_xplor and atom_id[0] == 'H'\
+                                                                and atom_id[-1] in ('1', '2', '3')\
                                                                 else atom_id
                                                         elif _row[23] in EMPTY_VALUE:
                                                             _row[23] = atom_id
@@ -6741,7 +6793,8 @@ class NmrDpRemediation:
                                         item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
                                         if item is not None and poly_seq is not None\
-                                           and any(True for _ps in poly_seq if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                           and any(True for _ps in poly_seq
+                                                   if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                             entity_assembly_id = item['entity_assembly_id']
                                             entity_id = item['entity_id']
 
@@ -6806,7 +6859,8 @@ class NmrDpRemediation:
                                         _row[3] = _row[4] = seq_id
 
                                         seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                        if v[0] == entity_assembly_id and v[1] == seq_id + offset and v[2] == entity_id), None)
+                                                        if v[0] == entity_assembly_id and v[1] == seq_id + offset
+                                                        and v[2] == entity_id), None)
                                         _seq_key = None
                                         if seq_key is not None and comp_id == seq_key[2]:
                                             _seq_key = (seq_key[0], seq_key[1])
@@ -7180,7 +7234,8 @@ class NmrDpRemediation:
                                 _row[19] = None
                                 fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
+                                    cca = next((cca for cca in self.__reg.ccU.lastAtomList
+                                                if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
                                     if cca is not None:
                                         _row[7] = cca[self.__reg.ccU.ccaTypeSymbol]
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -7529,7 +7584,8 @@ class NmrDpRemediation:
                                         __row[12] = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
                                         __row[13] = None
 
-                                if not isinstance(sf, pynmrstar.Loop) and any(True for aux_loop in sf if aux_loop.category == aux_lp_category):
+                                if not isinstance(sf, pynmrstar.Loop)\
+                                   and any(True for aux_loop in sf if aux_loop.category == aux_lp_category):
 
                                     aux_loop = sf.get_loop(aux_lp_category)
 
@@ -7695,7 +7751,8 @@ class NmrDpRemediation:
                 set_sf_tag(sf, 'ID', list_id)
 
         if not self.__reg.native_combined:
-            self.__reg.dpV.testDataConsistencyInLoop(file_list_id, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, list_id)
+            self.__reg.dpV.testDataConsistencyInLoop(file_list_id, file_name, file_type, content_subtype,
+                                                     sf, sf_framecode, lp_category, list_id)
 
         get_auth_seq_scheme.cache_clear()
         get_label_seq_scheme.cache_clear()
@@ -8149,7 +8206,8 @@ class NmrDpRemediation:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ ValueError  - {warn}\n")
 
-                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
+                    elif warn.startswith('[Range value warning]')\
+                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
                         self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
                         if self.__reg.verbose:
@@ -9794,7 +9852,8 @@ class NmrDpRemediation:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
 
-                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
+                    elif warn.startswith('[Range value warning]')\
+                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
                         self.__reg.report.warning.appendDescription('unusual_chemical_shift', msg_dict)
 
                         if self.__reg.verbose:
@@ -10001,7 +10060,8 @@ class NmrDpRemediation:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
+                            err = f"Failed to validate assigned chemical shift file "\
+                                f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
@@ -11199,7 +11259,8 @@ class NmrDpRemediation:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ ValueError  - {warn}\n")
 
-                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
+                    elif warn.startswith('[Range value warning]')\
+                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
                         self.__reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
 
                         if self.__reg.verbose:
@@ -11440,7 +11501,8 @@ class NmrDpRemediation:
                 if listener is not None:
                     reasons = reader.getReasons()
 
-                    if reasons is not None and _reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                    if reasons is not None and _reasons is not None and listener.warningMessage is not None\
+                       and len(listener.warningMessage) > 0:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = AmberMRReader(self.__reg.verbose, self.__reg.log,
@@ -13302,7 +13364,8 @@ class NmrDpRemediation:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ ValueError  - {warn}\n")
 
-                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
+                    elif warn.startswith('[Range value warning]')\
+                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
                         self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
                         if self.__reg.verbose:
@@ -14968,7 +15031,8 @@ class NmrDpRemediation:
                               {'name': 'Constraint_subsubtype', 'type': 'str',
                                'enum': ('ambi', 'simple')},
                               {'name': 'Constraint_number', 'type': 'int'},
-                              {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                              {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True,
+                               'default': '1', 'default-from': 'parent'},
                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                               ]
 
@@ -15122,21 +15186,25 @@ class NmrDpRemediation:
                                     _id = int(row[id_col])
                                     if _id != prev_id:
                                         _atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                                  'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
+                                                  'seq_id':
+                                                  int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                                   'comp_id': row[comp_id_1_col],
                                                   'atom_id': row[atom_id_1_col]}
                                         _atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                                  'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
+                                                  'seq_id':
+                                                  int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                                   'comp_id': row[comp_id_2_col],
                                                   'atom_id': row[atom_id_2_col]}
                                         prev_id = _id
                                         continue
                                     atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                             'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
+                                             'seq_id':
+                                             int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                              'comp_id': row[comp_id_1_col],
                                              'atom_id': row[atom_id_1_col]}
                                     atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                             'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
+                                             'seq_id':
+                                             int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                              'comp_id': row[comp_id_2_col],
                                              'atom_id': row[atom_id_2_col]}
                                     if isAmbigAtomSelection([_atom1, atom1], self.__reg.csStat)\
@@ -16024,7 +16092,8 @@ class NmrDpRemediation:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             try:
-                if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'hydrogen bond':
+                if 'constraint_subtype' in sf_item[sf_framecode]\
+                   and sf_item[sf_framecode]['constraint_subtype'] == 'hydrogen bond':
                     H_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
             except KeyError:
                 pass
@@ -16036,7 +16105,8 @@ class NmrDpRemediation:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             try:
-                if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'disulfide bond':
+                if 'constraint_subtype' in sf_item[sf_framecode]\
+                   and sf_item[sf_framecode]['constraint_subtype'] == 'disulfide bond':
                     SS_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
             except KeyError:
                 pass
@@ -16048,7 +16118,8 @@ class NmrDpRemediation:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             try:
-                if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'photo cidnp':
+                if 'constraint_subtype' in sf_item[sf_framecode]\
+                   and sf_item[sf_framecode]['constraint_subtype'] == 'photo cidnp':
                     Derived_photo_cidnps_tot_num += sf_item[sf_framecode]['id']
             except KeyError:
                 pass
@@ -16060,7 +16131,8 @@ class NmrDpRemediation:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             try:
-                if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
+                if 'constraint_subtype' in sf_item[sf_framecode]\
+                   and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
                     Derived_paramag_relax_tot_num += sf_item[sf_framecode]['id']
             except KeyError:
                 pass
@@ -16895,9 +16967,12 @@ class NmrDpRemediation:
                                             else:
                                                 _protein_oth_jcoups += 1
 
-                            if (_protein_bb_angles > 0 and _protein_oth_angles == 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups == 0)\
-                               or (_protein_bb_angles > 0 and _protein_oth_angles > 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups > 0)\
-                               or (_protein_bb_angles == 0 and _protein_oth_angles > 0 and _protein_bb_jcoups == 0 and _protein_oth_jcoups > 0):
+                            if (_protein_bb_angles > 0 and _protein_oth_angles == 0
+                                and _protein_bb_jcoups > 0 and _protein_oth_jcoups == 0)\
+                               or (_protein_bb_angles > 0 and _protein_oth_angles > 0
+                                   and _protein_bb_jcoups > 0 and _protein_oth_jcoups > 0)\
+                               or (_protein_bb_angles == 0 and _protein_oth_angles > 0
+                                   and _protein_bb_jcoups == 0 and _protein_oth_jcoups > 0):
                                 set_sf_tag(sf, 'Constraint_type', 'J-couplings')
 
                             elif _protein_jcoups == 0:

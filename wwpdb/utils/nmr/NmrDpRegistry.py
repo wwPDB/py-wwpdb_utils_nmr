@@ -86,7 +86,8 @@ class NmrDpRegistry:
     release_mode: bool = False
     # whether to allow to raise internal error
     internal_mode: bool = False
-    # whether to combine spectral peak list in any plain text format into single NMR-STAR file (must be turned off after Phase 2, DAOTHER-7407)
+    # whether to combine spectral peak list in any plain text format into single NMR-STAR file
+    # (must be turned off after Phase 2, DAOTHER-7407)
     merge_any_pk_as_is: bool = False
     # whether to enforce to use _Peak_row_format loop for spectral peak remediation (DAOTHER-8905)
     enforce_peak_row_format: bool = False

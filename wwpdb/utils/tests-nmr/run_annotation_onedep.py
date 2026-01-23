@@ -307,7 +307,8 @@ class gen_auth_view_onedep:
         #                 download_mmcif(work_dir, pdb_id)
         #
         #             else:
-        #                 file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(work_dir, cif_file))).astimezone()
+        #                 file_last_modified =\
+        #                     datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(work_dir, cif_file))).astimezone()
         #                 if url_last_modified > file_last_modified:
         #                     download_mmcif(work_dir, pdb_id)
         #

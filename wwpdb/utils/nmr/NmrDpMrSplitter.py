@@ -3381,7 +3381,8 @@ class NmrDpMrSplitter:
 
                                     if len(col[4]) > 4 and len_col == 8:
                                         orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[4])
-                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id.upper() not in STD_MON_DICT:
+                                        if auth_comp_id is not None and orig_comp_id is not None\
+                                           and orig_comp_id.upper() not in STD_MON_DICT:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': auth_comp_id,
                                                         'auth_seq_id': auth_seq_id,
@@ -3940,7 +3941,8 @@ class NmrDpMrSplitter:
                             input_source_dic = input_source.get()
                             if 'content_subtype' in input_source_dic:
                                 content_subtype = input_source_dic['content_subtype']
-                                if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
+                                       if mr_content_subtype in content_subtype):
                                     self.__reg.mr_has_valid_star_restraint = True
                                     mr_part_paths.append({'nmr-star': mrPath})
 
@@ -4265,7 +4267,8 @@ class NmrDpMrSplitter:
                             f"and can be {possible_types} as well. @todo: It needs to be reviewed."
 
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                                                                  f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                  "++ Error  - " + err)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
@@ -4387,8 +4390,9 @@ class NmrDpMrSplitter:
                     else:
                         file_ext = os.path.basename(split_ext[0]).lower()
 
+                    # AMBER coordinate file extensions
                     if file_ext in ('x', 'rc', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
-                       or 'rc' in file_ext or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:  # AMBER coordinate file extensions
+                       or 'rc' in file_ext or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:
                         is_crd = False
                         with open(dst_file, 'r') as ifh:
                             for pos, line in enumerate(ifh, start=1):
@@ -4512,7 +4516,8 @@ class NmrDpMrSplitter:
                         peak_file_list.append(_ar)
 
                         pk_list_paths.append({'nmr-peaks': dst_file,
-                                              'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                              'original_file_name':
+                                              None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                         remediated = True
 
@@ -4564,7 +4569,8 @@ class NmrDpMrSplitter:
                         split_file_list.append(_ar)
 
                         mr_part_paths.append({_ar['file_type']: dst_file,
-                                              'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                              'original_file_name':
+                                              None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                         continue
 
@@ -4586,7 +4592,8 @@ class NmrDpMrSplitter:
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_file_type: dst_file,
-                                                  'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                                  'original_file_name':
+                                                  None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                             designated = True
 
@@ -4619,7 +4626,8 @@ class NmrDpMrSplitter:
                         peak_file_list.append(_ar)
 
                         pk_list_paths.append({'nmr-peaks': dst_file,
-                                              'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                              'original_file_name':
+                                              None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                         remediated = True
 
@@ -5226,7 +5234,8 @@ class NmrDpMrSplitter:
                 if content_subtype is None:
                     continue
 
-                has_restraint = 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype or 'rdc_restraint' in content_subtype
+                has_restraint = 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype\
+                    or 'rdc_restraint' in content_subtype
                 has_spectral_peak = 'spectral_peak' in content_subtype or 'spectral_peak_alt' in content_subtype
 
             if not has_restraint:
@@ -5249,7 +5258,8 @@ class NmrDpMrSplitter:
                         with open(touch_file, 'w') as ofh:
                             ofh.write('')
 
-                    if not any(re.search(r'\/bmr\d+\/work\/data\/', ar['file_name']) for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]
+                    if not any(re.search(r'\/bmr\d+\/work\/data\/', ar['file_name'])
+                               for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]
                                if ar['file_type'].startswith('nm-res') and ar['file_type'] != 'nm-res-mr'):
 
                         hint = ' or is not recognized properly'
@@ -6250,7 +6260,8 @@ class NmrDpMrSplitter:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if prev_input is not None and (err_message.startswith(NO_VIABLE_ALT_ERR_MSG) or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG)):
+            if prev_input is not None and (err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                                           or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG)):
                 if COMMENT_PAT.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
@@ -6353,7 +6364,8 @@ class NmrDpMrSplitter:
                                 with open(div_dst_file, 'r') as ifh:
                                     for line in ifh:
                                         if k > 0 and not (line.isspace() or bool(COMMENT_PAT.match(line))):
-                                            listener, parser_err_listener, lexer_err_listener = test_reader.parse(line, None, isFilePath=False)
+                                            listener, parser_err_listener, lexer_err_listener =\
+                                                test_reader.parse(line, None, isFilePath=False)
                                             has_lexer_error = lexer_err_listener is not None\
                                                 and lexer_err_listener.getMessageList() is not None
                                             has_parser_error = parser_err_listener is not None\
@@ -8095,7 +8107,8 @@ class NmrDpMrSplitter:
                                                                   {'file_name': file_name, 'description': err})
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.__detectOtherPossibleFormatAsErrorOfLegacyMr() ++ Error  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.__detectOtherPossibleFormatAsErrorOfLegacyMr() "
+                                                 f"++ Error  - {err}\n")
 
         except ValueError:
             pass

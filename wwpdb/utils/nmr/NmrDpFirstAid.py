@@ -765,10 +765,12 @@ class NmrDpFirstAid:
                                         if category == category_1:
                                             if not pass_category_1:
                                                 target['category_1_begin'] = i
-                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items() if v == category), None)
+                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items()
+                                                                        if v == category), None)
                                                 if content_subtype is not None:
                                                     target['content_subtype_1'] = content_subtype
-                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == category), None)
+                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                        if v == category), None)
                                                 if content_subtype is not None:
                                                     target['content_subtype_1'] = content_subtype
                                             pass_category_1 = True
@@ -776,14 +778,16 @@ class NmrDpFirstAid:
                                         elif category == category_2 and pass_category_1:
                                             if not pass_category_2:
                                                 target['category_2_begin'] = i
-                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items() if v == category), None)
+                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items()
+                                                                        if v == category), None)
                                                 if content_subtype is not None:
                                                     target['category_type_2'] = 'saveframe'
                                                     target['content_subtype_2'] = content_subtype
                                                     target['sf_tag_prefix_2'] = SF_TAG_PREFIXES[file_type][content_subtype]
                                                     target['sf_category_2'] = SF_CATEGORIES[file_type][content_subtype]
                                                     target['sf_framecode_2'] = target['sf_category_2'] + '_1'
-                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == category), None)
+                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                        if v == category), None)
                                                 if content_subtype is not None:
                                                     target['category_type_2'] = 'loop'
                                                     target['content_subtype_2'] = content_subtype
@@ -892,11 +896,13 @@ class NmrDpFirstAid:
 
             if __pynmrstar_v3_3__:
                 msg_pattern = re.compile(r'^.*' + msg_template
-                                         + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with the saveframe name (\S+)\. "
+                                         + r" Error occurred in tag _\S+ with value ([\S ]+) "
+                                         r"which conflicts with the saveframe name (\S+)\. "
                                          r"Error detected on line (\d+).*$")
             else:
                 msg_pattern = re.compile(r'^.*' + msg_template
-                                         + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with.* the saveframe name (\S+)\. "
+                                         + r" Error occurred in tag _\S+ with value ([\S ]+) "
+                                         r"which conflicts with.* the saveframe name (\S+)\. "
                                          r"Error detected on line (\d+).*$")
 
             try:
@@ -1017,7 +1023,8 @@ class NmrDpFirstAid:
                             g = ONEDEP_ANY_FILE_NAME_PAT.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
 
-                    self.__reg.star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+                    self.__reg.star_data[file_list_id].write_to_file(srcPath,
+                                                                     show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
         else:
 
@@ -1109,7 +1116,8 @@ class NmrDpFirstAid:
                         itName = '_' + sf_category + '.sf_framecode'
 
                         if self.__reg.resolve_conflict:
-                            warn = f"{itName} {sf_framecode!r} should be matched with saveframe name {sf.name!r}. {itName} will be overwritten."
+                            warn = f"{itName} {sf_framecode!r} should be matched "\
+                                f"with saveframe name {sf.name!r}. {itName} will be overwritten."
 
                             self.__reg.report.warning.appendDescription('missing_saveframe',
                                                                         {'file_name': file_name, 'sf_framecode': sf.name,
@@ -1465,7 +1473,8 @@ class NmrDpFirstAid:
                         itName = '_' + sf_category + '.Sf_framecode'
 
                         if self.__reg.resolve_conflict:
-                            warn = f"{itName} {sf_framecode!r} should be matched with saveframe name {sf.name!r}. {itName} will be overwritten."
+                            warn = f"{itName} {sf_framecode!r} should be matched "\
+                                f"with saveframe name {sf.name!r}. {itName} will be overwritten."
 
                             self.__reg.report.warning.appendDescription('missing_saveframe',
                                                                         {'file_name': file_name, 'sf_framecode': sf.name,
@@ -1802,7 +1811,7 @@ class NmrDpFirstAid:
             if file_list_id < len(self.__reg.sf_name_corrections) and sf_framecode in self.__reg.sf_name_corrections[file_list_id]:
 
                 try:
-                    return self.__reg.star_data[file_list_id].get_saveframe_by_name(self.__reg.sf_name_corrections[file_list_id][sf_framecode])
+                    return self.__reg.star_data[file_list_id].get_saveframe_by_name(self.__reg.sf_name_corrections[file_list_id][sf_framecode])  # noqa: E501, pylint:disable=line-too-long
                 except KeyError:
                     return None
 

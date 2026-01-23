@@ -3846,7 +3846,8 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
         cR_prev = CifReader(False, sys.stdout, use_cache=False)
         cR_prev.parse(loc_cif_path)
 
-        nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
+        nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp')
+                              if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
 
         if len(nstd_residues_prev) == 0:
             continue
@@ -3865,7 +3866,8 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
                                                     ])
 
         for c in coord:
-            c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+            c_prev = next((c_prev for c_prev in coord_prev
+                           if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
 
             if c_prev is None:
                 continue
@@ -4017,7 +4019,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                                                     ])
 
         for c in coord:
-            c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+            c_prev = next((c_prev for c_prev in coord_prev
+                           if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
 
             if c_prev is None:
                 continue

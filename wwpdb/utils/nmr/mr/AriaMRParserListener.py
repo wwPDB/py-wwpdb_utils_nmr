@@ -439,7 +439,8 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         self.allowZeroUpperLimit = True
                 self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                dstFunc = self.validateDistanceRange(weight, None, self.cur_lower_limit, self.cur_upper_limit, None, self.omitDistLimitOutlier)
+                dstFunc = self.validateDistanceRange(weight, None, self.cur_lower_limit, self.cur_upper_limit,
+                                                     None, self.omitDistLimitOutlier)
 
                 if dstFunc is None:
                     return

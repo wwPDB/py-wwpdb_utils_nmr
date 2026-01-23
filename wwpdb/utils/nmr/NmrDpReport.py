@@ -43,7 +43,8 @@
 # 27-Nov-2020  M. Yokochi - support grouped error/warning message (DAOTHER-6373)
 # 17-Dec-2020  M. Yokochi - add 'atom_not_found' error (DAOTHER-6345)
 # 21-Jan-2021  M. Yokochi - symptomatic treatment for DAOTHER-6509
-# 03-Feb-2021  M. Yokochi - add support for 'identical_chain_id' attribute, which contains mapping of chain id(s), which shares the same entity.
+# 03-Feb-2021  M. Yokochi - add support for 'identical_chain_id' attribute, which contains mapping of chain id(s),
+#                           which shares the same entity
 # 30-Mar-2021  M. Yokochi - getNmrSeq1LetterCodeOf() and getModelSeq1LetterCodeOf() do not return any 3-letter code (DAOTHER-6744)
 # 24-Jun-2021  M. Yokochi - resolve duplication in grouped error/warning message (DAOTHER-6345, 6830)
 # 29-Jun-2021  M. Yokochi - enable to access NMR polymer sequence from auth_asym_id (DAOTHER-7108)
@@ -61,10 +62,12 @@
 # 22-Mar-2022  M. Yokochi - add 'nm-res-ros' file type for ROSETTA restraint format (DAOTHER-7690)
 # 23-Mar-2022  M. Yokochi - add 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data' warning types
 #                           (DAOTHER-7690)
-# 13-Apr-2022  M. Yokochi - add 'label_scheme' option to select label_*_id or auth_*_id scheme of the coordinate file (NMR restraint remediation)
+# 13-Apr-2022  M. Yokochi - add 'label_scheme' option to select label_*_id or auth_*_id scheme of the coordinate file
+#                           (NMR restraint remediation)
 # 14 Apr-2022  M. Yokochi - add 'nm-res-mr' file type for NMR restraint remediation and V5.13
 # 17-May-2022  M. Yokochi - add 'nm-res-bio' file type for BIOSYM restraint format (DAOTHER-7825, NMR restraint remediation)
-# 01-Jun-2022  M. Yokochi - add 'nm-res-gro' and 'nm-aux-gro' file types for GROMACS restraint format (DAOTHER-7769, NMR restraint remediation)
+# 01-Jun-2022  M. Yokochi - add 'nm-res-gro' and 'nm-aux-gro' file types for GROMACS restraint format
+#                           (DAOTHER-7769, NMR restraint remediation)
 # 17-Jun-2022  M. Yokochi - add 'nm-res-dyn' file type for DYNAMO/PALES/TALOS restraint format (DAOTHER-7872, NMR restraint remediation)
 # 29-Jun-2022  M. Yokochi - add 'insufficient_mr_data' warning type (NMR restraint remediation)
 # 06-Jul-2022  M. Yokochi - add 'nm-res-syb' file type for SYBYL restraint format (DAOTHER-7902, NMR restraint remediation)
@@ -89,8 +92,8 @@
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary
 #                           (NMR restraint remediation, 6fw4)
-# 07-Nov-2024  M. Yokochi - add 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-xea', and 'nm-pea-xwi' file types
-#                           for NMR spectral peak remediation
+# 07-Nov-2024  M. Yokochi - add 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-xea',
+#                           and 'nm-pea-xwi' file types for NMR spectral peak remediation
 # 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file (DAOTHER-7829, 9785, NMR data remediation)
@@ -323,7 +326,9 @@ class NmrDpReport:
         """ Return stats of experimental data of a given content subtype.
         """
 
-        return get_value_safe(get_value_safe(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'stats_of_exptl_data'), content_subtype)
+        return get_value_safe(get_value_safe(self.getInputSourceDict(self.getInputSourceIdOfNmrData()),
+                                             'stats_of_exptl_data'),
+                              content_subtype)
 
     def getNmrLegacyStatsOfExptlData(self, src_id: int, content_subtype: str) -> Any:
         """ Return stats of experimental data of a given content subtype.
@@ -1360,9 +1365,11 @@ class NmrDpReport:
             return None
 
         if label_scheme:
-            rmsd = [ps[rmsd_label] for ps in poly_seq if cif_beg_seq_id <= ps['seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
+            rmsd = [ps[rmsd_label] for ps in poly_seq
+                    if cif_beg_seq_id <= ps['seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
         else:
-            rmsd = [ps[rmsd_label] for ps in poly_seq if cif_beg_seq_id <= ps['auth_seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
+            rmsd = [ps[rmsd_label] for ps in poly_seq
+                    if cif_beg_seq_id <= ps['auth_seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
 
         if len(rmsd) == 0:
             return None
@@ -1990,13 +1997,17 @@ class NmrDpReportInputSource:
 
             if item == 'file_type' and value not in self.file_types:
                 if self.__verbose:
-                    self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown file type {value}\n")
-                raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown file type {value}")
+                    self.__log.write(f"+{self.__class_name__}.setItemValue() "
+                                     f"++ Error  - Unknown file type {value}\n")
+                raise ValueError(f"+{self.__class_name__}.setItemValue() "
+                                 f"++ Error  - Unknown file type {value}")
 
             if item == 'content_type' and value not in self.content_types:
                 if self.__verbose:
-                    self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content type {value}\n")
-                raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content type {value}")
+                    self.__log.write(f"+{self.__class_name__}.setItemValue() "
+                                     f"++ Error  - Unknown content type {value}\n")
+                raise ValueError(f"+{self.__class_name__}.setItemValue() "
+                                 f"++ Error  - Unknown content type {value}")
 
             if item == 'content_subtype':
 
@@ -2004,8 +2015,10 @@ class NmrDpReportInputSource:
 
                     if key not in self.content_subtypes:
                         if self.__verbose:
-                            self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}\n")
-                        raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}")
+                            self.__log.write(f"+{self.__class_name__}.setItemValue() "
+                                             f"++ Error  - Unknown content subtype in {value.keys()}\n")
+                        raise ValueError(f"+{self.__class_name__}.setItemValue() "
+                                         f"++ Error  - Unknown content subtype in {value.keys()}")
 
                 non_positive_keys = [key for key in value if int(value[key]) <= 0]
 
@@ -2020,8 +2033,10 @@ class NmrDpReportInputSource:
 
         else:
             if self.__verbose:
-                self.__log.write(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n")
-            raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
+                self.__log.write(f"+{self.__class_name__}.setItemValue() "
+                                 f"++ Error  - Unknown item type {item}\n")
+            raise KeyError(f"+{self.__class_name__}.setItemValue() "
+                           f"++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
         """ Retrieve contents.
@@ -2051,8 +2066,10 @@ class NmrDpReportInputSource:
             # # should pass because reallocation of chain_id may happen
             # else:
             #     if self.__verbose:
-            #         self.__log.write(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}\n")
-            #     raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}")
+            #         self.__log.write(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() "
+            #                          f"++ Error  - Unknown seq_id {seq_id}\n")
+            #     raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() "
+            #                    f"++ Error  - Unknown seq_id {seq_id}")
 
         except StopIteration:
             if self.__verbose:

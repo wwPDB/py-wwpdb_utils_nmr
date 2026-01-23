@@ -180,7 +180,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
             found_volume = False
             if self.__has_volume and self.__has_real_vol\
-               and any(self.originalNumberSelection[_offset] == self.__real_vol for _offset in range(offset, len(self.originalNumberSelection))):
+               and any(self.originalNumberSelection[_offset] == self.__real_vol
+                       for _offset in range(offset, len(self.originalNumberSelection))):
                 found_volume = True
 
             if self.__has_dummy_height and found_volume:
@@ -335,7 +336,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
             found_volume = False
             if self.__has_volume and self.__has_real_vol\
-               and any(self.originalNumberSelection[_offset] == self.__real_vol for _offset in range(offset, len(self.originalNumberSelection))):
+               and any(self.originalNumberSelection[_offset] == self.__real_vol
+                       for _offset in range(offset, len(self.originalNumberSelection))):
                 found_volume = True
 
             if self.__has_dummy_height and found_volume:
@@ -501,7 +503,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
             found_volume = False
             if self.__has_volume and self.__has_real_vol\
-               and any(self.originalNumberSelection[_offset] == self.__real_vol for _offset in range(offset, len(self.originalNumberSelection))):
+               and any(self.originalNumberSelection[_offset] == self.__real_vol
+                       for _offset in range(offset, len(self.originalNumberSelection))):
                 found_volume = True
 
             if self.__has_dummy_height and found_volume:

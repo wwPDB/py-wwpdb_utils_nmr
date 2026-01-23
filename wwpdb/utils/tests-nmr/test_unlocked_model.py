@@ -26,7 +26,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def __test_nmr_nef_consistency(self, entry_id):
         self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '.nef')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '_unlocked.cif', type='file')
+        self.utility.addInput(name='coordinate_file_path',
+                              value=self.data_dir_path + entry_id + '/' + entry_id + '_unlocked.cif',
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
@@ -57,8 +59,12 @@ class TestNmrDpUtility(unittest.TestCase):
             self.__test_nmr_nef_consistency(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '.nef')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '_unlocked.cif', type='file')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-unlocked-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='coordinate_file_path',
+                              value=self.data_dir_path + entry_id + '/' + entry_id + '_unlocked.cif',
+                              type='file')
+        self.utility.addInput(name='report_file_path',
+                              value=self.data_dir_path + entry_id + '-unlocked-nef-consistency-log.json',
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')

@@ -1125,7 +1125,7 @@ class NmrVrptUtility:
             return True
 
         def get_tempfile_name(suffix: str = ''):
-            return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # pylint: disable=protected-access
+            return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # noqa: E501, pylint: disable=protected-access,line-too-long
 
         if NMR_STR_FILE_PATH_KEY in self.__inputParamDict:
 
@@ -2548,7 +2548,8 @@ class NmrVrptUtility:
                             atom_present = False
 
                         if atom_present:
-                            # """ TODO: rdc() should return calculated RDC value for a given vector using the RDC alignment tensor of rest_key[0]
+                            # """ TODO: rdc() should return calculated RDC value for a given vector
+                            # using the RDC alignment tensor of rest_key[0]
                             # r = rdc(rest_key[0], pos_1, pos_2)
                             # rdc_list_set[bound_key].append(r)
                             # """

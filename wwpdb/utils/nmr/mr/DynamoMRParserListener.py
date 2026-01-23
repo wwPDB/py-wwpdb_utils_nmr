@@ -240,8 +240,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -402,8 +404,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithIndex(chainId1, seqId1, compId1, atomId1.split('|', 1)[0], index, group)
-            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithIndex(chainId2, seqId2, compId2, atomId2.split('|', 1)[0], index, group)
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithIndex(chainId1, seqId1, compId1,
+                                                                           atomId1.split('|', 1)[0], index, group)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithIndex(chainId2, seqId2, compId2,
+                                                                           atomId2.split('|', 1)[0], index, group)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -427,8 +431,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -582,8 +588,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithIndex(chainId1, seqId1, compId1, atomId1.split('|', 1)[0], index, group)
-            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithIndex(chainId2, seqId2, compId2, atomId2.split('|', 1)[0], index, group)
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithIndex(chainId1, seqId1, compId1,
+                                                                           atomId1.split('|', 1)[0], index, group)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithIndex(chainId2, seqId2, compId2,
+                                                                           atomId2.split('|', 1)[0], index, group)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -607,8 +615,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -1320,7 +1330,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -1329,7 +1340,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1344,13 +1356,15 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 else:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero RDC vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -1360,7 +1374,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                       "Found an RDC vector over multiple covalent bonds; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:
@@ -1510,7 +1525,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -1519,7 +1535,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1534,13 +1551,15 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 else:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero RDC vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -1550,7 +1569,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                       "Found an RDC vector over multiple covalent bonds; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:
@@ -1700,7 +1720,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -1709,7 +1730,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1724,13 +1746,15 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 else:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero RDC vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -1740,7 +1764,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                       "Found an RDC vector over multiple covalent bonds; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:
@@ -1899,7 +1924,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -1908,7 +1934,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1923,13 +1950,15 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 else:
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero RDC vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -1939,7 +1968,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                       "Found an RDC vector over multiple covalent bonds; "
-                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:

@@ -72,7 +72,8 @@ class AriaCSReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__polySeq = polySeq
-        self.__entityAssembly = entityAssembly  # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        self.__entityAssembly = entityAssembly
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -140,7 +141,8 @@ class AriaCSReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -176,7 +178,8 @@ class AriaCSReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -201,12 +204,18 @@ class AriaCSReader:
 if __name__ == "__main__":
     nmr_poly_seq = [{'chain_id': '1',
                      'seq_id': list(range(1, 120)),
-                     'comp_id': ['SER', 'ALA', 'LYS', 'ASP', 'ILE', 'LYS', 'ASP', 'GLU', 'LYS', 'ILE', 'GLN', 'GLN', 'TYR', 'ARG', 'LYS', 'THR', 'LEU', 'THR', 'LYS', 'ILE',
-                                 'VAL', 'LYS', 'ILE', 'LYS', 'THR', 'ALA', 'ILE', 'PHE', 'HIS', 'GLU', 'THR', 'VAL', 'LYS', 'VAL', 'THR', 'CYS', 'SER', 'LYS', 'ASP', 'GLY',
-                                 'LYS', 'MET', 'LEU', 'GLU', 'TRP', 'TYR', 'LYS', 'GLY', 'LYS', 'ASN', 'ASP', 'SER', 'ASP', 'GLY', 'LYS', 'LYS', 'LYS', 'PRO', 'ILE', 'GLY',
-                                 'SER', 'PHE', 'PRO', 'LEU', 'ASN', 'LYS', 'ILE', 'THR', 'SER', 'ILE', 'ARG', 'THR', 'LYS', 'VAL', 'ASP', 'ASN', 'LEU', 'LYS', 'SER', 'LEU',
-                                 'GLU', 'ILE', 'SER', 'VAL', 'SER', 'SER', 'VAL', 'HIS', 'ILE', 'SER', 'THR', 'TYR', 'LEU', 'PHE', 'THR', 'PHE', 'LYS', 'THR', 'ARG', 'GLU',
-                                 'GLU', 'ARG', 'GLU', 'SER', 'TRP', 'GLN', 'ASN', 'ASN', 'LEU', 'GLU', 'SER', 'PHE', 'ARG', 'LYS', 'ILE', 'MET', 'SER', 'MET', 'LYS']
+                     'comp_id': ['SER', 'ALA', 'LYS', 'ASP', 'ILE', 'LYS', 'ASP', 'GLU', 'LYS', 'ILE',
+                                 'GLN', 'GLN', 'TYR', 'ARG', 'LYS', 'THR', 'LEU', 'THR', 'LYS', 'ILE',
+                                 'VAL', 'LYS', 'ILE', 'LYS', 'THR', 'ALA', 'ILE', 'PHE', 'HIS', 'GLU',
+                                 'THR', 'VAL', 'LYS', 'VAL', 'THR', 'CYS', 'SER', 'LYS', 'ASP', 'GLY',
+                                 'LYS', 'MET', 'LEU', 'GLU', 'TRP', 'TYR', 'LYS', 'GLY', 'LYS', 'ASN',
+                                 'ASP', 'SER', 'ASP', 'GLY', 'LYS', 'LYS', 'LYS', 'PRO', 'ILE', 'GLY',
+                                 'SER', 'PHE', 'PRO', 'LEU', 'ASN', 'LYS', 'ILE', 'THR', 'SER', 'ILE',
+                                 'ARG', 'THR', 'LYS', 'VAL', 'ASP', 'ASN', 'LEU', 'LYS', 'SER', 'LEU',
+                                 'GLU', 'ILE', 'SER', 'VAL', 'SER', 'SER', 'VAL', 'HIS', 'ILE', 'SER',
+                                 'THR', 'TYR', 'LEU', 'PHE', 'THR', 'PHE', 'LYS', 'THR', 'ARG', 'GLU',
+                                 'GLU', 'ARG', 'GLU', 'SER', 'TRP', 'GLN', 'ASN', 'ASN', 'LEU', 'GLU',
+                                 'SER', 'PHE', 'ARG', 'LYS', 'ILE', 'MET', 'SER', 'MET', 'LYS']
                      }]
     entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': 'A'}}
     reader = AriaCSReader(False, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)

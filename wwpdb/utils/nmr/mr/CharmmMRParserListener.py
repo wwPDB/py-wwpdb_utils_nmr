@@ -220,8 +220,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -473,11 +475,13 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         pass
 
     # Enter a parse tree produced by CharmmMRParser#manipulate_internal_coordinate.
-    def enterManipulate_internal_coordinate(self, ctx: CharmmMRParser.Manipulate_internal_coordinateContext):  # pylint: disable=unused-argument
+    def enterManipulate_internal_coordinate(self, ctx: CharmmMRParser.Manipulate_internal_coordinateContext
+                                            ):  # pylint: disable=unused-argument
         self.cur_subtype = 'geo'
 
     # Exit a parse tree produced by CharmmMRParser#manipulate_internal_coordinate.
-    def exitManipulate_internal_coordinate(self, ctx: CharmmMRParser.Manipulate_internal_coordinateContext):  # pylint: disable=unused-argument
+    def exitManipulate_internal_coordinate(self, ctx: CharmmMRParser.Manipulate_internal_coordinateContext
+                                           ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CharmmMRParser#droplet_potential.
@@ -567,12 +571,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.squareExponent = self.evaluate[self.squareExponent]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.squareExponent = 1.0
             if self.squareExponent is None or self.squareExponent <= 0.0:
                 self.f.append("[Invalid data] "
                               "The exponent value of square-well or soft-square function "
-                              f"'NOE {str(ctx.SExp())} {self.squareExponent} END' must be a positive value.")
+                              f"'NOE {str(ctx.SExp())} {self.squareExponent} END' "
+                              "must be a positive value.")
 
         elif ctx.RSwi():
             self.rSwitch = self.getNumber_s(ctx.number_s(0))
@@ -581,12 +587,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.rSwitch = self.evaluate[self.rSwitch]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.rSwitch = 1.0
             if self.rSwitch is None or self.rSwitch < 0.0:
                 self.f.append("[Invalid data] "
                               "The smoothing parameter of soft-square function "
-                              f"'NOE {str(ctx.RSwi())} {self.rSwitch} END' must not be a negative value.")
+                              f"'NOE {str(ctx.RSwi())} {self.rSwitch} END' "
+                              "must not be a negative value.")
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -595,14 +603,17 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.scale = self.evaluate[self.scale]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.scale!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.scale = 1.0
             if self.scale is None or self.scale == 0.0:
                 self.f.append("[Range value warning] "
-                              f"The scale value 'NOE {str(ctx.Scale())} {self.scale} END' should be a positive value.")
+                              f"The scale value 'NOE {str(ctx.Scale())} {self.scale} END' "
+                              "should be a positive value.")
             elif self.scale < 0.0:
                 self.f.append("[Invalid data] "
-                              f"The scale value 'NOE {str(ctx.Scale())} {self.scale} END' must not be a negative value.")
+                              f"The scale value 'NOE {str(ctx.Scale())} {self.scale} END' "
+                              "must not be a negative value.")
 
         elif ctx.KMin():
             self.kMin = self.getNumber_s(ctx.number_s(0))
@@ -611,12 +622,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.kMin = self.evaluate[self.kMin]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.kMin!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.kMin!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.kMin = 0.0
             if self.kMin is None or self.kMin < 0.0:
                 self.f.append("[Invalid data] "
                               "The kinetic parameter of soft-square function "
-                              f"'NOE {str(ctx.KMin())} {self.kMin} END' must not be a negative value.")
+                              f"'NOE {str(ctx.KMin())} {self.kMin} END' "
+                              "must not be a negative value.")
 
         elif ctx.KMax():
             self.kMax = self.getNumber_s(ctx.number_s(0))
@@ -625,12 +638,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.kMax = self.evaluate[self.kMax]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.kMax!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.kMax!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.kMax = 0.0
             if self.kMax is None or self.kMax < 0.0:
                 self.f.append("[Invalid data] "
                               "The kinetic parameter of soft-square function "
-                              f"'NOE {str(ctx.KMax())} {self.kMax} END' must not be a negative value.")
+                              f"'NOE {str(ctx.KMax())} {self.kMax} END' "
+                              "must not be a negative value.")
 
         elif ctx.RMin():
             self.rMin = self.getNumber_s(ctx.number_s(0))
@@ -639,12 +654,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.rMin = self.evaluate[self.rMin]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.rMin!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.rMin!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.rMin = 0.0
             if self.rMin is None or self.rMin < 0.0:
                 self.f.append("[Invalid data] "
                               "The lower limit of distance restraint "
-                              f"'NOE {str(ctx.RMin())} {self.rMin} END' must not be a negative value.")
+                              f"'NOE {str(ctx.RMin())} {self.rMin} END' "
+                              "must not be a negative value.")
 
         elif ctx.RMax():
             self.rMax = self.getNumber_s(ctx.number_s(0))
@@ -653,12 +670,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.rMax = self.evaluate[self.rMax]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.rMax!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.rMax!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.rMax = None
             if self.rMax is not None and self.rMax < 0.0:
                 self.f.append("[Invalid data] "
                               "The upper limit of distance restraint "
-                              f"'NOE {str(ctx.RMax())} {self.rMax} END' must not be a negative value.")
+                              f"'NOE {str(ctx.RMax())} {self.rMax} END' "
+                              "must not be a negative value.")
 
         elif ctx.FMax():
             self.fMax = self.getNumber_s(ctx.number_s(0))
@@ -667,12 +686,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.fMax = self.evaluate[self.fMax]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.fMax!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.fMax!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.fMax = None
             if self.fMax is not None and self.fMax < 0.0:
                 self.f.append("[Invalid data] "
                               "The kinetic parameter of smoothing function "
-                              f"'NOE {str(ctx.FMax())} {self.fMax} END' must not be a negative value.")
+                              f"'NOE {str(ctx.FMax())} {self.fMax} END' "
+                              "must not be a negative value.")
 
         elif ctx.RExp():
             self.rExp = self.getNumber_s(ctx.number_s(0))
@@ -681,7 +702,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.rExp = self.evaluate[self.rExp]
                 else:
                     self.f.append("[Unsupported data] "
-                                  f"The symbol {self.rExp!r} in the 'NOE' statement is not defined so that set the default value.")
+                                  f"The symbol {self.rExp!r} in the 'NOE' statement is not defined "
+                                  "so that set the default value.")
                     self.rExp = -1.0 / 6.0
             if abs(self.rExp + 1.0 / 6.0) < 0.001 or abs(self.rExp - 6.0) < 0.001:
                 self.noeAverage = 'r-6'
@@ -910,14 +932,16 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         pass
 
     # Enter a parse tree produced by CharmmMRParser#restrained_distance_statement.
-    def enterRestrained_distance_statement(self, ctx: CharmmMRParser.Restrained_distance_statementContext):  # pylint: disable=unused-argument
+    def enterRestrained_distance_statement(self, ctx: CharmmMRParser.Restrained_distance_statementContext
+                                           ):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#restrained_distance_statement.
-    def exitRestrained_distance_statement(self, ctx: CharmmMRParser.Restrained_distance_statementContext):  # pylint: disable=unused-argument
+    def exitRestrained_distance_statement(self, ctx: CharmmMRParser.Restrained_distance_statementContext
+                                          ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CharmmMRParser#external_force_statement.
@@ -1462,7 +1486,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if not self.hasPolySeq and not self.hasNonPolySeq:
                     return
 
-                simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
+                # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
+                simpleNameIndex = simpleNamesIndex = 0
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq
@@ -1477,7 +1502,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                 if simpleNameIndex == 0 and ctx.Simple_names(0):
                     chainId = str(ctx.Simple_names(0))
-                    if self.reasons is not None and 'segment_id_mismatch' in self.reasons and chainId in self.reasons['segment_id_mismatch']\
+                    if self.reasons is not None and 'segment_id_mismatch' in self.reasons\
+                       and chainId in self.reasons['segment_id_mismatch']\
                        and self.reasons['segment_id_mismatch'][chainId] in self.reasons['segment_id_match_stats'][chainId]:
                         _chainId = self.reasons['segment_id_mismatch'][chainId]
                         _stats = self.reasons['segment_id_match_stats'][chainId]
@@ -1656,7 +1682,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.factor['atom_id'] = [None]
                     self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                   f"The attribute property {_attr_prop!r} "
-                                  "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.")
+                                  "related to the Langevin dynamics (nonzero friction coefficient) is not possessed "
+                                  "in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop == 'mass':
@@ -1781,7 +1808,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         # intra
                         if self.ccU.updateChemCompDict(compId):
-                            leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
+                            leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                              if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
 
                             _atomIdSelect = set()
                             for ccb in self.ccU.lastBonds:
@@ -1812,7 +1840,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         _atom['comp_id'] = coordAtomSite['comp_id']
 
                                 if _atom is not None and _atom['comp_id'] == compId:
-                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                           'comp_id': compId, 'atom_id': _atomId})
 
                                 else:
                                     psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
@@ -1821,7 +1850,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                             seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
                                             if any(True for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId):
-                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                       'comp_id': compId, 'atom_id': _atomId})
 
                             # sequential
                             if hasLeaavindAtomId:
@@ -1848,7 +1878,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                 _seqId, _compId, _ = self.getRealSeqId(ps, _seqId, isPolySeq)
                                                 # _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                                                 if self.ccU.updateChemCompDict(_compId):
-                                                    leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
+                                                    leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                                      if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
 
                                                     _atomIdSelect = set()
                                                     for ccb in self.ccU.lastBonds:
@@ -1865,9 +1896,12 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                         _neighbor =\
                                                             self.cR.getDictListWithFilter('atom_site',
                                                                                           CARTN_DATA_ITEMS,
-                                                                                          [{'name': self.authAsymId, 'type': 'str', 'value': chainId},
-                                                                                           {'name': self.authSeqId, 'type': 'int', 'value': _seqId},
-                                                                                           {'name': self.authAtomId, 'type': 'str', 'value': _atomId},
+                                                                                          [{'name': self.authAsymId, 'type': 'str',
+                                                                                            'value': chainId},
+                                                                                           {'name': self.authSeqId, 'type': 'int',
+                                                                                            'value': _seqId},
+                                                                                           {'name': self.authAtomId, 'type': 'str',
+                                                                                            'value': _atomId},
                                                                                            {'name': self.modelNumName, 'type': 'int',
                                                                                             'value': self.representativeModelId},
                                                                                            {'name': 'label_alt_id', 'type': 'enum',
@@ -1878,7 +1912,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                             continue
 
                                                         if distance(to_np_array(_neighbor[0]), origin) < 2.5:
-                                                            _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId, 'comp_id': _compId, 'atom_id': _atomId})
+                                                            _atomSelection.append({'chain_id': chainId, 'seq_id': _seqId,
+                                                                                   'comp_id': _compId, 'atom_id': _atomId})
 
                         # struct_conn category
                         _atom = self.cR.getDictListWithFilter('struct_conn',
@@ -1991,21 +2026,28 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                             continue
 
                                         if distance(to_np_array(_neighbor[0]), origin) < 2.0:
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                   'comp_id': compId, 'atom_id': _atomId})
 
                                 else:
                                     cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
                                     if cca is not None:
-                                        _origin = {'x': float(cca[self.ccU.ccaCartnX]), 'y': float(cca[self.ccU.ccaCartnY]), 'z': float(cca[self.ccU.ccaCartnZ])}
+                                        _origin = {'x': float(cca[self.ccU.ccaCartnX]),
+                                                   'y': float(cca[self.ccU.ccaCartnY]),
+                                                   'z': float(cca[self.ccU.ccaCartnZ])}
                                         origin = to_np_array(_origin)
 
                                         for _atomId in _nonBondedAtomIdSelect:
-                                            _cca = next((_cca for _cca in self.ccU.lastAtomList if _cca[self.ccU.ccaAtomId] == _atomId), None)
+                                            _cca = next((_cca for _cca in self.ccU.lastAtomList
+                                                         if _cca[self.ccU.ccaAtomId] == _atomId), None)
                                             if _cca is not None:
-                                                _neighbor = {'x': float(_cca[self.ccU.ccaCartnX]), 'y': float(_cca[self.ccU.ccaCartnY]), 'z': float(_cca[self.ccU.ccaCartnZ])}
+                                                _neighbor = {'x': float(_cca[self.ccU.ccaCartnX]),
+                                                             'y': float(_cca[self.ccU.ccaCartnY]),
+                                                             'z': float(_cca[self.ccU.ccaCartnZ])}
 
                                                 if distance(to_np_array(_neighbor), origin) < 2.0:
-                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                           'comp_id': compId, 'atom_id': _atomId})
 
                     atomSelection = [dict(s) for s in set(frozenset(atom.items())
                                                           for atom in _atomSelection
@@ -2040,7 +2082,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         _sequenceSelect.add((chainId, seqId))
 
                     for (chainId, seqId) in _sequenceSelect:
-                        _atom = next(_atom for _atom in self.factor['atom_selection'] if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
+                        _atom = next(_atom for _atom in self.factor['atom_selection']
+                                     if _atom['chain_id'] == chainId and _atom['seq_id'] == seqId)
                         compId = _atom['comp_id']
 
                         _atomByRes =\
@@ -2056,7 +2099,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
                             for _atom in _atomByRes:
-                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
+                                _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                       'comp_id': _atom['comp_id'], 'atom_id': _atom['atom_id']})
 
                         else:
                             psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
@@ -2065,9 +2109,11 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 if seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
                                     seqId = self.getRealSeqId(ps, seqId, isPolySeq)[0]
                                     if self.ccU.updateChemCompDict(compId):
-                                        atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                                        atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                   if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
                                         for atomId in atomIds:
-                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
+                                            _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                                   'comp_id': compId, 'atom_id': atomId})
 
                     self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
                                                                           for atom in _atomSelection
@@ -2600,7 +2646,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             self.factor['alt_chain_id'] = chainId
                     if ctx.Simple_names(0):
                         chainId = str(ctx.Simple_names(0))
-                        if self.reasons is not None and 'segment_id_mismatch' in self.reasons and chainId in self.reasons['segment_id_mismatch']\
+                        if self.reasons is not None and 'segment_id_mismatch' in self.reasons\
+                           and chainId in self.reasons['segment_id_mismatch']\
                            and self.reasons['segment_id_mismatch'][chainId] in self.reasons['segment_id_match_stats'][chainId]:
                             _chainId = self.reasons['segment_id_mismatch'][chainId]
                             _stats = self.reasons['segment_id_match_stats'][chainId]
@@ -2663,7 +2710,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         or self.reasons['segment_id_mismatch'][chainId] is not None):
                                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                                   "Couldn't specify segment name "
-                                                  f"'{chainId}' in the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
+                                                  f"'{chainId}' in the coordinates.")
+                                    # do not use 'chainId!r' expression, '%' code throws ValueError
                         else:
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}
@@ -2682,7 +2730,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             del __factor['atom_selection']
                         del _factor['atom_selection']
                         self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                      f"The 'segidentifier' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                      f"The 'segidentifier' clause has no effect for a conjunction of "
+                                      f"factor {self.getReadableFactor(__factor)} "
                                       f"and {self.getReadableFactor(_factor)}.")
 
             if self.depth > 0 and self.cur_union_expr:

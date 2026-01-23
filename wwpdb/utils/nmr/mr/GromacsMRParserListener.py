@@ -361,7 +361,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 sortPolySeqRst(self.__polySeqRst)
 
                 self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
+                                                                    self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 if len(message) > 0:
                     self.__f.extend(message)
@@ -386,7 +387,8 @@ class GromacsMRParserListener(ParseTreeListener):
                                     ps['chain_id'] = chain_mapping[ps['chain_id']]
 
                             self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
+                                                                          self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
@@ -589,7 +591,8 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
-                                    f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                    f"The lower limit value='{lower_limit}' is omitted "
+                                    f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
@@ -602,7 +605,8 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
-                                    f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                    f"The upper limit value='{upper_limit}' is omitted "
+                                    f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
@@ -615,7 +619,8 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 if (upper_linear_limit <= DIST_ERROR_MIN or upper_linear_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
-                                    f"The upper linear limit value='{upper_linear_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                    f"The upper linear limit value='{upper_linear_limit}' is omitted "
+                                    f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_linear_limit = None
                 else:
                     validRange = False
@@ -626,7 +631,8 @@ class GromacsMRParserListener(ParseTreeListener):
             if upper_limit > upper_linear_limit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
-                                f"The upper limit value='{upper_limit}' must be less than the upper linear limit value '{upper_linear_limit}'.")
+                                f"The upper limit value='{upper_limit}' must be less than "
+                                "the upper linear limit value '{upper_linear_limit}'.")
 
         if not validRange:
             return None
@@ -1309,20 +1315,25 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.__polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-chain RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                ps1 = next((ps for ps in self.__polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-residue RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1337,13 +1348,15 @@ class GromacsMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-residue RDC vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 "Found zero RDC vector; "
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -1353,7 +1366,8 @@ class GromacsMRParserListener(ParseTreeListener):
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                         "Found an RDC vector over multiple covalent bonds; "
-                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),

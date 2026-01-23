@@ -22,7 +22,7 @@ from typing import Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
                                                ALLOWED_AMBIGUITY_CODES,
@@ -43,7 +43,7 @@ try:
                                                        retrieveOriginalFileName)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
                                    ALLOWED_AMBIGUITY_CODES,
@@ -303,7 +303,9 @@ class BMRBAnnTasks:
                                         list_id = sf_framecode.split('_')[-1]
                                         if _sf_framecode != sf_framecode:
                                             sf_framecode = f'{parent_sf_tag_prefix[1:]}_{list_id}'
-                                            for _list_id, parent_sf in enumerate(master_entry.get_saveframes_by_category(parent_sf_tag_prefix[1:]), start=1):
+                                            for _list_id, parent_sf\
+                                                    in enumerate(master_entry.get_saveframes_by_category(parent_sf_tag_prefix[1:]),
+                                                                 start=1):
                                                 if str(_list_id) == list_id:
                                                     set_sf_tag(parent_sf, 'Sf_framecode', sf_framecode)
                                                     set_sf_tag(parent_sf, 'ID', list_id)
@@ -918,7 +920,7 @@ class BMRBAnnTasks:
 
                         for row in dat:
                             if row not in EMPTY_VALUE:
-                                if row not in MONDICT3:
+                                if row not in STD_MON_DICT:
                                     if row not in nstd_monomers:
                                         nstd_monomers.append(row)
                                     if _type != 'non-polymer':
@@ -960,7 +962,8 @@ class BMRBAnnTasks:
                                     except ValueError:
                                         row[auth_seq_id_col] = None
 
-                            if len(conflict_auth_seq_ids) == 0 and (all(row[auth_seq_id_col] not in EMPTY_VALUE for row in lp) or len(lp) == 1):
+                            if len(conflict_auth_seq_ids) == 0\
+                               and (all(row[auth_seq_id_col] not in EMPTY_VALUE for row in lp) or len(lp) == 1):
                                 break
 
                             for row in reversed(lp):
@@ -1417,11 +1420,13 @@ class BMRBAnnTasks:
                                     if h[1] == h[2]:
                                         solvent_name = h[1]
                                 solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
-                                solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
+                                solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name)\
+                                    and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
                                 solvent_system[_solvent] = 0
-                                solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent) and not perdeuterated_pat.match(_solvent)\
+                                solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent)\
+                                    and not perdeuterated_pat.match(_solvent)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(_solvent) else 'natural abundance'
 
                         total_v = sum(v for v in solvent_system.values())
@@ -1443,11 +1448,13 @@ class BMRBAnnTasks:
                                     if h[1] == h[2]:
                                         solvent_name = h[1]
                                 solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
-                                solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
+                                solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name)\
+                                    and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
                                 solvent_system[_solvent] = 100
-                                solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent) and not perdeuterated_pat.match(_solvent)\
+                                solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent)\
+                                    and not perdeuterated_pat.match(_solvent)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(_solvent) else 'natural abundance'
 
                         total_v = sum(v for v in solvent_system.values())
@@ -1466,11 +1473,13 @@ class BMRBAnnTasks:
                                 if h[1] == h[2]:
                                     solvent_name = h[1]
                             solvent_system[solvent_name] = float(g[0]) if '.' in g[0] else int(g[0])
-                            solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
+                            solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name)\
+                                and not perdeuterated_pat.match(solvent_name)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                         else:
                             solvent_system[_solvent_system] = 100
-                            solvent_isotope[_solvent_system] = '[U-2H]' if deuterated_pat.match(_solvent_system) and not perdeuterated_pat.match(_solvent_system)\
+                            solvent_isotope[_solvent_system] = '[U-2H]' if deuterated_pat.match(_solvent_system)\
+                                and not perdeuterated_pat.match(_solvent_system)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(_solvent_system) else 'natural abundance'
 
                     lp_category = '_Sample_component'
@@ -1856,7 +1865,8 @@ class BMRBAnnTasks:
                                             break
                                         can_ligand_idx = idx
                             if can_ligand_idx is not None:
-                                entity = next(entity for entity_id, entity in entity_dict.items() if entity_id == non_polymer_types[0]['ligand'])
+                                entity = next(entity for entity_id, entity in entity_dict.items()
+                                              if entity_id == non_polymer_types[0]['ligand'])
                                 row = lp.data[can_ligand_idx]
                                 row[assembly_id_col] = entity['assembly_id']
                                 row[assembly_label_col] = entity['assembly_label']
@@ -1976,8 +1986,10 @@ class BMRBAnnTasks:
                             if '' not in unsorted_sample_types:
                                 unsorted_sample_types.append('')
                             continue
-                        if row[1] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid', 'carbohydrate', 'polysaccharide',
-                                      'reducing agent', 'chelating agent', 'salt', 'buffer', 'phospholipid', 'internal reference', 'solvent'):
+                        if row[1] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid',
+                                      'carbohydrate', 'polysaccharide',
+                                      'reducing agent', 'chelating agent', 'salt', 'buffer',
+                                      'phospholipid', 'internal reference', 'solvent'):
                             continue
                         if row[1] not in unsorted_sample_types:
                             unsorted_sample_types.append(row[1])
@@ -2002,7 +2014,8 @@ class BMRBAnnTasks:
                                     _lp.add_data(row)
                                     cur_id += 1
 
-                    for sample_type in ['reducing agent', 'chelating agent', 'salt', 'buffer', 'phospholipid', 'internal reference', 'solvent']:
+                    for sample_type in ['reducing agent', 'chelating agent', 'salt', 'buffer',
+                                        'phospholipid', 'internal reference', 'solvent']:
                         idx_dict = []
                         for idx, row in enumerate(data):
                             if row[1] not in EMPTY_VALUE and row[1] == sample_type:
@@ -2506,8 +2519,8 @@ class BMRBAnnTasks:
                     dup_idx.add(idx2)
                     res_idx[idx2] = idx1
 
-                pk_name_pat = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
-                mr_name_pat = re.compile(r'D_[0-9]+_mr-(\S+)_P([0-9]+).(\S+).V([0-9]+)$')
+                pk_name_pat = re.compile(r'D_\d{6,10}_nmr-peaks-upload_P(\d+)\.dat\.V(\d+)$')
+                mr_name_pat = re.compile(r'D_\d{6,10}_mr-(\S+)_P(\d+)\.(\S+)\.V(\d+)$')
 
                 for idx in sorted(list(dup_idx)):
                     sf_framecode = sp_info[idx]['sf_framecode']
@@ -2853,13 +2866,17 @@ class BMRBAnnTasks:
                                 row[8], row[9], row[10] = 'ppm', '0.000', 'internal'
                                 if n in (1, 2, 13, 15, 19, 31):
                                     if n == 1:
-                                        row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'direct', '1.0'
+                                        row[2], row[3], row[11], row[12] =\
+                                            default_internal_reference, 'methyl protons', 'direct', '1.0'
                                     elif n == 2:
-                                        row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
+                                        row[2], row[3], row[11], row[12] =\
+                                            default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
                                     elif n == 13:
-                                        row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
+                                        row[2], row[3], row[11], row[12] =\
+                                            default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
                                     elif n == 15:
-                                        row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
+                                        row[2], row[3], row[11], row[12] =\
+                                            default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
                                     elif n == 19:
                                         row[2], row[3], row[11], row[12] = 'CCl3F', 'fluorine', 'direct', '1.0'
                                     else:
@@ -2886,11 +2903,16 @@ class BMRBAnnTasks:
                 _sf.add_tag('Entry_ID', self.__reg.entry_id)
                 _sf.add_tag('ID', cs_ref_id)
                 _sf.add_tag('Name', '.')
-                _sf.add_tag('Proton_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
-                _sf.add_tag('Carbon_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C']) else 'no')
-                _sf.add_tag('Nitrogen_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N']) else 'no')
-                _sf.add_tag('Phosphorus_shifts_flag', 'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P']) else 'no')
-                _sf.add_tag('Other_shifts_flag', 'yes' if any(n not in WELL_KNOWN_ISOTOPE_NUMBERS for n in isotope_numbers) else 'no')
+                _sf.add_tag('Proton_shifts_flag',
+                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
+                _sf.add_tag('Carbon_shifts_flag',
+                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C']) else 'no')
+                _sf.add_tag('Nitrogen_shifts_flag',
+                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N']) else 'no')
+                _sf.add_tag('Phosphorus_shifts_flag',
+                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P']) else 'no')
+                _sf.add_tag('Other_shifts_flag',
+                            'yes' if any(n not in WELL_KNOWN_ISOTOPE_NUMBERS for n in isotope_numbers) else 'no')
                 _sf.add_tag('Details', '.')
 
                 lp_category = '_Chem_shift_ref'
@@ -3476,7 +3498,8 @@ class BMRBAnnTasks:
 
         for sf in master_entry.frame_list:
             sf_tag_prefix = sf.tag_prefix
-            label_tags = [sf_tag.split('.')[1] for sf_tag in DEFAULT_SF_LABEL_TAGS if sf_tag.startswith(f'{sf_tag_prefix}.') and sf_tag.endswith('_label')]
+            label_tags = [sf_tag.split('.')[1] for sf_tag in DEFAULT_SF_LABEL_TAGS
+                          if sf_tag.startswith(f'{sf_tag_prefix}.') and sf_tag.endswith('_label')]
             if len(label_tags) == 0:
                 continue
             for label_tag in label_tags:
@@ -3493,8 +3516,10 @@ class BMRBAnnTasks:
                             set_sf_tag(sf, label_tag, f'${parent_sf_framecode}')
                     except IndexError:
                         try:
-                            parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
-                                                                                     if isinstance(parent_list_id, str) else str(parent_list_id))[0]
+                            parent_sf =\
+                                master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID',
+                                                                             int(parent_list_id) if isinstance(parent_list_id, str)
+                                                                             else str(parent_list_id))[0]
                             parent_sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode')
                             if len(parent_sf_framecode) > 0:
                                 set_sf_tag(sf, label_tag, f'${parent_sf_framecode}')

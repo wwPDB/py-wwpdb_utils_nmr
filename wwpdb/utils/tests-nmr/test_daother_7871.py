@@ -37,15 +37,19 @@ class TestNmrDpUtility(unittest.TestCase):
         pass
 
     def __test_nmr_cs_str_consistency(self, entry_id):
-        self.utility.addInput(name='chem_shift_file_path_list', value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[entry_id]], type='file_list')
+        self.utility.addInput(name='chem_shift_file_path_list',
+                              value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[entry_id]],
+                              type='file_list')
         if len(self.mr_file_path[entry_id]) == 1:
             self.utility.addInput(name='atypical_restraint_file_path_list',
-                                  value=[{'file_name': self.data_dir_path + self.mr_file_path[entry_id][0], 'file_type': self.res_file_type[entry_id]}],
+                                  value=[{'file_name': self.data_dir_path + self.mr_file_path[entry_id][0],
+                                          'file_type': self.res_file_type[entry_id]}],
                                   type='file_dict_list')
         else:
             ar_path_list = []
             for i, ar_path in enumerate(self.mr_file_path[entry_id]):
-                ar_path_list.append({'file_name': self.data_dir_path + ar_path, 'file_type': self.res_file_type[entry_id][i]})
+                ar_path_list.append({'file_name': self.data_dir_path + ar_path,
+                                     'file_type': self.res_file_type[entry_id][i]})
             self.utility.addInput(name='atypical_restraint_file_path_list', value=ar_path_list, type='file_dict_list')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.model_file_path[entry_id], type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
@@ -68,9 +72,11 @@ class TestNmrDpUtility(unittest.TestCase):
         if report['error'] is None:
             print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{entry_id}: {status}, {error_type}")

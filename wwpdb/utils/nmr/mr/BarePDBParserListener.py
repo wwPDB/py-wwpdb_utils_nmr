@@ -20,7 +20,7 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 from typing import IO, List, Optional
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+    from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID)
@@ -33,7 +33,7 @@ try:
     from wwpdb.utils.nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import translateToStdResName
 except ImportError:
-    from nmr.NmrDpConstant import (MONDICT3,
+    from nmr.NmrDpConstant import (STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID)
@@ -92,7 +92,8 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
         if len(self.atoms) == 0:
             return
 
-        chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1  # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
+        # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
+        chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1
         chainId = indexToLetter(chainIndex)
 
         terminus = [atom['auth_atom_id'].endswith('T') for atom in self.atoms if isinstance(atom, dict)]
@@ -138,7 +139,7 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
                 break
             if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                 hasSegCompId = True
-            if not hasSegCompId and compId not in MONDICT3 and self.mrAtomNameMapping is not None and atomName[0] in PROTON_BEGIN_CODE:
+            if not hasSegCompId and compId not in STD_MON_DICT and self.mrAtomNameMapping is not None and atomName[0] in PROTON_BEGIN_CODE:
                 _, compId, _atomName = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId, compId, atomName)
                 if _atomName != atomName:
                     atomName = _atomName

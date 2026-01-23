@@ -22,7 +22,7 @@ from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
@@ -46,7 +46,7 @@ try:
                                                        getPotentialType)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
@@ -260,27 +260,29 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if isinstance(self.anySelection[idx], int):
                             seqIds.append(self.anySelection[idx])
                         elif isinstance(self.anySelection[idx], str):
-                            if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pattern.match(self.anySelection[idx]):
+                            if self.__col_order.count('residue_name') == 0\
+                               and self.__reduced_residue_name_pattern.match(self.anySelection[idx]):
                                 g = self.__reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[1]))
                                 compId = g[0]
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         compId = 'D' + compId
                                 compIds.append(compId)
-                            elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                            elif self.__col_order.count('residue_name') == 0\
+                                    and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
                                 g = self.__rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[0]))
                                 compId = g[1]
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
@@ -392,8 +394,10 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -559,27 +563,29 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if isinstance(self.anySelection[idx], int):
                             seqIds.append(self.anySelection[idx])
                         elif isinstance(self.anySelection[idx], str):
-                            if self.__col_order.count('residue_name') == 0 and self.__reduced_residue_name_pattern.match(self.anySelection[idx]):
+                            if self.__col_order.count('residue_name') == 0\
+                               and self.__reduced_residue_name_pattern.match(self.anySelection[idx]):
                                 g = self.__reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[1]))
                                 compId = g[0]
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         compId = 'D' + compId
                                 compIds.append(compId)
-                            elif self.__col_order.count('residue_name') == 0 and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                            elif self.__col_order.count('residue_name') == 0\
+                                    and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
                                 g = self.__rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
                                 seqIds.append(int(g[0]))
                                 compId = g[1]
                                 if len(compId) == 1:
                                     if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
                                         try:
-                                            compId = next(k for k, v in MONDICT3.items() if v == compId)
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:

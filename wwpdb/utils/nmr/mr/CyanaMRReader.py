@@ -137,7 +137,8 @@ class CyanaMRReader:
         self.__sll_pred = sll_pred
 
     def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
-              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None, entryId: Optional[str] = None
+              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
+              entryId: Optional[str] = None
               ) -> Tuple[Optional[CyanaMRParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
         """ Parse CYANA MR file.
             @return: CyanaMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
@@ -191,7 +192,8 @@ class CyanaMRReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -228,7 +230,8 @@ class CyanaMRReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -409,25 +412,44 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-D_1300055931/0306REST.txt',
                  '../../tests-nmr/mock-data-D_1300055931/D_800803_model_P1.cif.V6')
 
-    __mrAtomNameMapping__ = [{'auth_atom_id': 'H4', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H5', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H1', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP6', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H2', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP5', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H12', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HG', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'HN1', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HNA', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H71', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HM3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H72', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HM1', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H73', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HM2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H91', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HB2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H92', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HB3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H101', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HA1', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H102', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HA2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H131', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD11', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H132', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD12', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H133', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD13', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H141', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD21', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H142', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD22', 'original_comp_id': 'NGH', 'original_seq_id': 253},
-                             {'auth_atom_id': 'H143', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD23', 'original_comp_id': 'NGH', 'original_seq_id': 253}
+    __mrAtomNameMapping__ = [{'auth_atom_id': 'H4', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HP3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H5', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HP2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H1', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HP6', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H2', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HP5', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H12', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HG', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'HN1', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HNA', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H71', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HM3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H72', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HM1', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H73', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HM2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H91', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HB2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H92', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HB3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H101', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HA1', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H102', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HA2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H131', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HD11', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H132', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HD12', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H133', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HD13', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H141', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HD21', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H142', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HD22', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H143', 'auth_comp_id': 'NGH', 'auth_seq_id': 253,
+                              'original_atom_id': 'HD23', 'original_comp_id': 'NGH', 'original_seq_id': 253}
                              ]
     reader = CyanaMRReader(True, mrAtomNameMapping=__mrAtomNameMapping__)
     reader.setDebugMode(True)
@@ -654,7 +676,8 @@ if __name__ == "__main__":
     reasons_ = {'chain_seq_id_remap': [{'chain_id': 'B',
                                         'seq_id_dict': {1200: 1120, 1201: 1121, 1202: 1122, 1203: 1123, 1204: 1124, 1205: 1125, 1206: 1126,
                                                         1207: 1127, 1208: 1128, 1209: 1129, 1210: 1130, 1211: 1131, 1212: 1132, 1213: 1133},
-                                        'comp_id_set': ['THR', 'ALA', 'GLU', 'LEU', 'PRO', 'ASN', 'GLY', 'LYS', 'SER', 'ARG', 'ASP', 'GLN', 'VAL', 'PHE']}]}
+                                        'comp_id_set': ['THR', 'ALA', 'GLU', 'LEU', 'PRO', 'ASN', 'GLY',
+                                                        'LYS', 'SER', 'ARG', 'ASP', 'GLN', 'VAL', 'PHE']}]}
 
     reader = CyanaMRReader(True, reasons=reasons_)
     reader.setDebugMode(True)

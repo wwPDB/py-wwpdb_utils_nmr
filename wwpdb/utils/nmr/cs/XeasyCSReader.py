@@ -72,7 +72,8 @@ class XeasyCSReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__polySeq = polySeq
-        self.__entityAssembly = entityAssembly  # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        self.__entityAssembly = entityAssembly
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -140,7 +141,8 @@ class XeasyCSReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -176,7 +178,8 @@ class XeasyCSReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -201,10 +204,14 @@ class XeasyCSReader:
 if __name__ == "__main__":
     nmr_poly_seq = [{'chain_id': '1',
                      'seq_id': list(range(1, 82)),
-                     'comp_id': ['ALA', 'MET', 'GLY', 'ASN', 'LYS', 'ILE', 'TYR', 'VAL', 'GLY', 'GLY', 'LEU', 'PRO', 'THR', 'CYS', 'LEU', 'ASN', 'GLN', 'ASP', 'GLN', 'VAL',
-                                 'LYS', 'GLU', 'LEU', 'LEU', 'GLN', 'SER', 'PHE', 'GLY', 'GLU', 'LEU', 'LYS', 'GLY', 'LEU', 'ASN', 'LEU', 'VAL', 'MET', 'ASP', 'THR', 'ASN',
-                                 'THR', 'ASN', 'LEU', 'ASN', 'LYS', 'GLY', 'PHE', 'ALA', 'PHE', 'PHE', 'GLU', 'TYR', 'CYS', 'ASP', 'PRO', 'SER', 'VAL', 'THR', 'ASP', 'HIS',
-                                 'ALA', 'ILE', 'ALA', 'GLY', 'LEU', 'HIS', 'GLY', 'MET', 'LEU', 'LEU', 'GLY', 'ASP', 'ARG', 'ARG', 'LEU', 'VAL', 'VAL', 'GLN', 'ARG', 'SER',
+                     'comp_id': ['ALA', 'MET', 'GLY', 'ASN', 'LYS', 'ILE', 'TYR', 'VAL', 'GLY', 'GLY',
+                                 'LEU', 'PRO', 'THR', 'CYS', 'LEU', 'ASN', 'GLN', 'ASP', 'GLN', 'VAL',
+                                 'LYS', 'GLU', 'LEU', 'LEU', 'GLN', 'SER', 'PHE', 'GLY', 'GLU', 'LEU',
+                                 'LYS', 'GLY', 'LEU', 'ASN', 'LEU', 'VAL', 'MET', 'ASP', 'THR', 'ASN',
+                                 'THR', 'ASN', 'LEU', 'ASN', 'LYS', 'GLY', 'PHE', 'ALA', 'PHE', 'PHE',
+                                 'GLU', 'TYR', 'CYS', 'ASP', 'PRO', 'SER', 'VAL', 'THR', 'ASP', 'HIS',
+                                 'ALA', 'ILE', 'ALA', 'GLY', 'LEU', 'HIS', 'GLY', 'MET', 'LEU', 'LEU',
+                                 'GLY', 'ASP', 'ARG', 'ARG', 'LEU', 'VAL', 'VAL', 'GLN', 'ARG', 'SER',
                                  'ILE']
                      }]
     entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}

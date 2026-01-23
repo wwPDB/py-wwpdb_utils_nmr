@@ -1,7 +1,6 @@
 import sys
 import os
 import json
-import re
 import pynmrstar
 import hashlib
 # import requests
@@ -12,13 +11,51 @@ from typing import List, Tuple, Union, Optional
 # from dateutil.parser import parse as parsedate
 
 try:
+    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               PDB_MR_FILE_NAME_PAT,
+                                               INTNL_ANY_MR_FILE_NAME_PAT,
+                                               PDB_ID_PAT,
+                                               DEP_ID_PAT,
+                                               BMRB_ID_PAT,
+                                               INTNL_MODEL_FILE_NAME_PAT,
+                                               INTNL_CS_FILE_NAME_PAT,
+                                               INTNL_MR_FILE_NAME_PAT,
+                                               INTNL_PK_FILE_NAME_PAT,
+                                               WORK_NMR_DATA_FILE_NAME_PAT)
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
+    from wwpdb.utils.nmr.NmrDpMrSplitter import (is_star_file,
+                                                 is_amb_top_file,
+                                                 is_amb_rst_file,
+                                                 is_cha_top_file,
+                                                 is_cha_rst_file,
+                                                 is_gro_top_file,
+                                                 is_gro_rst_file,
+                                                 is_pdb_top_file)
     from wwpdb.utils.nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.nef.NEFTranslator import is_empty_loop
     auth_view = 'mock-data-combine-at-upload'
 except ImportError:
+    from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   PDB_MR_FILE_NAME_PAT,
+                                   INTNL_ANY_MR_FILE_NAME_PAT,
+                                   PDB_ID_PAT,
+                                   DEP_ID_PAT,
+                                   BMRB_ID_PAT,
+                                   INTNL_MODEL_FILE_NAME_PAT,
+                                   INTNL_CS_FILE_NAME_PAT,
+                                   INTNL_MR_FILE_NAME_PAT,
+                                   INTNL_PK_FILE_NAME_PAT,
+                                   WORK_NMR_DATA_FILE_NAME_PAT)
     from nmr.NmrDpUtility import NmrDpUtility
+    from nmr.NmrDpMrSplitter import (is_star_file,
+                                     is_amb_top_file,
+                                     is_amb_rst_file,
+                                     is_cha_top_file,
+                                     is_cha_rst_file,
+                                     is_gro_top_file,
+                                     is_gro_rst_file,
+                                     is_pdb_top_file)
     from nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from nmr.io.CifReader import CifReader
     from nmr.nef.NEFTranslator import is_empty_loop
@@ -52,19 +89,30 @@ def get_inventory_list(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, py
     return sf_list, lp_list
 
 
+def has_cs_loop(file_path: str) -> bool:
+    """ Check if a given file contains _Atom_chem_shift loop.
+    """
+
+    try:
+
+        star_data = pynmrstar.Entry.from_file(file_path)
+        _, lp_list = get_inventory_list(star_data)
+
+        lp_category = '_Atom_chem_shift'
+
+        if lp_category not in lp_list:
+            return False
+
+        return not is_empty_loop(star_data, lp_category)
+
+    except Exception:
+        return False
+
+
 def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
     """ Return whether input file is combined NMR data file.
         @return: Whether input file is combined NMR data file, dictionary of list of associated constraint file names for each format
     """
-
-    emptyValue = (None, '', '.', '?', 'null', 'None')
-
-    mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
-    proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
-                                           r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
-    pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
-    dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
-    bmrb_id_pattern = re.compile(r'^(bmr)?[0-9]{5,}$')
 
     try:
 
@@ -75,8 +123,8 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
             if sf.category == 'constraint_statistics':
                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                 entry_id = get_first_sf_tag(sf, 'Entry_ID')
-                combined = (mr_file_name_pattern.match(data_file_name) or proc_mr_file_name_pattern.match(data_file_name))\
-                    and (pdb_id_pattern.match(entry_id) or dep_id_pattern.match(entry_id) or bmrb_id_pattern.match(entry_id))
+                combined = (PDB_MR_FILE_NAME_PAT.match(data_file_name) or INTNL_ANY_MR_FILE_NAME_PAT.match(data_file_name))\
+                    and (PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id) or BMRB_ID_PAT.match(entry_id))
                 original_file_name = None
 
                 lp_category = '_Constraint_file'
@@ -95,10 +143,10 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
 
                 for row in dat:
 
-                    if row[0] in emptyValue:
+                    if row[0] in EMPTY_VALUE:
                         combined = False
 
-                    if row[1] not in emptyValue and row[2] not in emptyValue:
+                    if row[1] not in EMPTY_VALUE and row[2] not in EMPTY_VALUE:
                         if row[2] in ('AMBER', 'Amber'):
                             add_origina_file_name('nm-res-amb', row[1])
                         elif row[2] == 'ARIA':
@@ -140,29 +188,6 @@ class gen_auth_view_onedep:
 
         self.__auth_view = auth_view
 
-        self.__cif_name_pattern = re.compile(r'D_[0-9]+_model-(\S+)_P1.cif.V([0-9]+)$')
-        self.__mr_name_pattern = re.compile(r'D_[0-9]+_mr-(\S+)_P([0-9]+).(\S+).V([0-9]+)$')
-        self.__pk_name_pattern = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
-        self.__nmr_cif_name_pattern = re.compile(r'D_[0-9]+_nmr-data-str_P([0-9]+).cif.V([0-9]+)$')
-        self.__cs_ann_name_pattern = re.compile(r'D_[0-9]+_cs-(\S+)_P1.cif.V([0-9]+)')
-
-        self.__datablock_pattern = re.compile(r"\s*data_\S+\s*")
-        self.__sf_anonymous_pattern = re.compile(r"\s*save_\S+\s*")
-        self.__save_pattern = re.compile(r"\s*save_\s*")
-        self.__loop_pattern = re.compile(r"\s*loop_\s*")
-        self.__stop_pattern = re.compile(r"\s*stop_\s*")
-
-        self.__amb_top_pattern = re.compile(r"^\%FLAG ATOM_NAME\s*")
-        self.__amb_rst_pattern = re.compile(r"\s*\&rst\s*")
-
-        self.__cha_top_pattern = re.compile(r"^\s*\d+\sEXT\s*")
-        self.__cha_rst_pattern = re.compile(r"^\s*KMAX\s+\d+\s+\-\s*")
-
-        self.__gro_top_pattern = re.compile(r"^\[ atoms \]\s*")
-        self.__gro_rst_pattern = re.compile(r"^\[ (distance|dihedral|orientation)_restraints \]\s*")
-
-        self.__pdb_top_pattern = re.compile(r"^(ATOM|HETATM)\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){3}.*$")
-
         self.__bmrb_id = ''.join(c for c in sys.argv[1] if c.isdigit())
 
         self.__entry_dir = os.path.join(self.__auth_view, 'bmr' + self.__bmrb_id)
@@ -198,8 +223,8 @@ class gen_auth_view_onedep:
 
         for file_name in os.listdir(self.__data_dir):
 
-            if self.__cif_name_pattern.match(file_name):
-                g = self.__cif_name_pattern.search(file_name).groups()
+            if INTNL_MODEL_FILE_NAME_PAT.match(file_name):
+                g = INTNL_MODEL_FILE_NAME_PAT.search(file_name).groups()
                 mile_stone = g[0]
                 version = int(g[1])
 
@@ -282,7 +307,8 @@ class gen_auth_view_onedep:
         #                 download_mmcif(work_dir, pdb_id)
         #
         #             else:
-        #                 file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(work_dir, cif_file))).astimezone()
+        #                 file_last_modified =\
+        #                     datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(work_dir, cif_file))).astimezone()
         #                 if url_last_modified > file_last_modified:
         #                     download_mmcif(work_dir, pdb_id)
         #
@@ -295,8 +321,8 @@ class gen_auth_view_onedep:
         _version = None
 
         for file_name in sorted(os.listdir(self.__data_dir)):
-            if self.__nmr_cif_name_pattern.match(file_name):
-                g = self.__nmr_cif_name_pattern.search(file_name).groups()
+            if WORK_NMR_DATA_FILE_NAME_PAT.match(file_name):
+                g = WORK_NMR_DATA_FILE_NAME_PAT.search(file_name).groups()
 
                 version = int(g[1])
 
@@ -310,8 +336,8 @@ class gen_auth_view_onedep:
 
         for file_name in os.listdir(self.__data_dir):
 
-            if self.__cs_ann_name_pattern.match(file_name):
-                g = self.__cs_ann_name_pattern.search(file_name).groups()
+            if INTNL_CS_FILE_NAME_PAT.match(file_name):
+                g = INTNL_CS_FILE_NAME_PAT.search(file_name).groups()
                 mile_stone = g[0]
                 version = int(g[1])
 
@@ -342,8 +368,8 @@ class gen_auth_view_onedep:
 
         for file_name in sorted(os.listdir(self.__data_dir)):
 
-            if self.__mr_name_pattern.match(file_name):
-                g = self.__mr_name_pattern.search(file_name).groups()
+            if INTNL_MR_FILE_NAME_PAT.match(file_name):
+                g = INTNL_MR_FILE_NAME_PAT.search(file_name).groups()
                 mile_stone = g[0]
                 # part = int(g[1])
                 content_type = g[2]
@@ -361,7 +387,7 @@ class gen_auth_view_onedep:
 
                 if content_type == 'amber':
 
-                    if self.is_amb_top_file(file_path) or self.is_pdb_top_file(file_path):
+                    if is_amb_top_file(file_path) or is_pdb_top_file(file_path):
                         content_type = 'dat'
 
                     has_amber = True
@@ -372,18 +398,18 @@ class gen_auth_view_onedep:
                             ax_dic[key]['version'] = version
                             ax_dic[key]['content_type'] = content_type
                             ax_dic[key]['file_name'] = file_path
-                            ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                            ax_dic[key]['is_star_file'] = is_star_file(file_path)
                     else:
                         ax_dic[key] = {}
                         ax_dic[key]['mile_stone'] = mile_stone
                         ax_dic[key]['version'] = version
                         ax_dic[key]['content_type'] = content_type
                         ax_dic[key]['file_name'] = file_path
-                        ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                        ax_dic[key]['is_star_file'] = is_star_file(file_path)
 
                 elif content_type == 'charmm':
 
-                    if self.is_cha_top_file(file_path) or self.is_pdb_top_file(file_path):
+                    if is_cha_top_file(file_path) or is_pdb_top_file(file_path):
                         content_type = 'dat'
 
                     has_charmm = True
@@ -394,18 +420,18 @@ class gen_auth_view_onedep:
                             ax_dic[key]['version'] = version
                             ax_dic[key]['content_type'] = content_type
                             ax_dic[key]['file_name'] = file_path
-                            ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                            ax_dic[key]['is_star_file'] = is_star_file(file_path)
                     else:
                         ax_dic[key] = {}
                         ax_dic[key]['mile_stone'] = mile_stone
                         ax_dic[key]['version'] = version
                         ax_dic[key]['content_type'] = content_type
                         ax_dic[key]['file_name'] = file_path
-                        ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                        ax_dic[key]['is_star_file'] = is_star_file(file_path)
 
                 elif content_type == 'gromacs':
 
-                    if self.is_gro_top_file(file_path) or self.is_pdb_top_file(file_path):
+                    if is_gro_top_file(file_path) or is_pdb_top_file(file_path):
                         content_type = 'dat'
 
                     has_gromacs = True
@@ -416,23 +442,23 @@ class gen_auth_view_onedep:
                             ax_dic[key]['version'] = version
                             ax_dic[key]['content_type'] = content_type
                             ax_dic[key]['file_name'] = file_path
-                            ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                            ax_dic[key]['is_star_file'] = is_star_file(file_path)
                     else:
                         ax_dic[key] = {}
                         ax_dic[key]['mile_stone'] = mile_stone
                         ax_dic[key]['version'] = version
                         ax_dic[key]['content_type'] = content_type
                         ax_dic[key]['file_name'] = file_path
-                        ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                        ax_dic[key]['is_star_file'] = is_star_file(file_path)
 
                 else:
 
                     if content_type == 'dat':
-                        if self.is_amb_rst_file(file_path):
+                        if is_amb_rst_file(file_path):
                             content_type = 'amber'
-                        if self.is_cha_rst_file(file_path):
+                        if is_cha_rst_file(file_path):
                             content_type = 'charmm'
-                        if self.is_gro_rst_file(file_path):
+                        if is_gro_rst_file(file_path):
                             content_type = 'gromacs'
 
                     if key in mr_dic:
@@ -442,14 +468,14 @@ class gen_auth_view_onedep:
                             mr_dic[key]['version'] = version
                             mr_dic[key]['content_type'] = content_type
                             mr_dic[key]['file_name'] = file_path
-                            mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                            mr_dic[key]['is_star_file'] = is_star_file(file_path)
                     else:
                         mr_dic[key] = {}
                         mr_dic[key]['mile_stone'] = mile_stone
                         mr_dic[key]['version'] = version
                         mr_dic[key]['content_type'] = content_type
                         mr_dic[key]['file_name'] = file_path
-                        mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                        mr_dic[key]['is_star_file'] = is_star_file(file_path)
 
         if has_amber:
 
@@ -475,8 +501,8 @@ class gen_auth_view_onedep:
 
                 for file_name in sorted(os.listdir(self.__data_dir)):
 
-                    if self.__mr_name_pattern.match(file_name):
-                        g = self.__mr_name_pattern.search(file_name).groups()
+                    if INTNL_MR_FILE_NAME_PAT.match(file_name):
+                        g = INTNL_MR_FILE_NAME_PAT.search(file_name).groups()
                         mile_stone = g[0]
                         # part = int(g[1])
                         content_type = g[2]
@@ -500,14 +526,14 @@ class gen_auth_view_onedep:
                                     ax_dic[key]['version'] = version
                                     ax_dic[key]['content_type'] = 'dat'
                                     ax_dic[key]['file_name'] = file_path
-                                    ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                    ax_dic[key]['is_star_file'] = is_star_file(file_path)
                             else:
                                 ax_dic[key] = {}
                                 ax_dic[key]['mile_stone'] = mile_stone
                                 ax_dic[key]['version'] = version
                                 ax_dic[key]['content_type'] = 'dat'
                                 ax_dic[key]['file_name'] = file_path
-                                ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                ax_dic[key]['is_star_file'] = is_star_file(file_path)
 
                         else:
                             if key in mr_dic:
@@ -517,14 +543,14 @@ class gen_auth_view_onedep:
                                     mr_dic[key]['version'] = version
                                     mr_dic[key]['content_type'] = 'amber' if content_type == 'dat' else content_type
                                     mr_dic[key]['file_name'] = file_path
-                                    mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                    mr_dic[key]['is_star_file'] = is_star_file(file_path)
                             else:
                                 mr_dic[key] = {}
                                 mr_dic[key]['mile_stone'] = mile_stone
                                 mr_dic[key]['version'] = version
                                 mr_dic[key]['content_type'] = 'amber' if content_type == 'dat' else content_type
                                 mr_dic[key]['file_name'] = file_path
-                                mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                mr_dic[key]['is_star_file'] = is_star_file(file_path)
 
         if has_charmm:
 
@@ -550,8 +576,8 @@ class gen_auth_view_onedep:
 
                 for file_name in sorted(os.listdir(self.__data_dir)):
 
-                    if self.__mr_name_pattern.match(file_name):
-                        g = self.__mr_name_pattern.search(file_name).groups()
+                    if INTNL_MR_FILE_NAME_PAT.match(file_name):
+                        g = INTNL_MR_FILE_NAME_PAT.search(file_name).groups()
                         mile_stone = g[0]
                         # part = int(g[1])
                         content_type = g[2]
@@ -575,14 +601,14 @@ class gen_auth_view_onedep:
                                     ax_dic[key]['version'] = version
                                     ax_dic[key]['content_type'] = 'dat'
                                     ax_dic[key]['file_name'] = file_path
-                                    ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                    ax_dic[key]['is_star_file'] = is_star_file(file_path)
                             else:
                                 ax_dic[key] = {}
                                 ax_dic[key]['mile_stone'] = mile_stone
                                 ax_dic[key]['version'] = version
                                 ax_dic[key]['content_type'] = 'dat'
                                 ax_dic[key]['file_name'] = file_path
-                                ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                ax_dic[key]['is_star_file'] = is_star_file(file_path)
 
                         else:
                             if key in mr_dic:
@@ -592,14 +618,14 @@ class gen_auth_view_onedep:
                                     mr_dic[key]['version'] = version
                                     mr_dic[key]['content_type'] = 'charmm' if content_type == 'dat' else content_type
                                     mr_dic[key]['file_name'] = file_path
-                                    mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                    mr_dic[key]['is_star_file'] = is_star_file(file_path)
                             else:
                                 mr_dic[key] = {}
                                 mr_dic[key]['mile_stone'] = mile_stone
                                 mr_dic[key]['version'] = version
                                 mr_dic[key]['content_type'] = 'charmm' if content_type == 'dat' else content_type
                                 mr_dic[key]['file_name'] = file_path
-                                mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                mr_dic[key]['is_star_file'] = is_star_file(file_path)
 
         if has_gromacs:
 
@@ -625,8 +651,8 @@ class gen_auth_view_onedep:
 
                 for file_name in sorted(os.listdir(self.__data_dir)):
 
-                    if self.__mr_name_pattern.match(file_name):
-                        g = self.__mr_name_pattern.search(file_name).groups()
+                    if INTNL_MR_FILE_NAME_PAT.match(file_name):
+                        g = INTNL_MR_FILE_NAME_PAT.search(file_name).groups()
                         mile_stone = g[0]
                         # part = int(g[1])
                         content_type = g[2]
@@ -650,14 +676,14 @@ class gen_auth_view_onedep:
                                     ax_dic[key]['version'] = version
                                     ax_dic[key]['content_type'] = 'dat'
                                     ax_dic[key]['file_name'] = file_path
-                                    ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                    ax_dic[key]['is_star_file'] = is_star_file(file_path)
                             else:
                                 ax_dic[key] = {}
                                 ax_dic[key]['mile_stone'] = mile_stone
                                 ax_dic[key]['version'] = version
                                 ax_dic[key]['content_type'] = 'dat'
                                 ax_dic[key]['file_name'] = file_path
-                                ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                ax_dic[key]['is_star_file'] = is_star_file(file_path)
 
                         else:
                             if key in mr_dic:
@@ -667,14 +693,14 @@ class gen_auth_view_onedep:
                                     mr_dic[key]['version'] = version
                                     mr_dic[key]['content_type'] = 'gromacs' if content_type == 'dat' else content_type
                                     mr_dic[key]['file_name'] = file_path
-                                    mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                    mr_dic[key]['is_star_file'] = is_star_file(file_path)
                             else:
                                 mr_dic[key] = {}
                                 mr_dic[key]['mile_stone'] = mile_stone
                                 mr_dic[key]['version'] = version
                                 mr_dic[key]['content_type'] = 'gromacs' if content_type == 'dat' else content_type
                                 mr_dic[key]['file_name'] = file_path
-                                mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                                mr_dic[key]['is_star_file'] = is_star_file(file_path)
 
         self.__mr_file_path = []
         self.__ar_file_path = []
@@ -711,7 +737,7 @@ class gen_auth_view_onedep:
                     self.__ar_file_type.append('nm-res-xpl')
 
                 elif content_type == 'dat':
-                    if self.is_pdb_top_file(d['file_name']):
+                    if is_pdb_top_file(d['file_name']):
                         self.__ar_file_type.append('nm-aux-pdb')
                     elif has_amber:
                         self.__ar_file_type.append('nm-aux-amb')
@@ -760,7 +786,7 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-xpl')
 
                     elif content_type == 'dat':
-                        if self.is_pdb_top_file(d['file_name']):
+                        if is_pdb_top_file(d['file_name']):
                             self.__ar_file_type.append('nm-aux-pdb')
                         else:
                             self.__ar_file_type.append('nm-aux-amb')
@@ -803,7 +829,7 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-xpl')
 
                     elif content_type == 'dat':
-                        if self.is_pdb_top_file(d['file_name']):
+                        if is_pdb_top_file(d['file_name']):
                             self.__ar_file_type.append('nm-aux-pdb')
                         else:
                             self.__ar_file_type.append('nm-aux-cha')
@@ -846,7 +872,7 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-xpl')
 
                     elif content_type == 'dat':
-                        if self.is_pdb_top_file(d['file_name']):
+                        if is_pdb_top_file(d['file_name']):
                             self.__ar_file_type.append('nm-aux-pdb')
                         else:
                             self.__ar_file_type.append('nm-aux-gro')
@@ -866,15 +892,15 @@ class gen_auth_view_onedep:
                 if os.path.exists(file_path + '-ignored'):
                     continue
 
-                if self.is_pdb_top_file(file_path):
+                if is_pdb_top_file(file_path):
                     self.__ar_file_type.append('nm-aux-pdb')
                     self.__ar_file_path.append(file_path)
 
         pk_dic = {}
 
         for file_name in sorted(os.listdir(self.__data_dir)):
-            if self.__pk_name_pattern.match(file_name):
-                g = self.__pk_name_pattern.search(file_name).groups()
+            if INTNL_PK_FILE_NAME_PAT.match(file_name):
+                g = INTNL_PK_FILE_NAME_PAT.search(file_name).groups()
 
                 version = int(g[1])
 
@@ -907,7 +933,7 @@ class gen_auth_view_onedep:
                     md5_list.append(hash_key)
 
             for file_name in sorted(os.listdir(self.__data_dir)):
-                if self.__pk_name_pattern.match(file_name):
+                if INTNL_PK_FILE_NAME_PAT.match(file_name):
                     file_path = os.path.join(self.__data_dir, file_name)
 
                     if file_path in pk_file_lists:
@@ -932,7 +958,7 @@ class gen_auth_view_onedep:
             self.__ar_file_type.append('nm-pea-any')
             self.__ar_file_path.append(pk_dic[key]['file_name'])
 
-        self.__master_has_cs_loop = self.has_cs_loop(self.__star_file_path)
+        self.__master_has_cs_loop = has_cs_loop(self.__star_file_path)
 
         cs_title = 'Chemical shifts' if self.__nmr_cif_file_path is None and self.__master_has_cs_loop else 'Master template'
         print(f'{cs_title}: {self.__star_file_path}')
@@ -949,109 +975,6 @@ class gen_auth_view_onedep:
                     print(f'NMR Restraints : {ar_file_path} ({ar_file_type})')
                 else:
                     print(f'Spectral peaks : {ar_file_path} ({ar_file_type})')
-
-    def is_star_file(self, file_path: str) -> bool:
-
-        has_datablock = False
-        has_anonymous_saveframe = False
-        has_save = False
-        has_loop = False
-        has_stop = False
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if self.__datablock_pattern.match(line):
-                    has_datablock = True
-                elif self.__sf_anonymous_pattern.match(line):
-                    has_anonymous_saveframe = True
-                elif self.__save_pattern.match(line):
-                    has_save = True
-                elif self.__loop_pattern.match(line):
-                    has_loop = True
-                elif self.__stop_pattern.match(line):
-                    has_stop = True
-
-        return has_datablock or has_anonymous_saveframe or has_save or has_loop or has_stop
-
-    def is_amb_top_file(self, file_path: str) -> bool:
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if self.__amb_top_pattern.match(line):
-                    return True
-
-        return False
-
-    def is_amb_rst_file(self, file_path) -> bool:
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if self.__amb_rst_pattern.match(line):
-                    return True
-
-        return False
-
-    def is_cha_top_file(self, file_path) -> bool:
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if self.__cha_top_pattern.match(line):
-                    return True
-
-        return False
-
-    def is_cha_rst_file(self, file_path) -> bool:
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if self.__cha_rst_pattern.match(line):
-                    return True
-
-        return False
-
-    def is_gro_top_file(self, file_path) -> bool:
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if self.__gro_top_pattern.match(line):
-                    return True
-
-        return False
-
-    def is_gro_rst_file(self, file_path) -> bool:
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if self.__gro_rst_pattern.match(line):
-                    return True
-
-        return False
-
-    def is_pdb_top_file(self, file_path) -> bool:
-        has_atom = False
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if not has_atom and self.__pdb_top_pattern.match(line):
-                    has_atom = True
-
-        return has_atom
-
-    def has_cs_loop(self, file_path) -> bool:  # pylint: disable=no-self-use
-        try:
-
-            star_data = pynmrstar.Entry.from_file(file_path)
-            _, lp_list = get_inventory_list(star_data)
-
-            lp_category = '_Atom_chem_shift'
-
-            if lp_category not in lp_list:
-                return False
-
-            return not is_empty_loop(star_data, lp_category)
-
-        except Exception:
-            return False
 
     def test_nmr_cs_mr_merge(self):
 
@@ -1119,22 +1042,28 @@ class gen_auth_view_onedep:
         if report['error'] is None:
             print(f"{self.__bmrb_id}: {report['information']['status']}")
         elif 'format_issue' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"format_issue: {report['error']['format_issue'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'missing_mandatory_content' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'sequence_mismatch' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n sequence_mismatch: {report['error']['sequence_mismatch'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"sequence_mismatch: {report['error']['sequence_mismatch'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'atom_not_found' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n atom_not_found: {report['error']['atom_not_found'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"atom_not_found: {report['error']['atom_not_found'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'content_mismatch' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n content_mismatch: {report['error']['content_mismatch'][0]['description']}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"content_mismatch: {report['error']['content_mismatch'][0]['description']}")
             os.remove(self.__annotated_star_file_path)
         elif 'internal_error' in report['error']:
-            print(f"{self.__bmrb_id}: {report['information']['status']}\n internal_error: {report['error']['internal_error'][0]}")
+            print(f"{self.__bmrb_id}: {report['information']['status']}\n "
+                  f"internal_error: {report['error']['internal_error'][0]}")
             os.remove(self.__annotated_star_file_path)
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}

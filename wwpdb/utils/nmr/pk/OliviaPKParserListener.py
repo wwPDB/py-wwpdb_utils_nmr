@@ -197,8 +197,9 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 max_eff_digits = getMaxEffDigits([str(f) for f in orig_freq])
 
                 if 'specrometer_frequency' in cur_spectral_dim:
-                    cur_spectral_dim['center_frequency_offset'] = float(roundString(str(orig_freq / cur_spectral_dim['spectrometer_frequency']),
-                                                                                    max_eff_digits))
+                    cur_spectral_dim['center_frequency_offset'] =\
+                        float(roundString(str(orig_freq / cur_spectral_dim['spectrometer_frequency']),
+                                          max_eff_digits))
 
                 self.cur_spectral_dim[_dim_id] = cur_spectral_dim
 
@@ -308,7 +309,8 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                         continue
                     assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
 
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):  # pylint: disable=unsubscriptable-object
+                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
+                           for a in assignments):
                     assignments = [None] * self.num_of_dim
 
             except IndexError:
@@ -439,7 +441,8 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                         continue
                     assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
 
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):  # pylint: disable=unsubscriptable-object
+                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
+                           for a in assignments):
                     assignments = [None] * self.num_of_dim
 
             except IndexError:
@@ -578,7 +581,8 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                         continue
                     assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
 
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):  # pylint: disable=unsubscriptable-object
+                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
+                           for a in assignments):
                     assignments = [None] * self.num_of_dim
 
             except IndexError:

@@ -32,7 +32,7 @@ from typing import IO, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                CCD_ID_PAT)
     from wwpdb.utils.config.ConfigInfo import getSiteId
@@ -43,7 +43,7 @@ try:
     CC_CVS_PATH = cICc.get_site_cc_cvs_path()
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    CCD_ID_PAT)
     from nmr.io.ChemCompReader import (ChemCompReader,
@@ -675,7 +675,7 @@ class ChemCompUtil:
         """ Write dictionary for standard residues as pickle file.
         """
 
-        for compId in MONDICT3:
+        for compId in STD_MON_DICT:
             self.updateChemCompDict(compId)
 
         def write_dict_as_pickle(obj, file_name):

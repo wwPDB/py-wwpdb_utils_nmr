@@ -28,7 +28,7 @@ try:
                                                LARGE_ASYM_ID,
                                                EMPTY_VALUE,
                                                ELEMENT_SYMBOLS,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                PSE_PRO_BEGIN_CODE,
                                                AMINO_PROTON_CODE,
@@ -42,8 +42,9 @@ try:
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                MAX_PREF_LABEL_SCHEME_COUNT,
-                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                               LOCAL_OFFSET_ATTEMPT,
                                                MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
+                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                PLANE_LIKE_LOWER_LIMIT,
                                                PLANE_LIKE_UPPER_LIMIT,
                                                DIST_RESTRAINT_RANGE,
@@ -157,7 +158,7 @@ except ImportError:
                                    LARGE_ASYM_ID,
                                    EMPTY_VALUE,
                                    ELEMENT_SYMBOLS,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    PSE_PRO_BEGIN_CODE,
                                    AMINO_PROTON_CODE,
@@ -171,8 +172,9 @@ except ImportError:
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    MAX_PREF_LABEL_SCHEME_COUNT,
-                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
+                                   LOCAL_OFFSET_ATTEMPT,
                                    MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
+                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
                                    PLANE_LIKE_LOWER_LIMIT,
                                    PLANE_LIKE_UPPER_LIMIT,
                                    DIST_RESTRAINT_RANGE,
@@ -625,10 +627,14 @@ class BaseStackedMRParserListener():
     # last edited pynmrstar saveframe
     lastSfDict = {}
 
-    __pro_hn_atom_not_found_pat = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):PRO:[Hh][Nn]? is not present in the coordinates\.$")
-    __pro_hn_anomalous_data_pat = re.compile(r"^\[Anomalous data\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):PRO:[Hh][Nn]? is not present in the coordinates\.$")
-    __gly_hb_atom_not_found_pat = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):GLY:[Hh][Bb]\S* is not present in the coordinates\.$")
-    __any_atom_not_found_pat = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):\S+:(\S+) is not present in the coordinates\.$")
+    __pro_hn_atom_not_found_pat = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):PRO:[Hh][Nn]? "
+                                             r"is not present in the coordinates\.$")
+    __pro_hn_anomalous_data_pat = re.compile(r"^\[Anomalous data\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):PRO:[Hh][Nn]? "
+                                             r"is not present in the coordinates\.$")
+    __gly_hb_atom_not_found_pat = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):GLY:[Hh][Bb]\S* "
+                                             r"is not present in the coordinates\.$")
+    __any_atom_not_found_pat = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):\S+:(\S+) "
+                                          r"is not present in the coordinates\.$")
 
     # last comment (CHARMM specific)
     lastComment = None
@@ -837,7 +843,7 @@ class BaseStackedMRParserListener():
         else:
             self.gapInAuthSeq = False
             self.__complexSeqScheme = False
-            self.compIdSet = self.altCompIdSet = set(MONDICT3.keys())
+            self.compIdSet = self.altCompIdSet = set(STD_MON_DICT.keys())
 
         self.cyanaCompIdSet = set()
         for compId in self.compIdSet:
@@ -1022,50 +1028,49 @@ class BaseStackedMRParserListener():
     def exit(self):
 
         def set_label_seq_scheme():
-            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                self.reasonsForReParsing['label_seq_scheme'] = {}
+            r = self.__getNamedReasonsForReparsing('label_seq_scheme')
             if self.distRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                r['dist'] = True
             if self.dihedRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['dihed'] = True
+                r['dihed'] = True
             if self.rdcRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['rdc'] = True
+                r['rdc'] = True
             if self.planeRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['plane'] = True
+                r['plane'] = True
             if self.adistRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['adist'] = True
+                r['adist'] = True
             if self.jcoupRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['jcoup'] = True
+                r['jcoup'] = True
             if self.hvycsRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['hvycs'] = True
+                r['hvycs'] = True
             if self.procsRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['procs'] = True
+                r['procs'] = True
             if self.ramaRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['rama'] = True
+                r['rama'] = True
             if self.radiRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['radi'] = True
+                r['radi'] = True
             if self.diffRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['diff'] = True
+                r['diff'] = True
             if self.nbaseRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['nbase'] = True
+                r['nbase'] = True
             if self.csaRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['csa'] = True
+                r['csa'] = True
             if self.angRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['ang'] = True
+                r['ang'] = True
             if self.preRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['pre'] = True
+                r['pre'] = True
             if self.pcsRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['pcs'] = True
+                r['pcs'] = True
             if self.prdcRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['prdc'] = True
+                r['prdc'] = True
             if self.pangRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['pang'] = True
+                r['pang'] = True
             if self.pccrRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['pccr'] = True
+                r['pccr'] = True
             if self.hbondRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['hbond'] = True
+                r['hbond'] = True
             if self.geoRestraints > 0:
-                self.reasonsForReParsing['label_seq_scheme']['geo'] = True
+                r['geo'] = True
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
 
@@ -1147,11 +1152,13 @@ class BaseStackedMRParserListener():
                     for item in self.__polySeqRstFailed:
                         if item['chain_id'] in chainIds:
                             for seqId, compId in zip(item['seq_id'], item['comp_id']):
-                                offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId == compId])
+                                offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id'])
+                                                if _compId == compId])
                     for item in self.__polySeqRstFailedAmbig:
                         if item['chain_id'] in chainIds:
                             for seqId, compIds in zip(item['seq_id'], item['comp_ids']):
-                                offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId in compIds])
+                                offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id'])
+                                                if _compId in compIds])
 
                 if len(offsets) == 0:
                     # predict sequence offset purely from __seqAtmRstFailed (2l12)
@@ -1198,7 +1205,7 @@ class BaseStackedMRParserListener():
                                 compId = ps['comp_id'][ps[seq_id_name].index(_seqId + offset)]
                                 if compId in _compIds:
                                     matched += 1
-                                elif compId not in MONDICT3 or len(_compIds) == 0:  # 6f0y
+                                elif compId not in STD_MON_DICT or len(_compIds) == 0:  # 6f0y
                                     continue
                                 else:
                                     valid = False
@@ -1294,7 +1301,8 @@ class BaseStackedMRParserListener():
                         for seqId, compIds in zip(item['seq_id'], item['comp_ids']):
                             if seqId in chainIdRemap:
                                 continue
-                            offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId in compIds])
+                            offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id'])
+                                            if _compId in compIds])
 
                 if len(offsets) == 0:
                     continue
@@ -1448,7 +1456,9 @@ class BaseStackedMRParserListener():
 
         try:
 
-            pro_hn_atom_not_found_warnings = [f for f in self.f if self.__pro_hn_atom_not_found_pat.match(f) or self.__pro_hn_anomalous_data_pat.match(f)]
+            pro_hn_atom_not_found_warnings = [f for f in self.f
+                                              if self.__pro_hn_atom_not_found_pat.match(f)
+                                              or self.__pro_hn_anomalous_data_pat.match(f)]
             gly_hb_atom_not_found_warnings = [f for f in self.f if self.__gly_hb_atom_not_found_pat.match(f)]
             any_atom_not_found_warnings = (f for f in self.f if self.__any_atom_not_found_pat.match(f))
 
@@ -1469,7 +1479,8 @@ class BaseStackedMRParserListener():
 
                 self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.polySeq, self.__polySeqRst,
                                                           resolvedMultimer=self.reasons is not None)
-                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeq, self.__polySeqRst, self.__seqAlign)
+                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type,
+                                                                    self.polySeq, self.__polySeqRst, self.__seqAlign)
 
                 if len(message) > 0:
                     self.f.extend(message)
@@ -1496,7 +1507,8 @@ class BaseStackedMRParserListener():
 
                                 self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.polySeq, self.__polySeqRst,
                                                                           resolvedMultimer=self.reasons is not None)
-                                self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeq, self.__polySeqRst, self.__seqAlign)
+                                self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.ccU, self.file_type,
+                                                                              self.polySeq, self.__polySeqRst, self.__seqAlign)
 
                             elif len(self.__chainAssign) > len(self.__polySeqRst) and len(self.__polySeqRstFailed) > 0:
                                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
@@ -1599,7 +1611,8 @@ class BaseStackedMRParserListener():
                                 offset = None
                                 for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
                                     if seq_id is not None and seq_id not in seq_id_mapping:
-                                        _seq_id = next((_seq_id for _seq_id, _comp_id in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
+                                        _seq_id = next((_seq_id for _seq_id, _comp_id
+                                                        in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
                                                         if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
                                         if _seq_id is not None:
                                             offset = seq_id - _seq_id
@@ -1623,7 +1636,9 @@ class BaseStackedMRParserListener():
                                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
                         if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
-                            polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
+                            polySeqRst, chainIdMapping =\
+                                splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRst,
+                                                            self.__chainAssign)
 
                             if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                 self.__polySeqRst = polySeqRst
@@ -1632,7 +1647,8 @@ class BaseStackedMRParserListener():
 
                         if self.monoPolymer and len(self.__polySeqRst) == 1:
                             polySeqRst, chainIdMapping, modelChainIdExt =\
-                                splitPolySeqRstForExactNoes(self.__pA, self.polySeq, self.__polySeqRst, self.__chainAssign)
+                                splitPolySeqRstForExactNoes(self.__pA, self.polySeq, self.__polySeqRst,
+                                                            self.__chainAssign)
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
@@ -1642,8 +1658,9 @@ class BaseStackedMRParserListener():
                                     self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
 
                         if self.hasNonPoly:
-                            polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.ccU, self.__nonPoly, self.__polySeqRst,
-                                                                                   self.__seqAlign, self.__chainAssign)
+                            polySeqRst, nonPolyMapping =\
+                                splitPolySeqRstForNonPoly(self.ccU, self.__nonPoly, self.__polySeqRst,
+                                                          self.__seqAlign, self.__chainAssign)
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
@@ -1651,8 +1668,9 @@ class BaseStackedMRParserListener():
                                     self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
                         if self.hasBranched:
-                            polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.polySeq, self.__branched, self.__polySeqRst,
-                                                                                     self.__chainAssign)
+                            polySeqRst, branchedMapping =\
+                                splitPolySeqRstForBranched(self.__pA, self.polySeq, self.__branched, self.__polySeqRst,
+                                                           self.__chainAssign)
 
                             if polySeqRst is not None:
                                 self.__polySeqRst = polySeqRst
@@ -1754,7 +1772,9 @@ class BaseStackedMRParserListener():
                                                           if ps['auth_chain_id'] == ref_chain_id)
 
                                     seq_id_mapping = {}
-                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa else sa['ref_seq_id'],
+                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id']
+                                                                                      if 'ref_auth_seq_id' in sa
+                                                                                      else sa['ref_seq_id'],
                                                                                       sa['mid_code'], sa['test_seq_id']):
                                         if mid_code == '|' and test_seq_id is not None:
                                             seq_id_mapping[test_seq_id] = ref_auth_seq_id
@@ -1766,7 +1786,9 @@ class BaseStackedMRParserListener():
                                                        and sa['test_chain_id'] == test_chain_id), None)
 
                                         if sa_ref is not None:
-                                            for ref_auth_seq_id, mid_code, test_seq_id in zip(sa_ref['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa_ref else sa_ref['ref_seq_id'],
+                                            for ref_auth_seq_id, mid_code, test_seq_id in zip(sa_ref['ref_auth_seq_id']
+                                                                                              if 'ref_auth_seq_id' in sa_ref
+                                                                                              else sa_ref['ref_seq_id'],
                                                                                               sa_ref['mid_code'], sa_ref['test_seq_id']):
                                                 if mid_code == '|' and test_seq_id is not None:
                                                     ref_seq_id_mapping[test_seq_id] = ref_auth_seq_id
@@ -1786,21 +1808,20 @@ class BaseStackedMRParserListener():
 
                                         if any(True for k, v in seq_id_mapping.items() if k != v):
                                             if not any(v - k != offset for k, v in seq_id_mapping.items()):
-                                                if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
-                                                    self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
+                                                self.__getNamedReasonsForReparsing('global_auth_sequence_offset')[
+                                                    ref_chain_id] = offset
                                             else:
                                                 offsets = [v - k for k, v in seq_id_mapping.items()]
                                                 common_offsets = collections.Counter(offsets).most_common()
                                                 if common_offsets[0][1] > 1 and common_offsets[0][1] > common_offsets[1][1]\
                                                    and abs(common_offsets[0][0] - common_offsets[1][0]) == 1:
                                                     offset = common_offsets[0][0]
-                                                    if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
-                                                        self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                    self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
+                                                    self.__getNamedReasonsForReparsing('global_auth_sequence_offset')[
+                                                        ref_chain_id] = offset
                                                 else:
                                                     seq_id_mapping = {}
-                                                    for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                    for ref_seq_id, mid_code, test_seq_id\
+                                                            in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                                         if mid_code == '|' and test_seq_id is not None:
                                                             seq_id_mapping[test_seq_id] = ref_seq_id
 
@@ -1812,9 +1833,8 @@ class BaseStackedMRParserListener():
                                                         offsets = {}
                                                         for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
                                                             offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
-                                                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                        self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
+                                                        self.__getNamedReasonsForReparsing('global_auth_sequence_offset')[
+                                                            ref_chain_id] = offsets
 
                                 if len(chainAssignFailed) == 0\
                                    or (self.monoPolymer and 'label_seq_scheme' not in self.reasonsForReParsing
@@ -1827,7 +1847,8 @@ class BaseStackedMRParserListener():
                                             for test_seq_id, test_comp_id in zip(_ps['seq_id'], _ps['comp_id']):
                                                 if test_seq_id not in ps['seq_id']:
                                                     valid_label_seq = False
-                                                elif test_comp_id not in EMPTY_VALUE and test_comp_id != ps['comp_id'][ps['seq_id'].index(test_seq_id)]:
+                                                elif test_comp_id not in EMPTY_VALUE\
+                                                        and test_comp_id != ps['comp_id'][ps['seq_id'].index(test_seq_id)]:
                                                     valid_label_seq = False
                                                 if test_seq_id not in ps['auth_seq_id']:
                                                     valid_auth_seq = False
@@ -1847,7 +1868,8 @@ class BaseStackedMRParserListener():
                                         and all('identical_chain_id' in ps for ps in self.polySeq)\
                                         and 'global_auth_sequence_offset' in self.reasonsForReParsing\
                                         and len(set(self.reasonsForReParsing['global_auth_sequence_offset'].values())) == 1:
-                                    if len(self.__polySeqRstFailed[0]['seq_id']) == len(self.polySeq[0]['seq_id']) * (self.__lenPolySeq - 1):
+                                    if len(self.__polySeqRstFailed[0]['seq_id']) ==\
+                                       len(self.polySeq[0]['seq_id']) * (self.__lenPolySeq - 1):
                                         chain_id_split_with_offset(self.__polySeqRstFailed[0]['seq_id'])  # 6ge1
 
                         elif len(self.__seqAtmRstFailed) > 0\
@@ -1891,7 +1913,7 @@ class BaseStackedMRParserListener():
                         # try to find valid sequence offset from failed ambiguous assignments (2js1)
                         elif len(self.__chainAssign) > 0 and len(self.__seqAtmRstFailed) > 0\
                                 and self.__multiPolymer:  # 2n3a, 6e5n
-                            # and 'local_seq_scheme' in self.reasonsForReParsing:  # and 'label_seq_scheme' in self.reasonsForReParsing: (2lxs)
+                            # and 'local_seq_scheme' in self.reasonsForReParsing: (2lxs)
                             chain_id_remap_with_offset()
 
                     # DAOTHER-9063
@@ -1998,9 +2020,10 @@ class BaseStackedMRParserListener():
                                 for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                     if mid_code == '|' and test_seq_id is not None:
                                         try:
-                                            seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                               in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                               if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                            seq_id_mapping[test_seq_id] =\
+                                                next(auth_seq_id for auth_seq_id, seq_id
+                                                     in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                     if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                         except StopIteration:
                                             pass
 
@@ -2017,7 +2040,8 @@ class BaseStackedMRParserListener():
                                     offset = None
                                     for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
                                         if seq_id is not None and seq_id not in seq_id_mapping:
-                                            _seq_id = next((_seq_id for _seq_id, _comp_id in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
+                                            _seq_id = next((_seq_id for _seq_id, _comp_id
+                                                            in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
                                                             if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
                                             if _seq_id is not None:
                                                 offset = seq_id - _seq_id
@@ -2039,7 +2063,9 @@ class BaseStackedMRParserListener():
                                     self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
                             if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
-                                polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRstFailed, chainAssignFailed)
+                                polySeqRst, chainIdMapping =\
+                                    splitPolySeqRstForMultimers(self.__pA, self.polySeq, self.__polySeqRstFailed,
+                                                                chainAssignFailed)
 
                                 if polySeqRst is not None and (not self.hasNonPoly or self.__lenPolySeq // self.__lenNonPoly in (1, 2)):
                                     self.__polySeqRst = polySeqRst
@@ -2048,7 +2074,8 @@ class BaseStackedMRParserListener():
 
                             if self.monoPolymer and len(self.__polySeqRstFailed) == 1:
                                 polySeqRst, chainIdMapping, modelChainIdExt =\
-                                    splitPolySeqRstForExactNoes(self.__pA, self.polySeq, self.__polySeqRstFailed, chainAssignFailed)
+                                    splitPolySeqRstForExactNoes(self.__pA, self.polySeq, self.__polySeqRstFailed,
+                                                                chainAssignFailed)
 
                                 if polySeqRst is not None:
                                     self.__polySeqRst = polySeqRst
@@ -2058,8 +2085,9 @@ class BaseStackedMRParserListener():
                                         self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
 
                             if self.hasNonPoly:
-                                polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.ccU, self.__nonPoly, self.__polySeqRstFailed,
-                                                                                       seqAlignFailed, chainAssignFailed)
+                                polySeqRst, nonPolyMapping =\
+                                    splitPolySeqRstForNonPoly(self.ccU, self.__nonPoly, self.__polySeqRstFailed,
+                                                              seqAlignFailed, chainAssignFailed)
 
                                 if polySeqRst is not None:
                                     self.__polySeqRst = polySeqRst
@@ -2067,8 +2095,9 @@ class BaseStackedMRParserListener():
                                         self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
                             if self.hasBranched:
-                                polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.polySeq, self.__branched, self.__polySeqRstFailed,
-                                                                                         chainAssignFailed)
+                                polySeqRst, branchedMapping =\
+                                    splitPolySeqRstForBranched(self.__pA, self.polySeq, self.__branched,
+                                                               self.__polySeqRstFailed, chainAssignFailed)
 
                                 if polySeqRst is not None:
                                     self.__polySeqRst = polySeqRst
@@ -2147,9 +2176,7 @@ class BaseStackedMRParserListener():
                         if not label_seq_scheme\
                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing\
                            and 'segment_id_mismatch' not in self.reasonsForReParsing:  # 2n2w, 2b87, 2mf6 (excl label_seq_scheme)
-                            if 'uninterpretable_chain_id' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['uninterpretable_chain_id'] = {}
-                            self.reasonsForReParsing['uninterpretable_chain_id'][k] = True  # 2lqc
+                            self.__getNamedReasonsForReparsing('uninterpretable_chain_id')[k] = True  # 2lqc
                 if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                     del self.reasonsForReParsing['global_sequence_offset']
 
@@ -2194,12 +2221,15 @@ class BaseStackedMRParserListener():
                         if chainId not in self.reasonsForReParsing['global_auth_sequence_offset']:
                             if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                                 offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
-                                if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
-                                    failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == chainId), None)
+                                if any(abs(seq_id - auth_seq_id - offset) > 20
+                                       for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
+                                    failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed
+                                                      if failed_ps['chain_id'] == chainId), None)
                                     if failed_ps is None:
                                         continue
                                     if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
-                                        seqIdRemapForRemaining.append({'chain_id': chainId, 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                                        seqIdRemapForRemaining.append({'chain_id': chainId,
+                                                                       'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                             elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
                                 safe = True
                                 for _ps in self.polySeq:
@@ -2208,10 +2238,13 @@ class BaseStackedMRParserListener():
                                             safe = False
                                             break
                                 if safe:
-                                    seqIdRemapForRemaining.append({'chain_id': chainId, 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                                    seqIdRemapForRemaining.append({'chain_id': chainId,
+                                                                   'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                                 _ps = next((_ps for _ps in self.__polySeqRstFailed if _ps['chain_id'] == chainId), None)
-                                if _ps is None or not all(_seq_id in ps['seq_id'] for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id']) if _comp_id not in EMPTY_VALUE):
+                                if _ps is None\
+                                   or not all(_seq_id in ps['seq_id'] for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id'])
+                                              if _comp_id not in EMPTY_VALUE):
                                     del self.reasonsForReParsing['global_auth_sequence_offset'][chainId]
                                     if len(self.reasonsForReParsing['global_auth_sequence_offset']) == 0:
                                         del self.reasonsForReParsing['global_auth_sequence_offset']
@@ -2233,12 +2266,15 @@ class BaseStackedMRParserListener():
                         if chainId not in self.reasonsForReParsing['global_auth_sequence_offset']:
                             if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                                 offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
-                                if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
-                                    failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == chainId), None)
+                                if any(abs(seq_id - auth_seq_id - offset) > 20
+                                       for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
+                                    failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed
+                                                      if failed_ps['chain_id'] == chainId), None)
                                     if failed_ps is None:
                                         continue
                                     if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
-                                        seqIdRemapForRemaining.append({'chain_id': chainId, 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                                        seqIdRemapForRemaining.append({'chain_id': chainId,
+                                                                       'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                             elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
                                 safe = True
                                 for _ps in self.polySeq:
@@ -2247,10 +2283,12 @@ class BaseStackedMRParserListener():
                                             safe = False
                                             break
                                 if safe:
-                                    seqIdRemapForRemaining.append({'chain_id': chainId, 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                                    seqIdRemapForRemaining.append({'chain_id': chainId,
+                                                                   'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                         elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             _ps = next((_ps for _ps in self.__polySeqRstFailed if _ps['chain_id'] == chainId), None)
-                            if _ps is None or not all(_seq_id in ps['seq_id'] for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id']) if _comp_id not in EMPTY_VALUE):
+                            if _ps is None or not all(_seq_id in ps['seq_id'] for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id'])
+                                                      if _comp_id not in EMPTY_VALUE):
                                 del self.reasonsForReParsing['global_auth_sequence_offset'][chainId]
                                 if len(self.reasonsForReParsing['global_auth_sequence_offset']) == 0:
                                     del self.reasonsForReParsing['global_auth_sequence_offset']
@@ -2277,7 +2315,8 @@ class BaseStackedMRParserListener():
                                 valid = False
                                 break
                             if chainId in chainIds:
-                                offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if k == chainId and v is not None)
+                                offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items()
+                                              if k == chainId and v is not None)
                                 for auth_seq_id in ps['auth_seq_id']:
                                     if auth_seq_id - offset in chainIdRemap:
                                         valid = False
@@ -2316,9 +2355,12 @@ class BaseStackedMRParserListener():
             if len(seqIdRemapForRemaining) > 0:
                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
 
-            insuff_dist_atom_sel_in_1st_row_warnings = [f for f in insuff_dist_atom_sel_warnings if 'Check the 1th row of distance restraints' in f]
-            invalid_dist_atom_sel_in_1st_row = any(True for f in self.f if 'Check the 1th row of distance restraints' in f
-                                                   and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
+            insuff_dist_atom_sel_in_1st_row_warnings = [f for f in insuff_dist_atom_sel_warnings
+                                                        if 'Check the 1th row of distance restraints' in f]
+            invalid_dist_atom_sel_in_1st_row = any(True for f in self.f
+                                                   if 'Check the 1th row of distance restraints' in f
+                                                   and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f
+                                                        or '[Coordinate issue]' in f))
 
             if 'local_seq_scheme' in self.reasonsForReParsing\
                and (len(self.reasonsForReParsing) == 1 or len(insuff_dist_atom_sel_warnings) == len(self.f)  # 2ljb
@@ -2339,21 +2381,18 @@ class BaseStackedMRParserListener():
                     self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
                 if valid:
                     if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row:
-                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                        self.__getNamedReasonsForReparsing('label_seq_scheme')['dist'] = True
                         set_label_seq_scheme()
                         local_to_label_seq_scheme = True  # 2ljb, 2lp4
                     else:
                         del self.reasonsForReParsing['local_seq_scheme']
                 else:  # 2ld3
-                    if 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:
-                        self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
+                    r = self.__getNamedReasonsForReparsing('inhibit_label_seq_scheme')
                     set_label_seq_scheme()
                     for ps in self.__polySeqRstValid:
                         chainId = ps['chain_id']
                         if 'label_seq_scheme' in self.reasonsForReParsing:
-                            self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = self.reasonsForReParsing['label_seq_scheme']
+                            r[chainId] = self.reasonsForReParsing['label_seq_scheme']
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
                     if 'label_seq_scheme' in self.reasonsForReParsing:
@@ -2397,12 +2436,12 @@ class BaseStackedMRParserListener():
 
                     # ad hoc sequence scheme switching of distance restraints should be inherited
                     if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
-                       and (len(self.reasonsForReParsing) == 0 or (len(self.reasonsForReParsing) == 1 and 'label_seq_scheme' in self.reasonsForReParsing))\
+                       and (len(self.reasonsForReParsing) == 0
+                            or (len(self.reasonsForReParsing) == 1 and 'label_seq_scheme' in self.reasonsForReParsing))\
                        and (any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
-                            or (len(insuff_dist_atom_sel_warnings) == 1 and any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
-                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                            or (len(insuff_dist_atom_sel_warnings) == 1
+                                and any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
+                        self.__getNamedReasonsForReparsing('label_seq_scheme')['dist'] = True
                         set_label_seq_scheme()
 
                     elif len(self.reasonsForReParsing) > 0 and self.distRestraints > 0\
@@ -2410,9 +2449,7 @@ class BaseStackedMRParserListener():
                             and len(insuff_dist_atom_sel_in_1st_row_warnings) == 0\
                             and not all('[Insufficient atom selection]' in f and 'distance restraints' in f for f in self.f):
                         if any('[Insufficient atom selection]' in f and 'distance restraints' not in f for f in self.f):
-                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['label_seq_scheme'] = {}
-                            self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                            self.__getNamedReasonsForReparsing('label_seq_scheme')['dist'] = True
                             set_label_seq_scheme()
                         elif 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing:  # 2lml
                             if 'assert_label_seq_scheme' not in self.reasonsForReParsing\
@@ -2426,9 +2463,11 @@ class BaseStackedMRParserListener():
                                 self.f.remove(f)
 
                 elif not assert_auth_seq_scheme:  # 2n0s
-                    if 'label_seq_offset' in self.reasonsForReParsing and len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
+                    if 'label_seq_offset' in self.reasonsForReParsing and len(insuff_dist_atom_sel_in_1st_row_warnings) > 0\
+                       and not invalid_dist_atom_sel_in_1st_row\
                        and (any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
-                            or (len(insuff_dist_atom_sel_warnings) >= 1 and any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
+                            or (len(insuff_dist_atom_sel_warnings) >= 1
+                                and any(True for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
                         if len(pro_hn_atom_not_found_warnings) + len(gly_hb_atom_not_found_warnings) > 0:
                             for chain_id in self.reasonsForReParsing['label_seq_offset']:
                                 pro_seq_ids, gly_seq_ids = set(), set()
@@ -2447,9 +2486,7 @@ class BaseStackedMRParserListener():
                                 ps = next((ps for ps in self.polySeq if ps['chain_id'] == chain_id), None)
                                 if ps is not None and ps['comp_id'][0] == 'ACE':
                                     self.reasonsForReParsing['label_seq_offset'][chain_id] = 1
-                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                        self.__getNamedReasonsForReparsing('label_seq_scheme')['dist'] = True
                         set_label_seq_scheme()
 
                     elif ('non_poly_remap' in self.reasonsForReParsing or 'branch_remap' in self.reasonsForReParsing)\
@@ -2457,9 +2494,7 @@ class BaseStackedMRParserListener():
                             and 'global_auth_sequence_offset' not in self.reasonsForReParsing\
                             and 'segment_id_mismatch' not in self.reasonsForReParsing:
                         if self.distRestraints > 0 or self.monoPolymer or all('identical_chain_id' in ps for ps in self.polySeq):
-                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['label_seq_scheme'] = {}
-                            self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                            self.__getNamedReasonsForReparsing('label_seq_scheme')['dist'] = True
                             set_label_seq_scheme()
 
             elif self.reasons is None and len(self.reasonsForReParsing) == 0 and all('[Insufficient atom selection]' in f for f in self.f):
@@ -2472,7 +2507,8 @@ class BaseStackedMRParserListener():
                     positive = negative = 0  # 2n1a
                     for ps in self.polySeq:
                         if ps['auth_chain_id'] in self.reasonsForReParsing['inhibit_label_seq_scheme_stats']:
-                            if self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][ps['auth_chain_id']] / len(ps['seq_id']) < 1.0:  # 2ruk
+                            # 2ruk
+                            if self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][ps['auth_chain_id']] / len(ps['seq_id']) < 1.0:
                                 negative += 1
                                 del self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][ps['auth_chain_id']]
                             else:
@@ -2483,7 +2519,7 @@ class BaseStackedMRParserListener():
             if 'segment_id_mismatch' in self.reasonsForReParsing:
                 if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing\
                    and not local_to_label_seq_scheme\
-                   and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:  # 2ljb, 2lp4, 1qkg, 2lkm
+                   and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:  # 2ljb, 2lp4, 1qkg, 2lkm,
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
                     if 'label_seq_scheme' in self.reasonsForReParsing:
@@ -2515,7 +2551,8 @@ class BaseStackedMRParserListener():
                                 self.reasonsForReParsing['segment_id_mismatch'][src_chain_id] = dst_chain_id
 
                 if 'inhibit_label_seq_scheme' in self.reasonsForReParsing\
-                   and len(self.reasonsForReParsing['inhibit_label_seq_scheme']) == len(set(filter(None, self.reasonsForReParsing['segment_id_mismatch'].values())))\
+                   and len(self.reasonsForReParsing['inhibit_label_seq_scheme']) ==\
+                   len(set(filter(None, self.reasonsForReParsing['segment_id_mismatch'].values())))\
                    and all(chainId in self.reasonsForReParsing['segment_id_mismatch'].values()
                            for chainId in self.reasonsForReParsing['inhibit_label_seq_scheme']):  # 2ljc, 1qkg
                     if 'local_seq_scheme' in self.reasonsForReParsing:
@@ -2534,11 +2571,13 @@ class BaseStackedMRParserListener():
                         if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
                             if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
-                                failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
+                                failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed
+                                                  if failed_ps['chain_id'] == ps['auth_chain_id']), None)
                                 if failed_ps is None:
                                     continue
                                 if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
-                                    seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                                    seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'],
+                                                                   'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                         elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
                             safe = True
                             for _ps in self.polySeq:
@@ -2552,7 +2591,8 @@ class BaseStackedMRParserListener():
                                         safe = False  # 2lba
                                         break
                             if safe:
-                                seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                                seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'],
+                                                               'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
 
                     if len(seqIdRemapForRemaining) > 0:
                         self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
@@ -2641,7 +2681,8 @@ class BaseStackedMRParserListener():
             else:
                 if target_value <= DIST_ERROR_MIN and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The target value='{target_value}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     target_value = None
                 else:
                     validRange = False
@@ -2654,12 +2695,14 @@ class BaseStackedMRParserListener():
             else:
                 if lower_limit <= DIST_ERROR_MIN and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The lower limit value='{lower_limit:.3f}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The lower limit value='{lower_limit:.3f}' "
+                                  f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.allowZeroUpperLimit):
@@ -2667,12 +2710,14 @@ class BaseStackedMRParserListener():
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The upper limit value='{upper_limit:.3f}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The upper limit value='{upper_limit:.3f}' "
+                                  f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if DIST_ERROR_MIN <= lower_linear_limit < DIST_ERROR_MAX:
@@ -2680,12 +2725,14 @@ class BaseStackedMRParserListener():
             else:
                 if lower_linear_limit <= DIST_ERROR_MIN and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_linear_limit = None
                 else:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                                  f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX or (upper_linear_limit == 0.0 and self.allowZeroUpperLimit):
@@ -2693,7 +2740,8 @@ class BaseStackedMRParserListener():
             else:
                 if (upper_linear_limit <= DIST_ERROR_MIN or upper_linear_limit > DIST_ERROR_MAX) and self.omitDistLimitOutlier:
                     self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
+                                  f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted "
+                                  f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_linear_limit = None
                 else:
                     validRange = False
@@ -2706,7 +2754,8 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'. "
+                                  f"The lower limit value='{lower_limit:.3f}' "
+                                  f"must be less than the target value '{target_value}'. "
                                   "It indicates that a negative value was unexpectedly set: "
                                   f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
@@ -2714,7 +2763,8 @@ class BaseStackedMRParserListener():
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'. "
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                                  f"must be less than the target value '{target_value}'. "
                                   "It indicates that a negative value was unexpectedly set: "
                                   f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
@@ -2722,7 +2772,8 @@ class BaseStackedMRParserListener():
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value}'. "
+                                  f"The upper limit value='{upper_limit:.3f}' "
+                                  f"must be greater than the target value '{target_value}'. "
                                   "It indicates that a negative value was unexpectedly set: "
                                   f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
@@ -2730,7 +2781,8 @@ class BaseStackedMRParserListener():
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.3f}' must be greater than the target value '{target_value}'. "
+                                  f"The upper linear limit value='{upper_linear_limit:.3f}' "
+                                  f"must be greater than the target value '{target_value}'. "
                                   "It indicates that a negative value was unexpectedly set: "
                                   f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
@@ -2740,37 +2792,43 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
+                                  f"The lower limit value='{lower_limit:.3f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.3f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.3f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.")
+                                  f"The lower limit value='{lower_limit:.3f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.3f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.3f}'.")
 
             if None not in (lower_limit, lower_linear_limit):
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                                  f"must be less than the lower limit value '{lower_limit:.3f}'.")
 
             if None not in (upper_limit, upper_linear_limit):
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
+                                  f"The upper limit value='{upper_limit:.3f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -2780,37 +2838,43 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.3f}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.3f}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.3f}' "
+                              f"should be within range {DIST_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
@@ -2858,7 +2922,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
@@ -2866,7 +2931,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.3f}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
@@ -2874,7 +2940,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.3f}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if ANGLE_ERROR_MIN <= lower_linear_limit < ANGLE_ERROR_MAX:
@@ -2882,7 +2949,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if ANGLE_ERROR_MIN < upper_linear_limit <= ANGLE_ERROR_MAX:
@@ -2890,19 +2958,22 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.3f}' "
+                              f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if None not in (lower_limit, lower_linear_limit):
             if lower_linear_limit > lower_limit:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.")
+                              f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                              f"must be less than the lower limit value '{lower_limit:.3f}'.")
 
         if None not in (upper_limit, upper_linear_limit):
             if upper_limit > upper_linear_limit:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
+                              f"The upper limit value='{upper_limit:.3f}' "
+                              f"must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -2912,37 +2983,43 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.3f}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.3f}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.3f}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.3f}' "
+                              f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         if None not in (upper_limit, lower_limit)\
@@ -2972,7 +3049,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
@@ -2980,7 +3058,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
@@ -2988,7 +3067,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if RDC_ERROR_MIN <= lower_linear_limit < RDC_ERROR_MAX:
@@ -2996,7 +3076,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if RDC_ERROR_MIN < upper_linear_limit <= RDC_ERROR_MAX:
@@ -3004,7 +3085,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3012,25 +3094,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3038,37 +3124,43 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_limit, lower_linear_limit):
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if None not in (upper_limit, upper_linear_limit):
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3078,44 +3170,51 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if RDC_RANGE_MIN <= lower_linear_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if RDC_RANGE_MIN <= upper_linear_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {RDC_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
 
     def validateRdcRange2(self, weight: float, misc_dict: dict,
                           target_value_1: Optional[float], lower_limit_1: Optional[float], upper_limit_1: Optional[float],
-                          target_value_2: Optional[float], lower_limit_2: Optional[float], upper_limit_2: Optional[float]) -> Optional[dict]:
+                          target_value_2: Optional[float], lower_limit_2: Optional[float], upper_limit_2: Optional[float]
+                          ) -> Optional[dict]:
         """ Validate two RDC value ranges.
         """
 
@@ -3131,62 +3230,72 @@ class BaseStackedMRParserListener():
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The target value(1)='{target_value_1}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The target value(1)='{target_value_1}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN <= lower_limit_1 < RDC_ERROR_MAX:
             dstFunc['lower_limit_1'] = f"{lower_limit_1:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The lower limit value(1)='{lower_limit_1:.6f}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < upper_limit_1 <= RDC_ERROR_MAX:
             dstFunc['upper_limit_1'] = f"{upper_limit_1:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The upper limit value(1)='{upper_limit_1:.6f}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < target_value_2 < RDC_ERROR_MAX:
             dstFunc['target_value_2'] = f"{target_value_2:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The target value(2)='{target_value_2}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The target value(2)='{target_value_2}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN <= lower_limit_2 < RDC_ERROR_MAX:
             dstFunc['lower_limit_2'] = f"{lower_limit_2:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The lower limit value(2)='{lower_limit_2:.6f}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < upper_limit_2 <= RDC_ERROR_MAX:
             dstFunc['upper_limit_2'] = f"{upper_limit_2:.6f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                          f"The upper limit value(2)='{upper_limit_2:.6f}' "
+                          f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit_1 > target_value_1:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.6f}' must be less than the target value(1) '{target_value_1}'.")
+                          f"The lower limit value(1)='{lower_limit_1:.6f}' "
+                          f"must be less than the target value(1) '{target_value_1}'.")
 
         if upper_limit_1 < target_value_1:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.6f}' must be greater than the target value(1) '{target_value_1}'.")
+                          f"The upper limit value(1)='{upper_limit_1:.6f}' "
+                          f"must be greater than the target value(1) '{target_value_1}'.")
 
         if lower_limit_2 > target_value_2:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.6f}' must be less than the target value(2) '{target_value_2}'.")
+                          f"The lower limit value(2)='{lower_limit_2:.6f}' "
+                          f"must be less than the target value(2) '{target_value_2}'.")
 
         if upper_limit_2 < target_value_2:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.6f}' must be greater than the target value(2) '{target_value_2}'.")
+                          f"The upper limit value(2)='{upper_limit_2:.6f}' "
+                          f"must be greater than the target value(2) '{target_value_2}'.")
 
         if not validRange:
             return None
@@ -3195,37 +3304,43 @@ class BaseStackedMRParserListener():
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The target value(1)='{target_value_1}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The target value(1)='{target_value_1}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= lower_limit_1 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The lower limit value(1)='{lower_limit_1:.6f}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= upper_limit_1 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The upper limit value(1)='{upper_limit_1:.6f}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= target_value_2 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The target value(2)='{target_value_2}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The target value(2)='{target_value_2}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= lower_limit_2 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                          f"The lower limit value(2)='{lower_limit_2:.6f}' "
+                          f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= upper_limit_2 <= RDC_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.6f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The upper limit value(2)='{upper_limit_2:.6f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if target_value_1 is None and lower_limit_1 is None and upper_limit_1 is None:
             return None
@@ -3237,7 +3352,8 @@ class BaseStackedMRParserListener():
 
     def validateAngleRange2(self, weight: float,
                             target_value_1: Optional[float], lower_limit_1: Optional[float], upper_limit_1: Optional[float],
-                            target_value_2: Optional[float], lower_limit_2: Optional[float], upper_limit_2: Optional[float]) -> Optional[dict]:
+                            target_value_2: Optional[float], lower_limit_2: Optional[float], upper_limit_2: Optional[float]
+                            ) -> Optional[dict]:
         """ Validate two angle value ranges.
         """
 
@@ -3249,42 +3365,48 @@ class BaseStackedMRParserListener():
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The target value(1)='{target_value_1}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The target value(1)='{target_value_1}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN <= lower_limit_1 < ANGLE_ERROR_MAX:
             dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The lower limit value(1)='{lower_limit_1:.3f}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < upper_limit_1 <= ANGLE_ERROR_MAX:
             dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The upper limit value(1)='{upper_limit_1:.3f}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < target_value_2 < ANGLE_ERROR_MAX:
             dstFunc['target_value_2'] = f"{target_value_2}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The target value(2)='{target_value_2}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The target value(2)='{target_value_2}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN <= lower_limit_2 < ANGLE_ERROR_MAX:
             dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The lower limit value(2)='{lower_limit_2:.3f}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < upper_limit_2 <= ANGLE_ERROR_MAX:
             dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
         else:
             validRange = False
             self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
+                          f"The upper limit value(2)='{upper_limit_2:.3f}' "
+                          f"must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if not validRange:
             return None
@@ -3293,37 +3415,43 @@ class BaseStackedMRParserListener():
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The target value(1)='{target_value_1}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The target value(1)='{target_value_1}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= lower_limit_1 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The lower limit value(1)='{lower_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The lower limit value(1)='{lower_limit_1:.3f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= upper_limit_1 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The upper limit value(1)='{upper_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The upper limit value(1)='{upper_limit_1:.3f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= target_value_2 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The target value(2)='{target_value_2}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The target value(2)='{target_value_2}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= lower_limit_2 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The lower limit value(2)='{lower_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The lower limit value(2)='{lower_limit_2:.3f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= upper_limit_2 <= ANGLE_RANGE_MAX:
             pass
         else:
             self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                          f"The upper limit value(2)='{upper_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+                          f"The upper limit value(2)='{upper_limit_2:.3f}' "
+                          f"should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if target_value_1 is None and lower_limit_1 is None and upper_limit_1 is None:
             return None
@@ -3348,7 +3476,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if T1T2_ERROR_MIN <= lower_limit < T1T2_ERROR_MAX:
@@ -3356,7 +3485,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if T1T2_ERROR_MIN < upper_limit <= T1T2_ERROR_MAX:
@@ -3364,7 +3494,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if T1T2_ERROR_MIN <= lower_linear_limit < T1T2_ERROR_MAX:
@@ -3372,7 +3503,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if T1T2_ERROR_MIN < upper_linear_limit <= T1T2_ERROR_MAX:
@@ -3380,7 +3512,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3388,25 +3521,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3414,37 +3551,43 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_limit, lower_linear_limit):
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if None not in (upper_limit, upper_linear_limit):
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3454,37 +3597,43 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if T1T2_RANGE_MIN <= lower_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if T1T2_RANGE_MIN <= upper_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if T1T2_RANGE_MIN <= lower_linear_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if T1T2_RANGE_MIN <= upper_linear_limit <= T1T2_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
@@ -3504,7 +3653,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if CSA_ERROR_MIN <= lower_limit < CSA_ERROR_MAX:
@@ -3512,7 +3662,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if CSA_ERROR_MIN < upper_limit <= CSA_ERROR_MAX:
@@ -3520,7 +3671,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if CSA_ERROR_MIN <= lower_linear_limit < CSA_ERROR_MAX:
@@ -3528,7 +3680,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if CSA_ERROR_MIN < upper_linear_limit <= CSA_ERROR_MAX:
@@ -3536,7 +3689,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {CSA_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3544,25 +3698,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3570,37 +3728,43 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_limit, lower_linear_limit):
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if None not in (upper_limit, upper_linear_limit):
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3610,37 +3774,43 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if CSA_RANGE_MIN <= lower_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if CSA_RANGE_MIN <= upper_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if CSA_RANGE_MIN <= lower_linear_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if CSA_RANGE_MIN <= upper_linear_limit <= CSA_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {CSA_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
@@ -3660,7 +3830,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if PRE_ERROR_MIN <= lower_limit < PRE_ERROR_MAX:
@@ -3668,7 +3839,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if PRE_ERROR_MIN < upper_limit <= PRE_ERROR_MAX:
@@ -3676,7 +3848,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if PRE_ERROR_MIN <= lower_linear_limit < PRE_ERROR_MAX:
@@ -3684,7 +3857,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if PRE_ERROR_MIN < upper_linear_limit <= PRE_ERROR_MAX:
@@ -3692,7 +3866,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {PRE_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3700,25 +3875,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3726,37 +3905,43 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_limit, lower_linear_limit):
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if None not in (upper_limit, upper_linear_limit):
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3766,37 +3951,43 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if PRE_RANGE_MIN <= lower_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if PRE_RANGE_MIN <= upper_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if PRE_RANGE_MIN <= lower_linear_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if PRE_RANGE_MIN <= upper_linear_limit <= PRE_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {PRE_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
@@ -3816,7 +4007,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if PCS_ERROR_MIN <= lower_limit < PCS_ERROR_MAX:
@@ -3824,7 +4016,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if PCS_ERROR_MIN < upper_limit <= PCS_ERROR_MAX:
@@ -3832,7 +4025,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if PCS_ERROR_MIN <= lower_linear_limit < PCS_ERROR_MAX:
@@ -3840,7 +4034,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if PCS_ERROR_MIN < upper_linear_limit <= PCS_ERROR_MAX:
@@ -3848,7 +4043,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {PCS_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -3856,25 +4052,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -3882,37 +4082,43 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_limit, lower_linear_limit):
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if None not in (upper_limit, upper_linear_limit):
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -3922,37 +4128,43 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if PCS_RANGE_MIN <= lower_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if PCS_RANGE_MIN <= lower_linear_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if PCS_RANGE_MIN <= upper_linear_limit <= PCS_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {PCS_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
@@ -3972,7 +4184,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The target value='{target_value}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if CCR_ERROR_MIN <= lower_limit < CCR_ERROR_MAX:
@@ -3980,7 +4193,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if CCR_ERROR_MIN < upper_limit <= CCR_ERROR_MAX:
@@ -3988,7 +4202,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if CCR_ERROR_MIN <= lower_linear_limit < CCR_ERROR_MAX:
@@ -3996,7 +4211,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if CCR_ERROR_MIN < upper_linear_limit <= CCR_ERROR_MAX:
@@ -4004,7 +4220,8 @@ class BaseStackedMRParserListener():
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"must be within range {CCR_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -4012,25 +4229,29 @@ class BaseStackedMRParserListener():
                 if lower_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                                  f"must be greater than the target value '{target_value}'.")
 
         else:
 
@@ -4038,37 +4259,43 @@ class BaseStackedMRParserListener():
                 if lower_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_limit):
                 if lower_linear_limit > upper_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if None not in (lower_limit, upper_linear_limit):
                 if lower_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower limit value='{lower_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_linear_limit, upper_linear_limit):
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if None not in (lower_limit, lower_linear_limit):
                 if lower_linear_limit > lower_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
+                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if None not in (upper_limit, upper_linear_limit):
                 if upper_limit > upper_linear_limit:
                     validRange = False
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                                  f"The upper limit value='{upper_limit:.6f}' "
+                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -4078,37 +4305,43 @@ class BaseStackedMRParserListener():
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The target value='{target_value}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if CCR_RANGE_MIN <= lower_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The lower limit value='{lower_limit:.6f}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if CCR_RANGE_MIN <= upper_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The upper limit value='{upper_limit:.6f}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if CCR_RANGE_MIN <= lower_linear_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if CCR_RANGE_MIN <= upper_linear_limit <= CCR_RANGE_MAX:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
+                              f"should be within range {CCR_RESTRAINT_RANGE}.")
 
-        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and lower_limit is None and upper_limit is None\
+           and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
@@ -4136,11 +4369,13 @@ class BaseStackedMRParserListener():
                     continue
                 if allow_ambig:
                     self.f.append(f"[{allow_ambig_warn_title}] {self.getCurrentRestraint()}"
-                                  f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                  "Ambiguous atom selection "
+                                  f"'{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
                                   f"{atom2['atom_id']}' found in {subtype_name} restraint.")
                     continue
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                              "Ambiguous atom selection "
+                              f"'{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
                               f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
 
@@ -4151,7 +4386,8 @@ class BaseStackedMRParserListener():
 
         self.factor = self.doIntersectionFactor_expressions(self.factor, atomSelection)
 
-    def doIntersectionFactor_expressions(self, _factor: dict, atomSelection: Optional[List[dict]] = None) -> dict:  # pylint: disable=no-self-use
+    def doIntersectionFactor_expressions(self, _factor: dict, atomSelection: Optional[List[dict]] = None  # pylint: disable=no-self-use
+                                         ) -> dict:
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
             return _factor
@@ -4358,7 +4594,8 @@ class BaseStackedMRParserListener():
 
         self.factor = self.doConsumeFactor_expressions(self.factor, clauseName, cifCheck)
 
-    def doConsumeFactor_expressions(self, _factor: dict, clauseName: str = 'atom selection expression', cifCheck: bool = True, trial: int = 1) -> dict:
+    def doConsumeFactor_expressions(self, _factor: dict, clauseName: str = 'atom selection expression',
+                                    cifCheck: bool = True, trial: int = 1) -> dict:
         """ Consume factor expressions as atom selection if possible.
         """
 
@@ -4477,16 +4714,16 @@ class BaseStackedMRParserListener():
         else:
             self.__cur_auth_atom_id = ''
 
-        ambigAtomSelect = False
+        ambig_atom_sel = False
         if 'atom_id' not in _factor and 'atom_ids' not in _factor\
            and 'type_symbol' not in _factor and 'type_symbols' not in _factor:
             _factor['atom_not_specified'] = True
             if 'atom_selection' not in _factor:
-                ambigAtomSelect = True
+                ambig_atom_sel = True
 
         elif 'chain_id' not in _factor and 'seq_id' not in _factor and 'seq_ids' not in _factor:
             if 'atom_selection' not in _factor:
-                ambigAtomSelect = True
+                ambig_atom_sel = True
 
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             _factor['seq_not_specified'] = True
@@ -4706,7 +4943,7 @@ class BaseStackedMRParserListener():
                     if real_seq_id in offset:
                         offset = offset[real_seq_id]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if real_seq_id + shift in offset:
                                 offset = offset[real_seq_id + shift]
                                 break
@@ -4718,7 +4955,7 @@ class BaseStackedMRParserListener():
                 if real_seq_id + offset in ps['auth_seq_id']:
                     return real_seq_id + offset
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                    for shift in range(1, 100):
+                    for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                         if real_seq_id + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(real_seq_id + shift + offset) - shift
                             if 0 <= idx < len(ps['auth_seq_id']):
@@ -4845,7 +5082,8 @@ class BaseStackedMRParserListener():
                                         realCompId = wc['comp_id'][idx]
                                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                             origCompId = wc['auth_comp_id'][idx]
-                                            _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
+                                            _compIdList = [translateToStdResName(_compId, realCompId, self.ccU)
+                                                           for _compId in _factor['comp_id']]
                                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                                 continue
                                             if set(_factor['comp_id']) != set(_compIdList):
@@ -4890,7 +5128,8 @@ class BaseStackedMRParserListener():
                         atomId_ex = toNefEx(toRegEx(atomId))
                         if atomId_ex.endswith('.') and details is None:
                             atomId_ex += '$'  # HT# -> H. should match with H1/2/3 and not with HA2/3 (5iew)
-                        elif atomId_ex.endswith('.*') and details is not None:  # remove excess wild card code e.g. LYS:HB1* -> LYS:HB3 (5kqj)
+                        # remove excess wild card code e.g. LYS:HB1* -> LYS:HB3 (5kqj)
+                        elif atomId_ex.endswith('.*') and details is not None:
                             _atomIds, _, _details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId_ex[:-2], leave_unmatched=True)
                             if len(_atomIds) > 0 and _details is None:
                                 atomId_ex = _atomIds[0]
@@ -4912,7 +5151,8 @@ class BaseStackedMRParserListener():
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 matched = True
                             elif details is None:
-                                if len(atomIds) == 1 and not re.match(tmpAtomId_ex, atomIds[0]):  # len(atomIds) == 1 to allow map HR# to H[DE][12]
+                                # len(atomIds) == 1 to allow map HR# to H[DE][12]
+                                if len(atomIds) == 1 and not re.match(tmpAtomId_ex, atomIds[0]):
                                     continue
                                 _atomIdSelect |= set(atomIds)
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
@@ -4939,7 +5179,8 @@ class BaseStackedMRParserListener():
                                         if coordAtomSite is not None:
                                             for realAtomId in coordAtomSite['atom_id']:
                                                 if re.match(atomId_ex, realAtomId) or re.match(tmpAtomId_ex, realAtomId):
-                                                    if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
+                                                    if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId,
+                                                                                                  tmpAtomId, _matchedAtomIds):
                                                         continue
                                                     _atomIdSelect.add(realAtomId)
                                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
@@ -4959,7 +5200,8 @@ class BaseStackedMRParserListener():
                                             if coordAtomSite is not None:
                                                 for realAtomId in coordAtomSite['atom_id']:
                                                     if re.match(atomId_ex, realAtomId) or re.match(tmpAtomId_ex, realAtomId):
-                                                        if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
+                                                        if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId,
+                                                                                                      tmpAtomId, _matchedAtomIds):
                                                             continue
                                                         _atomIdSelect.add(realAtomId)
                                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]
@@ -4985,9 +5227,10 @@ class BaseStackedMRParserListener():
                                         continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
-                            if realCompId not in MONDICT3 and realCompId in _compIdSelect:
+                            if realCompId not in STD_MON_DICT and realCompId in _compIdSelect:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
-                                atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping, realSeqId, realCompId, tmpAtomId, coordAtomSite, ignoreSeqId=True)
+                                atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                 realSeqId, realCompId, tmpAtomId, coordAtomSite, ignoreSeqId=True)
                                 atomIds, _, details = self.nefT.get_valid_star_atom(realCompId, atomId, leave_unmatched=True)
                                 if details is None:
                                     _atomIdSelect |= set(atomIds)
@@ -5005,7 +5248,8 @@ class BaseStackedMRParserListener():
                                         if ptnr is None:
                                             continue
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
-                                    atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping, realSeqId, realCompId, tmpAtomId, coordAtomSite, ignoreSeqId=True)
+                                    atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                     realSeqId, realCompId, tmpAtomId, coordAtomSite, ignoreSeqId=True)
                                     atomIds, _, details = self.nefT.get_valid_star_atom(realCompId, atomId, leave_unmatched=True)
                                     if details is None:
                                         _atomIdSelect |= set(atomIds)
@@ -5063,10 +5307,12 @@ class BaseStackedMRParserListener():
                                             _seqKey = (chainId, _seqId)
                                             if _seqKey in self.authToLabelSeq:
                                                 _seqId = self.authToLabelSeq[_seqKey][1]
-                                        elif 'alt_auth_seq_id' in np and np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)] in _factor['seq_id']:
+                                        elif 'alt_auth_seq_id' in np\
+                                                and np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)] in _factor['seq_id']:
                                             _seqId = np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)]
                                     if _seqId not in _factor['seq_id']:
-                                        if self.reasons is not None and (self.preferAuthSeq or _seqId != realSeqId) and realSeqId in np['auth_seq_id']:
+                                        if self.reasons is not None\
+                                           and (self.preferAuthSeq or _seqId != realSeqId) and realSeqId in np['auth_seq_id']:
                                             pass
                                         else:
                                             ptnr = getStructConnPtnr(self.cR, chainId, realSeqId)
@@ -5140,7 +5386,7 @@ class BaseStackedMRParserListener():
                     if self.__lenAtomSelectionSet > 0:
                         self.setLocalSeqScheme()
                 else:
-                    if not self.__internal or all(compId in MONDICT3 for compId in _compIdSelect):
+                    if not self.__internal or all(compId in STD_MON_DICT for compId in _compIdSelect):
                         _factor['atom_id'] = [None]
                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
             # del _factor['atom_ids']
@@ -5173,7 +5419,7 @@ class BaseStackedMRParserListener():
                                 _factor['alt_comp_id'] = _factor['comp_id']
                                 _factor['comp_id'] = _compIdList
                         _compIdSelect.add(realCompId)
-                        if realCompId not in MONDICT3:
+                        if realCompId not in STD_MON_DICT:
                             _repNstdResidueInstance[realCompId] = (chainId, realSeqId)
             if self.hasNonPolySeq:
                 for chainId in _factor['chain_id']:
@@ -5282,7 +5528,7 @@ class BaseStackedMRParserListener():
                                     _factor['alt_comp_id'] = _factor['comp_id']
                                     _factor['comp_id'] = _compIdList
                             _compIdSelect.add(realCompId)
-                            if realCompId not in MONDICT3:
+                            if realCompId not in STD_MON_DICT:
                                 _repNstdResidueInstance[realCompId] = (chainId, realSeqId)
                 if self.hasNonPolySeq:
                     for chainId in _factor['chain_id']:
@@ -5298,10 +5544,12 @@ class BaseStackedMRParserListener():
                                             _seqKey = (chainId, _seqId)
                                             if _seqKey in self.authToLabelSeq:
                                                 _seqId = self.authToLabelSeq[_seqKey][1]
-                                        elif 'alt_auth_seq_id' in np and np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)] in _factor['seq_id']:
+                                        elif 'alt_auth_seq_id' in np\
+                                                and np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)] in _factor['seq_id']:
                                             _seqId = np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)]
                                     if _seqId not in _factor['seq_id']:
-                                        if self.reasons is not None and (self.preferAuthSeq or _seqId != realSeqId) and realSeqId in np['auth_seq_id']:
+                                        if self.reasons is not None\
+                                           and (self.preferAuthSeq or _seqId != realSeqId) and realSeqId in np['auth_seq_id']:
                                             pass
                                         else:
                                             ptnr = getStructConnPtnr(self.cR, chainId, realSeqId)
@@ -5434,36 +5682,36 @@ class BaseStackedMRParserListener():
 
         len_f = len(self.f)
 
-        foundCompId = False
+        found_comp_id = False
         if _factor['atom_id'][0] is not None:
-            foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
-                                                             isPolySeq=True, isChainSpecified=True)
+            found_comp_id = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
+                                                               isPolySeq=True, isChainSpecified=True)
             if self.hasNonPolySeq:
-                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
-                                                                  isPolySeq=False, isChainSpecified=True,
-                                                                  altPolySeq=self.nonPolySeq, resolved=foundCompId)
+                found_comp_id |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
+                                                                    isPolySeq=False, isChainSpecified=True,
+                                                                    altPolySeq=self.nonPolySeq, resolved=found_comp_id)
 
-            if not foundCompId and len(_factor['chain_id']) == 1 and self.__multiPolymer\
+            if not found_comp_id and len(_factor['chain_id']) == 1 and self.__multiPolymer\
                and 'global_sequence_offset' not in self.reasonsForReParsing\
                and (self.reasons is None or 'global_sequence_offset' not in self.reasons):
-                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
-                                                                  isPolySeq=True, isChainSpecified=False)
+                found_comp_id |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
+                                                                    isPolySeq=True, isChainSpecified=False)
                 if self.hasNonPolySeq:
                     self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
                                                        isPolySeq=False, isChainSpecified=False,
-                                                       altPolySeq=self.nonPolySeq, resolved=foundCompId)
+                                                       altPolySeq=self.nonPolySeq, resolved=found_comp_id)
 
-        atom_not_found_error = len(self.f) > len_f and any('[Atom not found]' in f or 'Hydrogen not instantiated' in f for f in self.f[len_f:])
+        atom_not_found_error = len(self.f) > len_f\
+            and any('[Atom not found]' in f or 'Hydrogen not instantiated' in f for f in self.f[len_f:])
 
         if self.reasons is None and self.preferAuthSeq and not atom_not_found_error and self.__complexSeqScheme\
            and not chain_not_specified and 'seq_not_specified' not in _factor:
             if guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT) is not None:
-                if 'inhibit_label_seq_scheme_stats' not in self.reasonsForReParsing:
-                    self.reasonsForReParsing['inhibit_label_seq_scheme_stats'] = {}
+                r = self.__getNamedReasonsForReparsing('inhibit_label_seq_scheme_stats')
                 chainId = _factor['chain_id'][0]
-                if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme_stats']:
-                    self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][chainId] = 0
-                self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][chainId] += 1
+                if chainId not in r:
+                    r[chainId] = 0
+                r[chainId] += 1
 
         if 'segment_id' in _factor:
             del _factor['segment_id']
@@ -5491,394 +5739,12 @@ class BaseStackedMRParserListener():
 
         _atomId = _factor['atom_id'][0].upper() if _factor['atom_id'][0] is not None else None
 
-        def has_identical_chain_id(chain_id):
-            try:
-                next(ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id and 'identical_chain_id' in ps)
-                return True
-            except StopIteration:
-                pass
-            return False
-
-        def update_np_atom_id_remap():
-            if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
-                if 'np_seq_id_remap' not in self.reasonsForReParsing:
-                    self.reasonsForReParsing['np_seq_id_remap'] = {}
-                chainId = _factor['chain_id'][0]
-                srcSeqId = _factor['seq_id'][0]
-                dstSeqId = self.__uniqAtomIdToSeqKey[_atomId][1]
-                if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
-                    self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
-                if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
-                    if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
-                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
-                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
-            else:
-                if 'np_atom_id_remap' not in self.reasonsForReParsing:
-                    self.reasonsForReParsing['np_atom_id_remap'] = {}
-                if _atomId not in self.reasonsForReParsing['np_atom_id_remap']:
-                    self.reasonsForReParsing['np_atom_id_remap'][_atomId] = self.__uniqAtomIdToSeqKey[_atomId]
-
         if len(_factor['atom_selection']) == 0:
-            if _atomId is not None:
-                __atomId = _atomId if len(_atomId) <= 2 else _atomId[:2]
-                if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
-                    return _factor
-                if self.with_para and (('comp_id' in _factor and _atomId == _factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
-                                       or __atomId in FERROMAGNETIC_ELEMENTS
-                                       or __atomId in LANTHANOID_ELEMENTS):
-                    return _factor
-                if self.cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
-                    return _factor
-            __factor = copy.copy(_factor)
-            del __factor['atom_selection']
-            if _atomId is None and 'alt_atom_id' not in _factor:
-                if self.cur_subtype != 'plane' and cifCheck and not self.cur_union_expr:
-                    if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
-                        for chainId in _factor['chain_id']:
-                            updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], [_factor['alt_atom_id']])
-                            if has_identical_chain_id(chainId):
-                                break
-
-            else:
-                if self.cur_subtype != 'plane'\
-                   and not (self.cur_subtype == 'rdc' and self.__lenAtomSelectionSet == 4
-                            and len(_atomId) >= 2 and _atomId[:2] in PARAMAGNETIC_ELEMENTS):
-                    if cifCheck:
-                        if self.cur_union_expr or (self.top_union_expr and ambigAtomSelect):  # 2mws, 2krf
-                            self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
-                            if len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
-                                update_np_atom_id_remap()
-
-                        else:
-                            # self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                            #                 f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
-                            if 'alt_chain_id' in _factor:  # 2mnz
-                                for chainId in _factor['chain_id']:
-                                    self.updateSegmentIdDict(_factor, chainId, None, False)
-                            if foundCompId and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
-                                compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
-                                if compIds is not None:
-                                    foundCompId = False  # 2l5y
-                            if not foundCompId:
-                                # DAOTHER-9063
-                                ligands = 0
-                                npChainIds = set()
-                                if self.hasNonPoly and self.cur_subtype == 'dist':
-                                    for np in self.__nonPoly:
-                                        ligands += len(np['seq_id'])
-                                        npChainIds.add(np['auth_chain_id'])  # 2lqc
-                                if ligands == 1:
-                                    npChainIds.clear()  # 2ljc
-                                if (len(_factor['chain_id']) == 1 or _factor['chain_id'][0] in npChainIds) and len(_factor['seq_id']) == 1:
-
-                                    def update_np_seq_id_remap_request(np, ligands):
-                                        if 'np_seq_id_remap' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['np_seq_id_remap'] = {}
-                                        chainId = _factor['chain_id'][0]
-                                        srcSeqId = _factor['seq_id'][0]
-                                        dstSeqId = np['seq_id'][0]
-                                        if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
-                                            self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
-                                        if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
-                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
-                                                if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
-                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
-                                                    ligands = 0
-                                            else:
-                                                ligands = 0
-                                        else:
-                                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
-                                        return ligands
-
-                                    def upsert_np_seq_id_remap_request(np):
-                                        if 'np_seq_id_remap' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['np_seq_id_remap'] = {}
-                                        chainId = _factor['chain_id'][0]
-                                        srcSeqId = _factor['seq_id'][0]
-                                        dstSeqId = np['seq_id'][0]
-                                        if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
-                                            self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
-                                        if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
-                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
-                                                keys = list(self.reasonsForReParsing['np_seq_id_remap'][chainId].keys())
-                                                vals = list(self.reasonsForReParsing['np_seq_id_remap'][chainId].values())
-                                                if keys != sorted(keys) or vals != sorted(vals) or len(set(keys)) != len(set(vals)):
-                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
-                                        else:
-                                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
-
-                                    if ligands == 1:
-                                        for np in self.__nonPoly:
-                                            _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
-                                            if _coordAtomSite is not None and len(_factor['atom_id']) == 1\
-                                               and _atomId is not None\
-                                               and (_atomId in _coordAtomSite['atom_id']
-                                                    or (len(_atomId) == 4 and ((_atomId[-2] == '+' and _atomId[-1].isdigit())
-                                                                               or (_atomId[-1] == '+' and _atomId[-2].isdigit()))
-                                                        and _atomId[:2] in _coordAtomSite['atom_id'])
-                                                    or (len(_atomId) == 3 and (_atomId[-1].isdigit() or _atomId[-1] in ('+', '-'))
-                                                        and _atomId[:2] in _coordAtomSite['atom_id'])
-                                                    or (_atomId == 'X' and ('UNK' in _coordAtomSite['atom_id'] or 'UNX' in _coordAtomSite['atom_id']))):
-                                                ligands = update_np_seq_id_remap_request(self.__nonPoly[0], ligands)
-                                            else:
-                                                ligands = 0
-
-                                    elif ligands > 1 and len(_factor['atom_id']) == 1\
-                                            and _atomId is not None\
-                                            and (_atomId in ELEMENT_SYMBOLS  # 2n3r
-                                                 or (len(_atomId) == 4 and ((_atomId[-2] == '+' and _atomId[-1].isdigit())
-                                                                            or (_atomId[-1] == '+' and _atomId[-2].isdigit()))
-                                                     and _atomId[:2] in ELEMENT_SYMBOLS)  # 6kg9, 2ma7
-                                                 or (len(_atomId) == 3 and (_atomId[-1].isdigit() or _atomId[-1] in ('+', '-'))
-                                                     and _atomId[:2] in ELEMENT_SYMBOLS)  # 2m28, 2mco
-                                                 or _atomId == 'X'):  # 2mjq, 2mjr, 2mjs, 2mjt
-                                        if _atomId != 'X':
-                                            elemName = _atomId[:2]
-                                            elemCount = 0
-                                            refElemSeqIds = []
-                                            for np in self.__nonPoly:
-                                                if np['comp_id'][0] == elemName:
-                                                    elemCount += 1
-                                                    refElemSeqIds.append(np['seq_id'][0])
-                                            if elemCount == 1:
-                                                for np in self.__nonPoly:
-                                                    if np['comp_id'][0] == elemName:
-                                                        ligands = update_np_seq_id_remap_request(np, ligands)
-                                                        break
-                                            elif elemCount > 1:
-                                                try:
-                                                    elemSeqId = int(_factor['seq_id'][0])
-                                                    found = False
-                                                    for np in self.__nonPoly:
-                                                        if np['comp_id'][0] == elemName and (elemSeqId in np['seq_id'] or elemSeqId in np['auth_seq_id']):
-                                                            ligands = update_np_seq_id_remap_request(np, ligands)
-                                                            found = True
-                                                            break
-                                                    if not found:
-                                                        if 'alt_chain_id' in _factor:
-                                                            elemChainId = _factor['alt_chain_id']
-                                                            if elemName in elemChainId and len(elemChainId) > len(elemName) and elemChainId[len(elemName):].isdigit():
-                                                                elemChainOrder = int(elemChainId[len(elemName):])
-                                                                if 1 <= elemChainOrder <= len(refElemSeqIds):
-                                                                    np_idx = 1
-                                                                    for np in self.__nonPoly:
-                                                                        if np['comp_id'][0] == elemName:
-                                                                            if elemChainOrder == np_idx:
-                                                                                ligands = update_np_seq_id_remap_request(np, ligands)
-                                                                                found = True
-                                                                                break
-                                                                            np_idx += 1
-                                                                else:  # 2lqc
-                                                                    for elemSeqId in refElemSeqIds:
-                                                                        for np in self.__nonPoly:
-                                                                            if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
-                                                                                upsert_np_seq_id_remap_request(np)
-                                                                    found = True
-                                                        if not found:
-                                                            if 1 <= elemSeqId <= len(refElemSeqIds):
-                                                                elemSeqId = refElemSeqIds[elemSeqId - 1]
-                                                                for np in self.__nonPoly:
-                                                                    if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
-                                                                        ligands = update_np_seq_id_remap_request(np, ligands)
-                                                            else:  # 2lqc
-                                                                for elemSeqId in refElemSeqIds:
-                                                                    for np in self.__nonPoly:
-                                                                        if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
-                                                                            upsert_np_seq_id_remap_request(np)
-                                                except ValueError:
-                                                    pass
-                                        else:
-                                            for np in self.__nonPoly:
-                                                _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
-                                                if 'UNK' in _coordAtomSite['atom_id']:  # 2mjq, 2mjr, 2mjs
-                                                    ligands = update_np_seq_id_remap_request(np, ligands)
-                                                    break
-                                                if 'UNX' in _coordAtomSite['atom_id']:  # 2mjt
-                                                    ligands = update_np_seq_id_remap_request(np, ligands)
-                                                    break
-
-                                    elif len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
-                                        update_np_atom_id_remap()
-                                        ligands = 1
-
-                                if len(_factor['seq_id']) == 1:
-                                    if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
-                                        compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
-                                        if compIds is not None:
-                                            for chainId in _factor['chain_id']:
-                                                if len(compIds) == 1:
-                                                    updatePolySeqRst(self.__polySeqRstFailed, chainId, _factor['seq_id'][0], compIds[0])
-                                                else:
-                                                    updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, _factor['seq_id'][0], compIds)
-                                                if has_identical_chain_id(chainId):
-                                                    break
-                                        for chainId in _factor['chain_id']:
-                                            updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['atom_id'])
-                                            if has_identical_chain_id(chainId):
-                                                break
-
-                                if ligands == 0 and not self.has_nx and not self.has_gd and not self.has_la\
-                                   and (self.monoPolymer or all('identical_chain_id' in ps for ps in self.polySeq) or not chain_not_specified):
-                                    if _atomId is not None and _atomId.startswith('X')\
-                                       and _atomId not in ELEMENT_SYMBOLS:
-                                        pass  # 8bxj
-                                    elif self.reasons is not None and 'segment_id_mismatch' in self.reasons:
-                                        pass  # 6f0y
-                                    # 2knf, 2ma9
-                                    elif _atomId is None\
-                                            or (_atomId not in AMINO_PROTON_CODE and _atomId not in CARBOXYL_CODE and _atomId not in JCOUP_BB_PAIR_CODE)\
-                                            or self.gapInAuthSeq:  # 2kyg
-                                        if not self.cur_subtype_altered or not self.in_noe:  # 2ljc
-                                            if self.reasons is None:
-                                                self.preferAuthSeq = not self.preferAuthSeq
-                                                # self.authSeqId = 'auth_seq_id' if self.preferAuthSeq else 'label_seq_id'
-                                                self.setLocalSeqScheme()
-                                                # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
-                                                if trial < 3 and 'Check the 1th row of' in self.getCurrentRestraint()\
-                                                   and (self.cur_subtype != 'dist' and not self.in_noe):
-                                                    # skip ad hoc sequence scheme switching should be inherited to the other restraints
-                                                    del _factor['atom_selection']
-                                                    return self.doConsumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
-                                                if not self.preferAuthSeq and self.reasons is None\
-                                                   and ((self.cur_subtype != 'dist' and not self.in_noe) or 'Check the 2th row of' in self.getCurrentRestraint()):  # 6nk9
-                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                        self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                    self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
-
-                                elif self.with_para and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and self.reasons is None:
-                                    self.preferAuthSeq = not self.preferAuthSeq
-                                    self.setLocalSeqScheme()
-                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['label_seq_scheme'] = {}
-                                    self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
-
-                            if not atom_not_found_error:
-                                if _atomId is not None and _atomId.startswith('X')\
-                                   and _atomId not in ELEMENT_SYMBOLS:  # 8bxj
-                                    self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                                  f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
-                                else:
-                                    no_ext_seq = True
-                                    unobs_seq = False
-                                    if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
-                                        _chainId = _factor['chain_id'][0]
-                                        _seqId = _factor['seq_id'][0]
-                                        ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == _chainId), None)
-                                        no_nonpoly = not self.hasNonPolySeq\
-                                            or not any(_seqId in np['auth_seq_id'] for np in self.nonPolySeq if np['auth_chain_id'] == _chainId)  # 2mco
-                                        if ps is not None and _seqId not in ps['auth_seq_id'] and no_nonpoly:
-                                            if self.__nmrVsModel is not None and not ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
-                                                nmr_offset = ps['seq_id'][0] - ps['auth_seq_id'][0]  # 2lzn
-                                                if self.reasons is not None and 'global_auth_sequence_offset' in self.reasons\
-                                                   and _chainId in self.reasons['global_auth_sequence_offset']:
-                                                    nmr_offset += self.reasons['global_auth_sequence_offset'][_chainId]
-                                                elif self.reasons is not None and 'auth_sequence_offset' in self.reasons\
-                                                        and _chainId in self.reasons['auth_sequence_offset']:
-                                                    nmr_offset += self.reasons['auth_sequence_offset'][_chainId]
-                                                elif self.reasons is not None and 'label_sequence_offset' in self.reasons\
-                                                        and _chainId in self.reasons['label_sequence_offset']:
-                                                    nmr_offset += self.reasons['label_sequence_offset'][_chainId]
-                                                item = next((item for item in self.__nmrVsModel
-                                                             if item['test_auth_chain_id' if 'test_auth_chain_id' in item else 'test_chain_id'] == _chainId), None)
-                                                if item is not None and item['conflict'] == 0 and item['unmapped'] > 0 and 'unmapped_sequence' in item:
-                                                    refCompId = next((u['ref_comp_id'] for u in item['unmapped_sequence']
-                                                                      if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId + nmr_offset), None)
-                                                    if refCompId is not None:
-                                                        hint = f" The residue '{_seqId}:{refCompId}' is not present in polymer sequence "\
-                                                            f"of chain {_chainId} of the coordinates. "\
-                                                            "Please update the sequence in the Macromolecules page."
-                                                        if self.reasons is not None:
-                                                            self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
-                                                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
-                                                        no_ext_seq = False  # 2ls7
-                                            if no_ext_seq:
-                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                                                if len(auth_seq_id_list) > 0:
-                                                    min_auth_seq_id = min(auth_seq_id_list)
-                                                    max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
-                                                        hint = f" The residue '{_seqId}' is not present in polymer sequence "\
-                                                            f"of chain {_chainId} of the coordinates. "\
-                                                            "Please update the sequence in the Macromolecules page."
-                                                        if self.reasons is not None:
-                                                            self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
-                                                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
-                                                        no_ext_seq = False  # 2law
-                                        _seqKey = (_chainId, _seqId)
-                                        if _seqKey in self.__coordUnobsRes:
-                                            unobs_seq = True  # 2n25
-                                        if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
-                                            _atomIds = self.getAtomIdList(_factor, self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
-                                            if _atomIds[0] in self.__coordUnobsAtom[_seqKey]['atom_ids']:
-                                                unobs_seq = True
-                                    elif len(_factor['chain_id']) > 1 and len(_factor['seq_id']) == 1:
-                                        _chainId_ = []
-                                        _seqId = _factor['seq_id'][0]
-                                        for _chainId in _factor['chain_id']:
-                                            ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == _chainId), None)
-                                            if ps is not None and _seqId not in ps['auth_seq_id']:
-                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                                                if len(auth_seq_id_list) > 0:
-                                                    min_auth_seq_id = min(auth_seq_id_list)
-                                                    max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
-                                                        _chainId_.append(_chainId)
-                                        if len(_chainId_) == 1:
-                                            _chainId = _chainId_[0]
-                                            ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == _chainId), None)
-                                            no_nonpoly = not self.hasNonPolySeq\
-                                                or not any(_seqId in np['auth_seq_id'] for np in self.nonPolySeq if np['auth_chain_id'] == _chainId)
-                                            if ps is not None and _seqId not in ps['auth_seq_id'] and no_nonpoly:
-                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                                                if len(auth_seq_id_list) > 0:
-                                                    min_auth_seq_id = min(auth_seq_id_list)
-                                                    max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
-                                                        hint = f" The residue '{_seqId}' is not present in polymer sequence "\
-                                                            f"of chain {_chainId} of the coordinates. "\
-                                                            "Please update the sequence in the Macromolecules page."
-                                                        if self.reasons is not None:
-                                                            self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
-                                                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
-                                                        no_ext_seq = False  # 2mps
-                                            _seqKey = (_chainId, _seqId)
-                                            if _seqKey in self.__coordUnobsRes:
-                                                unobs_seq = True  # 2n25
-                                            if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
-                                                _atomIds[0] = self.getAtomIdList(_factor, self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
-                                                if _atomIds in self.__coordUnobsAtom[_seqKey]['atom_ids']:
-                                                    unobs_seq = True
-                                    if (no_ext_seq or self.reasons is None) and not unobs_seq:
-                                        if no_ext_seq:  # 2laz
-                                            hint = " Please make sure that the values in 'segidentifier', 'residue', and 'name' clauses of the restraint file match "\
-                                                "the auth_asym_id, auth_seq_id, and auth_atom_id values of the coordinates, respectively. "
-                                            if self.has_gd:
-                                                hint += "We ignore the atom selection since it may be related to ambiguous PRE restraints induced by Gd3+ spin label."
-                                            elif self.has_la:
-                                                hint += "We ignore the atom selection since it may be related to paramagnetic restraints induced by Lanthanide ion."
-                                            elif self.has_nx:
-                                                hint += "We ignore the atom selection since it may be related to ambiguous PRE restraints induced by nitroxide spin label."
-                                            else:
-                                                hint += "Alternatively, try to upload the genuine coordinate file generated by structure determination software without editing."
-                                        self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                                      f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
-                    else:
-                        self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                      f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}. "
-                                      "Please update the sequence in the Macromolecules page.")
-                elif self.cur_subtype == 'plane':
-                    if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']
-                                                    and 'HOP2' not in _factor['atom_id'] and "HO3'" not in _factor['atom_id']
-                                                    and "O2'" not in _factor['atom_id']):
-                        if not atom_not_found_error:
-                            hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
-                                if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
-                            self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
+            exit, _factor = self.__handleNoAtomSelection(_factor, clauseName, cifCheck, trial,
+                                                         chain_not_specified, ambig_atom_sel,
+                                                         found_comp_id, atom_not_found_error, _atomId)
+            if exit:
+                return _factor
 
         elif len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
             compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
@@ -5901,7 +5767,7 @@ class BaseStackedMRParserListener():
         if 'alt_atom_id' in _factor:
             del _factor['alt_atom_id']
 
-        if ambigAtomSelect or valid:
+        if ambig_atom_sel or valid:
             self.__cachedDictForFactor[key] = deepcopy(_factor)
 
         return _factor
@@ -5932,7 +5798,19 @@ class BaseStackedMRParserListener():
                                    for np in self.__nonPoly)):
                     return False
 
-        chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.polySeq if isPolySeq else altPolySeq)])
+        def update_label_seq_scheme(force=False):
+            r = self.__getNamedReasonsForReparsing('label_seq_scheme')
+            if self.cur_subtype not in r or force:
+                r[self.cur_subtype] = True
+
+        def update_inhibit_label_seq_scheme(c):
+            r = self.__getNamedReasonsForReparsing('inhibit_label_seq_scheme')
+            if c not in r:
+                r[c] = {}
+            r[c][self.cur_subtype] = True
+
+        chainIds = (_factor['chain_id'] if isChainSpecified
+                    else [ps['auth_chain_id'] for ps in (self.polySeq if isPolySeq else altPolySeq)])
 
         for chainId in chainIds:
 
@@ -5969,7 +5847,8 @@ class BaseStackedMRParserListener():
                     if 'auth_chain_id' in _factor:
                         _authChainIds = []
                         for _chainId in _factor['auth_chain_id']:
-                            _authChainId = next((ps['auth_chain_id'] for ps in (self.polySeq if isPolySeq else altPolySeq) if ps['chain_id'] == _chainId), _chainId)
+                            _authChainId = next((ps['auth_chain_id'] for ps in (self.polySeq if isPolySeq else altPolySeq)
+                                                 if ps['chain_id'] == _chainId), _chainId)
                             if _chainId == chainId:
                                 chainId = _authChainId
                             _authChainIds.append(_authChainId)
@@ -6006,7 +5885,8 @@ class BaseStackedMRParserListener():
                                    and _factor['segment_id'] in self.reasons['segment_id_poly_type_stats']\
                                    and stats['polymer'] <= stats['non-poly']:  # 2mtk
                                     _, __seqId = retrieveRemappedSeqId(self.reasons['np_seq_id_remap'], chainId, seqId)
-                                    if __seqId is not None and __seqId != seqId and list(self.reasons['segment_id_mismatch'].values()).count(chainId) > 1:
+                                    if __seqId is not None and __seqId != seqId\
+                                       and list(self.reasons['segment_id_mismatch'].values()).count(chainId) > 1:
                                         continue  # 2lkd
                             else:
                                 _, seqId = retrieveRemappedSeqId(self.reasons['np_seq_id_remap'], chainId, seqId)
@@ -6140,9 +6020,7 @@ class BaseStackedMRParserListener():
                         #     if self.csStat.peptideLike(_compId_):
                         #         compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
                         #         if compIds is not None and _compId_ in compIds:
-                        #             if 'label_seq_scheme' not in self.reasonsForReParsing:
-                        #                 self.reasonsForReParsing['label_seq_scheme'] = {}
-                        #             self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                        #             update_label_seq_scheme(True)
                         #     self.preferAuthSeq = True
                         # """
                         if isPolySeq and seqSpecified and atomSpecified\
@@ -6170,25 +6048,25 @@ class BaseStackedMRParserListener():
                                         if _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                             continue
                                     atomId = atomId.upper()
-                                    if __compId not in MONDICT3 and self.mrAtomNameMapping is not None:
+                                    if __compId not in STD_MON_DICT and self.mrAtomNameMapping is not None:
                                         authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(__seqId)]
-                                        atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping, __seqId, authCompId, atomId, __coordAtomSite)
+                                        atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                         __seqId, authCompId, atomId, __coordAtomSite)
                                     __atomIds = self.getAtomIdList(_factor, __compId, atomId)
                                     if __atomIds[0] in __atomSiteAtomId:
                                         offsets.add(__seqId - seqId)
 
                                 if len(offsets) > 0:
-                                    if 'alt_global_sequence_offset' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['alt_global_sequence_offset'] = {}
-                                    if chainId in self.reasonsForReParsing['alt_global_sequence_offset']:
-                                        if self.reasonsForReParsing['alt_global_sequence_offset'][chainId] is None:
+                                    r = self.__getNamedReasonsForReparsing('alt_global_sequence_offset')
+                                    if chainId in r:
+                                        if r[chainId] is None:
                                             continue
-                                        self.reasonsForReParsing['alt_global_sequence_offset'][chainId] &= offsets
-                                        if len(self.reasonsForReParsing['alt_global_sequence_offset'][chainId]) == 0:
-                                            self.reasonsForReParsing['alt_global_sequence_offset'][chainId] = None
+                                        r[chainId] &= offsets
+                                        if len(r[chainId]) == 0:
+                                            r[chainId] = None
                                             continue
                                         continue
-                                    self.reasonsForReParsing['alt_global_sequence_offset'][chainId] = offsets
+                                    r[chainId] = offsets
                             except IndexError:
                                 pass
                         continue
@@ -6196,16 +6074,19 @@ class BaseStackedMRParserListener():
                     if self.reasons is not None:
                         if 'non_poly_remap' in self.reasons and compId in self.reasons['non_poly_remap']\
                            and _factor['seq_id'][0] in self.reasons['non_poly_remap'][compId]:
-                            fixedChainId, seqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], ps, chainId, _factor['seq_id'][0], compId)
+                            fixedChainId, seqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'],
+                                                                          ps, chainId, _factor['seq_id'][0], compId)
                             if fixedChainId != chainId:
                                 continue
                             if not isPolySeq and len(_atomSelection) > 0:
                                 continue
 
                     _seqId = seqId
-                    if self.reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps and seqId not in ps['auth_seq_id'] and seqId in ps['alt_auth_seq_id']:
+                    if self.reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps\
+                       and seqId not in ps['auth_seq_id'] and seqId in ps['alt_auth_seq_id']:
                         try:
-                            seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _altSeqId_ == seqId)
+                            seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(ps['auth_seq_id'], ps['alt_auth_seq_id'])
+                                         if _altSeqId_ == seqId)
                         except StopIteration:
                             pass
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
@@ -6220,9 +6101,12 @@ class BaseStackedMRParserListener():
                             compId = replacedBy
                             _coordAtomSite = deepcopy(coordAtomSite)
                             _coordAtomSite['comp_id'] = compId
-                            _coordAtomSite['atom_id'] = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
-                            _coordAtomSite['alt_atom_id'] = [cca[self.ccU.ccaAltAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
-                            _coordAtomSite['type_symbol'] = [cca[self.ccU.ccaTypeSymbol] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                            _coordAtomSite['atom_id'] = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
+                                                         if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                            _coordAtomSite['alt_atom_id'] = [cca[self.ccU.ccaAltAtomId] for cca in self.ccU.lastAtomList
+                                                             if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                            _coordAtomSite['type_symbol'] = [cca[self.ccU.ccaTypeSymbol] for cca in self.ccU.lastAtomList
+                                                             if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
                             _coordAtomSite['alt_comp_id'] = [coordAtomSite['alt_comp_id'][0]] * len(_coordAtomSite['atom_id'])
                             coordAtomSite = _coordAtomSite
 
@@ -6295,14 +6179,16 @@ class BaseStackedMRParserListener():
                             if _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 continue
                         if self.with_para:
-                            if (atomId == compId and _atomId in PARAMAGNETIC_ELEMENTS) or _atomId in FERROMAGNETIC_ELEMENTS:  # or _atomId in LANTHANOID_ELEMENTS:
+                            if (atomId == compId and _atomId in PARAMAGNETIC_ELEMENTS) or _atomId in FERROMAGNETIC_ELEMENTS:
+                                # or _atomId in LANTHANOID_ELEMENTS:
                                 continue
                         if self.with_axis or self.with_para:
                             updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
                         # """
-                        # if isinstance(origAtomId, str) and origAtomId.startswith('HT') and coordAtomSite is not None and origAtomId not in atomSiteAtomId:
+                        # if isinstance(origAtomId, str) and origAtomId.startswith('HT')\
+                        #    and coordAtomSite is not None and origAtomId not in atomSiteAtomId:
                         #     if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                         #         continue
                         # """
@@ -6316,15 +6202,16 @@ class BaseStackedMRParserListener():
 
                         if self.mrAtomNameMapping is not None:
                             # 6u24: split during annotation
-                            if isPolySeq and compId in MONDICT3 and 'alt_comp_id' in ps and self.hasNonPolySeq:
+                            if isPolySeq and compId in STD_MON_DICT and 'alt_comp_id' in ps and self.hasNonPolySeq:
                                 try:
                                     if _seqId in ps['auth_seq_id']:
                                         authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId)]
                                     else:
                                         authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId_)]
-                                    if authCompId not in MONDICT3:
-                                        __seqId__, __compId__, __atomId__ = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId,
-                                                                                                       authCompId, atomId, ignoreSeqId=True)
+                                    if authCompId not in STD_MON_DICT:
+                                        __seqId__, __compId__, __atomId__ =\
+                                            retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId,
+                                                                       authCompId, atomId, ignoreSeqId=True)
                                         split = 0
                                         for np in self.nonPolySeq:
                                             if __compId__ in np['comp_id']:
@@ -6339,7 +6226,7 @@ class BaseStackedMRParserListener():
                                 except IndexError:
                                     pass
 
-                            if compId not in MONDICT3\
+                            if compId not in STD_MON_DICT\
                                and ((_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id'])
                                     or ('alt_auth_seq_id' in ps
                                         and (_seqId in ps['alt_auth_seq_id'] or _seqId_ in ps['alt_auth_seq_id']))):
@@ -6351,14 +6238,17 @@ class BaseStackedMRParserListener():
                                     authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId)]
                                 else:
                                     authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId_)]
-                                atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
+                                atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                 _seqId, authCompId, atomId, coordAtomSite)
                                 if coordAtomSite is not None and atomId not in atomSiteAtomId:
                                     if self.reasons is not None and 'branched_remap' in self.reasons:
                                         _seqId_ = retrieveOriginalSeqIdFromMRMap(self.reasons['branched_remap'], chainId, seqId)
                                         if _seqId_ != seqId:
-                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId_, authCompId, atomId, compId, coordAtomSite)
+                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                                      _seqId_, authCompId, atomId, compId, coordAtomSite)
                                     elif seqId != _seqId:
-                                        atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
+                                        atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                         seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
 
@@ -6417,7 +6307,8 @@ class BaseStackedMRParserListener():
                                 or (_atomId in LANTHANOID_ELEMENTS and atomSpecified
                                     and coordAtomSite is not None and atomId not in atomSiteAtomId
                                     and ('alt_atom_id' not in _factor
-                                         or not ('%' in _factor['alt_atom_id'] or '*' in _factor['alt_atom_id'] or '#' in _factor['alt_atom_id'])))):
+                                         or not ('%' in _factor['alt_atom_id'] or '*' in _factor['alt_atom_id']
+                                                 or '#' in _factor['alt_atom_id'])))):
                             self.has_nx = has_nx_local = has_nx_anchor = _factor['has_nitroxide'] = True
                             desc = '(attaching point for for nitroxide spin label)'
                             if _atomId == 'GD':
@@ -6470,7 +6361,8 @@ class BaseStackedMRParserListener():
                                 desc = '(nitroxide spin label)'
                             self.spinLabeling = desc
 
-                        if coordAtomSite is not None and compId != coordAtomSite['comp_id'] and any(_atomId not in atomSiteAtomId for _atomId in atomIds):
+                        if coordAtomSite is not None and compId != coordAtomSite['comp_id']\
+                           and any(_atomId not in atomSiteAtomId for _atomId in atomIds):
                             atomIds = self.getAtomIdList(_factor, coordAtomSite['comp_id'], _atomId)
 
                         for _atomId in atomIds:
@@ -6504,7 +6396,8 @@ class BaseStackedMRParserListener():
                                         if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
-                                            skip = self.with_axis and self.__multiPolymer and not all('identical_chain_id' in ps for ps in self.polySeq)
+                                            skip = self.with_axis and self.__multiPolymer\
+                                                and not all('identical_chain_id' in ps for ps in self.polySeq)
                                             if _atomId in _coordAtomSite['atom_id']\
                                                or (has_nx_local and not has_nx_anchor):
                                                 if (self.cur_subtype != 'dist' and not self.in_noe)\
@@ -6512,62 +6405,54 @@ class BaseStackedMRParserListener():
                                                     if skip:
                                                         pass
                                                     else:
-                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                        self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                        update_label_seq_scheme(True)
                                                 elif _atomId in _coordAtomSite['atom_id']:
                                                     # _atom = {}
                                                     # _atom['comp_id'] = _compId
-                                                    # _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                    # _atom['type_symbol'] =\
+                                                    #     _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                     if self.ccU.updateChemCompDict(compId):
-                                                        cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
+                                                        cca = next((cca for cca in self.ccU.lastAtomList
+                                                                    if cca[self.ccU.ccaAtomId] == _atomId), None)
                                                         if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
-                                                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                            if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                                self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                            update_label_seq_scheme()
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 if (self.cur_subtype != 'dist' and not self.in_noe)\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
                                                         pass
                                                     else:
-                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                        self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                        update_label_seq_scheme(True)
                                                 else:
                                                     _atom = {}
                                                     _atom['comp_id'] = _compId
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                    _atom['type_symbol'] =\
+                                                        _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                     if self.ccU.updateChemCompDict(compId):
-                                                        cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
+                                                        cca = next((cca for cca in self.ccU.lastAtomList
+                                                                    if cca[self.ccU.ccaAtomId] == _atomId), None)
                                                         if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
-                                                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                            if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                                self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                            update_label_seq_scheme()
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 if (self.cur_subtype != 'dist' and not self.in_noe)\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
                                                         pass
                                                     else:
-                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                        self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                        update_label_seq_scheme(True)
                                                 else:
                                                     _atom = {}
                                                     _atom['comp_id'] = _compId
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                    _atom['type_symbol'] =\
+                                                        _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
                                                     if self.ccU.updateChemCompDict(compId):
-                                                        cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
+                                                        cca = next((cca for cca in self.ccU.lastAtomList
+                                                                    if cca[self.ccU.ccaAtomId] == _atomId), None)
                                                         if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
-                                                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                            if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                                self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                            update_label_seq_scheme()
                                     elif _seqId_ in ps['auth_seq_id'] and atomSpecified\
                                             and (self.reasons is None or 'label_seq_scheme' not in self.reasons
                                                  or self.reasons['label_seq_scheme'] is None
@@ -6581,7 +6466,8 @@ class BaseStackedMRParserListener():
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                _atom['type_symbol'] =\
+                                                    _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 self.authSeqId = 'auth_seq_id'
                                                 seqKey = _seqKey
                                                 chainId, seqId = seqKey
@@ -6589,10 +6475,12 @@ class BaseStackedMRParserListener():
                                                     self.setLocalSeqScheme()
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                _atom['type_symbol'] =\
+                                                    _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 self.authSeqId = 'auth_seq_id'
                                                 seqKey = _seqKey
                                                 chainId, seqId = seqKey
@@ -6601,7 +6489,8 @@ class BaseStackedMRParserListener():
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                _atom['type_symbol'] =\
+                                                    _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
                                                 self.authSeqId = 'auth_seq_id'
                                                 self.authAtomId = 'auth_atom_id'
                                                 seqKey = _seqKey
@@ -6627,38 +6516,37 @@ class BaseStackedMRParserListener():
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 # _atom = {}
                                                 # _atom['comp_id'] = _compId
-                                                # _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                # _atom['type_symbol'] =\
+                                                #     _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 if self.ccU.updateChemCompDict(compId):
-                                                    cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
+                                                    cca = next((cca for cca in self.ccU.lastAtomList
+                                                                if cca[self.ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
-                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                        if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                            self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                        update_label_seq_scheme()
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                _atom['type_symbol'] =\
+                                                    _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 if self.ccU.updateChemCompDict(compId):
-                                                    cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
+                                                    cca = next((cca for cca in self.ccU.lastAtomList
+                                                                if cca[self.ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
-                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                        if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                            self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                        update_label_seq_scheme()
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                _atom['type_symbol'] =\
+                                                    _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
                                                 if self.ccU.updateChemCompDict(compId):
-                                                    cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
+                                                    cca = next((cca for cca in self.ccU.lastAtomList
+                                                                if cca[self.ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
-                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                        if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                            self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                                                        update_label_seq_scheme()
+
                                 elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                     if self.__lenAtomSelectionSet == 0\
                                        and (self.reasons is None or 'label_seq_scheme' not in self.reasons
@@ -6673,19 +6561,23 @@ class BaseStackedMRParserListener():
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                _atom['type_symbol'] =\
+                                                    _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 self.authSeqId = 'auth_seq_id'
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
+                                                    else 'H' + _atomId[-1]
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                _atom['type_symbol'] =\
+                                                    _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 self.authSeqId = 'auth_seq_id'
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                _atom['type_symbol'] =\
+                                                    _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
                                                 self.authSeqId = 'auth_seq_id'
                                                 self.authAtomId = 'auth_atom_id'
                                             elif not self.__extendAuthSeq:
@@ -6694,17 +6586,20 @@ class BaseStackedMRParserListener():
                                             self.preferAuthSeq = False
 
                                 if _atom is not None:
-                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = None if 'comp_id' not in _factor\
+                                        else [translateToStdResName(_compId, ccU=self.ccU) for _compId in _factor['comp_id']]
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId, 'is_poly': isPolySeq}
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'],
+                                                     'atom_id': _atomId, 'is_poly': isPolySeq}
                                         if 'alt_chain_id' in _factor and not self.cur_union_expr:
                                             selection['segment_id'] = _factor['alt_chain_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if not atomSpecified or not seqSpecified:
                                             if self.ccU.updateChemCompDict(compId):
-                                                cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
+                                                cca = next((cca for cca in self.ccU.lastAtomList
+                                                            if cca[self.ccU.ccaAtomId] == _atomId), None)
                                                 if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
                                                     if atomSiteAtomId is None or _atomId not in atomSiteAtomId:
                                                         continue
@@ -6718,7 +6613,8 @@ class BaseStackedMRParserListener():
                             if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:
                                 continue
 
-                            if not isPolySeq and 'alt_auth_seq_id' in ps and _seqId in ps['auth_seq_id'] and _seqId not in ps['alt_auth_seq_id']:
+                            if not isPolySeq and 'alt_auth_seq_id' in ps\
+                               and _seqId in ps['auth_seq_id'] and _seqId not in ps['alt_auth_seq_id']:
                                 continue
 
                             if isinstance(origAtomId, str) and origAtomId.startswith('*'):
@@ -6726,14 +6622,17 @@ class BaseStackedMRParserListener():
 
                             origAtomId0 = origAtomId[0] if isinstance(origAtomId, list) else origAtomId
 
-                            if isPolySeq and len(_factor['chain_id']) > 1 and self.con_union_expr:  # D_1300057999: verify if another polymer can take over in union expression
+                            # D_1300057999: verify if another polymer can take over in union expression
+                            if isPolySeq and len(_factor['chain_id']) > 1 and self.con_union_expr:
                                 hasAltPolymer = False
                                 for chainId1, chainId2 in itertools.combinations(_factor['chain_id'], 2):
-                                    ps1 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId1), None)
+                                    ps1 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
+                                                if ps['auth_chain_id'] == chainId1), None)
                                     if ps1 is not None:
                                         if 'identical_auth_chain_id' in ps1 and chainId2 in ps1['identical_auth_chain_id']:
                                             continue
-                                    ps2 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId2), None)
+                                    ps2 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
+                                                if ps['auth_chain_id'] == chainId2), None)
                                     if ps2 is not None and ps1['comp_id'] != ps2['comp_id']:
                                         hasAltPolymer = True
                                         break
@@ -6742,7 +6641,8 @@ class BaseStackedMRParserListener():
                                     for chainId2 in _factor['chain_id']:
                                         if chainId2 == chainId:
                                             continue
-                                        ps2 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId2), None)
+                                        ps2 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
+                                                    if ps['auth_chain_id'] == chainId2), None)
                                         if ps2 is None or ('identical_auth_chain_id' in ps2 and chainId in ps2['identical_auth_chain_id']):
                                             continue
                                         if seqId in ps2['auth_seq_id']:
@@ -6753,338 +6653,791 @@ class BaseStackedMRParserListener():
                                                     hasAltPolymer = True
                                                     break
                                                 _compId = ps2['comp_id'][ps2['auth_seq_id'].index(seqId)]
-                                                _origAtomId0 = translateToStdAtomName(origAtomId0, _compId, _atomSiteAtomId, self.ccU, False)
-                                                __origAtomId0, _, details = self.nefT.get_valid_star_atom(_compId, _origAtomId0, leave_unmatched=True)
+                                                _origAtomId0 = translateToStdAtomName(origAtomId0, _compId,
+                                                                                      _atomSiteAtomId, self.ccU, False)
+                                                __origAtomId0, _, details =\
+                                                    self.nefT.get_valid_star_atom(_compId, _origAtomId0, leave_unmatched=True)
                                                 if details is None and __origAtomId0[0] in _atomSiteAtomId:
                                                     hasAltPolymer = True
                                                     break
                                     if hasAltPolymer:
                                         continue
 
-                            if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
-                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.ccU) for _compId in _factor['comp_id']]
-                                if self.ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
-                                    if len(origAtomId) > 1:
-                                        typeSymbols = set()
-                                        for _atomId_ in origAtomId:
-                                            typeSymbol = next((cca[self.ccU.ccaTypeSymbol] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId_), None)
-                                            if typeSymbol is not None:
-                                                typeSymbols.add(typeSymbol)
-                                                if len(typeSymbols) > 1:
-                                                    break
-                                        if len(typeSymbols) > 1:
-                                            continue
-                                    cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                    if cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y' and (not atomSpecified or not seqSpecified):
-                                        continue
-                                    if cca is not None and ('type_symbol' not in _factor or cca[self.ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
-                                        if 'alt_chain_id' in _factor and not self.cur_union_expr:
-                                            selection['segment_id'] = _factor['alt_chain_id']
-                                        if len(self.__cur_auth_atom_id) > 0:
-                                            selection['auth_atom_id'] = self.__cur_auth_atom_id
-                                        if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
-                                            continue
-                                        if not seqSpecified:
-                                            continue
-                                        _atomSelection.append(selection)
-                                        if cifCheck and seqKey not in self.__coordUnobsRes and self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                            if self.cur_subtype != 'plane' and coordAtomSite is not None:
-                                                checked = False
-                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                                    if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
-                                                                                      or _atomId == 'P' or _atomId.startswith('HOP')):
-                                                        checked = True
-                                                if _atomId[0] in PROTON_BEGIN_CODE:
-                                                    bondedTo = self.ccU.getBondedAtoms(compId, _atomId)
-                                                    if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
-                                                        if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId:
-                                                            if cca[self.ccU.ccaLeavingAtomFlag] != 'Y'\
-                                                               or (self.csStat.peptideLike(compId)
-                                                                   and cca[self.ccU.ccaNTerminalAtomFlag] == 'N'
-                                                                   and cca[self.ccU.ccaCTerminalAtomFlag] == 'N'):
-                                                                checked = True
-                                                                if len(origAtomId) == 1:
-                                                                    _atomSelection[-1]['hydrogen_not_instantiated'] = True
-                                                                    self.f.append(f"[Hydrogen not instantiated] {self.getCurrentRestraint()}"
-                                                                                  f"{chainId}:{seqId}:{compId}:{origAtomId0} is not properly instantiated in the coordinates. "
-                                                                                  "Please re-upload the model file.")
-                                                        elif bondedTo[0][0] == 'O':
-                                                            checked = True
-                                                if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes and self.csStat.peptideLike(compId):
-                                                    if coordAtomSite is not None and _atomId in CARBOXYL_CODE\
-                                                       and not isCyclicPolymer(self.cR, self.polySeq, chainId, self.representativeModelId,
-                                                                               self.representativeAltId, self.modelNumName):
-                                                        self.f.append(f"[Coordinate issue] {self.getCurrentRestraint()}"
-                                                                      f"{chainId}:{seqId}:{compId}:{origAtomId0} is not properly instantiated in the coordinates. "
-                                                                      "Please re-upload the model file.")
-                                                        checked = True
+                            if not (ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES
+                                    and _atomId not in XPLOR_NITROXIDE_NAMES):
+                                continue
 
-                                                if not checked and not self.cur_union_expr:
-                                                    if chainId in LARGE_ASYM_ID:
-                                                        if isPolySeq and not self.preferAuthSeq\
-                                                           and ('label_seq_offset' not in self.reasonsForReParsing
-                                                                or chainId not in self.reasonsForReParsing['label_seq_offset']):
-                                                            if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE\
-                                                               and (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
-                                                                pass
-                                                            else:
-                                                                if 'label_seq_offset' not in self.reasonsForReParsing:
-                                                                    self.reasonsForReParsing['label_seq_offset'] = {}
-                                                                offset = self.getLabelSeqOffsetDueToUnobs(ps)
-                                                                self.reasonsForReParsing['label_seq_offset'][chainId] = offset
-                                                                if offset != 0:
-                                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                        self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                                    if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                                        self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
-                                                        if self.monoPolymer\
-                                                           and (seqId < 1
-                                                                or (compId == 'ACE' and seqId == min(self.polySeq[0]['auth_seq_id']) - 1)
-                                                                or (compId == 'NH2' and seqId == max(self.polySeq[0]['auth_seq_id']) + 1)):
-                                                            self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                                                                          f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
-                                                                          f"The residue number '{seqId}' is not present in polymer sequence "
-                                                                          f"of chain {chainId} of the coordinates. "
-                                                                          "Please update the sequence in the Macromolecules page.")
-                                                            if 'alt_chain_id' in _factor:
-                                                                self.__failure_chain_ids.append(chainId)
+                            _compIdList = None if 'comp_id' not in _factor\
+                                else [translateToStdResName(_compId, ccU=self.ccU) for _compId in _factor['comp_id']]
+                            if self.ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
+                                if len(origAtomId) > 1:
+                                    typeSymbols = set()
+                                    for _atomId_ in origAtomId:
+                                        typeSymbol = next((cca[self.ccU.ccaTypeSymbol] for cca in self.ccU.lastAtomList
+                                                           if cca[self.ccU.ccaAtomId] == _atomId_), None)
+                                        if typeSymbol is not None:
+                                            typeSymbols.add(typeSymbol)
+                                            if len(typeSymbols) > 1:
+                                                break
+                                    if len(typeSymbols) > 1:
+                                        continue
+
+                                cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
+                                if cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y' and (not atomSpecified or not seqSpecified):
+                                    continue
+
+                                if cca is not None and ('type_symbol' not in _factor
+                                                        or cca[self.ccU.ccaTypeSymbol] in _factor['type_symbol']):
+                                    selection = {'chain_id': chainId, 'seq_id': seqId,
+                                                 'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
+                                    if 'alt_chain_id' in _factor and not self.cur_union_expr:
+                                        selection['segment_id'] = _factor['alt_chain_id']
+                                    if len(self.__cur_auth_atom_id) > 0:
+                                        selection['auth_atom_id'] = self.__cur_auth_atom_id
+
+                                    if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
+                                        continue
+
+                                    if not seqSpecified:
+                                        continue
+
+                                    _atomSelection.append(selection)
+                                    if cifCheck and seqKey not in self.__coordUnobsRes\
+                                       and self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+                                        if self.cur_subtype != 'plane' and coordAtomSite is not None:
+                                            checked = False
+                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
+                                                if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
+                                                                                  or _atomId == 'P' or _atomId.startswith('HOP')):
+                                                    checked = True
+                                            if _atomId[0] in PROTON_BEGIN_CODE:
+                                                bondedTo = self.ccU.getBondedAtoms(compId, _atomId)
+                                                if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
+                                                    if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId:
+                                                        if cca[self.ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                           or (self.csStat.peptideLike(compId)
+                                                               and cca[self.ccU.ccaNTerminalAtomFlag] == 'N'
+                                                               and cca[self.ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                            checked = True
+                                                            if len(origAtomId) == 1:
+                                                                _atomSelection[-1]['hydrogen_not_instantiated'] = True
+                                                                self.f.append(f"[Hydrogen not instantiated] {self.getCurrentRestraint()}"
+                                                                              f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                                                              "is not properly instantiated "
+                                                                              "in the coordinates. Please re-upload the model file.")
+                                                    elif bondedTo[0][0] == 'O':
+                                                        checked = True
+                                            if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes\
+                                               and self.csStat.peptideLike(compId):
+                                                if coordAtomSite is not None and _atomId in CARBOXYL_CODE\
+                                                   and not isCyclicPolymer(self.cR, self.polySeq, chainId, self.representativeModelId,
+                                                                           self.representativeAltId, self.modelNumName):
+                                                    self.f.append(f"[Coordinate issue] {self.getCurrentRestraint()}"
+                                                                  f"{chainId}:{seqId}:{compId}:{origAtomId0} is not properly instantiated "
+                                                                  "in the coordinates. Please re-upload the model file.")
+                                                    checked = True
+
+                                            if not checked and not self.cur_union_expr:
+                                                if chainId in LARGE_ASYM_ID:
+                                                    if isPolySeq and not self.preferAuthSeq\
+                                                       and ('label_seq_offset' not in self.reasonsForReParsing
+                                                            or chainId not in self.reasonsForReParsing['label_seq_offset']):
+                                                        if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE\
+                                                           and (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
+                                                            pass
                                                         else:
-                                                            if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq and not self.with_axis:
-                                                                __preferAuthSeq = self.preferAuthSeq
-                                                                self.preferAuthSeq = False
-                                                                for __chainId in chainIds:
-                                                                    if __chainId == chainId:
-                                                                        continue
-                                                                    __psList = [__ps for __ps in (self.polySeq if isPolySeq else altPolySeq)
-                                                                                if __ps['auth_chain_id'] == __chainId]
-                                                                    if len(__psList) == 0:
-                                                                        continue
-                                                                    for __ps in __psList:
-                                                                        __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
-                                                                        _, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
-                                                                        if __coordAtomSite is not None\
-                                                                           and ((seqId in ps['auth_seq_id'] and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)  # 2lr1, 2lqc
-                                                                                or seqId != __seqId):  # 1qkg
-                                                                            __compId = __coordAtomSite['comp_id']
-                                                                            __atomIds = self.getAtomIdList(_factor, __compId, atomId)
-                                                                            if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']:
-                                                                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                                    self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                                                if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                                                    self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
-                                                                                if isChainSpecified:
-                                                                                    if 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:
-                                                                                        self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
-                                                                                    if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
-                                                                                        self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
-                                                                                    self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.cur_subtype] = True
-                                                                                break
-                                                                self.preferAuthSeq = __preferAuthSeq
-                                                            if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
-                                                               and _factor['chain_id'][0] != chainId and compId in MONDICT3:
-                                                                continue
-                                                            if self.with_para and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
-                                                                continue
-                                                            if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
-                                                                if (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
-                                                                    _atomSelection.remove(selection)
-                                                                    continue
-                                                                if self.has_nx:
-                                                                    continue
-                                                            if self.cur_subtype == 'dihed' and _atomId == 'P' and self.csStat.getTypeOfCompId(compId)[1]:
-                                                                continue
-                                                            warn_title = 'Anomalous data' if self.preferAuthSeq and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
-                                                                and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
-                                                                else 'Atom not found'
-                                                            if seqKey in self.__coordUnobsAtom\
-                                                               and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                    or (_atomId[0] in PROTON_BEGIN_CODE
-                                                                        and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
-                                                                                if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
-                                                                warn_title = 'Coordinate issue'
-                                                            if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
-                                                                warn_title = 'Hydrogen not instantiated'
-                                                            self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
-                                                                          f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
-                                                            if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
-                                                                _atomSelection.append(selection)
-                                                                continue
-                                                            if 'alt_chain_id' in _factor:
-                                                                self.__failure_chain_ids.append(chainId)
-                                    elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                        if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                            if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
-                                                                              or _atomId == 'P' or _atomId.startswith('HOP')):
-                                                continue
-                                        if cifCheck and self.cur_subtype != 'plane'\
-                                           and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
-                                           and (self.reasons is None or 'non_poly_remap' not in self.reasons)\
-                                           and not self.cur_union_expr:
-                                            if chainId in LARGE_ASYM_ID:
-                                                if self.monoPolymer\
-                                                   and (seqId < 1
-                                                        or (compId == 'ACE' and seqId == min(self.polySeq[0]['auth_seq_id']) - 1)
-                                                        or (compId == 'NH2' and seqId == max(self.polySeq[0]['auth_seq_id']) + 1)):
-                                                    self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                                                                  f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
-                                                                  f"The residue number '{seqId}' is not present in polymer sequence "
-                                                                  f"of chain {chainId} of the coordinates. "
-                                                                  "Please update the sequence in the Macromolecules page.")
-                                                    if 'alt_chain_id' in _factor:
-                                                        self.__failure_chain_ids.append(chainId)
-                                                elif seqSpecified:
-                                                    if resolved and altPolySeq is not None:
-                                                        continue
-                                                    if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq and not self.with_axis:
-                                                        __preferAuthSeq = self.preferAuthSeq
-                                                        self.preferAuthSeq = False
-                                                        for __chainId in chainIds:
-                                                            if __chainId == chainId:
-                                                                continue
-                                                            __psList = [__ps for __ps in (self.polySeq if isPolySeq else altPolySeq)
-                                                                        if __ps['auth_chain_id'] == __chainId]
-                                                            if len(__psList) == 0:
-                                                                continue
-                                                            for __ps in __psList:
-                                                                __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
-                                                                _, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
-                                                                if __coordAtomSite is not None\
-                                                                   and ((seqId in ps['auth_seq_id'] and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)  # 2lr1, 2lqc
-                                                                        or seqId != __seqId):  # 1qkg
-                                                                    __compId = __coordAtomSite['comp_id']
-                                                                    __atomIds = self.getAtomIdList(_factor, __compId, atomId)
-                                                                    if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']\
-                                                                       and self.csStat.getTypeOfCompId(compId) == self.csStat.getTypeOfCompId(__compId):  # 2ld5
-                                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                                        if self.cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                                            self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
-                                                                            if 'segment_id' in _factor and 'assert_label_scheme_scheme' not in self.reasonsForReParsing:
-                                                                                self.reasonsForReParsing['assert_label_seq_scheme'] = True  # 2m0k
-                                                                        if isChainSpecified:
-                                                                            if 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:
-                                                                                self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
-                                                                            if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
-                                                                                self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
-                                                                            self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.cur_subtype] = True
-                                                                        break
-                                                        self.preferAuthSeq = __preferAuthSeq
-                                                    if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
-                                                       and _factor['chain_id'][0] != chainId and compId in MONDICT3:
-                                                        continue
-                                                    # 2mgt
-                                                    if self.hasNonPoly and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
-                                                        if _atomId in self.__uniqAtomIdToSeqKey:  # 7jk8
-                                                            if 'np_atom_id_remap' not in self.reasonsForReParsing:
-                                                                self.reasonsForReParsing['np_atom_id_remap'] = {}
-                                                            if _atomId not in self.reasonsForReParsing['np_atom_id_remap']:
-                                                                self.reasonsForReParsing['np_atom_id_remap'][_atomId] = self.__uniqAtomIdToSeqKey[_atomId]
-                                                        _coordAtomSite = None
-                                                        ligands = 0
-                                                        for np in self.__nonPoly:
-                                                            if np['auth_chain_id'] == chainId and atomId == np['comp_id'][0]:
-                                                                ligands += len(np['seq_id'])
-                                                        if ligands == 0:
-                                                            for np in self.__nonPoly:
-                                                                if 'alt_comp_id' in np and np['auth_chain_id'] == chainId and atomId == np['alt_comp_id'][0]:
-                                                                    ligands += len(np['seq_id'])
-                                                        if ligands == 0:
-                                                            for np in self.__nonPoly:
-                                                                _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
-                                                                if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
-                                                                    ligands += len(np['seq_id'])
-                                                        if ligands == 1:
-                                                            checked = False
-                                                            if 'np_seq_id_remap' not in self.reasonsForReParsing:
-                                                                self.reasonsForReParsing['np_seq_id_remap'] = {}
-                                                            srcSeqId = _factor['seq_id'][0]
-                                                            for np in self.__nonPoly:
-                                                                if atomId == np['comp_id'][0]\
-                                                                   or ('alt_comp_id' in np and atomId == np['alt_comp_id'][0]):
-                                                                    dstSeqId = np['seq_id'][0]
-                                                                    if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
-                                                                        self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
-                                                                    if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
-                                                                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
-                                                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
-                                                                                self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
-                                                                            else:
-                                                                                checked = True
-                                                                    else:
-                                                                        self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
-                                                                        checked = True
-                                                            for np in self.__nonPoly:
-                                                                if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
-                                                                    dstSeqId = np['seq_id'][0]
-                                                                    if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
-                                                                        self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
-                                                                    if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
-                                                                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
-                                                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
-                                                                                self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
-                                                                            else:
-                                                                                checked = True
-                                                                    else:
-                                                                        self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
-                                                                        checked = True
-                                                            if checked and isPolySeq and (self.reasons is None
-                                                                                          or (self.reasons is not None and 'np_seq_id_remap' in self.reasons)):
-                                                                continue
-                                                        # 2n3r
-                                                        elif ligands > 1 and isPolySeq and self.reasons is not None and 'np_seq_id_remap' in self.reasons\
-                                                                and retrieveRemappedSeqId(self.reasons['np_seq_id_remap'], chainId, seqId)[0] is not None:
-                                                            continue
-                                                    if extSeqScheme:
-                                                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
-                                                                      f"The residue '{seqId}:{compId}' is not present in polymer sequence "
+                                                            offset = self.getLabelSeqOffsetDueToUnobs(ps)
+                                                            self.__getNamedReasonsForReparsing('label_seq_offset')[chainId] = offset
+                                                            if offset != 0:
+                                                                update_label_seq_scheme()
+                                                    if self.monoPolymer\
+                                                       and (seqId < 1
+                                                            or (compId == 'ACE' and seqId == min(self.polySeq[0]['auth_seq_id']) - 1)
+                                                            or (compId == 'NH2' and seqId == max(self.polySeq[0]['auth_seq_id']) + 1)):
+                                                        self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
+                                                                      f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                                                      "is not present in the coordinates. "
+                                                                      f"The residue number '{seqId}' is not present in polymer sequence "
                                                                       f"of chain {chainId} of the coordinates. "
                                                                       "Please update the sequence in the Macromolecules page.")
-                                                        if 'expected_comp_id' not in _factor:
-                                                            _factor['expected_comp_id'] = [compId]
-                                                        if compId not in _factor['expected_comp_id']:
-                                                            _factor['expected_comp_id'].append(compId)
-                                                        continue
-                                                    # 5t1n: SANI -> PCS
-                                                    if self.cur_subtype == 'rdc' and self.__lenAtomSelectionSet == 4 and\
-                                                       compId in NITROOXIDE_ANCHOR_RES_NAMES\
-                                                       and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in PARAMAGNETIC_ELEMENTS:
-                                                        self.paramagCenter = copy.copy(_factor)
-                                                        self.paramagCenter['atom_id'][0] = origAtomId0[:2].upper()
-                                                        continue
-                                                    if self.with_para and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
-                                                        continue
-                                                    if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
-                                                        if self.has_nx or origAtomId0.startswith('HT'):
+                                                        if 'alt_chain_id' in _factor:
+                                                            self.__failure_chain_ids.append(chainId)
+                                                    else:
+                                                        if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq\
+                                                           and not self.with_axis:
+                                                            __preferAuthSeq = self.preferAuthSeq
+                                                            self.preferAuthSeq = False
+                                                            for __chainId in chainIds:
+                                                                if __chainId == chainId:
+                                                                    continue
+                                                                __psList = [__ps for __ps in (self.polySeq if isPolySeq else altPolySeq)
+                                                                            if __ps['auth_chain_id'] == __chainId]
+                                                                if len(__psList) == 0:
+                                                                    continue
+                                                                for __ps in __psList:
+                                                                    __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
+                                                                    _, __coordAtomSite =\
+                                                                        self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
+                                                                    if __coordAtomSite is not None\
+                                                                       and ((seqId in ps['auth_seq_id']
+                                                                             and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
+                                                                            or seqId != __seqId):  # 2lr1, 2lqc, qkg
+                                                                        __compId = __coordAtomSite['comp_id']
+                                                                        __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                                                        if compId != __compId\
+                                                                           and __atomIds[0] in __coordAtomSite['atom_id']:
+                                                                            update_label_seq_scheme()
+                                                                            if isChainSpecified:
+                                                                                update_inhibit_label_seq_scheme(chainId)
+                                                                            break
+                                                            self.preferAuthSeq = __preferAuthSeq
+
+                                                        if isPolySeq and not isChainSpecified and seqSpecified\
+                                                           and len(_factor['chain_id']) == 1\
+                                                           and _factor['chain_id'][0] != chainId and compId in STD_MON_DICT:
                                                             continue
-                                                    if self.cur_subtype == 'dihed' and _atomId == 'P' and self.csStat.getTypeOfCompId(compId)[1]:
+
+                                                        if self.with_para and len(origAtomId0) >= 2\
+                                                           and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
+                                                            continue
+
+                                                        if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
+                                                            if (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
+                                                                _atomSelection.remove(selection)
+                                                                continue
+
+                                                            if self.has_nx:
+                                                                continue
+
+                                                        if self.cur_subtype == 'dihed' and _atomId == 'P'\
+                                                           and self.csStat.getTypeOfCompId(compId)[1]:
+                                                            continue
+
+                                                        warn_title = 'Anomalous data' if self.preferAuthSeq\
+                                                            and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
+                                                            and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes
+                                                                 and seqId != min(auth_seq_id_list))\
+                                                            else 'Atom not found'
+                                                        if seqKey in self.__coordUnobsAtom\
+                                                           and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
+                                                                or (_atomId[0] in PROTON_BEGIN_CODE
+                                                                    and any(True for bondedTo
+                                                                            in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                            if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
+                                                            warn_title = 'Coordinate issue'
+                                                        if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
+                                                            warn_title = 'Hydrogen not instantiated'
+                                                        self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
+                                                                      f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                                                      "is not present in the coordinates.")
+                                                        if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
+                                                            _atomSelection.append(selection)
+                                                            continue
+
+                                                        if 'alt_chain_id' in _factor:
+                                                            self.__failure_chain_ids.append(chainId)
+
+                                elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
+                                    if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
+                                        if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
+                                                                          or _atomId == 'P' or _atomId.startswith('HOP')):
+                                            continue
+
+                                    if cifCheck and self.cur_subtype != 'plane'\
+                                       and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
+                                       and (self.reasons is None or 'non_poly_remap' not in self.reasons)\
+                                       and not self.cur_union_expr:
+                                        if chainId in LARGE_ASYM_ID:
+                                            if self.monoPolymer\
+                                               and (seqId < 1
+                                                    or (compId == 'ACE' and seqId == min(self.polySeq[0]['auth_seq_id']) - 1)
+                                                    or (compId == 'NH2' and seqId == max(self.polySeq[0]['auth_seq_id']) + 1)):
+                                                self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
+                                                              f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                                              "is not present in the coordinates. "
+                                                              f"The residue number '{seqId}' is not present in polymer sequence "
+                                                              f"of chain {chainId} of the coordinates. "
+                                                              "Please update the sequence in the Macromolecules page.")
+                                                if 'alt_chain_id' in _factor:
+                                                    self.__failure_chain_ids.append(chainId)
+
+                                            elif seqSpecified:
+                                                if resolved and altPolySeq is not None:
+                                                    continue
+
+                                                if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq and not self.with_axis:
+                                                    __preferAuthSeq = self.preferAuthSeq
+                                                    self.preferAuthSeq = False
+                                                    for __chainId in chainIds:
+                                                        if __chainId == chainId:
+                                                            continue
+                                                        __psList = [__ps for __ps in (self.polySeq if isPolySeq else altPolySeq)
+                                                                    if __ps['auth_chain_id'] == __chainId]
+                                                        if len(__psList) == 0:
+                                                            continue
+
+                                                        def update_label_seq_scheme_w_assert():
+                                                            r = self.__getNamedReasonsForReparsing('label_seq_scheme')
+                                                            if self.cur_subtype not in r:
+                                                                r[self.cur_subtype] = True
+                                                                if 'segment_id' in _factor\
+                                                                   and 'assert_label_scheme_scheme' not in self.reasonsForReParsing:
+                                                                    self.reasonsForReParsing['assert_label_seq_scheme'] = True  # 2m0k
+
+                                                        for __ps in __psList:
+                                                            __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
+                                                            _, __coordAtomSite =\
+                                                                self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
+                                                            if __coordAtomSite is not None\
+                                                               and ((seqId in ps['auth_seq_id']
+                                                                     and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
+                                                                    or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
+                                                                __compId = __coordAtomSite['comp_id']
+                                                                __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                                                # 2ld5
+                                                                if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']\
+                                                                   and self.csStat.getTypeOfCompId(compId) ==\
+                                                                        self.csStat.getTypeOfCompId(__compId):
+                                                                    update_label_seq_scheme_w_assert()
+                                                                    if isChainSpecified:
+                                                                        update_inhibit_label_seq_scheme(chainId)
+                                                                    break
+                                                    self.preferAuthSeq = __preferAuthSeq
+
+                                                if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
+                                                   and _factor['chain_id'][0] != chainId and compId in STD_MON_DICT:
+                                                    continue
+                                                # 2mgt
+                                                if self.hasNonPoly and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
+                                                    if _atomId in self.__uniqAtomIdToSeqKey:  # 7jk8
+                                                        r = self.__getNamedReasonsForReparsing('np_atom_id_remap')
+                                                        if _atomId not in r:
+                                                            r[_atomId] = self.__uniqAtomIdToSeqKey[_atomId]
+                                                    _coordAtomSite = None
+                                                    ligands = 0
+                                                    for np in self.__nonPoly:
+                                                        if np['auth_chain_id'] == chainId and atomId == np['comp_id'][0]:
+                                                            ligands += len(np['seq_id'])
+                                                    if ligands == 0:
+                                                        for np in self.__nonPoly:
+                                                            if 'alt_comp_id' in np and np['auth_chain_id'] == chainId\
+                                                               and atomId == np['alt_comp_id'][0]:
+                                                                ligands += len(np['seq_id'])
+                                                    if ligands == 0:
+                                                        for np in self.__nonPoly:
+                                                            _, _coordAtomSite =\
+                                                                self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0],
+                                                                                        cifCheck=cifCheck)
+                                                            if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
+                                                                ligands += len(np['seq_id'])
+                                                    if ligands == 1:
+
+                                                        def update_np_seq_id_remap(c, s, d):
+                                                            r = self.__getNamedReasonsForReparsing('np_seq_id_remap')
+                                                            if c not in r:
+                                                                r[c] = {}
+                                                            if s in r[c]:
+                                                                if r[c][s] is not None:
+                                                                    if r[c][s] != d:
+                                                                        r[c][s] = None
+                                                                    else:
+                                                                        return True
+                                                            else:
+                                                                r[c][s] = d
+                                                                return True
+                                                            return False
+
+                                                        checked = False
+                                                        srcSeqId = _factor['seq_id'][0]
+                                                        for np in self.__nonPoly:
+                                                            if atomId == np['comp_id'][0]\
+                                                               or ('alt_comp_id' in np and atomId == np['alt_comp_id'][0]):
+                                                                checked = update_np_seq_id_remap(chainId, srcSeqId, np['seq_id'][0])
+                                                        for np in self.__nonPoly:
+                                                            if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
+                                                                checked = update_np_seq_id_remap(chainId, srcSeqId, np['seq_id'][0])
+                                                        if checked and isPolySeq and (self.reasons is None
+                                                                                      or (self.reasons is not None
+                                                                                          and 'np_seq_id_remap' in self.reasons)):
+                                                            continue
+                                                    # 2n3r
+                                                    elif ligands > 1 and isPolySeq and self.reasons is not None\
+                                                            and 'np_seq_id_remap' in self.reasons\
+                                                            and retrieveRemappedSeqId(self.reasons['np_seq_id_remap'],
+                                                                                      chainId, seqId)[0] is not None:
                                                         continue
-                                                    warn_title = 'Anomalous data' if self.preferAuthSeq and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
-                                                        and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
-                                                        else 'Atom not found'
-                                                    if seqKey in self.__coordUnobsAtom\
-                                                       and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in PROTON_BEGIN_CODE
-                                                                and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
-                                                                        if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
-                                                        warn_title = 'Coordinate issue'
-                                                    if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
-                                                        warn_title = 'Hydrogen not instantiated'
-                                                    self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
-                                                                  f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
-                                                    if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
+
+                                                if extSeqScheme:
+                                                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
+                                                                  f"The residue '{seqId}:{compId}' is not present in polymer sequence "
+                                                                  f"of chain {chainId} of the coordinates. "
+                                                                  "Please update the sequence in the Macromolecules page.")
+                                                    if 'expected_comp_id' not in _factor:
+                                                        _factor['expected_comp_id'] = [compId]
+                                                    if compId not in _factor['expected_comp_id']:
+                                                        _factor['expected_comp_id'].append(compId)
+                                                    continue
+                                                # 5t1n: SANI -> PCS
+                                                if self.cur_subtype == 'rdc' and self.__lenAtomSelectionSet == 4 and\
+                                                   compId in NITROOXIDE_ANCHOR_RES_NAMES\
+                                                   and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in PARAMAGNETIC_ELEMENTS:
+                                                    self.paramagCenter = copy.copy(_factor)
+                                                    self.paramagCenter['atom_id'][0] = origAtomId0[:2].upper()
+                                                    continue
+
+                                                if self.with_para and len(origAtomId0) >= 2\
+                                                   and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
+                                                    continue
+
+                                                if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
+                                                    if self.has_nx or origAtomId0.startswith('HT'):
                                                         continue
-                                                    if self.cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in MONDICT3 and self.csStat.peptideLike(compId):
-                                                        self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
-                                                    if 'alt_chain_id' in _factor:
-                                                        self.__failure_chain_ids.append(chainId)
+
+                                                if self.cur_subtype == 'dihed' and _atomId == 'P'\
+                                                   and self.csStat.getTypeOfCompId(compId)[1]:
+                                                    continue
+
+                                                warn_title = 'Anomalous data' if self.preferAuthSeq\
+                                                    and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
+                                                    and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes
+                                                         and seqId != min(auth_seq_id_list))\
+                                                    else 'Atom not found'
+                                                if seqKey in self.__coordUnobsAtom\
+                                                   and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
+                                                        or (_atomId[0] in PROTON_BEGIN_CODE
+                                                            and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId,
+                                                                                                                 exclProton=True)
+                                                                    if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
+                                                    warn_title = 'Coordinate issue'
+                                                if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
+                                                    warn_title = 'Hydrogen not instantiated'
+                                                self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
+                                                              f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                                              "is not present in the coordinates.")
+
+                                                if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
+                                                    continue
+
+                                                if self.cur_subtype == 'dist' and isPolySeq and isChainSpecified\
+                                                   and compId in STD_MON_DICT and self.csStat.peptideLike(compId):
+                                                    self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
+                                                if 'alt_chain_id' in _factor:
+                                                    self.__failure_chain_ids.append(chainId)
 
         return foundCompId
+
+    def __handleNoAtomSelection(self, _factor: dict, clauseName: str, cifCheck: bool, trial: int,
+                                chain_not_specified: bool, ambig_atom_sel: bool,
+                                found_comp_id: bool, atom_not_found_error: bool, _atomId: Optional[str]) -> Tuple[bool, dict]:
+
+        def has_identical_chain_id(chain_id):
+            try:
+                next(ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id and 'identical_chain_id' in ps)
+                return True
+            except StopIteration:
+                pass
+            return False
+
+        if _atomId is not None:
+            __atomId = _atomId if len(_atomId) <= 2 else _atomId[:2]
+            if self.with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                return True, _factor
+            if self.with_para and (('comp_id' in _factor and _atomId == _factor['comp_id'][0] and __atomId in PARAMAGNETIC_ELEMENTS)
+                                   or __atomId in FERROMAGNETIC_ELEMENTS
+                                   or __atomId in LANTHANOID_ELEMENTS):
+                return True, _factor
+            if self.cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
+                return True, _factor
+
+        __factor = copy.copy(_factor)
+        del __factor['atom_selection']
+        if _atomId is None and 'alt_atom_id' not in _factor:
+            if self.cur_subtype != 'plane' and cifCheck and not self.cur_union_expr:
+                if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor\
+                   and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
+                    for chainId in _factor['chain_id']:
+                        updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], [_factor['alt_atom_id']])
+                        if has_identical_chain_id(chainId):
+                            break
+            return False, _factor
+
+        def update_np_atom_id_remap():
+            if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
+                r = self.__getNamedReasonsForReparsing('np_seq_id_remap')
+                chainId = _factor['chain_id'][0]
+                srcSeqId = _factor['seq_id'][0]
+                dstSeqId = self.__uniqAtomIdToSeqKey[_atomId][1]
+                if chainId not in r:
+                    r[chainId] = {}
+                if srcSeqId in r[chainId]:
+                    if r[chainId][srcSeqId] is not None:
+                        if r[chainId][srcSeqId] != dstSeqId:
+                            r[chainId][srcSeqId] = None
+            else:
+                r = self.__getNamedReasonsForReparsing('np_atom_id_remap')
+                if _atomId not in r:
+                    r[_atomId] = self.__uniqAtomIdToSeqKey[_atomId]
+
+        if self.cur_subtype != 'plane'\
+           and not (self.cur_subtype == 'rdc' and self.__lenAtomSelectionSet == 4
+                    and len(_atomId) >= 2 and _atomId[:2] in PARAMAGNETIC_ELEMENTS):
+            if cifCheck:
+                if self.cur_union_expr or (self.top_union_expr and ambig_atom_sel):  # 2mws, 2krf
+                    self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
+                                  f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
+                    if len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
+                        update_np_atom_id_remap()
+
+                else:
+                    # self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
+                    #               f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
+                    if 'alt_chain_id' in _factor:  # 2mnz
+                        for chainId in _factor['chain_id']:
+                            self.updateSegmentIdDict(_factor, chainId, None, False)
+                    if found_comp_id and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
+                        compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
+                        if compIds is not None:
+                            found_comp_id = False  # 2l5y
+                    if not found_comp_id:
+                        # DAOTHER-9063
+                        ligands = 0
+                        npChainIds = set()
+                        if self.hasNonPoly and self.cur_subtype == 'dist':
+                            for np in self.__nonPoly:
+                                ligands += len(np['seq_id'])
+                                npChainIds.add(np['auth_chain_id'])  # 2lqc
+                        if ligands == 1:
+                            npChainIds.clear()  # 2ljc
+                        if (len(_factor['chain_id']) == 1 or _factor['chain_id'][0] in npChainIds) and len(_factor['seq_id']) == 1:
+
+                            def update_np_seq_id_remap_request(np, ligands):
+                                r = self.__getNamedReasonsForReparsing('np_seq_id_remap')
+                                chainId = _factor['chain_id'][0]
+                                srcSeqId = _factor['seq_id'][0]
+                                dstSeqId = np['seq_id'][0]
+                                if chainId not in r:
+                                    r[chainId] = {}
+                                if srcSeqId in r[chainId]:
+                                    if r[chainId][srcSeqId] is not None:
+                                        if r[chainId][srcSeqId] != dstSeqId:
+                                            r[chainId][srcSeqId] = None
+                                            ligands = 0
+                                    else:
+                                        ligands = 0
+                                else:
+                                    r[chainId][srcSeqId] = dstSeqId
+                                return ligands
+
+                            def upsert_np_seq_id_remap_request(np):
+                                r = self.__getNamedReasonsForReparsing('np_seq_id_remap')
+                                chainId = _factor['chain_id'][0]
+                                srcSeqId = _factor['seq_id'][0]
+                                dstSeqId = np['seq_id'][0]
+                                if chainId not in r:
+                                    r[chainId] = {}
+                                if srcSeqId in r[chainId]:
+                                    if r[chainId][srcSeqId] != dstSeqId:
+                                        keys = list(r[chainId].keys())
+                                        vals = list(r[chainId].values())
+                                        if keys != sorted(keys) or vals != sorted(vals) or len(set(keys)) != len(set(vals)):
+                                            r[chainId][srcSeqId] = dstSeqId
+                                else:
+                                    r[chainId][srcSeqId] = dstSeqId
+
+                            if ligands == 1:
+                                for np in self.__nonPoly:
+                                    _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                    if _coordAtomSite is not None and len(_factor['atom_id']) == 1\
+                                       and _atomId is not None\
+                                       and (_atomId in _coordAtomSite['atom_id']
+                                            or (len(_atomId) == 4 and ((_atomId[-2] == '+' and _atomId[-1].isdigit())
+                                                                       or (_atomId[-1] == '+' and _atomId[-2].isdigit()))
+                                                and _atomId[:2] in _coordAtomSite['atom_id'])
+                                            or (len(_atomId) == 3 and (_atomId[-1].isdigit() or _atomId[-1] in ('+', '-'))
+                                                and _atomId[:2] in _coordAtomSite['atom_id'])
+                                            or (_atomId == 'X'
+                                                and ('UNK' in _coordAtomSite['atom_id'] or 'UNX' in _coordAtomSite['atom_id']))):
+                                        ligands = update_np_seq_id_remap_request(self.__nonPoly[0], ligands)
+                                    else:
+                                        ligands = 0
+
+                            elif ligands > 1 and len(_factor['atom_id']) == 1\
+                                    and _atomId is not None\
+                                    and (_atomId in ELEMENT_SYMBOLS  # 2n3r
+                                         or (len(_atomId) == 4 and ((_atomId[-2] == '+' and _atomId[-1].isdigit())
+                                                                    or (_atomId[-1] == '+' and _atomId[-2].isdigit()))
+                                             and _atomId[:2] in ELEMENT_SYMBOLS)  # 6kg9, 2ma7
+                                         or (len(_atomId) == 3 and (_atomId[-1].isdigit() or _atomId[-1] in ('+', '-'))
+                                             and _atomId[:2] in ELEMENT_SYMBOLS)  # 2m28, 2mco
+                                         or _atomId == 'X'):  # 2mjq, 2mjr, 2mjs, 2mjt
+                                if _atomId != 'X':
+                                    elemName = _atomId[:2]
+                                    elemCount = 0
+                                    refElemSeqIds = []
+                                    for np in self.__nonPoly:
+                                        if np['comp_id'][0] == elemName:
+                                            elemCount += 1
+                                            refElemSeqIds.append(np['seq_id'][0])
+                                    if elemCount == 1:
+                                        for np in self.__nonPoly:
+                                            if np['comp_id'][0] == elemName:
+                                                ligands = update_np_seq_id_remap_request(np, ligands)
+                                                break
+                                    elif elemCount > 1:
+                                        try:
+                                            elemSeqId = int(_factor['seq_id'][0])
+                                            found = False
+                                            for np in self.__nonPoly:
+                                                if np['comp_id'][0] == elemName\
+                                                   and (elemSeqId in np['seq_id'] or elemSeqId in np['auth_seq_id']):
+                                                    ligands = update_np_seq_id_remap_request(np, ligands)
+                                                    found = True
+                                                    break
+                                            if not found:
+                                                if 'alt_chain_id' in _factor:
+                                                    elemChainId = _factor['alt_chain_id']
+                                                    if elemName in elemChainId and len(elemChainId) > len(elemName)\
+                                                       and elemChainId[len(elemName):].isdigit():
+                                                        elemChainOrder = int(elemChainId[len(elemName):])
+                                                        if 1 <= elemChainOrder <= len(refElemSeqIds):
+                                                            np_idx = 1
+                                                            for np in self.__nonPoly:
+                                                                if np['comp_id'][0] == elemName:
+                                                                    if elemChainOrder == np_idx:
+                                                                        ligands = update_np_seq_id_remap_request(np, ligands)
+                                                                        found = True
+                                                                        break
+                                                                    np_idx += 1
+                                                        else:  # 2lqc
+                                                            for elemSeqId in refElemSeqIds:
+                                                                for np in self.__nonPoly:
+                                                                    if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
+                                                                        upsert_np_seq_id_remap_request(np)
+                                                            found = True
+                                                if not found:
+                                                    if 1 <= elemSeqId <= len(refElemSeqIds):
+                                                        elemSeqId = refElemSeqIds[elemSeqId - 1]
+                                                        for np in self.__nonPoly:
+                                                            if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
+                                                                ligands = update_np_seq_id_remap_request(np, ligands)
+                                                    else:  # 2lqc
+                                                        for elemSeqId in refElemSeqIds:
+                                                            for np in self.__nonPoly:
+                                                                if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
+                                                                    upsert_np_seq_id_remap_request(np)
+                                        except ValueError:
+                                            pass
+                                else:
+                                    for np in self.__nonPoly:
+                                        _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                        if 'UNK' in _coordAtomSite['atom_id']:  # 2mjq, 2mjr, 2mjs
+                                            ligands = update_np_seq_id_remap_request(np, ligands)
+                                            break
+                                        if 'UNX' in _coordAtomSite['atom_id']:  # 2mjt
+                                            ligands = update_np_seq_id_remap_request(np, ligands)
+                                            break
+
+                            elif len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
+                                update_np_atom_id_remap()
+                                ligands = 1
+
+                        if len(_factor['seq_id']) == 1:
+                            if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
+                                compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
+                                if compIds is not None:
+                                    for chainId in _factor['chain_id']:
+                                        if len(compIds) == 1:
+                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, _factor['seq_id'][0], compIds[0])
+                                        else:
+                                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, _factor['seq_id'][0], compIds)
+                                        if has_identical_chain_id(chainId):
+                                            break
+                                for chainId in _factor['chain_id']:
+                                    updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['atom_id'])
+                                    if has_identical_chain_id(chainId):
+                                        break
+
+                        if ligands == 0 and not self.has_nx and not self.has_gd and not self.has_la\
+                           and (self.monoPolymer or all('identical_chain_id' in ps for ps in self.polySeq) or not chain_not_specified):
+                            if _atomId is not None and _atomId.startswith('X')\
+                               and _atomId not in ELEMENT_SYMBOLS:
+                                pass  # 8bxj
+                            elif self.reasons is not None and 'segment_id_mismatch' in self.reasons:
+                                pass  # 6f0y
+                            # 2knf, 2ma9
+                            elif _atomId is None\
+                                    or (_atomId not in AMINO_PROTON_CODE and _atomId not in CARBOXYL_CODE
+                                        and _atomId not in JCOUP_BB_PAIR_CODE)\
+                                    or self.gapInAuthSeq:  # 2kyg
+                                if not self.cur_subtype_altered or not self.in_noe:  # 2ljc
+                                    if self.reasons is None:
+                                        self.preferAuthSeq = not self.preferAuthSeq
+                                        # self.authSeqId = 'auth_seq_id' if self.preferAuthSeq else 'label_seq_id'
+                                        self.setLocalSeqScheme()
+                                        # ad hoc sequence scheme switching is possible for the first restraint,
+                                        # otherwise the entire restraints should be re-parsed
+                                        if trial < 3 and 'Check the 1th row of' in self.getCurrentRestraint()\
+                                           and (self.cur_subtype != 'dist' and not self.in_noe):
+                                            # skip ad hoc sequence scheme switching should be inherited to the other restraints
+                                            del _factor['atom_selection']
+                                            return True, self.doConsumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
+                                        if not self.preferAuthSeq and self.reasons is None\
+                                           and ((self.cur_subtype != 'dist' and not self.in_noe)
+                                                or 'Check the 2th row of' in self.getCurrentRestraint()):  # 6nk9
+                                            self.__getNamedReasonsForReparsing('label_seq_scheme')[self.cur_subtype] = True
+
+                        elif self.with_para and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and self.reasons is None:
+                            self.preferAuthSeq = not self.preferAuthSeq
+                            self.setLocalSeqScheme()
+                            self.__getNamedReasonsForReparsing('label_seq_scheme')[self.cur_subtype] = True
+
+                    if not atom_not_found_error:
+                        if _atomId is not None and _atomId.startswith('X')\
+                           and _atomId not in ELEMENT_SYMBOLS:  # 8bxj
+                            self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                                          f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
+
+                        else:
+                            no_ext_seq = True
+                            unobs_seq = False
+                            if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
+                                _chainId = _factor['chain_id'][0]
+                                _seqId = _factor['seq_id'][0]
+                                ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == _chainId), None)
+                                no_nonpoly = not self.hasNonPolySeq\
+                                    or not any(_seqId in np['auth_seq_id'] for np in self.nonPolySeq
+                                               if np['auth_chain_id'] == _chainId)  # 2mco
+                                if ps is not None and _seqId not in ps['auth_seq_id'] and no_nonpoly:
+                                    if self.__nmrVsModel is not None and not ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
+                                        nmr_offset = ps['seq_id'][0] - ps['auth_seq_id'][0]  # 2lzn
+                                        if self.reasons is not None and 'global_auth_sequence_offset' in self.reasons\
+                                           and _chainId in self.reasons['global_auth_sequence_offset']:
+                                            nmr_offset += self.reasons['global_auth_sequence_offset'][_chainId]
+                                        elif self.reasons is not None and 'auth_sequence_offset' in self.reasons\
+                                                and _chainId in self.reasons['auth_sequence_offset']:
+                                            nmr_offset += self.reasons['auth_sequence_offset'][_chainId]
+                                        elif self.reasons is not None and 'label_sequence_offset' in self.reasons\
+                                                and _chainId in self.reasons['label_sequence_offset']:
+                                            nmr_offset += self.reasons['label_sequence_offset'][_chainId]
+                                        item = next((item for item in self.__nmrVsModel
+                                                     if item['test_auth_chain_id' if 'test_auth_chain_id' in item
+                                                             else 'test_chain_id'] == _chainId), None)
+                                        if item is not None and item['conflict'] == 0\
+                                           and item['unmapped'] > 0 and 'unmapped_sequence' in item:
+                                            refCompId = next((u['ref_comp_id'] for u in item['unmapped_sequence']
+                                                              if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId + nmr_offset), None)
+                                            if refCompId is not None:
+                                                hint = f" The residue '{_seqId}:{refCompId}' is not present in polymer sequence "\
+                                                    f"of chain {_chainId} of the coordinates. "\
+                                                    "Please update the sequence in the Macromolecules page."
+                                                if self.reasons is not None:
+                                                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
+                                                                  f"The {clauseName} has no effect "
+                                                                  f"for a factor {self.getReadableFactor(__factor)}.{hint}")
+                                                no_ext_seq = False  # 2ls7
+                                    if no_ext_seq:
+                                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                        if len(auth_seq_id_list) > 0:
+                                            min_auth_seq_id = min(auth_seq_id_list)
+                                            max_auth_seq_id = max(auth_seq_id_list)
+                                            if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                               or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
+                                                hint = f" The residue '{_seqId}' is not present in polymer sequence "\
+                                                    f"of chain {_chainId} of the coordinates. "\
+                                                    "Please update the sequence in the Macromolecules page."
+                                                if self.reasons is not None:
+                                                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
+                                                                  f"The {clauseName} has no effect "
+                                                                  f"for a factor {self.getReadableFactor(__factor)}.{hint}")
+                                                no_ext_seq = False  # 2law
+                                _seqKey = (_chainId, _seqId)
+                                if _seqKey in self.__coordUnobsRes:
+                                    unobs_seq = True  # 2n25
+                                if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
+                                    _atomIds = self.getAtomIdList(_factor, self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
+                                    if _atomIds[0] in self.__coordUnobsAtom[_seqKey]['atom_ids']:
+                                        unobs_seq = True
+                            elif len(_factor['chain_id']) > 1 and len(_factor['seq_id']) == 1:
+                                _chainId_ = []
+                                _seqId = _factor['seq_id'][0]
+                                for _chainId in _factor['chain_id']:
+                                    ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == _chainId), None)
+                                    if ps is not None and _seqId not in ps['auth_seq_id']:
+                                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                        if len(auth_seq_id_list) > 0:
+                                            min_auth_seq_id = min(auth_seq_id_list)
+                                            max_auth_seq_id = max(auth_seq_id_list)
+                                            if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                               or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
+                                                _chainId_.append(_chainId)
+                                if len(_chainId_) == 1:
+                                    _chainId = _chainId_[0]
+                                    ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == _chainId), None)
+                                    no_nonpoly = not self.hasNonPolySeq\
+                                        or not any(_seqId in np['auth_seq_id'] for np in self.nonPolySeq if np['auth_chain_id'] == _chainId)
+                                    if ps is not None and _seqId not in ps['auth_seq_id'] and no_nonpoly:
+                                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                        if len(auth_seq_id_list) > 0:
+                                            min_auth_seq_id = min(auth_seq_id_list)
+                                            max_auth_seq_id = max(auth_seq_id_list)
+                                            if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                               or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
+                                                hint = f" The residue '{_seqId}' is not present in polymer sequence "\
+                                                    f"of chain {_chainId} of the coordinates. "\
+                                                    "Please update the sequence in the Macromolecules page."
+                                                if self.reasons is not None:
+                                                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
+                                                                  f"The {clauseName} has no effect "
+                                                                  f"for a factor {self.getReadableFactor(__factor)}.{hint}")
+                                                no_ext_seq = False  # 2mps
+                                    _seqKey = (_chainId, _seqId)
+                                    if _seqKey in self.__coordUnobsRes:
+                                        unobs_seq = True  # 2n25
+                                    if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
+                                        _atomIds[0] = self.getAtomIdList(_factor,
+                                                                         self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
+                                        if _atomIds in self.__coordUnobsAtom[_seqKey]['atom_ids']:
+                                            unobs_seq = True
+                            if (no_ext_seq or self.reasons is None) and not unobs_seq:
+                                if no_ext_seq:  # 2laz
+                                    hint = " Please make sure that the values in 'segidentifier', 'residue', and 'name' clauses "\
+                                        "of the restraint file match the auth_asym_id, auth_seq_id, "\
+                                        "and auth_atom_id values of the coordinates, respectively. "
+                                    if self.has_gd:
+                                        hint += "We ignore the atom selection since it may be related to ambiguous PRE restraints "\
+                                            "induced by Gd3+ spin label."
+                                    elif self.has_la:
+                                        hint += "We ignore the atom selection since it may be related to paramagnetic restraints "\
+                                            "induced by Lanthanide ion."
+                                    elif self.has_nx:
+                                        hint += "We ignore the atom selection since it may be related to ambiguous PRE restraints "\
+                                            "induced by nitroxide spin label."
+                                    else:
+                                        hint += "Alternatively, try to upload the genuine coordinate file "\
+                                            "generated by structure determination software without editing."
+                                self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
+                                              f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
+            else:
+                self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
+                              f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}. "
+                              "Please update the sequence in the Macromolecules page.")
+        elif self.cur_subtype == 'plane':
+            if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']
+                                            and 'HOP2' not in _factor['atom_id'] and "HO3'" not in _factor['atom_id']
+                                            and "O2'" not in _factor['atom_id']):
+                if not atom_not_found_error:
+                    hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
+                        if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
+                    self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
+                                  f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
+
+        return False, _factor
 
     @functools.lru_cache(maxsize=128)
     def getRealCompId(self, compId: str) -> str:
         if self.ccU.updateChemCompDict(compId, False):
-            if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.ccU.lastChemCompDict:
+            if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS'\
+               and '_chem_comp.pdbx_replaced_by' in self.ccU.lastChemCompDict:
                 replacedBy = self.ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
                 if replacedBy not in EMPTY_VALUE and self.ccU.updateChemCompDict(replacedBy):
                     return replacedBy
@@ -7107,7 +7460,7 @@ class BaseStackedMRParserListener():
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -7119,7 +7472,7 @@ class BaseStackedMRParserListener():
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                    for shift in range(1, 100):
+                    for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                         if seqId + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
                             if 0 <= idx < len(ps['auth_seq_id']):
@@ -7145,7 +7498,7 @@ class BaseStackedMRParserListener():
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -7157,7 +7510,7 @@ class BaseStackedMRParserListener():
         if seqId + offset in ps['auth_seq_id']:
             return seqId + offset
         if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-            for shift in range(1, 100):
+            for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                 if seqId + shift + offset in ps['auth_seq_id']:
                     idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
                     if 0 <= idx < len(ps['auth_seq_id']):
@@ -7196,7 +7549,7 @@ class BaseStackedMRParserListener():
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -7208,7 +7561,7 @@ class BaseStackedMRParserListener():
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)], False
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                    for shift in range(1, 100):
+                    for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                         if seqId + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
                             if 0 <= idx < len(ps['auth_seq_id']):
@@ -7238,7 +7591,7 @@ class BaseStackedMRParserListener():
                     if seqId in offset:
                         offset = offset[seqId]
                     else:
-                        for shift in range(1, 100):
+                        for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                             if seqId + shift in offset:
                                 offset = offset[seqId + shift]
                                 break
@@ -7255,7 +7608,7 @@ class BaseStackedMRParserListener():
                 if seqId + offset in _ps['seq_id']:
                     return seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)], True
         if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-            for shift in range(1, 100):
+            for shift in range(1, LOCAL_OFFSET_ATTEMPT):
                 if seqId + shift + offset in ps['auth_seq_id']:
                     idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
                     if 0 <= idx < len(ps['auth_seq_id']):
@@ -7471,18 +7824,17 @@ class BaseStackedMRParserListener():
 
         offsets = set(ps['auth_seq_id'][idx] - seqId for idx in idx_list)
 
-        if 'global_sequence_offset' not in self.reasonsForReParsing:
-            self.reasonsForReParsing['global_sequence_offset'] = {}
-        if chainId in self.reasonsForReParsing['global_sequence_offset']:
-            if self.reasonsForReParsing['global_sequence_offset'][chainId] is None:
+        r = self.__getNamedReasonsForReparsing('global_sequence_offset')
+        if chainId in r:
+            if r[chainId] is None:
                 return False
-            self.reasonsForReParsing['global_sequence_offset'][chainId] &= offsets
-            if len(self.reasonsForReParsing['global_sequence_offset'][chainId]) == 0:
-                self.reasonsForReParsing['global_sequence_offset'][chainId] = None
+            r[chainId] &= offsets
+            if len(r[chainId]) == 0:
+                r[chainId] = None
                 return False
             return True
 
-        self.reasonsForReParsing['global_sequence_offset'][chainId] = offsets
+        r[chainId] = offsets
 
         return True
 
@@ -7834,7 +8186,8 @@ class BaseStackedMRParserListener():
 
         _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in factor.items()}
 
-        key_order = ['chain_id', 'auth_chain_id', 'alt_chain_id', 'seq_id', 'comp_id', 'alt_comp_id', 'type_symbol', 'atom_id', 'alt_atom_id']
+        key_order = ['chain_id', 'auth_chain_id', 'alt_chain_id', 'seq_id', 'comp_id', 'alt_comp_id',
+                     'type_symbol', 'atom_id', 'alt_atom_id']
 
         key_map = {'chain_id': 'segidentifier',
                    'auth_chain_id': 'original segidentifier',
@@ -7935,7 +8288,8 @@ class BaseStackedMRParserListener():
         return '/'.join(__factor)
 
     def getCurrentRestraint(self) -> str:
-        if self.cur_subtype == 'dist' or (self.in_noe and self.cur_subtype_altered):  # resolve side effect derived from rdc -> dist type change (2ljb)
+        if self.cur_subtype == 'dist'\
+           or (self.in_noe and self.cur_subtype_altered):  # resolve side effect derived from rdc -> dist type change (2ljb)
             return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'dihed':
             return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints, {self.__def_err_sf_framecode}] "
@@ -7958,78 +8312,86 @@ class BaseStackedMRParserListener():
         if self.cur_subtype == 'diff':
             return f"[Check the {self.diffRestraints}th row of duffusion anisotropy restraints, {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'nbase':
-            return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints, "\
+                f"{self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'csa':
-            return f"[Check the {self.csaRestraints}th row of (pseudo) chemical shift anisotropy restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.csaRestraints}th row of (pseudo) chemical shift anisotropy restraints, "\
+                f"{self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'ang':
             return f"[Check the {self.angRestraints}th row of angle database restraints, {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'pre':
-            return f"[Check the {self.preRestraints}th row of paramagnetic relaxation enhancement restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.preRestraints}th row of paramagnetic relaxation enhancement restraints, "\
+                f"{self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'pcs':
             return f"[Check the {self.pcsRestraints}th row of paramagnetic pseudocontact shift restraints, {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'prdc':
-            return f"[Check the {self.prdcRestraints}th row of paramagnetic residual dipolar coupling restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.prdcRestraints}th row of paramagnetic residual dipolar coupling restraints, "\
+                f"{self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'pang':
             return f"[Check the {self.pangRestraints}th row of paramagnetic orientation restraints, {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'pccr':
-            return f"[Check the {self.pccrRestraints}th row of paramagnetic cross-correlation rate restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.pccrRestraints}th row of paramagnetic cross-correlation rate restraints, "\
+                f"{self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'hbond':
             return f"[Check the {self.hbondRestraints}th row of hydrogen bond geometry/database restraints, {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'geo':
             return f"[Check the {self.geoRestraints}th row of harmonic coordinate/NCS restraints, {self.__def_err_sf_framecode}] "
         return ''
 
+    def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        if name in self.reasonsForReParsing:
+            return self.reasonsForReParsing[name]
+        self.reasonsForReParsing[name] = {}
+        return self.reasonsForReParsing[name]
+
     def setLocalSeqScheme(self):
-        if 'local_seq_scheme' not in self.reasonsForReParsing:
-            self.reasonsForReParsing['local_seq_scheme'] = {}
+        r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         if self.cur_subtype == 'dist':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.distRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.distRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'dihed':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.dihedRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.dihedRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'rdc':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.rdcRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.rdcRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'plane':
-            self.reasonsForReParsing['loca_seq_scheme'][(self.cur_subtype, self.planeRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.planeRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'adist':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.adistRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.adistRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'jcoup':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.jcoupRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.jcoupRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'hvycs':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.hvycsRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.hvycsRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'procs':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.procsRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.procsRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'rama':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.ramaRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.ramaRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'radi':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.radiRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.radiRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'diff':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.diffRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.diffRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'nbase':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.nbaseRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.nbaseRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'csa':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.csaRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.csaRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'ang':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.angRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.angRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'pre':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.preRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.preRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'pcs':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.pcsRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.pcsRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'prdc':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.prdcRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.prdcRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'pang':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.pangRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.pangRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'pccr':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.pccrRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.pccrRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'hbond':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.hbondRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.hbondRestraints)] = self.preferAuthSeq
         elif self.cur_subtype == 'geo':
-            self.reasonsForReParsing['local_seq_scheme'][(self.cur_subtype, self.geoRestraints)] = self.preferAuthSeq
+            r[(self.cur_subtype, self.geoRestraints)] = self.preferAuthSeq
         if not self.preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
-                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                    self.reasonsForReParsing['label_seq_scheme'] = {}
-                self.reasonsForReParsing['label_seq_scheme'][self.cur_subtype] = True
+                self.__getNamedReasonsForReparsing('label_seq_scheme')[self.cur_subtype] = True
 
     def retrieveLocalSeqScheme(self):
         if self.reasons is None\
@@ -8129,7 +8491,8 @@ class BaseStackedMRParserListener():
         restraint_name = getRestraintName(self.cur_subtype)
 
         software_name = self.software_name
-        if self.file_type == 'nm-res-xpl' and self.cur_subtype not in ('dist', 'dihed', 'rdc', 'plane', 'jcoup', 'hvycs', 'procs', 'rama', 'diff', 'nbase', 'geo'):
+        if self.file_type == 'nm-res-xpl'\
+           and self.cur_subtype not in ('dist', 'dihed', 'rdc', 'plane', 'jcoup', 'hvycs', 'procs', 'rama', 'diff', 'nbase', 'geo'):
             software_name = 'XPLOR-NIH'
 
         sf_framecode = f'{software_name}_' + restraint_name.replace(' ', '_') + f'_{list_id}'

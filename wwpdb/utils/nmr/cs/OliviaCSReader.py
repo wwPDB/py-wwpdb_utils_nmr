@@ -72,7 +72,8 @@ class OliviaCSReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__polySeq = polySeq
-        self.__entityAssembly = entityAssembly  # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        self.__entityAssembly = entityAssembly
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -140,7 +141,8 @@ class OliviaCSReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -176,7 +178,8 @@ class OliviaCSReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")

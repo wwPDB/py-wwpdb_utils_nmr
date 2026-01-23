@@ -166,8 +166,10 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 index = self.peaks2D
 
-                dstFunc = self.validatePeak2D(index, self.__f1_ppm, self.__f2_ppm, None, None, None, None,
-                                              None, None, None, None, self.__intensity, None, self.__volume, None)
+                dstFunc = self.validatePeak2D(index, self.__f1_ppm, self.__f2_ppm,
+                                              None, None, None, None,
+                                              None, None, None, None,
+                                              self.__intensity, None, self.__volume, None)
 
                 if dstFunc is None:
                     self.peaks2D -= 1
@@ -203,8 +205,10 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 index = self.peaks3D
 
-                dstFunc = self.validatePeak3D(index, self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, None, None, None, None, None, None,
-                                              None, None, None, None, None, None, self.__intensity, None, self.__volume, None)
+                dstFunc = self.validatePeak3D(index, self.__f1_ppm, self.__f2_ppm, self.__f3_ppm,
+                                              None, None, None, None, None, None,
+                                              None, None, None, None, None, None,
+                                              self.__intensity, None, self.__volume, None)
 
                 if dstFunc is None:
                     self.peaks3D -= 1
@@ -241,8 +245,10 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 index = self.peaks4D
 
-                dstFunc = self.validatePeak4D(index, self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, self.__f4_ppm, None, None, None, None, None, None, None, None,
-                                              None, None, None, None, None, None, None, None, self.__intensity, None, self.__volume, None)
+                dstFunc = self.validatePeak4D(index, self.__f1_ppm, self.__f2_ppm, self.__f3_ppm, self.__f4_ppm,
+                                              None, None, None, None, None, None, None, None,
+                                              None, None, None, None, None, None, None, None,
+                                              self.__intensity, None, self.__volume, None)
 
                 if dstFunc is None:
                     self.peaks4D -= 1

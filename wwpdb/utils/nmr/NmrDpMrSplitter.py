@@ -29,11 +29,11 @@ try:
                                                AR_FILE_PATH_LIST_KEY,
                                                MR_MAX_SPACER_LINES,
                                                READABLE_FILE_TYPE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                MAX_DIM_NUM_OF_SPECTRA,
                                                HALF_SPIN_NUCLEUS,
-                                               MR_FILE_HEADER_PAT,
+                                               PDB_MR_FILE_HEADER_PAT,
                                                DATABLOCK_PAT,
                                                SF_ANONYMOUS_PAT,
                                                SAVE_PAT,
@@ -110,11 +110,11 @@ except ImportError:
                                    AR_FILE_PATH_LIST_KEY,
                                    MR_MAX_SPACER_LINES,
                                    READABLE_FILE_TYPE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    MAX_DIM_NUM_OF_SPECTRA,
                                    HALF_SPIN_NUCLEUS,
-                                   MR_FILE_HEADER_PAT,
+                                   PDB_MR_FILE_HEADER_PAT,
                                    DATABLOCK_PAT,
                                    SF_ANONYMOUS_PAT,
                                    SAVE_PAT,
@@ -198,17 +198,25 @@ AMBER_A_FORMAT_PAT = re.compile(r'%FORMAT\((\d+)a(\d+)\)\s*')
 AMBER_I_FORMAT_PAT = re.compile(r'%FORMAT\((\d+)I(\d+)\)\s*')
 AMBER_R_PAT = re.compile(r'r(\d+)=(.*)')
 
+AMBER_TOP_PAT = re.compile(r"^\%FLAG ATOM_NAME\s*")
 AMBER_RST_PAT = re.compile(r'\s*&[Rr][Ss][Tt].*')
 AMBER_END_PAT = re.compile(r'\s*(?:&[Ee][Nn][Dd]|\/)\s*')
 AMBER_MISSING_END_ERR_MSG = "missing END at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 AMBER_EXTRA_END_ERR_MSG_PAT = re.compile(r"extraneous input '(?:&[Ee][Nn][Dd]|\/)' expecting .*")  # NOTICE: depends on ANTLR v4
 AMBER_EXPECTING_COMMA_PAT = re.compile("expecting \\{.*Comma.*\\}")  # NOTICE: depends on ANTLR v4 and AmberMRLexer.g4
 
+CHARMM_TOP_PAT = re.compile(r"^\s*\d+\sEXT\s*")
+CHARMM_RST_PAT = re.compile(r"^\s*KMAX\s+\d+\s+\-\s*")
+
 CYANA_UNSET_INFO_PAT = re.compile(r'\s*unset\s+info.*')
 CYANA_PRINT_PAT = re.compile(r'\s*print\s+\".*\".*')
 
+GROMACS_TOP_PAT = re.compile(r"^\[ atoms \]\s*")
+GROMACS_RST_PAT = re.compile(r"^\[ (distance|dihedral|orientation)_restraints \]\s*")
 GROMACS_COMMENT_PAT = re.compile(r'\s*;+[^0-9]?(.*)')
 GROMACS_TAG_PAT = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
+
+PDB_TOP_PAT = re.compile(r"^(ATOM|HETATM)\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){3}.*$")
 
 SPARKY_ASSIGNMENT_PAT = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*')
 
@@ -222,7 +230,8 @@ XPLOR_SET_PAT = re.compile(r'\s*[Ss][Ee][Tt].*')
 XPLOR_END_PAT = re.compile(r'\s*[Ee][Nn][Dd].*')
 XPLOR_MISSING_END_ERR_MSG = "missing End at"  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
 XPLOR_EXTRA_END_ERR_MSG_PAT = re.compile(r"extraneous input '[Ee][Nn][Dd]' expecting .*")  # NOTICE: depends on ANTLR v4
-XPLOR_EXTRA_ASSI_ERR_MSG_PAT = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+# NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
+XPLOR_EXTRA_ASSI_ERR_MSG_PAT = re.compile(r"extraneous input '[Aa][Ss][Ss][Ii][Gg]?[Nn]?' expecting L_paren")
 XPLOR_EXTRA_SSI_ERR_MSG_PAT = re.compile(r"extraneous input '[Aa]?[Ss][Ss][Ii]\S*' .*")  # NOTICE: depends on ANTLR v4
 XPLOR_EXTRA_L_PAREN_ERR_MSG_PAT = re.compile(r"extraneous input '\(' expecting .*")  # NOTICE: depends on ANTLR v4
 XPLOR_EXPECTNIG_SYMBOL_PAT = re.compile("expecting \\{.*Symbol_name.*\\}")  # NOTICE: depends on ANTLR v4 and (Xplor|Cns)MRLexer.g4
@@ -306,6 +315,116 @@ def is_eps_or_pdf_file(fPath: str) -> bool:
         chunk = ifh.read(5)
         if chunk in (b'%!PS-', b'%PDF-'):
             return True
+
+    return False
+
+
+def is_star_file(fPath: str) -> bool:
+    """ Check if a given file contains STAR syntaxes.
+    """
+
+    has_datablock = False
+    has_anonymous_saveframe = False
+    has_save = False
+    has_loop = False
+    has_stop = False
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if DATABLOCK_PAT.match(line):
+                has_datablock = True
+            elif SF_ANONYMOUS_PAT.match(line):
+                has_anonymous_saveframe = True
+            elif SAVE_PAT.match(line):
+                has_save = True
+            elif LOOP_PAT.match(line):
+                has_loop = True
+            elif STOP_PAT.match(line):
+                has_stop = True
+
+    return has_datablock or has_anonymous_saveframe or has_save or has_loop or has_stop
+
+
+def is_amb_top_file(fPath: str) -> bool:
+    """ Check if a given file contains AMBER topology/patemeter syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if AMBER_TOP_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_amb_rst_file(fPath: str) -> bool:
+    """ Check if a given file contains AMBER restraint syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if AMBER_RST_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_cha_top_file(fPath: str) -> bool:
+    """ Check if a given file contains CHARMM topology/patemeter syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if CHARMM_TOP_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_cha_rst_file(fPath: str) -> bool:
+    """ Check if a given file contains CHARMM restraint syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if CHARMM_RST_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_gro_top_file(fPath: str) -> bool:
+    """ Check if a given file contains GROMACS topology/patemeter syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if GROMACS_TOP_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_gro_rst_file(fPath: str) -> bool:
+    """ Check if a given file contains GROMACS restraint syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if GROMACS_RST_PAT.match(line):
+                return True
+
+    return False
+
+
+def is_pdb_top_file(fPath: str) -> bool:
+    """ Check if a given file contains PDB-line topology/patemeter syntaxes.
+    """
+
+    with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
+        for line in ifh:
+            if PDB_TOP_PAT.match(line):
+                return True
 
     return False
 
@@ -609,7 +728,8 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     string = ' '.join(col)
     len_col = len(col)
 
-    if header is not None and ('Number of dimensions' in header or header.startswith('#INAME') or header.startswith('#CYANAFORMAT')):  # XEASY peak list
+    if header is not None and ('Number of dimensions' in header or header.startswith('#INAME')
+                               or header.startswith('#CYANAFORMAT')):  # XEASY peak list
         if 'U' in col or 'T' in col:
             return 'nm-pea-xea' if asCode else 'XEASY'
 
@@ -1181,8 +1301,10 @@ class NmrDpMrSplitter:
                                 elif cs_atom_likes + atom_unlikes == 6 and rdc_range_like:
                                     has_rdc_restraint = True
 
-                                elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like or rdc_range_like or has_hbond_restraint)\
-                                        and names[0][0] in hbond_da_atom_types and names[1][0] in PROTON_BEGIN_CODE and names[2][0] in hbond_da_atom_types:
+                                elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like
+                                                              or rdc_range_like or has_hbond_restraint)\
+                                        and names[0][0] in hbond_da_atom_types and names[1][0] in PROTON_BEGIN_CODE\
+                                        and names[2][0] in hbond_da_atom_types:
                                     has_hbond_restraint = True
 
                                 atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
@@ -1281,7 +1403,8 @@ class NmrDpMrSplitter:
                                 elif t_lower.startswith('resi'):
                                     has_resi = True
 
-                                elif has_grou and has_sele and has_resi and not has_plane_restraint and _t_lower.startswith('weig'):
+                                elif has_grou and has_sele and has_resi and not has_plane_restraint\
+                                        and _t_lower.startswith('weig'):
                                     if atom_likes > 0:
                                         try:
                                             v = float(t)
@@ -1485,7 +1608,8 @@ class NmrDpMrSplitter:
                 if is_aux_amb:
 
                     has_atom_name = has_residue_label = has_residue_pointer = has_amb_atom_type =\
-                        chk_atom_name_format = chk_residue_label_format = chk_residue_pointer_format = chk_amb_atom_type_format =\
+                        chk_atom_name_format = chk_residue_label_format =\
+                        chk_residue_pointer_format = chk_amb_atom_type_format =\
                         in_atom_name = in_residue_label = in_residue_pointer = in_amb_atom_type = False
 
                     atom_names = residue_labels = residue_pointers = amb_atom_types = 0
@@ -1511,8 +1635,8 @@ class NmrDpMrSplitter:
                 atom_like_names_oth = self.__reg.csStat.getAtomLikeNameSet(1)
                 cs_atom_like_names_oth = list(filter(is_half_spin_nuclei, atom_like_names_oth))  # DAOTHER-7491
 
-                one_letter_codes = MONDICT3.values()
-                three_letter_codes = MONDICT3.keys()
+                one_letter_codes = STD_MON_DICT.values()
+                three_letter_codes = STD_MON_DICT.keys()
 
                 prohibited_col = set()
 
@@ -1687,7 +1811,8 @@ class NmrDpMrSplitter:
                                         seq_id = int(l_split[8])
                                         comp_id = l_split[2]
                                         atom_id = l_split[3]
-                                        if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                        if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
+                                           and atom_id in atom_like_names_oth:
                                             atom_names += 1
                                     except ValueError:
                                         pass
@@ -1732,7 +1857,8 @@ class NmrDpMrSplitter:
                                             seq_id = int(l_split[2])
                                             comp_id = l_split[3]
                                             atom_id = l_split[4]
-                                            if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                            if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
+                                               and atom_id in atom_like_names_oth:
                                                 atom_names += 1
                                         except ValueError:
                                             pass
@@ -1751,7 +1877,8 @@ class NmrDpMrSplitter:
                                     seq_id = int(l_split[4] if l_split[4].isdigit() else l_split[5])
                                     comp_id = l_split[3]
                                     atom_id = l_split[2]
-                                    if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                    if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
+                                       and atom_id in atom_like_names_oth:
                                         # if atom_num == 1:
                                         #     has_top_num = True
                                         atom_names += 1
@@ -2110,7 +2237,8 @@ class NmrDpMrSplitter:
 
                         for description in messageList:
                             err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} "\
+                                f"{description['message']}\n"
                             if 'input' in description:
                                 enc = detect_encoding(description['input'])
                                 is_not_ascii = False
@@ -2142,7 +2270,8 @@ class NmrDpMrSplitter:
                             if description['line_number'] == total_line and file_type in LINEAR_MR_FILE_TYPES:
                                 continue
                             err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} "\
+                                f"{description['message']}\n"
                             len_err = len(err)
                             if 0 < fixed_line_num <= description['line_number']:
                                 div_test = True
@@ -2165,7 +2294,8 @@ class NmrDpMrSplitter:
                                 s = '. ' if _err.startswith('Do you') else ':\n'
                                 err = err[:len_err] +\
                                     ("However, the error may be due to missing statement (e.g. 'noe', 'restraint dihedral', 'sanisotropy') "
-                                     f"at the beginning of {_err.strip().split(' ')[0]!r} and note that the statement should be ended with 'end' tag "
+                                     f"at the beginning of {_err.strip().split(' ')[0]!r} "
+                                     "and note that the statement should be ended with 'end' tag "
                                      if _err.lower().strip().startswith('class')
                                      else "However, the error may be due to the previous input ") +\
                                     f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
@@ -2197,7 +2327,8 @@ class NmrDpMrSplitter:
                             messages = [msg for msg in listener.warningMessage
                                         if 'warning' not in msg and 'Unsupported' not in msg
                                         and 'Redundant' not in msg
-                                        and ((self.__reg.remediation_mode and 'Range value error' not in msg) or not self.__reg.remediation_mode)]
+                                        and ((self.__reg.remediation_mode and 'Range value error' not in msg)
+                                             or not self.__reg.remediation_mode)]
 
                             if len(messages) > 0:
                                 valid = False
@@ -2243,7 +2374,8 @@ class NmrDpMrSplitter:
 
             except ValueError as e:
 
-                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - " + str(e))
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {str(e)}\n")
@@ -2389,8 +2521,9 @@ class NmrDpMrSplitter:
                     "'%FLAG RESIDUE_POINTER', and '%FLAG AMBER_ATOM_TYPE' lines must be present in the file."
 
                 if has_coordinate:
-                    hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords "\
-                        "to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
+                    hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command "\
+                        "and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, "\
+                        "referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
                 err = f"{file_name!r} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
                     + hint + " Did you accidentally select wrong format? Please re-upload the AMBER topology file."
@@ -2717,7 +2850,7 @@ class NmrDpMrSplitter:
                             in_header = False
                             continue
 
-                        if MR_FILE_HEADER_PAT.match(line)\
+                        if PDB_MR_FILE_HEADER_PAT.match(line)\
                            or SEL_MR_FILE_HEADER_PAT.match(line)\
                            or SEL_PK_FILE_HEADER_PAT.match(line)\
                            or SEL_CS_FILE_HEADER_PAT.match(line):
@@ -2770,7 +2903,8 @@ class NmrDpMrSplitter:
                     continue
 
                 if has_mr_header:
-                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatName('nm-res-mr')}. "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) "\
+                        f"is identified as {getRestraintFormatName('nm-res-mr')}. "\
                         "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                     self.__reg.report.error.appendDescription('content_mismatch',
@@ -2842,7 +2976,8 @@ class NmrDpMrSplitter:
 
             except Exception as e:
 
-                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - " + str(e))
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - {str(e)}\n")
@@ -2898,7 +3033,8 @@ class NmrDpMrSplitter:
                         input_source_dic['content_type'] = 'nmr-restraints'
                         continue
 
-                err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file. "\
+                err = f"The spectral peak list file {file_name!r} (any plain text format) "\
+                    f"is identified as {getRestraintFormatNames(valid_types)} file. "\
                     "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                 self.__reg.report.error.appendDescription('content_mismatch',
@@ -2920,7 +3056,8 @@ class NmrDpMrSplitter:
 
             else:
 
-                err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file"\
+                err = f"The spectral peak list file {file_name!r} (any plain text format) "\
+                    f"is identified as {getRestraintFormatNames(valid_types)} file"\
                     f"and can be {getRestraintFormatNames(possible_types)} file as well. "\
                     "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
@@ -2999,10 +3136,13 @@ class NmrDpMrSplitter:
 
                     err = f"The restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
 
-                    self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                    self.__reg.report.error.appendDescription('internal_error',
+                                                              f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                              "++ Error  - " + err)
 
                     if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                             f"++ Error  - {err}\n")
 
                     return False
 
@@ -3016,10 +3156,13 @@ class NmrDpMrSplitter:
 
                     except Exception as e:
 
-                        self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
+                        self.__reg.report.error.appendDescription('internal_error',
+                                                                  f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                  "++ Error  - " + str(e))
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                 f"++ Error  - {str(e)}\n")
 
                         return False
 
@@ -3027,7 +3170,8 @@ class NmrDpMrSplitter:
 
             dir_path = os.path.dirname(src_file)
 
-            _div_file_names = {div_file_name: len(div_file_name) + (0 if div_file_name.endswith('-div_src.mr') else (1 if div_file_name.endswith('-div_ext.mr') else 2))
+            _div_file_names = {div_file_name: len(div_file_name) + (0 if div_file_name.endswith('-div_src.mr')
+                                                                    else (1 if div_file_name.endswith('-div_ext.mr') else 2))
                                for div_file_name in os.listdir(dir_path)
                                if os.path.isfile(os.path.join(dir_path, div_file_name))
                                and (div_file_name.endswith('-div_src.mr')
@@ -3157,7 +3301,7 @@ class NmrDpMrSplitter:
                                 in_header = False
                                 continue
 
-                        if MR_FILE_HEADER_PAT.match(line)\
+                        if PDB_MR_FILE_HEADER_PAT.match(line)\
                            or SEL_MR_FILE_HEADER_PAT.match(line)\
                            or SEL_PK_FILE_HEADER_PAT.match(line)\
                            or SEL_CS_FILE_HEADER_PAT.match(line):
@@ -3206,7 +3350,7 @@ class NmrDpMrSplitter:
                             len_col = len(col)
                             if len_col == 10:
                                 original_comp_id = col[5].upper()
-                                if original_comp_id not in MONDICT3:  # extract non-standard residues
+                                if original_comp_id not in STD_MON_DICT:  # extract non-standard residues
                                     try:
                                         atom_map = {'auth_atom_id': col[1],
                                                     'auth_comp_id': col[2],
@@ -3237,7 +3381,8 @@ class NmrDpMrSplitter:
 
                                     if len(col[4]) > 4 and len_col == 8:
                                         orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[4])
-                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id.upper() not in MONDICT3:
+                                        if auth_comp_id is not None and orig_comp_id is not None\
+                                           and orig_comp_id.upper() not in STD_MON_DICT:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': auth_comp_id,
                                                         'auth_seq_id': auth_seq_id,
@@ -3247,7 +3392,7 @@ class NmrDpMrSplitter:
                                             if atom_map not in self.__reg.mr_atom_name_mapping:
                                                 self.__reg.mr_atom_name_mapping.append(atom_map)
                                     elif len_col == 9:
-                                        if auth_comp_id is not None and col[4] not in MONDICT3:
+                                        if auth_comp_id is not None and col[4] not in STD_MON_DICT:
                                             try:
                                                 atom_map = {'auth_atom_id': col[1],
                                                             'auth_comp_id': auth_comp_id,
@@ -3261,7 +3406,7 @@ class NmrDpMrSplitter:
                                                 pass
                                 elif len(col[5]) > 4 and len_col == 9:
                                     orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[5])
-                                    if orig_comp_id is not None and orig_comp_id.upper() not in MONDICT3:
+                                    if orig_comp_id is not None and orig_comp_id.upper() not in STD_MON_DICT:
                                         try:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': col[2],
@@ -3398,7 +3543,8 @@ class NmrDpMrSplitter:
                                 err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
                                 # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
+                                    else " Please re-upload the file."
 
                                 if len(message['error']) > 0:
                                     for err_message in message['error']:
@@ -3409,7 +3555,8 @@ class NmrDpMrSplitter:
                                                                           {'file_name': file_name, 'description': err})
 
                                 if self.__reg.verbose:
-                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                         f"++ Error  - {err}\n")
 
                             else:
 
@@ -3421,7 +3568,8 @@ class NmrDpMrSplitter:
                                 if star_data_type == 'Saveframe':
                                     self.__reg.has_legacy_sf_issue = True
 
-                                    self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                    self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                               mrPath, file_subtype, message,
                                                                                hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                                     _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
@@ -3443,13 +3591,15 @@ class NmrDpMrSplitter:
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                        if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
+                                               if mr_content_subtype in content_subtype):
                                             self.__reg.mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
                         else:
 
-                            if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                            if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                              mrPath, file_subtype, message,
                                                                               hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
                                 _is_done = False
 
@@ -3582,7 +3732,8 @@ class NmrDpMrSplitter:
                                 err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
                                 # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
+                                    else " Please re-upload the file."
 
                                 if len(message['error']) > 0:
                                     for err_message in message['error']:
@@ -3593,7 +3744,8 @@ class NmrDpMrSplitter:
                                                                           {'file_name': file_name, 'description': err})
 
                                 if self.__reg.verbose:
-                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                         f"++ Error  - {err}\n")
 
                             else:
 
@@ -3605,7 +3757,8 @@ class NmrDpMrSplitter:
                                 if star_data_type == 'Saveframe':
                                     self.__reg.has_legacy_sf_issue = True
 
-                                    self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                    self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                               mrPath, file_subtype, message,
                                                                                hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                                     _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
@@ -3627,13 +3780,15 @@ class NmrDpMrSplitter:
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                        if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
+                                               if mr_content_subtype in content_subtype):
                                             self.__reg.mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
                         else:
 
-                            if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                            if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                              mrPath, file_subtype, message,
                                                                               hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
                                 _is_done = False
 
@@ -3645,10 +3800,13 @@ class NmrDpMrSplitter:
 
             except Exception as e:
 
-                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                          "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
+                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                         f"++ Error  - {str(e)}\n")
 
                 return False
 
@@ -3735,7 +3893,8 @@ class NmrDpMrSplitter:
                         err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                             f"but recognized as {self.readable_file_type[_file_type]} file."
                         # DAOTHER-5673
-                        err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                        err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
+                            else " Please re-upload the file."
 
                         if len(message['error']) > 0:
                             for err_message in message['error']:
@@ -3746,7 +3905,8 @@ class NmrDpMrSplitter:
                                                                   {'file_name': file_name, 'description': err})
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                 f"++ Error  - {err}\n")
 
                     else:
 
@@ -3758,7 +3918,8 @@ class NmrDpMrSplitter:
                         if star_data_type == 'Saveframe':
                             self.__reg.has_legacy_sf_issue = True
 
-                            self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                            self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                       mrPath, file_subtype, message,
                                                                        hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                             _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
@@ -3780,13 +3941,15 @@ class NmrDpMrSplitter:
                             input_source_dic = input_source.get()
                             if 'content_subtype' in input_source_dic:
                                 content_subtype = input_source_dic['content_subtype']
-                                if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
+                                       if mr_content_subtype in content_subtype):
                                     self.__reg.mr_has_valid_star_restraint = True
                                     mr_part_paths.append({'nmr-star': mrPath})
 
                 else:
 
-                    if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                    if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                      mrPath, file_subtype, message,
                                                                       hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
                         _is_done = False
 
@@ -3992,7 +4155,8 @@ class NmrDpMrSplitter:
                                                                   {'file_name': file_name, 'description': err})
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                 f"++ Error  - {err}\n")
 
                         aborted = True
 
@@ -4062,10 +4226,13 @@ class NmrDpMrSplitter:
                             err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                 "@todo: It needs to be split properly."
 
-                            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                     f"++ Error  - {err}\n")
 
                             aborted = True
 
@@ -4080,10 +4247,13 @@ class NmrDpMrSplitter:
                         err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                             "@todo: It needs to be reviewed."
 
-                        self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                        self.__reg.report.error.appendDescription('internal_error',
+                                                                  f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                  "++ Error  - " + err)
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                 f"++ Error  - {err}\n")
 
                         aborted = True
 
@@ -4093,13 +4263,16 @@ class NmrDpMrSplitter:
                         _ar['file_type'] = valid_types[0]
                         split_file_list.append(_ar)
 
-                        err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
-                            "@todo: It needs to be reviewed."
+                        err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} "\
+                            f"and can be {possible_types} as well. @todo: It needs to be reviewed."
 
-                        self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                        self.__reg.report.error.appendDescription('internal_error',
+                                                                  f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                  "++ Error  - " + err)
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                 f"++ Error  - {err}\n")
 
                         aborted = True
 
@@ -4115,8 +4288,8 @@ class NmrDpMrSplitter:
                 with open(dst_file, 'r') as ifh:
                     for line in ifh:
 
-                        if MR_FILE_HEADER_PAT.match(line):
-                            g = MR_FILE_HEADER_PAT.search(line).groups()
+                        if PDB_MR_FILE_HEADER_PAT.match(line):
+                            g = PDB_MR_FILE_HEADER_PAT.search(line).groups()
 
                             if ofh is not None:
                                 if len(g[0]) > 0:
@@ -4217,8 +4390,9 @@ class NmrDpMrSplitter:
                     else:
                         file_ext = os.path.basename(split_ext[0]).lower()
 
+                    # AMBER coordinate file extensions
                     if file_ext in ('x', 'rc', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
-                       or 'rc' in file_ext or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:  # AMBER coordinate file extensions
+                       or 'rc' in file_ext or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:
                         is_crd = False
                         with open(dst_file, 'r') as ifh:
                             for pos, line in enumerate(ifh, start=1):
@@ -4275,14 +4449,14 @@ class NmrDpMrSplitter:
                                     is_seq = False
                                     break
                                 if len_seq == 2:
-                                    if (translateToStdResName(seq[0], ccU=self.__reg.ccU) in MONDICT3 and seq[1].isdigit())\
-                                       or (translateToStdResName(seq[1], ccU=self.__reg.ccU) in MONDICT3 and seq[0].isdigit()):
+                                    if (translateToStdResName(seq[0], ccU=self.__reg.ccU) in STD_MON_DICT and seq[1].isdigit())\
+                                       or (translateToStdResName(seq[1], ccU=self.__reg.ccU) in STD_MON_DICT and seq[0].isdigit()):
                                         is_seq = True
                                     else:
                                         is_seq = False
                                         break
                                 elif len_seq == 1:
-                                    if seq[0] in MONDICT3:
+                                    if seq[0] in STD_MON_DICT:
                                         is_seq = True
                                     else:
                                         is_seq = False
@@ -4342,7 +4516,8 @@ class NmrDpMrSplitter:
                         peak_file_list.append(_ar)
 
                         pk_list_paths.append({'nmr-peaks': dst_file,
-                                              'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                              'original_file_name':
+                                              None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                         remediated = True
 
@@ -4394,7 +4569,8 @@ class NmrDpMrSplitter:
                         split_file_list.append(_ar)
 
                         mr_part_paths.append({_ar['file_type']: dst_file,
-                                              'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                              'original_file_name':
+                                              None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                         continue
 
@@ -4416,7 +4592,8 @@ class NmrDpMrSplitter:
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_file_type: dst_file,
-                                                  'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                                  'original_file_name':
+                                                  None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                             designated = True
 
@@ -4449,7 +4626,8 @@ class NmrDpMrSplitter:
                         peak_file_list.append(_ar)
 
                         pk_list_paths.append({'nmr-peaks': dst_file,
-                                              'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                              'original_file_name':
+                                              None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                         remediated = True
 
@@ -4526,7 +4704,8 @@ class NmrDpMrSplitter:
                                     err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                         f"but recognized as {self.readable_file_type[_file_type]} file."
                                     # DAOTHER-5673
-                                    err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                                    err += " Please re-upload the NEF file as an NMR unified data file."\
+                                        if _file_type == 'nef' else " Please re-upload the file."
 
                                     if len(message['error']) > 0:
                                         for err_message in message['error']:
@@ -4537,7 +4716,8 @@ class NmrDpMrSplitter:
                                                                               {'file_name': file_name, 'description': err})
 
                                     if self.__reg.verbose:
-                                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                             f"++ Error  - {err}\n")
 
                                 else:
 
@@ -4549,7 +4729,8 @@ class NmrDpMrSplitter:
                                     if star_data_type == 'Saveframe':
                                         self.__reg.has_legacy_sf_issue = True
 
-                                        self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                        self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                                   mrPath, file_subtype, message,
                                                                                    hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                                         _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
@@ -4571,13 +4752,16 @@ class NmrDpMrSplitter:
                                         input_source_dic = input_source.get()
                                         if 'content_subtype' in input_source_dic:
                                             content_subtype = input_source_dic['content_subtype']
-                                            if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
+                                                   if mr_content_subtype in content_subtype):
                                                 mr_part_paths.append({'nmr-star': mrPath,
-                                                                      'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                                                      'original_file_name': None if dst_file.endswith('-noname.mr')
+                                                                      else os.path.basename(dst_file)})
 
                             else:
 
-                                if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                                  mrPath, file_subtype, message,
                                                                                   hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
                                     _is_done = False
 
@@ -4662,7 +4846,8 @@ class NmrDpMrSplitter:
                                     err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                         f"but recognized as {self.readable_file_type[_file_type]} file."
                                     # DAOTHER-5673
-                                    err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+                                    err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
+                                        else " Please re-upload the file."
 
                                     if len(message['error']) > 0:
                                         for err_message in message['error']:
@@ -4673,7 +4858,8 @@ class NmrDpMrSplitter:
                                                                               {'file_name': file_name, 'description': err})
 
                                     if self.__reg.verbose:
-                                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                        self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                             f"++ Error  - {err}\n")
 
                                 else:
 
@@ -4685,7 +4871,8 @@ class NmrDpMrSplitter:
                                     if star_data_type == 'Saveframe':
                                         self.__reg.has_legacy_sf_issue = True
 
-                                        self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                        self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                                   mrPath, file_subtype, message,
                                                                                    hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                                         _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
@@ -4707,13 +4894,16 @@ class NmrDpMrSplitter:
                                         input_source_dic = input_source.get()
                                         if 'content_subtype' in input_source_dic:
                                             content_subtype = input_source_dic['content_subtype']
-                                            if any(True for mr_content_subtype in self.__reg.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                            if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
+                                                   if mr_content_subtype in content_subtype):
                                                 mr_part_paths.append({'nmr-star': mrPath,
-                                                                      'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                                                                      'original_file_name': None if dst_file.endswith('-noname.mr')
+                                                                      else os.path.basename(dst_file)})
 
                             else:
 
-                                if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message,
+                                if not self.__reg.dpA.fixFormatIssueOfInputSource(insert_index, file_name, file_type,
+                                                                                  mrPath, file_subtype, message,
                                                                                   hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
                                     _is_done = False
 
@@ -4842,7 +5032,8 @@ class NmrDpMrSplitter:
                                                                       {'file_name': file_name, 'description': err})
 
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                     f"++ Error  - {err}\n")
 
                             aborted = True
 
@@ -4951,10 +5142,13 @@ class NmrDpMrSplitter:
                                 err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                     "@todo: It needs to be split properly."
 
-                                self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                                self.__reg.report.error.appendDescription('internal_error',
+                                                                          f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                          "++ Error  - " + err)
 
                                 if self.__reg.verbose:
-                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                    self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                         f"++ Error  - {err}\n")
 
                                 aborted = True
 
@@ -4969,10 +5163,13 @@ class NmrDpMrSplitter:
                             err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                                 "@todo: It needs to be reviewed."
 
-                            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                     f"++ Error  - {err}\n")
 
                             aborted = True
 
@@ -4984,13 +5181,17 @@ class NmrDpMrSplitter:
                             if distinct:
                                 _ar['original_file_name'] = file_name
 
-                            err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                            err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} "\
+                                f"and can be {possible_types} as well. "\
                                 "@todo: It needs to be reviewed."
 
-                            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                     f"++ Error  - {err}\n")
 
                             aborted = True
 
@@ -5033,7 +5234,8 @@ class NmrDpMrSplitter:
                 if content_subtype is None:
                     continue
 
-                has_restraint = 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype or 'rdc_restraint' in content_subtype
+                has_restraint = 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype\
+                    or 'rdc_restraint' in content_subtype
                 has_spectral_peak = 'spectral_peak' in content_subtype or 'spectral_peak_alt' in content_subtype
 
             if not has_restraint:
@@ -5056,7 +5258,8 @@ class NmrDpMrSplitter:
                         with open(touch_file, 'w') as ofh:
                             ofh.write('')
 
-                    if not any(re.search(r'\/bmr\d+\/work\/data\/', ar['file_name']) for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]
+                    if not any(re.search(r'\/bmr\d+\/work\/data\/', ar['file_name'])
+                               for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]
                                if ar['file_type'].startswith('nm-res') and ar['file_type'] != 'nm-res-mr'):
 
                         hint = ' or is not recognized properly'
@@ -5071,7 +5274,8 @@ class NmrDpMrSplitter:
                                                                           {'file_name': mr_file_name, 'description': err}})
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                 f"++ Error  - {err}\n")
 
         if has_spectral_peak:
 
@@ -6056,7 +6260,8 @@ class NmrDpMrSplitter:
             if os.path.exists(div_try_file):
                 os.remove(div_try_file)
 
-            if prev_input is not None and (err_message.startswith(NO_VIABLE_ALT_ERR_MSG) or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG)):
+            if prev_input is not None and (err_message.startswith(NO_VIABLE_ALT_ERR_MSG)
+                                           or err_message.startswith(EXTRANEOUS_INPUT_ERR_MSG)):
                 if COMMENT_PAT.match(prev_input):
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
                 elif not xplor_assi_after_or_tag and not xplor_assi_incompl_tag:
@@ -6159,9 +6364,12 @@ class NmrDpMrSplitter:
                                 with open(div_dst_file, 'r') as ifh:
                                     for line in ifh:
                                         if k > 0 and not (line.isspace() or bool(COMMENT_PAT.match(line))):
-                                            listener, parser_err_listener, lexer_err_listener = test_reader.parse(line, None, isFilePath=False)
-                                            has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                                            has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                                            listener, parser_err_listener, lexer_err_listener =\
+                                                test_reader.parse(line, None, isFilePath=False)
+                                            has_lexer_error = lexer_err_listener is not None\
+                                                and lexer_err_listener.getMessageList() is not None
+                                            has_parser_error = parser_err_listener is not None\
+                                                and parser_err_listener.getMessageList() is not None
                                             if test_file_type == 'nm-res-ros':
                                                 _content_subtype = listener.getEffectiveContentSubtype() if listener is not None else None
                                             else:
@@ -7358,7 +7566,8 @@ class NmrDpMrSplitter:
 
         except ValueError as e:
 
-            self.__reg.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
+            self.__reg.report.error.appendDescription('internal_error',
+                                                      f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - {str(e)}\n")
@@ -7862,7 +8071,8 @@ class NmrDpMrSplitter:
                                             _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
                                         if is_not_ascii:
-                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+                                            _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} "\
+                                                "and must be 'ascii'.\n"
 
                         if parser_err_listener is not None and len(_err) == 0:
                             messageList = parser_err_listener.getMessageList()
@@ -7878,8 +8088,10 @@ class NmrDpMrSplitter:
                                         _err += f"{description['marker']}\n"
 
                         if len(_err) > 0:
-                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, the following issues need to be fixed.\n" + _err[:-1]
-                        elif file_type != 'nm-res-oth' and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                            err += f"\nEven assuming that the format is the {_mr_format_name!r}, "\
+                                "the following issues need to be fixed.\n" + _err[:-1]
+                        elif file_type != 'nm-res-oth'\
+                                and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
                             is_valid = False
                             err = ''
 
@@ -7895,7 +8107,8 @@ class NmrDpMrSplitter:
                                                                   {'file_name': file_name, 'description': err})
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.__detectOtherPossibleFormatAsErrorOfLegacyMr() ++ Error  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.__detectOtherPossibleFormatAsErrorOfLegacyMr() "
+                                                 f"++ Error  - {err}\n")
 
         except ValueError:
             pass

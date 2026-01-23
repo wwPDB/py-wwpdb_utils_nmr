@@ -21,13 +21,14 @@ from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-n
 from typing import IO, List, Optional
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (MONDICT3,
+    from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                PSE_PRO_BEGIN_CODE,
                                                AMINO_PROTON_CODE,
                                                NON_METAL_ELEMENTS,
                                                REPRESENTATIVE_MODEL_ID,
-                                               REPRESENTATIVE_ALT_ID)
+                                               REPRESENTATIVE_ALT_ID,
+                                               MAX_CONFLICT_ATTEMPT)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            alignPolymerSequence,
@@ -47,13 +48,14 @@ try:
                                                        translateToStdResName,
                                                        translateToLigandName)
 except ImportError:
-    from nmr.NmrDpConstant import (MONDICT3,
+    from nmr.NmrDpConstant import (STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    PSE_PRO_BEGIN_CODE,
                                    AMINO_PROTON_CODE,
                                    NON_METAL_ELEMENTS,
                                    REPRESENTATIVE_MODEL_ID,
-                                   REPRESENTATIVE_ALT_ID)
+                                   REPRESENTATIVE_ALT_ID,
+                                   MAX_CONFLICT_ATTEMPT)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                alignPolymerSequence,
@@ -202,7 +204,9 @@ class BaseTopologyParserListener():
 
                                     if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                                        _, _, atomId =\
+                                            retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                       None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -265,7 +269,9 @@ class BaseTopologyParserListener():
 
                                         if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
+                                            _, _, atomId =\
+                                                retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                           None, compId, atomNum['auth_atom_id'], None, None, True)
                                         else:
                                             atomId = atomNum['auth_atom_id']
 
@@ -329,7 +335,8 @@ class BaseTopologyParserListener():
 
                                     if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                                  None, compId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -368,7 +375,8 @@ class BaseTopologyParserListener():
 
                         if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                      None, compId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -389,7 +397,8 @@ class BaseTopologyParserListener():
 
                                 if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                    and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                              None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                 else:
                                     atomId = atomNum['auth_atom_id']
 
@@ -409,7 +418,8 @@ class BaseTopologyParserListener():
 
                         if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                      None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -431,22 +441,25 @@ class BaseTopologyParserListener():
             self.__seqAlign, compIdMapping = alignPolymerSequence(self.__pA, polySeqModel, self.polySeqPrmTop)
 
             if len(self.__seqAlign) == 0:
-                for c in range(1, 5):
+                for c in range(1, MAX_CONFLICT_ATTEMPT):
                     self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.polySeqPrmTop, c)
                     if len(self.__seqAlign) > 0:
                         break
 
             if len(self.__seqAlign) == 0:
-                len_cif_na = sum(len(ps_cif['seq_id']) for ps_cif in polySeqModel if 'identical_chain_id' in ps_cif and len(ps_cif['seq_id']) > 3)
+                len_cif_na = sum(len(ps_cif['seq_id']) for ps_cif in polySeqModel
+                                 if 'identical_chain_id' in ps_cif and len(ps_cif['seq_id']) > 3)
                 len_top_na = sum(len(ps_top['seq_id']) for ps_top in self.polySeqPrmTop
-                                 if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']))
+                                 if len(ps_top['seq_id']) > 3
+                                 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']))
                 if len_cif_na == len_top_na:
                     chainIdList = []
                     seqIdList = []
                     authCompIdList = []
                     for ps_top in self.polySeqPrmTop:
                         len_ps_cif_seq = len(ps_top['seq_id'])
-                        if len_ps_cif_seq > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']):
+                        if len_ps_cif_seq > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?')
+                                                      for compId in ps_top['comp_id']):
                             chainId = ps_top['chain_id']
                             for seqId, compId in zip(ps_top['seq_id'], ps_top['auth_comp_id']):
                                 chainIdList.append(chainId)
@@ -480,7 +493,8 @@ class BaseTopologyParserListener():
                             chainIndex += 1
 
                     for ps_top in self.polySeqPrmTop:
-                        if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']):
+                        if len(ps_top['seq_id']) > 3\
+                           and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']):
                             continue
                         _chainId = copy.copy(ps_top['chain_id'])
                         chainId = indexToLetter(chainIndex)
@@ -506,7 +520,8 @@ class BaseTopologyParserListener():
                             self.__seqAlign.remove(sa)
 
             # test chain assignment before applying comp_id mapping
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type,
+                                                                self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
 
             for cmap in compIdMapping:
                 if any(True for ca in self.__chainAssign if ca['test_chain_id'] == cmap['chain_id']):
@@ -521,7 +536,8 @@ class BaseTopologyParserListener():
 
                                     if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'],
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                                  None, authCompId, atomNum['auth_atom_id'],
                                                                                   atomNum['comp_id'], None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
@@ -530,7 +546,8 @@ class BaseTopologyParserListener():
                                         _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
                                         atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
-                                    atomNum['atom_id'] = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
+                                    atomNum['atom_id'] = translateToStdAtomName(atomId, authCompId, chemCompAtomIds,
+                                                                                ccU=self.ccU, unambig=self.unambig)
                                     del atomNum['atom_type']
 
             for k, atomNum in self.atomNumberDict.items():
@@ -542,7 +559,8 @@ class BaseTopologyParserListener():
 
                         if self.mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                      None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -574,7 +592,8 @@ class BaseTopologyParserListener():
                             if atomId == "HO5'" and atomNum['seq_id'] == 1 and self.csStat.getTypeOfCompId(atomNum['auth_comp_id'])[1]:
                                 continue
                             self.__f.append(f"[Unknown atom name] "
-                                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
+                                            f"{atomNum['auth_atom_id']!r} is not recognized "
+                                            f"as the atom name of {atomNum['auth_comp_id']!r} residue.")
                         elif self.__chemCompAtom is not None:
                             if 'comp_id' in atomNum and atomNum['comp_id'] in self.__chemCompAtom:
                                 if atomId in self.__chemCompAtom[atomNum['comp_id']]:
@@ -589,7 +608,8 @@ class BaseTopologyParserListener():
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], ccU=self.ccU)
                         if self.mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'],
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                      None, authCompId, atomNum['auth_atom_id'],
                                                                       atomNum['comp_id'], None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
@@ -620,10 +640,12 @@ class BaseTopologyParserListener():
                                         atomNum['atom_id'] = atomId
                                         continue
                             atomNum['atom_id'] = atomNum['auth_atom_id']
-                            if atomNum['atom_id'] == "HO5'" and atomNum['seq_id'] == 1 and self.csStat.getTypeOfCompId(atomNum['comp_id'])[1]:
+                            if atomNum['atom_id'] == "HO5'" and atomNum['seq_id'] == 1\
+                               and self.csStat.getTypeOfCompId(atomNum['comp_id'])[1]:
                                 continue
                             self.__f.append(f"[Unknown atom name] "
-                                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "
+                                            f"{atomNum['auth_atom_id']!r} is not recognized "
+                                            f"as the atom name of {atomNum['comp_id']!r} residue "
                                             f"(the original residue label is {atomNum['auth_comp_id']!r}).")
                         elif self.__chemCompAtom is not None:
                             if 'comp_id' in atomNum and atomNum['comp_id'] in self.__chemCompAtom:
@@ -635,7 +657,8 @@ class BaseTopologyParserListener():
                                     atomNum['atom_id'] = atomId
                                     continue
 
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type, self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.ccU, self.file_type,
+                                                                self.polySeqModel, self.polySeqPrmTop, self.__seqAlign)
 
             if len(message) > 0:
                 self.__f.extend(message)
@@ -651,7 +674,8 @@ class BaseTopologyParserListener():
                 if abs(len(ref_code) - len(test_code)) < 20 and len(ref_code) > 40:
                     hint = f"For example, coordinates ({self.polySeqModel[0]['auth_chain_id']}): {ref_code} vs topology: {test_code}. "
 
-                self.__f.append(f"[Sequence mismatch] Polymer sequence between the coordinate and {_a_mr_format_name} data does not match. {hint}"
+                self.__f.append(f"[Sequence mismatch] Polymer sequence between the coordinate "
+                                f"and {_a_mr_format_name} data does not match. {hint}"
                                 "Please verify the two sequences and re-upload the correct file(s) if required.")
 
             assi_ref_chain_ids = {}
@@ -779,7 +803,7 @@ class BaseTopologyParserListener():
                                 resolved = True
 
                     if not resolved:
-                        for c in range(1, 5):
+                        for c in range(1, MAX_CONFLICT_ATTEMPT):
                             __seqAlign__, _ = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel__, orphanPolySeqPrmTop, c)
                             if len(__seqAlign__) > 0:
                                 for sa in __seqAlign__:
@@ -851,8 +875,10 @@ class BaseTopologyParserListener():
                     # metal ion
                     if any(True for ps in self.polySeqPrmTop
                            if len(ps['seq_id']) == 1 and (ps['comp_id'][0].title() in NAMES_ELEMENT
-                                                          or (len(ps['comp_id'][0]) > 2 and ps['comp_id'][0][:2].title() in NAMES_ELEMENT)
-                                                          or (ps['comp_id'][0][-1] in ('+', '-') and ps['comp_id'][0][:-1].title() in NAMES_ELEMENT)
+                                                          or (len(ps['comp_id'][0]) > 2
+                                                              and ps['comp_id'][0][:2].title() in NAMES_ELEMENT)
+                                                          or (ps['comp_id'][0][-1] in ('+', '-')
+                                                              and ps['comp_id'][0][:-1].title() in NAMES_ELEMENT)
                                                           or (len(ps['comp_id'][0]) > 2 and ps['comp_id'][0][-2] in ('+', '-')
                                                               and ps['comp_id'][0][:-2].title() in NAMES_ELEMENT))):
                         self.assignMetalIon()
@@ -911,10 +937,12 @@ class BaseTopologyParserListener():
                     for test_chain_id, ref_chain_ids in test_chain_id_map.items():
                         ref_chain_id0 = ref_chain_ids[0]
                         for ref_chain_id in ref_chain_ids[1:]:
-                            sa = next((sa for sa in self.__seqAlign if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id), None)
+                            sa = next((sa for sa in self.__seqAlign
+                                       if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id), None)
                             if sa is None:
                                 continue
-                            ps = next((ps for ps in self.polySeqModel if ps['auth_chain_id'] == ref_chain_id), None)
+                            ps = next((ps for ps in self.polySeqModel
+                                       if ps['auth_chain_id'] == ref_chain_id), None)
                             if ps is None:
                                 continue
                             for auth_seq_id, comp_id in zip(ps['auth_seq_id'], ps['comp_id']):
@@ -953,11 +981,12 @@ class BaseTopologyParserListener():
             if self.mrAtomNameMapping is not None:
                 for v in self.atomNumberDict.values():
                     authCompId = v['auth_comp_id']
-                    if translateToStdResName(authCompId, ccU=self.ccU) in MONDICT3:
+                    if translateToStdResName(authCompId, ccU=self.ccU) in STD_MON_DICT:
                         continue
                     seqId = v['seq_id']
                     authAtomId = v['auth_atom_id']
-                    _seqId_, _compId_, _atomId_ = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, seqId, authCompId, authAtomId)
+                    _seqId_, _compId_, _atomId_ = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                             seqId, authCompId, authAtomId)
                     if _seqId_ != seqId and _compId_ != authCompId:
                         v['seq_id'] = _seqId_
                         v['comp_id'] = _compId_
@@ -1111,7 +1140,8 @@ class BaseTopologyParserListener():
         comp_id_mapping = {}
 
         for authCompId in nonPolyCompIds:
-            refCompId = next((compId[0] for compId in refCompIds if compId[1] == authCompId[1] and compId[1] not in comp_id_mapping.values()), None)
+            refCompId = next((compId[0] for compId in refCompIds
+                              if compId[1] == authCompId[1] and compId[1] not in comp_id_mapping.values()), None)
             if refCompId is None:
                 self.__f.append(f"[Unknown residue name] "
                                 f"{authCompId[0]!r} is unknown residue name.")
@@ -1185,7 +1215,8 @@ class BaseTopologyParserListener():
                                 continue
 
                         if self.mrAtomNameMapping is not None:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, None, compId, authAtomId, None, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                      None, compId, authAtomId, None, None, True)
 
                         if atomId in chemCompAtomIds:
                             atomNum['atom_id'] = atomId

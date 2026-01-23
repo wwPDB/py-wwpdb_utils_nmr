@@ -37,8 +37,6 @@ try:
                                                NEF_VERSION,
                                                MAX_DIM_NUM_OF_SPECTRA,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                               ONEDEP_UPLOAD_FILE_PAT,
-                                               ONEDEP_FILE_PAT,
                                                DATABLOCK_PAT,
                                                SF_ANONYMOUS_PAT,
                                                SAVE_PAT,
@@ -68,8 +66,6 @@ except ImportError:
                                    NEF_VERSION,
                                    MAX_DIM_NUM_OF_SPECTRA,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                   ONEDEP_UPLOAD_FILE_PAT,
-                                   ONEDEP_FILE_PAT,
                                    DATABLOCK_PAT,
                                    SF_ANONYMOUS_PAT,
                                    SAVE_PAT,
@@ -89,6 +85,9 @@ __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.
 
 
 PYNMRSTAR_LP_OBJ_PAT = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
+
+ONEDEP_ANY_UPLOAD_FILE_NAME_PAT = re.compile(r'^(\S+)\-upload_(\S+)\.V(\d+)$')
+ONEDEP_ANY_FILE_NAME_PAT = re.compile(r'^(\S+)\.V(\d+)$')
 
 
 class NmrDpFirstAid:
@@ -554,7 +553,8 @@ class NmrDpFirstAid:
                                 if pass_sf_loop:
                                     if CATEGORY_PAT.match(line):
                                         target['lp_category'] = '_' + CATEGORY_PAT.search(line).groups()[0]
-                                        content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == target['lp_category']), None)
+                                        content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                if v == target['lp_category']), None)
                                         if content_subtype is not None:
                                             target['sf_category'] = SF_CATEGORIES[file_type][content_subtype]
                                             target['sf_tag_prefix'] = SF_TAG_PREFIXES[file_type][content_subtype]
@@ -586,8 +586,10 @@ class NmrDpFirstAid:
                             if LOOP_PAT.match(line):
                                 pass_sf_loop = True
                                 if 'sf_category' in target:
-                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
-                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
+                                              + '   ' + sf_framecode + '\n')
+                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
+                                              + '    ' + target['sf_category'] + '\n')
                                     ofh.write('#\n')
                                 ofh.write(line)
                         elif sf_named_pattern.match(line):
@@ -651,7 +653,8 @@ class NmrDpFirstAid:
                                         _lp_category = '_' + CATEGORY_PAT.search(line).groups()[0]
                                         if lp_category == _lp_category:
                                             target['loop_location'] = lp_loc
-                                            content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == target['lp_category']), None)
+                                            content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                    if v == target['lp_category']), None)
                                             if content_subtype is not None:
                                                 target['sf_category'] = SF_CATEGORIES[file_type][content_subtype]
                                                 target['sf_tag_prefix'] = SF_TAG_PREFIXES[file_type][content_subtype]
@@ -690,8 +693,10 @@ class NmrDpFirstAid:
                             target = next(target for target in targets if target['loop_location'] == i)
                             if 'sf_category' in target:
                                 ofh.write('save_' + target['sf_framecode'] + '\n')
-                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
-                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
+                                          + '   ' + target['sf_framecode'] + '\n')
+                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
+                                          + '    ' + target['sf_category'] + '\n')
                                 ofh.write('#\n')
                         if i not in ignored_loop_locations:
                             ofh.write(line)
@@ -760,10 +765,12 @@ class NmrDpFirstAid:
                                         if category == category_1:
                                             if not pass_category_1:
                                                 target['category_1_begin'] = i
-                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items() if v == category), None)
+                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items()
+                                                                        if v == category), None)
                                                 if content_subtype is not None:
                                                     target['content_subtype_1'] = content_subtype
-                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == category), None)
+                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                        if v == category), None)
                                                 if content_subtype is not None:
                                                     target['content_subtype_1'] = content_subtype
                                             pass_category_1 = True
@@ -771,14 +778,16 @@ class NmrDpFirstAid:
                                         elif category == category_2 and pass_category_1:
                                             if not pass_category_2:
                                                 target['category_2_begin'] = i
-                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items() if v == category), None)
+                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items()
+                                                                        if v == category), None)
                                                 if content_subtype is not None:
                                                     target['category_type_2'] = 'saveframe'
                                                     target['content_subtype_2'] = content_subtype
                                                     target['sf_tag_prefix_2'] = SF_TAG_PREFIXES[file_type][content_subtype]
                                                     target['sf_category_2'] = SF_CATEGORIES[file_type][content_subtype]
                                                     target['sf_framecode_2'] = target['sf_category_2'] + '_1'
-                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items() if v == category), None)
+                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                        if v == category), None)
                                                 if content_subtype is not None:
                                                     target['category_type_2'] = 'loop'
                                                     target['content_subtype_2'] = content_subtype
@@ -886,10 +895,14 @@ class NmrDpFirstAid:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             if __pynmrstar_v3_3__:
-                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with the saveframe name (\S+)\. "
+                msg_pattern = re.compile(r'^.*' + msg_template
+                                         + r" Error occurred in tag _\S+ with value ([\S ]+) "
+                                         r"which conflicts with the saveframe name (\S+)\. "
                                          r"Error detected on line (\d+).*$")
             else:
-                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with.* the saveframe name (\S+)\. "
+                msg_pattern = re.compile(r'^.*' + msg_template
+                                         + r" Error occurred in tag _\S+ with value ([\S ]+) "
+                                         r"which conflicts with.* the saveframe name (\S+)\. "
                                          r"Error detected on line (\d+).*$")
 
             try:
@@ -1002,15 +1015,16 @@ class NmrDpFirstAid:
                 self.rescueImmatureStr(file_list_id)
 
                 if rescued:
-                    if ONEDEP_UPLOAD_FILE_PAT.match(srcPath):
-                        g = ONEDEP_UPLOAD_FILE_PAT.search(srcPath).groups()
+                    if ONEDEP_ANY_UPLOAD_FILE_NAME_PAT.match(srcPath):
+                        g = ONEDEP_ANY_UPLOAD_FILE_NAME_PAT.search(srcPath).groups()
                         srcPath = g[0] + '-upload-convert_' + g[1] + '.V' + g[2]
                     else:
-                        if ONEDEP_FILE_PAT.match(srcPath):
-                            g = ONEDEP_FILE_PAT.search(srcPath).groups()
+                        if ONEDEP_ANY_FILE_NAME_PAT.match(srcPath):
+                            g = ONEDEP_ANY_FILE_NAME_PAT.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
 
-                    self.__reg.star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+                    self.__reg.star_data[file_list_id].write_to_file(srcPath,
+                                                                     show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
         else:
 
@@ -1102,7 +1116,8 @@ class NmrDpFirstAid:
                         itName = '_' + sf_category + '.sf_framecode'
 
                         if self.__reg.resolve_conflict:
-                            warn = f"{itName} {sf_framecode!r} should be matched with saveframe name {sf.name!r}. {itName} will be overwritten."
+                            warn = f"{itName} {sf_framecode!r} should be matched "\
+                                f"with saveframe name {sf.name!r}. {itName} will be overwritten."
 
                             self.__reg.report.warning.appendDescription('missing_saveframe',
                                                                         {'file_name': file_name, 'sf_framecode': sf.name,
@@ -1242,8 +1257,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
@@ -1277,8 +1292,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
@@ -1318,8 +1333,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
@@ -1361,8 +1376,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueFormerNef() ++ LookupError  - "
@@ -1458,7 +1473,8 @@ class NmrDpFirstAid:
                         itName = '_' + sf_category + '.Sf_framecode'
 
                         if self.__reg.resolve_conflict:
-                            warn = f"{itName} {sf_framecode!r} should be matched with saveframe name {sf.name!r}. {itName} will be overwritten."
+                            warn = f"{itName} {sf_framecode!r} should be matched "\
+                                f"with saveframe name {sf.name!r}. {itName} will be overwritten."
 
                             self.__reg.report.warning.appendDescription('missing_saveframe',
                                                                         {'file_name': file_name, 'sf_framecode': sf.name,
@@ -1564,8 +1580,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1605,8 +1621,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1672,8 +1688,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1695,8 +1711,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1722,8 +1738,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1749,8 +1765,8 @@ class NmrDpFirstAid:
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
                         self.__reg.report.error.appendDescription('missing_mandatory_item',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                   'description': err})
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                   'category': lp_category, 'description': err})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.rescueImmatureStr() ++ LookupError  - "
@@ -1795,7 +1811,7 @@ class NmrDpFirstAid:
             if file_list_id < len(self.__reg.sf_name_corrections) and sf_framecode in self.__reg.sf_name_corrections[file_list_id]:
 
                 try:
-                    return self.__reg.star_data[file_list_id].get_saveframe_by_name(self.__reg.sf_name_corrections[file_list_id][sf_framecode])
+                    return self.__reg.star_data[file_list_id].get_saveframe_by_name(self.__reg.sf_name_corrections[file_list_id][sf_framecode])  # noqa: E501, pylint:disable=line-too-long
                 except KeyError:
                     return None
 

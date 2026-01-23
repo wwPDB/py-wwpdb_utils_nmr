@@ -36,16 +36,21 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def __test_nmr_cs_str_consistency(self, entry_id):
         entry_dir_path = self.data_dir_path + entry_id + '/'
-        self.nmr_dp_util.addInput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file[entry_id]], type='file_list')
-        self.nmr_dp_util.addOutput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file_2[entry_id]], type='file_list')
+        self.nmr_dp_util.addInput(name='chem_shift_file_path_list',
+                                  value=[entry_dir_path + cs_file for cs_file in self.cs_file[entry_id]],
+                                  type='file_list')
+        self.nmr_dp_util.addOutput(name='chem_shift_file_path_list',
+                                   value=[entry_dir_path + cs_file for cs_file in self.cs_file_2[entry_id]],
+                                   type='file_list')
         self.nmr_dp_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.model_file[entry_id], type='file')
         self.nmr_dp_util.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.nmr_dp_util.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.nmr_dp_util.addInput(name='resolve_conflict', value=True, type='param')
         self.nmr_dp_util.addInput(name='check_mandatory_tag', value=False, type='param')
         self.nmr_dp_util.addInput(name='remediation', value=True, type='param')
-        self.nmr_dp_util.addInput(name='original_file_name', value=self.cs_file[entry_id][0], type='param')
-        self.nmr_dp_util.addOutput(name='nmr-cif_file_path', value=re.sub(r'\.str\.', '.cif.', entry_dir_path + self.cs_file_2[entry_id][0]), type='file')
+        self.nmr_dp_util.addOutput(name='nmr_cif_file_path',
+                                   value=re.sub(r'\.str\.', '.cif.', entry_dir_path + self.cs_file_2[entry_id][0]),
+                                   type='file')
         self.nmr_dp_util.setLog(self.data_dir_path + entry_id.lower() + '-cs-str-consistency-log.json')
         self.nmr_dp_util.setVerbose(False)
 

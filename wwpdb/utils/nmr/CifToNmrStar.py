@@ -4,8 +4,10 @@
 #
 # Updates:
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
-# 20-Apr-2022  M. Yokochi - enable to fix broken datablock order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
-# 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
+# 20-Apr-2022  M. Yokochi - enable to fix broken datablock order of CIF formatted NMR-STAR using NMR-STAR schema
+#                           (DAOTHER-7407, NMR restraint remediation)
+# 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR
+#                           (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
 # 27-Sep-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
 # 13-Jun-2023  M. Yokochi - sort loops in a saveframe based on schema
 # 30-May-2024  M. Yokochi - resolve duplication of datablock/saveframe name (DAOTHER-9437)
@@ -441,7 +443,8 @@ class CifToNmrStar:
                         previous_order = current_order
 
             if entry_id in EMPTY_VALUE:
-                entry_id = block_name_list[0].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
+                # DAOTHER-9511: replace white space in a datablock name to underscore
+                entry_id = block_name_list[0].strip().replace(' ', '_')
 
             _entry_id = entry_id.upper()
 

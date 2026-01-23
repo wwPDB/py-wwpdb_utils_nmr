@@ -25,7 +25,7 @@ from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
-                                               MONDICT3,
+                                               STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
@@ -62,7 +62,7 @@ try:
                                                        getDstFuncForHBond)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
-                                   MONDICT3,
+                                   STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
@@ -259,8 +259,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -570,7 +572,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     self.dihedRestraints -= 1
 
     # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_by_number.
-    def exitDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext):  # pylint: disable=unused-argument
+    def exitDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext
+                                            ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#angle_statement.
@@ -746,7 +749,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
             if target_value <= 0.0:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target distance '{target_value}' should be a positive value because we cannot refer the initial coordinates.")
+                              f"The target distance '{target_value}' should be a positive value "
+                              "because we cannot refer the initial coordinates.")
                 return
 
             delta = abs(self.numberSelection[2])
@@ -784,8 +788,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-                   and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                        or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                     self.allowZeroUpperLimit = True
             self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
@@ -960,7 +966,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
             if target_value > 360.0:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target angle '{target_value}' should be less than 360.0 because we cannot refer the initial coordinates.")
+                              f"The target angle '{target_value}' should be less than 360.0 "
+                              "because we cannot refer the initial coordinates.")
                 return
 
             delta = abs(self.numberSelection[2])
@@ -1192,14 +1199,16 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                           "Not a hydrogen; "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          f"The {self.software_name} atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             return
 
         if donor['atom_id'][0] not in ('N', 'O', 'F'):
             self.f.append(f"[Unmatched atom type] {self.getCurrentRestraint()}"
                           "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "
                           f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          f"The {self.software_name} atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             is_hbond = False
             # return
 
@@ -1207,7 +1216,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.f.append(f"[Unmatched atom type] {self.getCurrentRestraint()}"
                           "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
                           f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "
-                          "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+                          f"The {self.software_name} atom selections for hydrogen bond geometry restraint "
+                          "must be in the order of donor, hydrogen, and acceptor.")
             is_hbond = False
             # return
 
@@ -1222,7 +1232,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
                 if self.nefT.validate_comp_atom(comp_id, atom_id_1) and self.nefT.validate_comp_atom(comp_id, atom_id_2):
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                  "Found a donor-hydrogen vector over multiple covalent bonds in the 'HBDA' statement; "
+                                  "Found a donor-hydrogen vector over multiple covalent bonds in the 'FXHB' statement; "
                                   f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
                                   f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
                     return
@@ -1897,7 +1907,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                 else:
                     chainId = self.polySeq[0]['auth_chain_id']
 
-                self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq if any(re.match(p, ps['auth_chain_id']) for p in str_pattern)]
+                self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq
+                                           if any(re.match(p, ps['auth_chain_id']) for p in str_pattern)]
                 if self.hasNonPolySeq:
                     for np in self.nonPolySeq:
                         _chainId = np['auth_chain_id']
@@ -2107,9 +2118,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
                 if len(self.factor['comp_id']) == 0:
                     if len(compIds) > 0:
-                        self.factor['comp_id'] = [next(k for k, v in MONDICT3.items() if v == compId)
+                        self.factor['comp_id'] = [next(k for k, v in STD_MON_DICT.items() if v == compId)
                                                   for compId in compIds
-                                                  if any(True for _v in MONDICT3.values() if _v == compId)]
+                                                  if any(True for _v in STD_MON_DICT.values() if _v == compId)]
                     else:
                         del self.factor['comp_id']
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"

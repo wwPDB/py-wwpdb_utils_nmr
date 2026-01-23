@@ -126,7 +126,8 @@ class RosettaMRReader:
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
-              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None, entryId: Optional[str] = None
+              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
+              entryId: Optional[str] = None
               ) -> Tuple[Optional[RosettaMRParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
         """ Parse ROSETTA MR file.
             @return: RosettaMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
@@ -180,7 +181,8 @@ class RosettaMRReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
@@ -217,7 +219,8 @@ class RosettaMRReader:
 
             if messageList is not None and self.__verbose:
                 for description in messageList:
-                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n")
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")

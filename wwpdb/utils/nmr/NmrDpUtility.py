@@ -71,7 +71,7 @@
 # 01-May-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
 # 02-May-2020  M. Yokochi - additional support for format issue correction while STAR to NEF conversion (DAOTHER-5577)
 # 02-May-2020  M. Yokochi - re-implement basic mathematical functions using Numpy library
-# 07-May-2020  M. Yokochi - revise warning type (from 'insuffcient_data' to 'encouragement') if total number of models is less than 8
+# 07-May-2020  M. Yokochi - revise warning type (from 'insufficient_data' to 'encouragement') if total number of models is less than 8
 #                           (DAOTHER-5650)
 # 07-May-2020  M. Yokochi - add preventive code for infinite loop while format issue correction
 # 08-May-2020  M. Yokochi - sync update with wwpdb.utils.nmr.CifReader (DAOTHER-5654)

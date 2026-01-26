@@ -2669,7 +2669,7 @@ class NmrDpRemediation:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_id = _auth_seq_id + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
-                              # 2l1f, DAOTHER-9694
+                            # 2l1f, DAOTHER-9694
                             if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():
                                 continue
                             seq_keys.add(_seq_key)

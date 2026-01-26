@@ -66,7 +66,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
     def enterCs_row_format(self, ctx: BareCSParser.Cs_row_formatContext):  # pylint: disable=unused-argument
         pass
 
-    # Exit a parse tree produced by BareCSParser#mr_row_format.
+    # Exit a parse tree produced by BareCSParser#cs_row_format.
     def exitCs_row_format(self, ctx: BareCSParser.Cs_row_formatContext):  # pylint: disable=unused-argument
         pass
 

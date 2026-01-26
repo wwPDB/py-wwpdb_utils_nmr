@@ -693,7 +693,7 @@ class NmrVrptUtility:
         self.__distRestViolDict = None
         # list of restraint key of unmapped distance restraints
         self.__distRestUnmapped = None
-        # combination keys (Combination_ID/Mmember_ID) of violated distance restraints for each restraint key
+        # combination keys (Combination_ID/Member_ID) of violated distance restraints for each restraint key
         self.__distRestViolCombKeyDict = None
 
         # dihedral angle restraint violations for each restraint key

@@ -73,6 +73,7 @@ from rmsd.calculate_rmsd import (centroid, check_reflections, rmsd,  # noqa: F40
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               TRUE_VALUE,
                                                ELEMENT_SYMBOLS,
                                                LEN_MAJOR_ASYM_ID,
                                                RMSD_OVERLAID_EXACTLY,
@@ -81,6 +82,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import deepcopy
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   TRUE_VALUE,
                                    ELEMENT_SYMBOLS,
                                    LEN_MAJOR_ASYM_ID,
                                    RMSD_OVERLAID_EXACTLY,
@@ -245,7 +247,6 @@ class CifReader:
                  '__categoryNameList',
                  '__hashCode',
                  '__cachePath',
-                 'trueValue',
                  'itemTypes',
                  '__random_rotaion_test',
                  '__single_model_rotation_test',
@@ -297,9 +298,6 @@ class CifReader:
 
         # cache file path
         self.__cachePath = None
-
-        # preset values
-        self.trueValue = ('true', 't', 'yes', 'y', '1')
 
         # allowed item types
         self.itemTypes = ('str', 'bool',
@@ -697,7 +695,7 @@ class CifReader:
                                 keep = False
                                 break
                         elif filterItemType == 'bool':
-                            val = val.lower() in self.trueValue
+                            val = val.lower() in TRUE_VALUE
                         elif filterItemType == 'int':
                             try:
                                 val = int(val)
@@ -770,7 +768,7 @@ class CifReader:
                         if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
                             val = None
                     elif dataItemType == 'bool':
-                        val = val.lower() in self.trueValue
+                        val = val.lower() in TRUE_VALUE
                     elif dataItemType == 'int' and val is not None:
                         try:
                             val = int(val)
@@ -1091,7 +1089,7 @@ class CifReader:
                                             break
 
                                     authSeqDict[c].insert(pos, auth_seq_id_)
-                                    compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecule page
+                                    compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecules page
                                     if ins_code_col != -1:
                                         insCodeDict[c].insert(pos, '.')
 
@@ -1166,7 +1164,7 @@ class CifReader:
                                                 break
 
                                         authSeqDict[c].insert(pos, auth_seq_id_)
-                                        compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecule page
+                                        compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecules page
                                         if ins_code_col != -1:
                                             insCodeDict[c].insert(pos, '.')
 

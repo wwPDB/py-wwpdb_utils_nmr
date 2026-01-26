@@ -190,7 +190,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            # fource_const = self.numberSelection[2]
+            # force_const = self.numberSelection[2]
             weight = self.numberSelection[3]
             scale = self.numberSelection[4]
 
@@ -379,7 +379,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            # fource_const = self.numberSelection[2]
+            # force_const = self.numberSelection[2]
             weight = self.numberSelection[3]
             scale = self.numberSelection[4]
 
@@ -563,7 +563,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            # fource_const = self.numberSelection[2]
+            # force_const = self.numberSelection[2]
             weight = self.numberSelection[3]
             scale = self.numberSelection[4]
 
@@ -745,7 +745,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target_value = None
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            # fource_const = self.numberSelection[2]
+            # force_const = self.numberSelection[2]
 
             dstFunc = self.validateAngleRangeWithIndex(index, 1.0, target_value, lower_limit, upper_limit)
 
@@ -921,7 +921,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target_value = None
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            # fource_const = self.numberSelection[2]
+            # force_const = self.numberSelection[2]
 
             dstFunc = self.validateAngleRangeWithIndex(None, 1.0, target_value, lower_limit, upper_limit)
 
@@ -1097,7 +1097,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target_value = None
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            # fource_const = self.numberSelection[2]
+            # force_const = self.numberSelection[2]
 
             dstFunc = self.validateAngleRangeWithIndex(None, 1.0, target_value, lower_limit, upper_limit)
 
@@ -2056,7 +2056,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             phase = self.numberSelection[3]
             target_value = self.numberSelection[4]
             lower_limit = upper_limit = None
-            # fource_const = self.numberSelection[5]
+            # force_const = self.numberSelection[5]
 
             dstFunc = self.validateCoupRangeWithIndex(index, 1.0, target_value, lower_limit, upper_limit)
 
@@ -2216,7 +2216,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             phase = self.numberSelection[3]
             target_value = self.numberSelection[4]
             lower_limit = upper_limit = None
-            # fource_const = self.numberSelection[5]
+            # force_const = self.numberSelection[5]
 
             dstFunc = self.validateCoupRangeWithIndex(index, 1.0, target_value, lower_limit, upper_limit)
 
@@ -2376,7 +2376,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             phase = self.numberSelection[3]
             target_value = self.numberSelection[4]
             lower_limit = upper_limit = None
-            # fource_const = self.numberSelection[5]
+            # force_const = self.numberSelection[5]
 
             dstFunc = self.validateCoupRangeWithIndex(index, 1.0, target_value, lower_limit, upper_limit)
 

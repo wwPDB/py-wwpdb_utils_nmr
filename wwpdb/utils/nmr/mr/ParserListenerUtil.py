@@ -2666,7 +2666,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         break
 
                                 ps['auth_seq_id'].insert(pos, authSeqId)
-                                ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecule page
+                                ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecules page
                                 # avoid double inserts to 'auth_comp_id'
                                 if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                     ps['auth_comp_id'].insert(pos, '.')
@@ -2757,7 +2757,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         continue
 
                                     ps['auth_seq_id'].insert(pos, auth_seq_id_)
-                                    ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecule page
+                                    ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecules page
                                     # avoid double inserts to 'auth_comp_id'
                                     if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                         ps['auth_comp_id'].insert(pos, '.')
@@ -3765,7 +3765,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                      'seq_id': ps['seq_id'][idx],
                                                      'auth_seq_id': authSeqId,
                                                      'alt_seq_id': authSeqId,
-                                                     # DAOTHER-9644: comp_id must be specified at Macromolecule page
+                                                     # DAOTHER-9644: comp_id must be specified at Macromolecules page
                                                      'comp_id': ps['comp_id'][idx],
                                                      'auth_comp_id': ps['auth_comp_id'][idx],
                                                      'alt_comp_id': ps['auth_comp_id'][idx],

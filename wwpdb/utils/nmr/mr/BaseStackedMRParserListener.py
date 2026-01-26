@@ -6781,7 +6781,7 @@ class BaseStackedMRParserListener():
                                                                     if __coordAtomSite is not None\
                                                                        and ((seqId in ps['auth_seq_id']
                                                                              and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
-                                                                            or seqId != __seqId):  # 2lr1, 2lqc, qkg
+                                                                            or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
                                                                         __compId = __coordAtomSite['comp_id']
                                                                         __atomIds = self.getAtomIdList(_factor, __compId, atomId)
                                                                         if compId != __compId\
@@ -8310,7 +8310,7 @@ class BaseStackedMRParserListener():
         if self.cur_subtype == 'radi':
             return f"[Check the {self.radiRestraints}th row of radius of gyration restraints, {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'diff':
-            return f"[Check the {self.diffRestraints}th row of duffusion anisotropy restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.diffRestraints}th row of diffusion anisotropy restraints, {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'nbase':
             return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints, "\
                 f"{self.__def_err_sf_framecode}] "

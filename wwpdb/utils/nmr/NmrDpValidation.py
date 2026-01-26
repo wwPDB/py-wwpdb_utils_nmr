@@ -9324,7 +9324,7 @@ class NmrDpValidation:
 
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags else 'ndb_model'
 
-                # split concatination of auth_seq_id and ins_code (DAOTHER-10418)
+                # split concatenation of auth_seq_id and ins_code (DAOTHER-10418)
                 if auth_to_ins_code is not None and len(auth_to_ins_code) > 0\
                    and set(auth_seq_id_names) & set(loop.tags) == set(auth_seq_id_names):
                     auth_dat = loop.get_tag(auth_seq_id_names)
@@ -12948,7 +12948,7 @@ class NmrDpValidation:
                             last_point = first_point - sp_width
 
                             # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width
-                            # if absolute_peak_positios are true
+                            # if absolute_peak_positions are true
                             min_point = last_point - (sp_width * (1.0 if self.__reg.bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
                             max_point = first_point + (sp_width * (1.0 if self.__reg.bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
 
@@ -13135,7 +13135,7 @@ class NmrDpValidation:
                             last_point = first_point - sp_width
 
                             # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width
-                            # if absolute_peak_positios are true
+                            # if absolute_peak_positions are true
                             min_point = last_point - (sp_width * (1.0 if self.__reg.bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
                             max_point = first_point + (sp_width * (1.0 if self.__reg.bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
 

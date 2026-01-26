@@ -4218,7 +4218,7 @@ ALLOWED_TAGS = {'nef': {'entry_info': ['program_name', 'script_name', 'script'],
                                           'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID',
                                           'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                              'entity': None,
-                             # DAOTHER-7545 'Entity_assembly_asym_ID' is not authorized data item acoording to NMR-STAR dictionary,
+                             # DAOTHER-7545 'Entity_assembly_asym_ID' is not authorized data item according to NMR-STAR dictionary,
                              # but it is still used conventionally
                              'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_assembly_asym_ID', 'Entity_ID',
                                             'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',

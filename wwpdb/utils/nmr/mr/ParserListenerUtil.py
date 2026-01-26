@@ -1561,7 +1561,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                         _atomId_.append(_atomId)
                 if len(_atomId_) == 1 and (score > 1 or len(canAtomIdList) == 1) and check_apostrophe(atomId, _atomId_[0]):
                     return _atomId_[0]
-        if atomId == 'X':  # micelle cennter
+        if atomId == 'X':  # micelle center
             if 'UNK' in refAtomIdList:  # 2mjq, 2mjr, 2mjs
                 return 'UNK'
             if 'UNX' in refAtomIdList:  # 2mjt
@@ -2624,7 +2624,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         ps2['seq_id'].insert(pos, cif_label_seq_id)
                                         ps2['auth_seq_id'].insert(pos, cif_auth_seq_id)
                                         ps2['comp_id'].insert(pos, nmr_comp_id)
-                                        if ps2['comp_id'] is not ps2['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
+                                        if ps2['comp_id'] is not ps2['auth_comp_id']:  # avoid double inserts to 'auth_comp_id'
                                             ps2['auth_comp_id'].insert(pos, nmr_comp_id)
 
                                         nmrExtPolySeq.append({'auth_chain_id': ps2['auth_chain_id'],
@@ -2666,8 +2666,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         break
 
                                 ps['auth_seq_id'].insert(pos, authSeqId)
-                                ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                # avoid doulble inserts to 'auth_comp_id'
+                                ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecule page
+                                # avoid double inserts to 'auth_comp_id'
                                 if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                     ps['auth_comp_id'].insert(pos, '.')
 
@@ -2757,8 +2757,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         continue
 
                                     ps['auth_seq_id'].insert(pos, auth_seq_id_)
-                                    ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                    # avoid doulble inserts to 'auth_comp_id'
+                                    ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecule page
+                                    # avoid double inserts to 'auth_comp_id'
                                     if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                         ps['auth_comp_id'].insert(pos, '.')
 
@@ -3765,7 +3765,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                      'seq_id': ps['seq_id'][idx],
                                                      'auth_seq_id': authSeqId,
                                                      'alt_seq_id': authSeqId,
-                                                     # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                                     # DAOTHER-9644: comp_id must be specified at Macromolecule page
                                                      'comp_id': ps['comp_id'][idx],
                                                      'auth_comp_id': ps['auth_comp_id'][idx],
                                                      'alt_comp_id': ps['auth_comp_id'][idx],
@@ -4829,7 +4829,7 @@ def isAsymmetricRangeRestraint(atoms: List[dict], chainIdSet: List[str], symmetr
 
 
 def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List[str]:
-    """ Try to find candidate comp_ids that matche with a given atom_id.
+    """ Try to find candidate comp_ids that match with a given atom_id.
     """
 
     if atomIds[0] in ('C', 'CA', 'CB', 'CO', 'H', 'HN', 'HA', 'N', 'O',
@@ -4844,7 +4844,7 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in STD_MON_DICT or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            if _compId in STD_MON_DICT or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignment when ACE is in polymer
                 _atomId = atomIds[0]
                 if _atomId in EMPTY_VALUE:
                     return None
@@ -4860,7 +4860,7 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
 
 
 def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, isPolySeq: bool = True) -> List[str]:
-    """ Try to find candidate comp_ids that matche with a given atom_id.
+    """ Try to find candidate comp_ids that match with a given atom_id.
     """
 
     candidates = set()
@@ -4869,7 +4869,7 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            # 2jw1: avoid early conclusion of GLY assignment when ACE is in polymer
             if _compId in STD_MON_DICT or _compId == 'ACE' or not isPolySeq:
                 failed = False
                 for atomId in atomIds:
@@ -6925,7 +6925,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         # RDC_val
         # RDC_val_err
         # RDC_val_scale_factor
-        # RDC_distance_depedent
+        # RDC_distance_dependent
 
         row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
@@ -9590,7 +9590,7 @@ def getPotentialType(fileType: str, mrSubtype: str, dstFunc: dict) -> Optional[s
 
 
 def getPdbxNmrSoftwareName(name: str) -> str:
-    """ Return _pdbx_nmr_software.name enumarated value for a given software name.
+    """ Return _pdbx_nmr_software.name enumerated value for a given software name.
     """
 
     if name == 'AMBER':

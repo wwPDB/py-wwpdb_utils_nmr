@@ -358,10 +358,10 @@ class BaseLinearMRParserListener():
     # current residue name for atom name mapping (AMBER/CYANA specific)
     cur_resname_for_mapping = ''
 
-    # unambigous atom name mapping (AMBER/ARIA/CYANA specific)
+    # unambiguous atom name mapping (AMBER/ARIA/CYANA specific)
     unambigAtomNameMapping = {}
 
-    # ambigous atom name mapping (AMBER/ARIA/CYANA specific)
+    # ambiguous atom name mapping (AMBER/ARIA/CYANA specific)
     ambigAtomNameMapping = {}
 
     # collection of general residue number extended with chain code (CYANA/ROSETTA specific)
@@ -376,7 +376,7 @@ class BaseLinearMRParserListener():
     # current Insight II restraint declaration (BIOSYM specific)
     cur_ins_decl = None
 
-    # current boudary values (ARIA/BIOSYM/ISD specific)
+    # current boundary values (ARIA/BIOSYM/ISD specific)
     cur_lower_limit = None
     cur_upper_limit = None
 

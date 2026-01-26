@@ -3347,7 +3347,7 @@ class BMRBAnnTasks:
                 if int_sf is not None:
                     set_sf_tag(int_sf, 'Non_standard_residues', 'yes')
 
-        # section 4: biological polymers and ligans
+        # section 4: biological polymers and ligands
 
         total_cys_in_assembly = 0
 

@@ -494,10 +494,10 @@ class AmberMRParserListener(ParseTreeListener):
     # current residue name for atom name mapping
     __cur_resname_for_mapping = ''
 
-    # unambigous atom name mapping
+    # unambiguous atom name mapping
     unambigAtomNameMapping = {}
 
-    # ambigous atom name mapping
+    # ambiguous atom name mapping
     ambigAtomNameMapping = {}
 
     warningMessage = None

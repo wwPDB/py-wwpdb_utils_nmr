@@ -1301,7 +1301,7 @@ class NmrDpReport:
                     content_subtype = input_source_dic['content_subtype']
 
                     if 'entity' in content_subtype:
-                        fullSequence = True  # trust full sequence of the entity if cs file is based on existing BMRB entry (DAOTHR-10222)
+                        fullSequence = True  # trust full sequence of the entity if cs file is based on existing BMRB entry (DAOTHER-10222)
 
         for ca in chain_assigns:
 

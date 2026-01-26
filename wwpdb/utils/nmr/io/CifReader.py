@@ -1091,7 +1091,7 @@ class CifReader:
                                             break
 
                                     authSeqDict[c].insert(pos, auth_seq_id_)
-                                    compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                    compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecule page
                                     if ins_code_col != -1:
                                         insCodeDict[c].insert(pos, '.')
 
@@ -1166,7 +1166,7 @@ class CifReader:
                                                 break
 
                                         authSeqDict[c].insert(pos, auth_seq_id_)
-                                        compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                        compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecule page
                                         if ins_code_col != -1:
                                             insCodeDict[c].insert(pos, '.')
 

@@ -1006,7 +1006,7 @@ class NmrDpUtility:
         self.__reg.cifPath = self.__cifHashCode = None
         self.__reg.cifChecked = False
 
-        # incomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
+        # incomplete assignments are edited by biocurators for conventional assigned chemical shifts (DAOTHER-7662)
         for key in self.__reg.key_items['nmr-star']['chem_shift']:
             if 'remove-bad-pattern' in key:
                 key['remove-bad-pattern'] = self.__reg.combined_mode

@@ -4310,7 +4310,7 @@ class NEFTranslator:
                                         lp_category: str = 'Atom_chem_shift', atom_type: str = 'Atom_type',
                                         isotope_number: str = 'Atom_isotope_number', atom_id: str = 'Atom_ID',
                                         allow_empty: bool = False) -> List[List[dict]]:
-        """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-SAR file.
+        """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -4319,7 +4319,7 @@ class NEFTranslator:
     def get_atom_type_from_cs_loop(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # noqa: E501, pylint: disable=no-self-use,line-too-long
                                    lp_category: str, atom_type: str, isotope_number: str, atom_id: str,
                                    allow_empty: bool) -> List[List[dict]]:
-        """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-SAR file.
+        """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of atom_type, isotope number, and atom_id for each CS loop
         """
@@ -4415,7 +4415,7 @@ class NEFTranslator:
     def get_star_ambig_code_from_cs_loop(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
                                          lp_category: str = 'Atom_chem_shift', comp_id: str = 'Comp_ID', atom_id: str = 'Atom_ID',
                                          ambig_code: str = 'Ambiguity_code', ambig_set_id: str = 'Ambiguity_set_ID') -> List[List[dict]]:
-        """ Extract unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file.
+        """ Extract unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of comp_id, atom_id, and ambiguity code for each CS loop
         """

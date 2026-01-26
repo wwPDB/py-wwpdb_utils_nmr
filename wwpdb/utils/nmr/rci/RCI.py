@@ -5189,7 +5189,7 @@ class RCI:
             }
 
         elif self.Random_coil_flag == 3:  # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil, 4 - Schwarzinger's, 5 - average of 1, 2 & 3
-            # Lukhin heteronuclear + Wang proton chifts
+            # Lukhin heteronuclear + Wang proton shifts
             self.random_coil_dic = {
                 "G": [110.03, 173.96, 45.41, None, 8.37, 3.97],
                 "B": [118.7, 175.5, 55.6, 41.2, 8.54, 4.76],

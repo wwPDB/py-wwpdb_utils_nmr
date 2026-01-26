@@ -15632,7 +15632,7 @@ class NmrDpUtility:
         return False
 
     def __mergeLegacyData(self) -> bool:
-        """ Merge CS+MR+PK into next NMR unifed data files.
+        """ Merge CS+MR+PK into next NMR unified data files.
         """
 
         return self.__reg.dpR.mergeLegacyData()
@@ -16098,7 +16098,7 @@ class NmrDpUtility:
         return False
 
     def __mergeCoordAsNmrIf(self) -> bool:
-        """ Merge NMRIF metadata of the cooridnates (DAOTHER-8905: NMR data remediation Phase 2).
+        """ Merge NMRIF metadata of the coordinates (DAOTHER-8905: NMR data remediation Phase 2).
         """
 
         if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
@@ -16311,7 +16311,7 @@ class NmrDpUtility:
         return is_done
 
     def __discardPeakListRemediation(self) -> bool:
-        """ Distcard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep enviromment
+        """ Discard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep enviromment
             @note: This rediculaus reverse implementation is for OneDep only
         """
 

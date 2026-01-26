@@ -166,7 +166,7 @@ def toNefEx(string: str) -> str:
 
 
 def stripQuot(string: str) -> str:
-    """ Return strippped string by removing single/double quotation marks.
+    """ Return stripped string by removing single/double quotation marks.
     """
 
     _string = string.strip()
@@ -2367,7 +2367,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          prevResult: Optional[dict] = None,
                          nmrPolySeq: Optional[List[dict]] = None, fullCheck: bool = True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
-        @return: properties about of the assembly of the cooridnates
+        @return: properties about of the assembly of the coordinates
     """
 
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
@@ -5662,7 +5662,7 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
 
 
 def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = None) -> Optional[List[dict]]:
-    """ Return structually connected partner residues for a given residue.
+    """ Return structurally connected partner residues for a given residue.
         @return: list of partner residues for a given residue descrived in struct_conn loop
     """
 
@@ -5741,7 +5741,7 @@ def getWatsonCrickPtnr(cR, authAsymId: str) -> Optional[List[str]]:
 
 
 def getStructConnPtnrAtom(cR, authAsymId: str, authSeqId: int, authAtomId: str) -> Optional[dict]:
-    """ Return structually connected partner atom for a given atom.
+    """ Return structurally connected partner atom for a given atom.
         @return: dictionary of connected partner atom in struct_conn loop
     """
 
@@ -6165,7 +6165,7 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
 
 
 def retrieveOriginalFileName(filePath: str) -> str:
-    """ Retrieve original filename by omitting internal sufixes used in NMR data remediation.
+    """ Retrieve original filename by omitting internal suffixes used in NMR data remediation.
     """
 
     if filePath in EMPTY_VALUE:
@@ -6478,7 +6478,7 @@ def getAuxLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
 
 def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
                 atom: List[dict], aux_atom: Optional[dict] = None, asis: bool = False) -> Optional[str]:
-    """ Return NMR-STAR sequence including entity ID for a given auth atom of the cooridnates.
+    """ Return NMR-STAR sequence including entity ID for a given auth atom of the coordinates.
         @return: a dictionary of NMR-STAR sequence/entity, None otherwise
     """
 
@@ -6617,7 +6617,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
 
 
 def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dict]) -> Optional[str]:
-    """ Return PDB_ins_code for a given auth atom of the cooridnates.
+    """ Return PDB_ins_code for a given auth atom of the coordinates.
         @return: PDB_ins_code
     """
 

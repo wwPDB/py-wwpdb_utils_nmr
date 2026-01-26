@@ -320,7 +320,7 @@ def is_eps_or_pdf_file(fPath: str) -> bool:
 
 
 def is_star_file(fPath: str) -> bool:
-    """ Check if a given file contains STAR syntaxes.
+    """ Check if a given file contains STAR syntax.
     """
 
     has_datablock = False
@@ -346,7 +346,7 @@ def is_star_file(fPath: str) -> bool:
 
 
 def is_amb_top_file(fPath: str) -> bool:
-    """ Check if a given file contains AMBER topology/patemeter syntaxes.
+    """ Check if a given file contains AMBER topology/patemeter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -358,7 +358,7 @@ def is_amb_top_file(fPath: str) -> bool:
 
 
 def is_amb_rst_file(fPath: str) -> bool:
-    """ Check if a given file contains AMBER restraint syntaxes.
+    """ Check if a given file contains AMBER restraint syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -370,7 +370,7 @@ def is_amb_rst_file(fPath: str) -> bool:
 
 
 def is_cha_top_file(fPath: str) -> bool:
-    """ Check if a given file contains CHARMM topology/patemeter syntaxes.
+    """ Check if a given file contains CHARMM topology/patemeter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -382,7 +382,7 @@ def is_cha_top_file(fPath: str) -> bool:
 
 
 def is_cha_rst_file(fPath: str) -> bool:
-    """ Check if a given file contains CHARMM restraint syntaxes.
+    """ Check if a given file contains CHARMM restraint syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -394,7 +394,7 @@ def is_cha_rst_file(fPath: str) -> bool:
 
 
 def is_gro_top_file(fPath: str) -> bool:
-    """ Check if a given file contains GROMACS topology/patemeter syntaxes.
+    """ Check if a given file contains GROMACS topology/patemeter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -406,7 +406,7 @@ def is_gro_top_file(fPath: str) -> bool:
 
 
 def is_gro_rst_file(fPath: str) -> bool:
-    """ Check if a given file contains GROMACS restraint syntaxes.
+    """ Check if a given file contains GROMACS restraint syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -418,7 +418,7 @@ def is_gro_rst_file(fPath: str) -> bool:
 
 
 def is_pdb_top_file(fPath: str) -> bool:
-    """ Check if a given file contains PDB-line topology/patemeter syntaxes.
+    """ Check if a given file contains PDB-line topology/patemeter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:

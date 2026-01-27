@@ -163,7 +163,8 @@ class RCI:
         self.early_floor_value_pos = 0.1
         self.early_floor_value_neg = -0.1
 
-        self.incomplete_data_use = 1  # 0 - do not use data for a residue when chemical shifts are not known for all atoms, 1 - use even if data is incomplete
+        # 0 - do not use data for a residue when chemical shifts are not known for all atoms, 1 - use even if data is incomplete
+        self.incomplete_data_use = 1
         self.NoNextProPro_flag = 0  # When 0, next residue correction is used for XPP situation
 
         self.Random_coil_flag = 4  # 1 - Wishart's random coil, 2 - Wang's random coil, 4 - Shwarzinger, 3 - Lukhin' random coil
@@ -196,7 +197,9 @@ class RCI:
         self.final_double_three_point_smooth_flag = 0
         self.gap_limit_smooth = 0
 
-        self.B_Cys_switch = 2  # Correction for oxidized and reduced Cys. If 0, no correction, if 1, correction is used, if 2, CB shift from oxidized residue ignored ( Default)
+        # Correction for oxidized and reduced Cys.
+        # If 0, no correction, if 1, correction is used, if 2, CB shift from oxidized residue ignored (Default)
+        self.B_Cys_switch = 2
 
         self.COp_exclude = 0  # If 1, exclude from grid search
         self.CAp_exclude = 0  # If 1, exclude from grid search
@@ -237,7 +240,9 @@ class RCI:
         self.smooth = 3
 
         self.gap_fill_flag = 2
-        self.gap_limit = 2  # Limit for filling assignment gaps, for example, 2 means that only residues i+1 and i+2 can be used to fill missing assignment of residue i
+        # Limit for filling assignment gaps,
+        # for example, 2 means that only residues i+1 and i+2 can be used to fill missing assignment of residue i
+        self.gap_limit = 2
 
         self.miss_ass = 1
         self.scale = 1
@@ -5136,7 +5141,8 @@ class RCI:
                 ],
             }
 
-        if self.Random_coil_flag == 1:  # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil,  4 - Schwarzinger's, 5 - average of 1,2 & 3
+        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil,  4 - Schwarzinger's, 5 - average of 1,2 & 3
+        if self.Random_coil_flag == 1:
             # Wishart random coil values
             self.random_coil_dic = {
                 "I": [121.7, 176.4, 61.1, 38.8, 8.00, 4.17],
@@ -5162,7 +5168,8 @@ class RCI:
                 "B": [118.6, 174.6, 55.4, 41.1, 8.43, 4.71],
             }
 
-        elif self.Random_coil_flag == 2:  # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil,  4 - Schwarzinger's, 5 - average of 1,2 & 3
+        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil,  4 - Schwarzinger's, 5 - average of 1,2 & 3
+        elif self.Random_coil_flag == 2:
             # Wang's random coil values
             self.random_coil_dic = {
                 "I": [120.58, 175.52, 60.79, 38.43, 7.94, 4.18],
@@ -5188,7 +5195,8 @@ class RCI:
                 "B": [118.7, 175.5, 55.6, 41.2, 8.54, 4.76],
             }
 
-        elif self.Random_coil_flag == 3:  # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil, 4 - Schwarzinger's, 5 - average of 1, 2 & 3
+        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil, 4 - Schwarzinger's, 5 - average of 1, 2 & 3
+        elif self.Random_coil_flag == 3:
             # Lukhin heteronuclear + Wang proton shifts
             self.random_coil_dic = {
                 "G": [110.03, 173.96, 45.41, None, 8.37, 3.97],
@@ -5214,7 +5222,8 @@ class RCI:
                 "P": [136.73, 176.60, 63.27, 32.09, None, 4.41],
             }
 
-        elif self.Random_coil_flag == 4:  # Random coil values:1 - Wishart's, 2 - Wang's, 3 - Lukhin's, 4 - Schwarzinger's, 5 - average of 1, 2 & 3
+        # Random coil values:1 - Wishart's, 2 - Wang's, 3 - Lukhin's, 4 - Schwarzinger's, 5 - average of 1, 2 & 3
+        elif self.Random_coil_flag == 4:
 
             self.random_coil_dic = {
                 "A": [125.0, 178.5, 52.8, 19.3, 8.35, 4.35],
@@ -5241,7 +5250,8 @@ class RCI:
                 "Y": [120.9, 176.7, 58.3, 38.9, 8.26, 4.58],
             }
 
-        elif self.Random_coil_flag == 5:  # Random coil values:1 - Wishart's, 2 - Wang's, 3 - Lukhin's, 4 - Schwarzinger's, 5 - mean of 1 and 4; 6 - average of 1, 2 & 3
+        # Random coil values:1 - Wishart's, 2 - Wang's, 3 - Lukhin's, 4 - Schwarzinger's, 5 - mean of 1 and 4; 6 - average of 1, 2 & 3
+        elif self.Random_coil_flag == 5:
             # Average of Wishart and Shwartz RC
             self.random_coil_dic = {
                 "A": [125.00, 178.15, 52.65, 19.20, 8.29, 4.33],
@@ -5267,7 +5277,8 @@ class RCI:
                 "B": [118.65, 174.95, 55.5, 41.15, 8.515, 4.725],
             }
 
-        elif self.Random_coil_flag == 6:  # Random coil values:1 - Wishart's, 2 - Wang's, 3 - Lukhin's, 4 - Schwarzinger's, 6 - average of 1, 2 & 3
+        # Random coil values:1 - Wishart's, 2 - Wang's, 3 - Lukhin's, 4 - Schwarzinger's, 6 - average of 1, 2 & 3
+        elif self.Random_coil_flag == 6:
 
             self.random_coil_dic = {
                 "A": [124.64, 177.46, 52.46, 19.04, 8.14, 4.31],
@@ -6782,112 +6793,150 @@ class RCI:
                                                                         if atom_type == "CA":
                                                                             CA_found = 1
                                                                             if self.pos_neg_value == 0:
-                                                                                residue_data_abs.append([resnumber, resname, abs(abs_diff_mean),
-                                                                                                         coefCApos, atom_type, self.CAp_exclude, self.CA_Hertz_corr])
+                                                                                residue_data_abs.append([
+                                                                                    resnumber, resname, abs(abs_diff_mean),
+                                                                                    coefCApos, atom_type, self.CAp_exclude,
+                                                                                    self.CA_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_pos_CA * coefCApos, atom_type,
-                                                                                                             self.CAp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_pos_CA * coefCApos, atom_type,
+                                                                                        self.CAp_exclude, self.CA_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_neg_CA * coefCApos, atom_type,
-                                                                                                             self.CAp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_neg_CA * coefCApos, atom_type,
+                                                                                        self.CAp_exclude, self.CA_Hertz_corr])
 
                                                                         elif atom_type == "HA":
                                                                             HA_found = 1
                                                                             if self.pos_neg_value == 0:
-                                                                                residue_data_abs.append([resnumber, resname, abs(abs_diff_mean),
-                                                                                                         coefHApos, atom_type, self.HAp_exclude, self.H_Hertz_corr])
+                                                                                residue_data_abs.append([
+                                                                                    resnumber, resname, abs(abs_diff_mean),
+                                                                                    coefHApos, atom_type, self.HAp_exclude,
+                                                                                    self.H_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_HA * coefHApos,
-                                                                                                             atom_type, self.HAp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_pos_HA * coefHApos,
+                                                                                        atom_type, self.HAp_exclude, self.H_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_HA * coefHApos,
-                                                                                                             atom_type, self.HAp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_neg_HA * coefHApos,
+                                                                                        atom_type, self.HAp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "C":
                                                                             CO_found = 1
                                                                             if self.pos_neg_value == 0:
-                                                                                residue_data_abs.append([resnumber, resname, abs(abs_diff_mean),
-                                                                                                         coefCOpos, atom_type, self.COp_exclude, self.CA_Hertz_corr])
+                                                                                residue_data_abs.append([
+                                                                                    resnumber, resname, abs(abs_diff_mean),
+                                                                                    coefCOpos, atom_type, self.COp_exclude,
+                                                                                    self.CA_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_CO * coefCOpos,
-                                                                                                             atom_type, self.COp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_pos_CO * coefCOpos,
+                                                                                        atom_type, self.COp_exclude, self.CA_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_CO * coefCOpos,
-                                                                                                             atom_type, self.COp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_neg_CO * coefCOpos,
+                                                                                        atom_type, self.COp_exclude, self.CA_Hertz_corr])
 
                                                                         elif atom_type == "CB":
                                                                             CB_found = 1
                                                                             if self.pos_neg_value == 0:
-                                                                                residue_data_abs.append([resnumber, resname, abs(abs_diff_mean),
-                                                                                                         coefCBpos, atom_type, self.CBp_exclude, self.CA_Hertz_corr])
+                                                                                residue_data_abs.append([
+                                                                                    resnumber, resname, abs(abs_diff_mean),
+                                                                                    coefCBpos, atom_type, self.CBp_exclude,
+                                                                                    self.CA_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_CB * coefCBpos,
-                                                                                                             atom_type, self.CBp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_pos_CB * coefCBpos,
+                                                                                        atom_type, self.CBp_exclude, self.CA_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_CB * coefCBpos,
-                                                                                                             atom_type, self.CBp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_neg_CB * coefCBpos,
+                                                                                        atom_type, self.CBp_exclude, self.CA_Hertz_corr])
 
                                                                         elif atom_type == "N":
                                                                             N_found = 1
                                                                             if self.pos_neg_value == 0:
-                                                                                residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefNpos, atom_type,
-                                                                                                         self.Np_exclude, self.N_Hertz_corr])
+                                                                                residue_data_abs.append([
+                                                                                    resnumber, resname, abs(abs_diff_mean), coefNpos,
+                                                                                    atom_type, self.Np_exclude, self.N_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_N * coefNpos,
-                                                                                                             atom_type, self.Np_exclude, self.N_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_pos_N * coefNpos,
+                                                                                        atom_type, self.Np_exclude, self.N_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_N * coefNpos,
-                                                                                                             atom_type, self.Np_exclude, self.N_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_neg_N * coefNpos,
+                                                                                        atom_type, self.Np_exclude, self.N_Hertz_corr])
 
                                                                         elif atom_type == "H":
                                                                             NH_found = 1
                                                                             if self.pos_neg_value == 0:
-                                                                                residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefHpos,
-                                                                                                         atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                residue_data_abs.append([
+                                                                                    resnumber, resname, abs(abs_diff_mean), coefHpos,
+                                                                                    atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_H * coefHpos,
-                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_pos_H * coefHpos,
+                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_H * coefHpos,
-                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_neg_H * coefHpos,
+                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "HN":
                                                                             NH_found = 1
                                                                             if self.pos_neg_value == 0:
-                                                                                residue_data_abs.append([resnumber, resname, abs(abs_diff_mean),
-                                                                                                         coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                residue_data_abs.append([
+                                                                                    resnumber, resname, abs(abs_diff_mean), coefHpos,
+                                                                                    atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_pos_H * coefHpos,
-                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_pos_H * coefHpos,
+                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_neg_H * coefHpos,
-                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_neg_H * coefHpos,
+                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "NH":
                                                                             NH_found = 1
                                                                             if self.pos_neg_value == 0:
-                                                                                residue_data_abs.append([resnumber, resname, abs(abs_diff_mean),
-                                                                                                         coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                residue_data_abs.append([
+                                                                                    resnumber, resname, abs(abs_diff_mean), coefHpos,
+                                                                                    atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_pos_H * coefHpos,
-                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_pos_H * coefHpos,
+                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_neg_H * coefHpos,
-                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([
+                                                                                        resnumber, resname, true_diff_mean,
+                                                                                        self.coef_for_neg_H * coefHpos,
+                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
 
                                                                 atoms_abs = []
 
@@ -6927,7 +6976,8 @@ class RCI:
                                                                         atomabs = item[4]
                                                                         l_exclude = item[5]
                                                                         if l_exclude != 1 and coeffabs > 0.01:
-                                                                            value_abs *= coeffabs * (valueabs ** 0.2) / pow(exp(valueabs), 0.6)
+                                                                            value_abs *=\
+                                                                                coeffabs * (valueabs ** 0.2) / pow(exp(valueabs), 0.6)
                                                                         atoms_abs.append(atomabs)
 
                                                                 elif self.function_flag == 3:
@@ -6998,7 +7048,8 @@ class RCI:
                                                                 elif self.function_flag == 8:
                                                                     valueabs_list, coef_list = [], []
                                                                     valueabs_origin = valueabs = None
-                                                                    coef_trigger = f"{CA_found}{CB_found}{CO_found}{NH_found}{N_found}{HA_found}"
+                                                                    coef_trigger = f"{CA_found}{CB_found}{CO_found}"\
+                                                                        f"{NH_found}{N_found}{HA_found}"
                                                                     for item in residue_data_abs:
                                                                         resid_name_abs = item[1]
                                                                         valueabs_origin = item[2]
@@ -7009,11 +7060,15 @@ class RCI:
                                                                             coeffabs = self.__coeff_dict[coef_trigger][atomabs]
                                                                         coef_list.append(coeffabs)
 
-                                                                        if valueabs_origin is not None and l_exclude != 1 and abs(coeffabs) > 0.01:
+                                                                        if valueabs_origin is not None and l_exclude != 1\
+                                                                           and abs(coeffabs) > 0.01:
                                                                             valueabs = valueabs_origin * item[6]
-                                                                            if l_exclude != 1 and abs(coeffabs) > 0.01 and valueabs is not None:
+                                                                            if l_exclude != 1 and abs(coeffabs) > 0.01\
+                                                                               and valueabs is not None:
                                                                                 if abs(valueabs) < self.floor_value1:
-                                                                                    valueabs = self.floor_value1 if valueabs >= 0 else -self.floor_value1
+                                                                                    valueabs =\
+                                                                                        self.floor_value1 if valueabs >= 0\
+                                                                                        else -self.floor_value1
                                                                             valueabs_list.append(valueabs * coeffabs * 5)
 
                                                                         atoms_abs.append(atomabs)
@@ -7033,20 +7088,26 @@ class RCI:
                                                                 if len(atoms_abs) < len(self.__atom_list):
                                                                     l_incomplete_switch = self.incomplete_data_use
                                                                 if value_abs is not None and l_incomplete_switch == 1:
-                                                                    CA_CB_CO_HA_all_residues_abs.append([residue_number, resid_name_abs, value_abs, atoms_abs,
-                                                                                                         self.__atom_list, "abs", smooth_type])
+                                                                    CA_CB_CO_HA_all_residues_abs.append([
+                                                                        residue_number, resid_name_abs, value_abs, atoms_abs,
+                                                                        self.__atom_list, "abs", smooth_type])
 
                                                             s_final_again = 0
                                                             if self.termini_corr_flag == 1:
-                                                                CA_CB_CO_HA_all_residues_abs_new = self.__end_effect(CA_CB_CO_HA_all_residues_abs)
+                                                                CA_CB_CO_HA_all_residues_abs_new =\
+                                                                    self.__end_effect(CA_CB_CO_HA_all_residues_abs)
                                                             elif self.termini_corr_flag == 2:
-                                                                CA_CB_CO_HA_all_residues_abs_new = self.__end_effect2(CA_CB_CO_HA_all_residues_abs)
+                                                                CA_CB_CO_HA_all_residues_abs_new =\
+                                                                    self.__end_effect2(CA_CB_CO_HA_all_residues_abs)
                                                             elif self.termini_corr_flag == 3:
-                                                                CA_CB_CO_HA_all_residues_abs_new = self.__end_effect3(CA_CB_CO_HA_all_residues_abs)
+                                                                CA_CB_CO_HA_all_residues_abs_new =\
+                                                                    self.__end_effect3(CA_CB_CO_HA_all_residues_abs)
                                                             elif self.termini_corr_flag == 4:
-                                                                CA_CB_CO_HA_all_residues_abs_new = self.__end_effect4(CA_CB_CO_HA_all_residues_abs)
+                                                                CA_CB_CO_HA_all_residues_abs_new =\
+                                                                    self.__end_effect4(CA_CB_CO_HA_all_residues_abs)
                                                             elif self.termini_corr_flag == 5:
-                                                                CA_CB_CO_HA_all_residues_abs_new = self.__end_effect5(CA_CB_CO_HA_all_residues_abs)
+                                                                CA_CB_CO_HA_all_residues_abs_new =\
+                                                                    self.__end_effect5(CA_CB_CO_HA_all_residues_abs)
                                                             else:
                                                                 CA_CB_CO_HA_all_residues_abs_new = CA_CB_CO_HA_all_residues_abs
 
@@ -7054,24 +7115,35 @@ class RCI:
                                                                 if s_final_smooth == 9:
                                                                     s_final_smooth = 3
                                                                     s_final_again = 1
-                                                                CA_CB_CO_HA_all_residues_abs_fsmooth = self.__final_smoothing(s_final_smooth, CA_CB_CO_HA_all_residues_abs_new)
-                                                                if s_final_smooth != 0 and s_final_smooth != 9 and self.termini_corr_flag == 6:
-                                                                    CA_CB_CO_HA_all_residues_abs_new2 = self.__end_effect3(CA_CB_CO_HA_all_residues_abs_fsmooth)
+                                                                CA_CB_CO_HA_all_residues_abs_fsmooth =\
+                                                                    self.__final_smoothing(s_final_smooth, CA_CB_CO_HA_all_residues_abs_new)
+                                                                if s_final_smooth != 0 and s_final_smooth != 9\
+                                                                   and self.termini_corr_flag == 6:
+                                                                    CA_CB_CO_HA_all_residues_abs_new2 =\
+                                                                        self.__end_effect3(CA_CB_CO_HA_all_residues_abs_fsmooth)
                                                                     CA_CB_CO_HA_all_residues_abs_fsmooth = CA_CB_CO_HA_all_residues_abs_new2
                                                                 if s_final_again == 1:
                                                                     s_final_smooth = 3
                                                                     CA_CB_CO_HA_all_residues_abs_fsmooth =\
-                                                                        self.__final_smoothing(s_final_smooth, CA_CB_CO_HA_all_residues_abs_fsmooth)
-                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, _d_Pearson_coeff, _d_Spearman_coeff =\
-                                                                    self.__combo(CA_CB_CO_HA_all_residues_abs_fsmooth, CA_CB_CO_HA_all_residues_abs_corr, coeff_list)
+                                                                        self.__final_smoothing(s_final_smooth,
+                                                                                               CA_CB_CO_HA_all_residues_abs_fsmooth)
+                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, \
+                                                                    _d_Pearson_coeff, _d_Spearman_coeff =\
+                                                                    self.__combo(CA_CB_CO_HA_all_residues_abs_fsmooth,
+                                                                                 CA_CB_CO_HA_all_residues_abs_corr, coeff_list)
                                                             else:
-                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, _d_Pearson_coeff, _d_Spearman_coeff =\
-                                                                    self.__combo(CA_CB_CO_HA_all_residues_abs_new, CA_CB_CO_HA_all_residues_abs_corr, coeff_list)
+                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, \
+                                                                    _d_Pearson_coeff, _d_Spearman_coeff =\
+                                                                    self.__combo(CA_CB_CO_HA_all_residues_abs_new,
+                                                                                 CA_CB_CO_HA_all_residues_abs_corr, coeff_list)
 
         all_lists = [CA_CB_CO_HA_all_residues_abs_corr]
 
         len_aa_list = len(self.__bmrb_to_aa_list)
-        ret = {'seq_id': [aa[1] for aa in self.__bmrb_to_aa_list], 'rci': [None] * len_aa_list, 'nmr_rmsd': [None] * len_aa_list, 's2': [None] * len_aa_list}
+        ret = {'seq_id': [aa[1] for aa in self.__bmrb_to_aa_list],
+               'rci': [None] * len_aa_list,
+               'nmr_rmsd': [None] * len_aa_list,
+               's2': [None] * len_aa_list}
 
         for file in list_of_files:
 
@@ -7100,7 +7172,8 @@ class RCI:
                                 f"CA{coefCApos:.2f}CB{coefCBpos:.2f}CO%{coefCOpos:.2f}N{coefNpos:.2f}H{coefHpos:.2f}HA{coefHApos:.2f}"
                             plot_file_name = f"{file}_{atoms_for_plot}_{comparison_method}_{smoothing}_{treatment}_{coefficients_for_plot}"
                             if comparison_method == "correlation":
-                                correlation_sorted.append([comparison_paramter, out_title, md_plot_data, dynamr_plot_data, plot_file_name, dynamr_2_md, coefficients])
+                                correlation_sorted.append([comparison_paramter, out_title,
+                                                           md_plot_data, dynamr_plot_data, plot_file_name, dynamr_2_md, coefficients])
             correlation_sorted.sort()
 
             if len(correlation_sorted) > 10:
@@ -7113,7 +7186,8 @@ class RCI:
                         # rci_out = "%s %s %s" % (dyna_corr_residue_number, dyna_corr_value, dyna_corr_residue_name)
                         # md_rmsd_out = "%s %s %s" % (dyna_corr_residue_number, dyna_corr_value * 29.55, dyna_corr_residue_name)
                         # nmr_rmsd_out = "%s %s %s" % (dyna_corr_residue_number, dyna_corr_value * 16.44, dyna_corr_residue_name)
-                        # s2_out = "%s %s %s" % (dyna_corr_residue_number, 1 - (0.4 * log(1 + (dyna_corr_value * 17.7))), dyna_corr_residue_name)
+                        # s2_out = "%s %s %s" % (dyna_corr_residue_number, 1 - (0.4 * log(1 + (dyna_corr_value * 17.7))),
+                        #                        dyna_corr_residue_name)
                         #
                         if dyna_corr_residue_number in ret['seq_id']:
                             row_idx = ret['seq_id'].index(dyna_corr_residue_number)
@@ -7131,7 +7205,8 @@ class RCI:
                         # rci_out = "%s %s %s" % (dyna_corr_residue_number, dyna_corr_value, dyna_corr_residue_name)
                         # md_rmsd_out = "%s %s %s" % (dyna_corr_residue_number, dyna_corr_value * 29.55, dyna_corr_residue_name)
                         # nmr_rmsd_out = "%s %s %s" % (dyna_corr_residue_number, dyna_corr_value * 16.44, dyna_corr_residue_name)
-                        # s2_out = "%s %s %s" % (dyna_corr_residue_number, 1 - (0.4 * log(1 + (dyna_corr_value * 17.7))), dyna_corr_residue_name)
+                        # s2_out = "%s %s %s" % (dyna_corr_residue_number, 1 - (0.4 * log(1 + (dyna_corr_value * 17.7))),
+                        #                        dyna_corr_residue_name)
                         #
                         if dyna_corr_residue_number in ret['seq_id']:
                             row_idx = ret['seq_id'].index(dyna_corr_residue_number)
@@ -7512,7 +7587,8 @@ class RCI:
                             minus_done = 1
                 if len(L_chem_shift_diff_abs_list) > 0:
                     N_chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_list)
-                    L_all.append([L_residue_number, L_residue_name, N_chem_shift_diff_abs_mean, L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
+                    L_all.append([L_residue_number, L_residue_name, N_chem_shift_diff_abs_mean,
+                                  L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
                 negative_switch = 1
 
             #####################################################
@@ -7556,7 +7632,8 @@ class RCI:
 
                         if len(L_chem_shift_diff_abs_tmp_list) > 0:
                             chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
-                            L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean, L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
+                            L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean,
+                                          L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
 
                         L_start += 1
                         L_end += 1
@@ -7670,9 +7747,11 @@ class RCI:
                             if L_chem_shift_diff_abs is not None:
                                 L_chem_shift_diff_abs_tmp_list.append(L_chem_shift_diff_abs)
 
-                        if len(L_chem_shift_diff_abs_tmp_list) > 0 and L_residue_number != Real_first_residue and L_residue_number != Real_last_residue:
+                        if len(L_chem_shift_diff_abs_tmp_list) > 0\
+                           and L_residue_number != Real_first_residue and L_residue_number != Real_last_residue:
                             chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
-                            L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean, L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
+                            L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean,
+                                          L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
 
                         L_start += 1
                         L_end += 1
@@ -7692,9 +7771,11 @@ class RCI:
                             if L_chem_shift_diff_abs is not None:
                                 L_chem_shift_diff_abs_tmp_list.append(L_chem_shift_diff_abs)
 
-                        if len(L_chem_shift_diff_abs_tmp_list) > 0 and L_residue_number != Real_first_residue and L_residue_number != Real_last_residue:
+                        if len(L_chem_shift_diff_abs_tmp_list) > 0\
+                           and L_residue_number != Real_first_residue and L_residue_number != Real_last_residue:
                             chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
-                            L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean, L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
+                            L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean,
+                                          L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
 
                         L_start += 1
                         L_end += 1
@@ -7763,7 +7844,8 @@ class RCI:
 
                 if len(L_chem_shift_diff_abs_list) > 0:
                     N_chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_list)
-                    L_all.append([L_residue_number, L_residue_name, N_chem_shift_diff_abs_mean, L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
+                    L_all.append([L_residue_number, L_residue_name, N_chem_shift_diff_abs_mean,
+                                  L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
 
                 negative_switch = 1
 
@@ -7839,7 +7921,8 @@ class RCI:
             dynamr_to_md_ratio = entry_found_true_corr = counter = 0
             corel_coef = l_Pearson_coeff = l_Spearman_coeff = 0.0
             if len(correlation_true_Dynamr) > 0 and len(correlation_true_MD) > 0:
-                compare_list_corr_true = [abs(corel_coef), filename, "correlation", corel_coef, l_coeff_list, md_data, dynamr_data, dynamr_to_md_ratio]
+                compare_list_corr_true = [abs(corel_coef), filename, "correlation", corel_coef, l_coeff_list,
+                                          md_data, dynamr_data, dynamr_to_md_ratio]
 
                 for item in m_best_ten_coef_corr_true:
                     if len(item) > 0:
@@ -7861,7 +7944,8 @@ class RCI:
                             entry_found_true_corr = 1
                     counter += 1
                 if entry_found_true_corr == 0:
-                    m_best_ten_coef_corr_true.append([filename, [compare_list_corr_true], m_atoms_real, m_data_type, m_smooth_type, [corel_coef]])
+                    m_best_ten_coef_corr_true.append([filename, [compare_list_corr_true], m_atoms_real,
+                                                      m_data_type, m_smooth_type, [corel_coef]])
 
         return (m_best_ten_coef_corr_true, m_list_of_files, l_Pearson_coeff, l_Spearman_coeff)
 
@@ -8084,43 +8168,47 @@ class RCI:
             N_coil_value = CO_coil_value = CA_coil_value = CB_coil_value = NH_coil_value = HA_coil_value = None
 
             if None not in (dyna_simp_res_num_i, dyna_simp_res_name_i):
-                N_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__N_place]
-                CO_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__CO_place]
-                CA_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__CA_place]
-                CB_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__CB_place]
-                NH_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__NH_place]
-                HA_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__HA_place]
+                _rc = self.random_coil_dic[dyna_simp_res_name_i]
+                N_coil_value = _rc[self.__N_place]
+                CO_coil_value = _rc[self.__CO_place]
+                CA_coil_value = _rc[self.__CA_place]
+                CB_coil_value = _rc[self.__CB_place]
+                NH_coil_value = _rc[self.__NH_place]
+                HA_coil_value = _rc[self.__HA_place]
 
             if self.preceed_res_effect_flag == 1\
                and None not in (dyna_simp_res_num_i_minus_1, dyna_simp_res_name_i_minus_1):
-                if res_i_csi_sec_str == res_i_minus_1_csi_sec_str and res_num_i_minus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
-                    preceed_res_cor_N = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__N_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_CO = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CO_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_CA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CA_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_CB = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CB_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_NH = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__NH_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_HA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__HA_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                _eff = self.preceed_res_effect[dyna_simp_res_name_i_minus_1]
+                if res_i_csi_sec_str == res_i_minus_1_csi_sec_str\
+                   and res_num_i_minus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
+                    preceed_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
                 elif res_num_i_minus_1_sec_str_found == 0:
-                    preceed_res_cor_N = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_CO = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_CA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_CB = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_NH = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_HA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
                 elif res_num_i_sec_str_found == 0:
-                    preceed_res_cor_N = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__N_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_CO = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CO_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_CA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CA_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_CB = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CB_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_NH = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__NH_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                    preceed_res_cor_HA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__HA_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
-                if res_i_csi_sec_str != res_i_minus_1_csi_sec_str and res_num_i_minus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
-                    preceed_res_cor_N = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_CO = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_CA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_CB = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_NH = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_res_cor_HA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                    preceed_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
+                if res_i_csi_sec_str != res_i_minus_1_csi_sec_str\
+                   and res_num_i_minus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
+                    preceed_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
             else:
                 preceed_res_cor_N = preceed_res_cor_CO = preceed_res_cor_CA =\
                     preceed_res_cor_CB = preceed_res_cor_NH = preceed_res_cor_HA = 0.0
@@ -8131,34 +8219,37 @@ class RCI:
 
             if self.preceed_res_effect_flag == 1 and self.preceed_preceed_res_effect_flag == 1\
                and None not in (dyna_simp_res_num_i_minus_2, dyna_simp_res_name_i_minus_2):
-                if res_i_csi_sec_str == res_i_minus_2_csi_sec_str and res_num_i_minus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
-                    preceed_preceed_res_cor_N = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__N_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_CO = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CO_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_CA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CA_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_CB = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CB_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_NH = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__NH_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_HA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__HA_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                _eff = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2]
+                if res_i_csi_sec_str == res_i_minus_2_csi_sec_str\
+                   and res_num_i_minus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
+                    preceed_preceed_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
                 elif res_num_i_minus_2_sec_str_found == 0:
-                    preceed_preceed_res_cor_N = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_CO = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_CA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_CB = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_NH = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_HA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
                 elif res_num_i_sec_str_found == 0:
-                    preceed_preceed_res_cor_N = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__N_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_CO = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CO_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_CA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CA_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_CB = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CB_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_NH = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__NH_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                    preceed_preceed_res_cor_HA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__HA_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
-                if res_i_csi_sec_str != res_i_minus_2_csi_sec_str and res_num_i_minus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
-                    preceed_preceed_res_cor_N = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_CO = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_CA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_CB = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_NH = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    preceed_preceed_res_cor_HA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                    preceed_preceed_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
+                if res_i_csi_sec_str != res_i_minus_2_csi_sec_str\
+                   and res_num_i_minus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
+                    preceed_preceed_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    preceed_preceed_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
             else:
                 preceed_preceed_res_cor_N = preceed_preceed_res_cor_CO = preceed_preceed_res_cor_CA =\
                     preceed_preceed_res_cor_CB = preceed_preceed_res_cor_NH = preceed_preceed_res_cor_HA = 0.0
@@ -8167,35 +8258,39 @@ class RCI:
                 preceed_preceed_res_cor_N = preceed_preceed_res_cor_CO = preceed_preceed_res_cor_CA =\
                     preceed_preceed_res_cor_CB = preceed_preceed_res_cor_NH = preceed_preceed_res_cor_HA = 0.0
 
-            if self.next_res_effect_flag == 1 and dyna_simp_res_num_i_plus_1 is not None and dyna_simp_res_name_i_plus_1 is not None and NoNextProPro != 1:
-                if res_i_csi_sec_str == res_i_plus_1_csi_sec_str and res_num_i_plus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
-                    next_res_cor_N = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__N_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_CO = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CO_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_CA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CA_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_CB = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CB_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_NH = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__NH_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_HA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__HA_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+            if self.next_res_effect_flag == 1 and dyna_simp_res_num_i_plus_1 is not None\
+               and dyna_simp_res_name_i_plus_1 is not None and NoNextProPro != 1:
+                _eff = self.next_res_effect[dyna_simp_res_name_i_plus_1]
+                if res_i_csi_sec_str == res_i_plus_1_csi_sec_str\
+                   and res_num_i_plus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
+                    next_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
                 elif res_num_i_plus_1_sec_str_found == 0:
-                    next_res_cor_N = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_CO = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_CA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_CB = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_NH = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_HA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
                 elif res_num_i_sec_str_found == 0:
-                    next_res_cor_N = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__N_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_CO = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CO_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_CA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CA_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_CB = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CB_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_NH = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__NH_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                    next_res_cor_HA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__HA_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
-                if res_i_csi_sec_str != res_i_plus_1_csi_sec_str and res_num_i_plus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
-                    next_res_cor_N = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_CO = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_CA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_CB = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_NH = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_res_cor_HA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                    next_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_plus_1_csi_sec_str]]
+                if res_i_csi_sec_str != res_i_plus_1_csi_sec_str\
+                   and res_num_i_plus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
+                    next_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
             else:
                 next_res_cor_N = next_res_cor_CO = next_res_cor_CA =\
                     next_res_cor_CB = next_res_cor_NH = next_res_cor_HA = 0.0
@@ -8206,34 +8301,37 @@ class RCI:
 
             if self.next_res_effect_flag == 1 and self.next_next_res_effect_flag == 1\
                and dyna_simp_res_num_i_plus_2 is not None and dyna_simp_res_name_i_plus_2 is not None and NoNextProPro != 1:
-                if res_i_csi_sec_str == res_i_plus_2_csi_sec_str and res_num_i_plus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
-                    next_next_res_cor_N = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__N_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_CO = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CO_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_CA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CA_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_CB = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CB_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_NH = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__NH_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_HA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__HA_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                _eff = self.next_next_res_effect[dyna_simp_res_name_i_plus_2]
+                if res_i_csi_sec_str == res_i_plus_2_csi_sec_str\
+                   and res_num_i_plus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
+                    next_next_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
                 elif res_num_i_plus_2_sec_str_found == 0:
-                    next_next_res_cor_N = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_CO = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_CA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_CB = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_NH = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_HA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
                 elif res_num_i_sec_str_found == 0:
-                    next_next_res_cor_N = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__N_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_CO = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CO_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_CA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CA_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_CB = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CB_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_NH = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__NH_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                    next_next_res_cor_HA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__HA_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
-                if res_i_csi_sec_str != res_i_plus_2_csi_sec_str and res_num_i_plus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
-                    next_next_res_cor_N = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_CO = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_CA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_CB = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_NH = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
-                    next_next_res_cor_HA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                    next_next_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
+                if res_i_csi_sec_str != res_i_plus_2_csi_sec_str\
+                   and res_num_i_plus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
+                    next_next_res_cor_N = _eff[self.__N_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_CO = _eff[self.__CO_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_CA = _eff[self.__CA_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_CB = _eff[self.__CB_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_NH = _eff[self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
+                    next_next_res_cor_HA = _eff[self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
             else:
                 next_next_res_cor_N = next_next_res_cor_CO = next_next_res_cor_CA =\
                     next_next_res_cor_CB = next_next_res_cor_NH = next_next_res_cor_HA = 0.0
@@ -8255,7 +8353,8 @@ class RCI:
             if HA_coil_value is not None:
                 final_HA = HA_coil_value + next_res_cor_HA + preceed_res_cor_HA + next_next_res_cor_HA + preceed_preceed_res_cor_HA
 
-            self.__simpred_lines.append([dyna_simp_res_num_i, dyna_simp_res_name_i, final_CA, final_CB, final_CO, final_N, final_NH, final_HA])
+            self.__simpred_lines.append([dyna_simp_res_num_i, dyna_simp_res_name_i,
+                                         final_CA, final_CB, final_CO, final_N, final_NH, final_HA])
 
             if res_i_found == 0:
                 logwrite = f"Warning. Residue i,{res_i}, has not been found\n"
@@ -8270,11 +8369,13 @@ class RCI:
                 if self.__verbose:
                     self.__log.write(logwrite)
             if res_num_i_minus_1_sec_str_found == 0:
-                logwrite = f"Warning. Secondary structure type of residue i-1,{res_i_plus_1},(for residue {res_i}) has not been found. Random coil type is used.\n"
+                logwrite = f"Warning. Secondary structure type of residue i-1,{res_i_plus_1},(for residue {res_i}) "\
+                    "has not been found. Random coil type is used.\n"
                 if self.__verbose:
                     self.__log.write(logwrite)
             if res_num_i_plus_1_sec_str_found == 0:
-                logwrite = f"Warning. Secondary structure type of residue i+1,{res_i_minus_1},(for residue {res_i}) has not been found. Random coil type is used.\n"
+                logwrite = f"Warning. Secondary structure type of residue i+1,{res_i_minus_1},(for residue {res_i}) "\
+                    "has not been found. Random coil type is used.\n"
                 if self.__verbose:
                     self.__log.write(logwrite)
             if res_num_i_sec_str_found == 0:
@@ -8337,8 +8438,10 @@ class RCI:
                                 if residue_name == "B":
                                     residue_name = "C"
 
-                                no_smooth_list.append([residue_number, residue_name, bmrb_shift, simpred_shift, chem_shift_diff, chem_shift_diff_abs])
-                                no_smooth_list2.append([residue_number, residue_name, bmrb_shift, simpred_shift, chem_shift_diff, chem_shift_diff_abs, atom_type])
+                                no_smooth_list.append([residue_number, residue_name, bmrb_shift,
+                                                       simpred_shift, chem_shift_diff, chem_shift_diff_abs])
+                                no_smooth_list2.append([residue_number, residue_name, bmrb_shift,
+                                                        simpred_shift, chem_shift_diff, chem_shift_diff_abs, atom_type])
 
             if self.gap_fill_flag == 0:
                 list_for_smooth = no_smooth_list2

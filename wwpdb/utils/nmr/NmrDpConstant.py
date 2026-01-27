@@ -965,6 +965,27 @@ READABLE_FILE_TYPE = {'nef': 'NEF (NMR Exchange Format)',
                       'unknown': 'unknown'
                       }
 
+LP_ITEM_TYPES = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index',
+                 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+
+SF_TAG_ITEM_TYPES = ('str', 'bool', 'int', 'positive-int', 'positive-int-as-str',
+                     'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+
+# readable item type
+READABLE_ITEM_TYPE = {'str': 'a string',
+                      'bool': 'a boolean value',
+                      'int': 'an integer',
+                      'index-int': 'an unique positive integer',
+                      'positive-int': 'a positive integer',
+                      'positive-int-as-str': 'a positive integer',
+                      'pointer-index': 'an integer acting as a pointer to the parent item',
+                      'float': 'a floating point number',
+                      'positive-float': 'a positive floating point number',
+                      'range-float': 'a floating point number in a specific range',
+                      'enum': 'an enumeration value',
+                      'enum-int': 'an enumeration value restricted to integers'
+                      }
+
 # content type
 CONTENT_TYPE = {'nef': 'nmr-data-nef',
                 'nmr-star': 'nmr-data-str',
@@ -4218,7 +4239,7 @@ ALLOWED_TAGS = {'nef': {'entry_info': ['program_name', 'script_name', 'script'],
                                           'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID',
                                           'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
                              'entity': None,
-                             # DAOTHER-7545 'Entity_assembly_asym_ID' is not authorized data item acoording to NMR-STAR dictionary,
+                             # DAOTHER-7545 'Entity_assembly_asym_ID' is not authorized data item according to NMR-STAR dictionary,
                              # but it is still used conventionally
                              'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_assembly_asym_ID', 'Entity_ID',
                                             'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',

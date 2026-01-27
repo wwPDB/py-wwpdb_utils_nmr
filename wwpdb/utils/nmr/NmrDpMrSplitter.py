@@ -320,7 +320,7 @@ def is_eps_or_pdf_file(fPath: str) -> bool:
 
 
 def is_star_file(fPath: str) -> bool:
-    """ Check if a given file contains STAR syntaxes.
+    """ Check if a given file contains STAR syntax.
     """
 
     has_datablock = False
@@ -346,7 +346,7 @@ def is_star_file(fPath: str) -> bool:
 
 
 def is_amb_top_file(fPath: str) -> bool:
-    """ Check if a given file contains AMBER topology/patemeter syntaxes.
+    """ Check if a given file contains AMBER topology/patemeter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -358,7 +358,7 @@ def is_amb_top_file(fPath: str) -> bool:
 
 
 def is_amb_rst_file(fPath: str) -> bool:
-    """ Check if a given file contains AMBER restraint syntaxes.
+    """ Check if a given file contains AMBER restraint syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -370,7 +370,7 @@ def is_amb_rst_file(fPath: str) -> bool:
 
 
 def is_cha_top_file(fPath: str) -> bool:
-    """ Check if a given file contains CHARMM topology/patemeter syntaxes.
+    """ Check if a given file contains CHARMM topology/patemeter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -382,7 +382,7 @@ def is_cha_top_file(fPath: str) -> bool:
 
 
 def is_cha_rst_file(fPath: str) -> bool:
-    """ Check if a given file contains CHARMM restraint syntaxes.
+    """ Check if a given file contains CHARMM restraint syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -394,7 +394,7 @@ def is_cha_rst_file(fPath: str) -> bool:
 
 
 def is_gro_top_file(fPath: str) -> bool:
-    """ Check if a given file contains GROMACS topology/patemeter syntaxes.
+    """ Check if a given file contains GROMACS topology/patemeter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -406,7 +406,7 @@ def is_gro_top_file(fPath: str) -> bool:
 
 
 def is_gro_rst_file(fPath: str) -> bool:
-    """ Check if a given file contains GROMACS restraint syntaxes.
+    """ Check if a given file contains GROMACS restraint syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -418,7 +418,7 @@ def is_gro_rst_file(fPath: str) -> bool:
 
 
 def is_pdb_top_file(fPath: str) -> bool:
-    """ Check if a given file contains PDB-line topology/patemeter syntaxes.
+    """ Check if a given file contains PDB-line topology/patemeter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -2181,7 +2181,7 @@ class NmrDpMrSplitter:
                     if os.path.exists(file_path + '-corrected'):
                         file_path = file_path + '-corrected'
 
-                    # use ANTLR SSL predition mode for performance gain if restaurants have deep but simple atom selection (DAOTHER-10315)
+                    # use ANTLR SSL prediction mode for performance gain if restaurants have deep but simple atom selection (DAOTHER-10315)
                     if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
                         has_deep_l_pattern = False
                         with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
@@ -2223,7 +2223,7 @@ class NmrDpMrSplitter:
                     has_content = content_subtype is not None
 
                     if has_lexer_error and has_parser_error and has_content:
-                        # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                        # parser error occurs before occurrence of lexer error that implies mixing of different MR formats in a file
                         if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                             corrected |= self.__stripLegacyMrIfNecessary(file_path, file_type,
                                                                          parser_err_listener.getMessageList()[0],
@@ -2797,7 +2797,7 @@ class NmrDpMrSplitter:
 
                 listener, parser_err_listener, _ = reader.parse(file_path, None)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 # has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
                 has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
                 content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -5396,7 +5396,7 @@ class NmrDpMrSplitter:
 
             listener, parser_err_listener, _ = reader.parse(file_path, None)
 
-            # ignore lexer error beacuse of imcomplete XML file format
+            # ignore lexer error because of incomplete XML file format
             # has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
             has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
             content_subtype = listener.getContentSubtype() if listener is not None else None
@@ -5738,7 +5738,7 @@ class NmrDpMrSplitter:
 
                     return False
 
-                # try to resolve unexcepted concatenation
+                # try to resolve unexpected concatenation
                 test_line = err_input[err_column_position + 1:]
 
                 if len(test_line) > 0:
@@ -6356,7 +6356,7 @@ class NmrDpMrSplitter:
 
                                 os.rename(div_try_file, div_dst_file)
 
-                                is_valid = True  # triggar for more split
+                                is_valid = True  # trigger for more split
                                 re_valid = False  # local lexer/parser errors should be handled by manual
 
                                 k = l = 0  # noqa: E741
@@ -7527,7 +7527,7 @@ class NmrDpMrSplitter:
             has_content = bool(listener is not None and len(listener.getContentSubtype()) > 0)
 
             if has_lexer_error and has_parser_error and has_content:
-                # parser error occurrs before occurrenece of lexer error that implies mixing of different MR formats in a file
+                # parser error occurs before occurrence of lexer error that implies mixing of different MR formats in a file
                 if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
                     self.__stripLegacyMrIfNecessary(file_path, file_type,
                                                     parser_err_listener.getMessageList()[0],

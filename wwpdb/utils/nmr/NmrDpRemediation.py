@@ -2669,7 +2669,8 @@ class NmrDpRemediation:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_id = _auth_seq_id + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
-                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694
+                            # 2l1f, DAOTHER-9694
+                            if _seq_key in seq_keys or _auth_comp_id in EMPTY_VALUE or not _auth_comp_id[0].isalnum():
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
@@ -3042,12 +3043,12 @@ class NmrDpRemediation:
                                 continue
 
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                for b in self.__reg.ccU.lastBonds:
-                                    if atom_id in (b[self.__reg.ccU.ccbAtomId1], b[self.__reg.ccU.ccbAtomId2]):
-                                        _atom_id = b[self.__reg.ccU.ccbAtomId1] if b[self.__reg.ccU.ccbAtomId1] != atom_id\
-                                            else b[self.__reg.ccU.ccbAtomId2]
-                                        if any(True for a in self.__reg.ccU.lastAtomList
-                                               if _atom_id == a[self.__reg.ccU.ccaAtomId] and a[self.__reg.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                for b in self.__reg.ccU.lastBondDictList:
+                                    if atom_id in (b['atom_id_1'], b['atom_id_2']):
+                                        _atom_id = b['atom_id_1'] if b['atom_id_1'] != atom_id\
+                                            else b['atom_id_2']
+                                        if any(True for a in self.__reg.ccU.lastAtomDictList
+                                               if _atom_id == a['atom_id'] and a['leaving_atom_flag'] == 'Y'):
                                             leaving_atom_id = _atom_id
                                             break
 
@@ -3093,13 +3094,13 @@ class NmrDpRemediation:
                                     continue
 
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    for b in self.__reg.ccU.lastBonds:
-                                        if atom_id in (b[self.__reg.ccU.ccbAtomId1], b[self.__reg.ccU.ccbAtomId2]):
-                                            _atom_id = b[self.__reg.ccU.ccbAtomId1] if b[self.__reg.ccU.ccbAtomId1] != atom_id\
-                                                else b[self.__reg.ccU.ccbAtomId2]
-                                            if any(True for a in self.__reg.ccU.lastAtomList
-                                                   if _atom_id == a[self.__reg.ccU.ccaAtomId]
-                                                   and a[self.__reg.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                    for b in self.__reg.ccU.lastBondDictList:
+                                        if atom_id in (b['atom_id_1'], b['atom_id_2']):
+                                            _atom_id = b['atom_id_1'] if b['atom_id_1'] != atom_id\
+                                                else b['atom_id_2']
+                                            if any(True for a in self.__reg.ccU.lastAtomDictList
+                                                   if _atom_id == a['atom_id']
+                                                   and a['leaving_atom_flag'] == 'Y'):
                                                 leaving_atom_id = _atom_id
                                                 break
 
@@ -4553,7 +4554,7 @@ class NmrDpRemediation:
 
         loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
-        # cleanup uncecessary '?'
+        # cleanup unnecessary '?'
         item_names = [item['name'] for item in self.__reg.key_items[file_type][content_subtype]]
         item_names.extend([item['name'] for item in DATA_ITEMS[file_type][content_subtype]])
         first_row = loop.data[0]
@@ -4761,7 +4762,7 @@ class NmrDpRemediation:
             auth_comp_id_col = loop.tags.index('Auth_comp_ID') if 'Auth_comp_ID' in loop.tags else -1
             auth_atom_id_col = loop.tags.index('Auth_atom_ID') if 'Auth_atom_ID' in loop.tags else -1
 
-            # split concatination of auth_seq_id and ins_code (DAOTHER-10418)
+            # split concatenation of auth_seq_id and ins_code (DAOTHER-10418)
             if auth_to_ins_code is not None and len(auth_to_ins_code) > 0 and auth_seq_id_col != -1:
                 auth_dat = loop.get_tag(['Auth_seq_ID'])
 
@@ -4991,7 +4992,7 @@ class NmrDpRemediation:
                         _row[7] = _coord_atom_site['type_symbol'][_atom_site_atom_id.index(atom_id)]
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                        # """ need to preserve Original_PDB_atom_name for atom name mapping hisotry
+                        # """ need to preserve Original_PDB_atom_name for atom name mapping history
                         # if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _atom_site_atom_id:
                         #     if _row[23] in self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True):
                         #         _row[23] = copy.copy(atom_id)
@@ -5000,9 +5001,9 @@ class NmrDpRemediation:
                         if atom_id in ('H1', 'HT1') and 'H' in _atom_site_atom_id\
                            and atom_id not in _atom_site_atom_id:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                            if cca[self.__reg.ccU.ccaAtomId] == atom_id
-                                            and cca[self.__reg.ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                            if cca['atom_id'] == atom_id
+                                            and cca['leaving_atom_flag'] == 'N'), None)
                                 if cca is None:
                                     atom_id = 'H'
                                     if fill_auth_atom_id:
@@ -5014,9 +5015,9 @@ class NmrDpRemediation:
                         elif atom_id in ('H', 'HT1') and 'H1' in _atom_site_atom_id\
                                 and atom_id not in _atom_site_atom_id:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                            if cca[self.__reg.ccU.ccaAtomId] == atom_id
-                                            and cca[self.__reg.ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                            if cca['atom_id'] == atom_id
+                                            and cca['leaving_atom_flag'] == 'N'), None)
                                 if cca is None:
                                     atom_id = 'H1'
                                     if fill_auth_atom_id:
@@ -5035,7 +5036,7 @@ class NmrDpRemediation:
                             heme = False
                             if _row[9] not in EMPTY_VALUE:
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['_chem_comp.name']
+                                    heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['name']
                             if not heme:
                                 missing_ch3 = []
                         _atom_id = atom_id
@@ -5087,9 +5088,9 @@ class NmrDpRemediation:
                             _row[19] = None
                             fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
+                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
                                 if cca is not None:
-                                    _row[7] = cca[self.__reg.ccU.ccaTypeSymbol]
+                                    _row[7] = cca['type_symbol']
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
@@ -5393,7 +5394,7 @@ class NmrDpRemediation:
                         heme = False
                         if _row[9] not in EMPTY_VALUE:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['_chem_comp.name']
+                                heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['name']
                         if not heme:
                             missing_ch3 = []
                     _atom_id = atom_id
@@ -5432,9 +5433,9 @@ class NmrDpRemediation:
                         _row[19] = None
                         fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                         if self.__reg.ccU.updateChemCompDict(comp_id):
-                            cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
+                            cca = next((cca for cca in self.__reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
                             if cca is not None:
-                                _row[7] = cca[self.__reg.ccU.ccaTypeSymbol]
+                                _row[7] = cca['type_symbol']
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
@@ -7059,9 +7060,9 @@ class NmrDpRemediation:
                                         if __seq_key is not None:
                                             __comp_id = __seq_key[2]
                                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                                cc_type = self.__reg.ccU.lastChemCompDict['_chem_comp.type']
+                                                cc_type = self.__reg.ccU.lastChemCompDict['type']
                                                 if self.__reg.ccU.updateChemCompDict(__comp_id):
-                                                    __cc_type = self.__reg.ccU.lastChemCompDict['_chem_comp.type']
+                                                    __cc_type = self.__reg.ccU.lastChemCompDict['type']
                                                     if cc_type == __cc_type:  # DAOTHER-9198
                                                         found = True
                                                         comp_id = __seq_key[2]
@@ -7234,10 +7235,10 @@ class NmrDpRemediation:
                                 _row[19] = None
                                 fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                                if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
+                                    cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                                if cca['atom_id'] == _row[6]), None)
                                     if cca is not None:
-                                        _row[7] = cca[self.__reg.ccU.ccaTypeSymbol]
+                                        _row[7] = cca['type_symbol']
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:
@@ -9963,7 +9964,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -10024,7 +10025,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -10086,7 +10087,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -10147,7 +10148,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -10208,7 +10209,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -10269,7 +10270,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -10330,7 +10331,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -10391,7 +10392,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -10452,7 +10453,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -13504,7 +13505,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -13582,7 +13583,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -14249,7 +14250,7 @@ class NmrDpRemediation:
 
                 _list_id_counter = copy.copy(self.__reg.list_id_counter)
 
-                # ignore lexer error beacuse of imcomplete XML file format
+                # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path, self.__reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -16298,7 +16299,7 @@ class NmrDpRemediation:
 
             sf.add_loop(lp)
 
-            # update _Datum loopa
+            # update _Datum loop
 
             lp_category = '_Datum'
 

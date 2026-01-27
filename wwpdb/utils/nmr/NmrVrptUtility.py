@@ -693,7 +693,7 @@ class NmrVrptUtility:
         self.__distRestViolDict = None
         # list of restraint key of unmapped distance restraints
         self.__distRestUnmapped = None
-        # combination keys (Combination_ID/Mmember_ID) of violated distance restraints for each restraint key
+        # combination keys (Combination_ID/Member_ID) of violated distance restraints for each restraint key
         self.__distRestViolCombKeyDict = None
 
         # dihedral angle restraint violations for each restraint key
@@ -2047,10 +2047,10 @@ class NmrVrptUtility:
                 if not self.__ccU.updateChemCompDict(comp_id):
                     return None
 
-                if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
+                if self.__ccU.lastChemCompDict['release_status'] != 'REL':
                     return None
 
-                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id), None)
+                cca = next((cca for cca in self.__ccU.lastAtomDictList if cca['atom_id'] == atom_id), None)
 
                 if cca is None:
                     return None
@@ -2067,10 +2067,10 @@ class NmrVrptUtility:
                 if _atom_key not in self.__coordinates[model_id]:
                     return None
 
-                if not (cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'
+                if not (cca['leaving_atom_flag'] != 'Y'
                         or (self.__csStat.peptideLike(comp_id)
-                            and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
-                            and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N')):
+                            and cca['n_terminal_atom_flag'] == 'N'
+                            and cca['c_terminal_atom_flag'] == 'N')):
                     return None
 
                 neighbor_to = self.__ccU.getBondedAtoms(comp_id, ref_atom_id, exclProton=True)
@@ -2100,17 +2100,13 @@ class NmrVrptUtility:
                         ref_atom_ids.append(_ref_atom_id)
                         ref_atoms_xyz.append(self.__coordinates[model_id][__atom_key])
 
-                src_ccd_xyz = np.asarray([float(cca[self.__ccU.ccaCartnX]),
-                                          float(cca[self.__ccU.ccaCartnY]),
-                                          float(cca[self.__ccU.ccaCartnZ])], dtype=float)
+                src_ccd_xyz = np.asarray([cca['x'], cca['y'], cca['z']], dtype=float)
 
                 ccd_atoms_xyz = []
                 for _ref_atom_id in ref_atom_ids:
-                    _cca = next((_cca for _cca in self.__ccU.lastAtomList if _cca[self.__ccU.ccaAtomId] == _ref_atom_id), None)
+                    _cca = next((_cca for _cca in self.__ccU.lastAtomDictList if _cca['atom_id'] == _ref_atom_id), None)
                     if _cca is not None:
-                        ccd_atoms_xyz.append(np.asarray([float(_cca[self.__ccU.ccaCartnX]),
-                                                         float(_cca[self.__ccU.ccaCartnY]),
-                                                         float(_cca[self.__ccU.ccaCartnZ])], dtype=float))
+                        ccd_atoms_xyz.append(np.asarray([_cca['x'], _cca['y'], _cca['z']], dtype=float))
 
                 if len(ref_atoms_xyz) != len(ccd_atoms_xyz):
                     return None

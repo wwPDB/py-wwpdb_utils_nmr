@@ -446,7 +446,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             # cco_err = self.numberSelection[1]
             weight = self.numberSelection[2]
             # weight_ub = self.numberSelection[3]
-            # weught_max = self.numberSelection[4]
+            # weight_max = self.numberSelection[4]
 
             if weight < 0.0:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -672,7 +672,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             upper_limit = self.numberSelection[1]
             weight = self.numberSelection[2]
             # weight_ub = self.numberSelection[3]
-            # weught_max = self.numberSelection[4]
+            # weight_max = self.numberSelection[4]
 
             if weight < 0.0:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"

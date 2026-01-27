@@ -98,7 +98,7 @@ class NmrDpRegistry:
     nonblk_anomalous_cs: bool = False
     # whether not to block deposition because bad n-term amino group
     nonblk_bad_nterm: bool = False
-    # whether to udpate polymer sequence
+    # whether to update polymer sequence
     update_poly_seq: bool = False
     # whether to resolve conflict
     resolve_conflict: bool = False
@@ -287,7 +287,7 @@ class NmrDpRegistry:
     lp_data: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_SUBTYPE_DATA))
     # auxiliary contents of loops
     aux_data: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_SUBTYPE_DATA))
-    # contents of savefram tags
+    # contents of saveframe tags
     sf_tag_data: dict = field(default_factory=lambda: copy.deepcopy(DEFAULT_SUBTYPE_DATA))
 
     # PairwiseAlign

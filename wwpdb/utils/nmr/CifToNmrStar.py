@@ -280,7 +280,7 @@ class CifToNmrStar:
             with open(file_name, 'wb') as ofh:
                 pickle.dump(obj, ofh)
 
-        schema = pynmrstar.Schema()  # retrieve the latest schema via interet access
+        schema = pynmrstar.Schema()  # retrieve the latest schema via internet access
 
         # print(schema.headers)
         with open(self.schema_dir + 'headers.txt', 'w') as ofh:

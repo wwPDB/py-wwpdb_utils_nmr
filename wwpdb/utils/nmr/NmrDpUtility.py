@@ -71,7 +71,7 @@
 # 01-May-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
 # 02-May-2020  M. Yokochi - additional support for format issue correction while STAR to NEF conversion (DAOTHER-5577)
 # 02-May-2020  M. Yokochi - re-implement basic mathematical functions using Numpy library
-# 07-May-2020  M. Yokochi - revise warning type (from 'insuffcient_data' to 'encouragement') if total number of models is less than 8
+# 07-May-2020  M. Yokochi - revise warning type (from 'insufficient_data' to 'encouragement') if total number of models is less than 8
 #                           (DAOTHER-5650)
 # 07-May-2020  M. Yokochi - add preventive code for infinite loop while format issue correction
 # 08-May-2020  M. Yokochi - sync update with wwpdb.utils.nmr.CifReader (DAOTHER-5654)
@@ -261,6 +261,8 @@
 # 03-Dec-2025  M. Yokochi - split concatenation of auth_seq_id and ins_code in CS/MR loops (DAOTHER-10418, NMR data remediation)
 # 07-Jan-2026  M. Yokochi - code refactoring: NmrDpConstant, NmrDpRegistry, NmrDpMrSplitter, NmrDpFirstAid, NmrDpValidation,
 #                           and NmrDpRemediation classes, v5.0.0)
+# 27-Jan-2026  M. Yokochi - raise error when entity exists and sequence inconsistency between the entity and loops, instead of warning,
+#                           do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -1006,7 +1008,7 @@ class NmrDpUtility:
         self.__reg.cifPath = self.__cifHashCode = None
         self.__reg.cifChecked = False
 
-        # incomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
+        # incomplete assignments are edited by biocurators for conventional assigned chemical shifts (DAOTHER-7662)
         for key in self.__reg.key_items['nmr-star']['chem_shift']:
             if 'remove-bad-pattern' in key:
                 key['remove-bad-pattern'] = self.__reg.combined_mode
@@ -1968,8 +1970,8 @@ class NmrDpUtility:
 
                     if self.__reg.ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
 
-                        ref_elems = set(a[self.__reg.ccU.ccaTypeSymbol] for a in self.__reg.ccU.lastAtomList
-                                        if a[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y')
+                        ref_elems = set(a['type_symbol'] for a in self.__reg.ccU.lastAtomDictList
+                                        if a['leaving_atom_flag'] != 'Y')
 
                         for elem in ref_elems:
                             if elem in PARAMAGNETIC_ELEMENTS or elem in FERROMAGNETIC_ELEMENTS:
@@ -2713,7 +2715,15 @@ class NmrDpUtility:
 
                                 err = f"Invalid chain_id {chain_id!r} in a loop {lp_category2}."
 
-                                if self.__reg.remediation_mode:
+                                single_poly = False
+                                if self.__reg.caC is not None:
+                                    cif_ps = self.__reg.caC['polymer_sequence']
+                                    cif_br = self.__reg.caC['branched']
+                                    cif_np = self.__reg.caC['non_polymer']
+                                    single_poly = len(cif_ps) == 1 and cif_br is None and cif_np is None
+
+                                if self.__reg.remediation_mode\
+                                   and not (self.__reg.has_star_entity and single_poly):  # DAOTHER-10487
 
                                     self.__reg.report.warning.appendDescription('sequence_mismatch',
                                                                                 {'file_name': file_name,
@@ -6409,6 +6419,10 @@ class NmrDpUtility:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
+        if not self.__reg.combined_mode and self.__reg.has_star_entity\
+           and self.__reg.report.error.hasSequenceMismatchError():  # DAOTHER-10487
+            return False
+
         __errors = self.__reg.report.getTotalErrors()
 
         content_subtype = 'chem_shift'
@@ -7321,11 +7335,11 @@ class NmrDpUtility:
                                                    and self.__reg.ccU.updateChemCompDict(comp_id):
                                                     _atom_ids = self.__reg.dpV.getAtomIdList(comp_id, atom_id)
                                                     _atom_ids2 = self.__reg.dpV.getAtomIdList(comp_id, atom_id2)
-                                                    if any(True for b in self.__reg.ccU.lastBonds
-                                                           if ((b[self.__reg.ccU.ccbAtomId1] in _atom_ids
-                                                                and b[self.__reg.ccU.ccbAtomId2] in _atom_ids2)
-                                                               or (b[self.__reg.ccU.ccbAtomId1] in _atom_ids2
-                                                                   and b[self.__reg.ccU.ccbAtomId2] in _atom_ids))):
+                                                    if any(True for b in self.__reg.ccU.lastBondDictList
+                                                           if ((b['atom_id_1'] in _atom_ids
+                                                                and b['atom_id_2'] in _atom_ids2)
+                                                               or (b['atom_id_1'] in _atom_ids2
+                                                                   and b['atom_id_2'] in _atom_ids))):
                                                         continue
 
                                                 err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is onebond. "\
@@ -7859,11 +7873,11 @@ class NmrDpUtility:
                                                and self.__reg.ccU.updateChemCompDict(comp_id):
                                                 _atom_ids = self.__reg.dpV.getAtomIdList(comp_id, atom_id)
                                                 _atom_ids2 = self.__reg.dpV.getAtomIdList(comp_id, atom_id2)
-                                                if any(True for b in self.__reg.ccU.lastBonds
-                                                       if ((b[self.__reg.ccU.ccbAtomId1] in _atom_ids
-                                                            and b[self.__reg.ccU.ccbAtomId2] in _atom_ids2)
-                                                           or (b[self.__reg.ccU.ccbAtomId1] in _atom_ids2
-                                                               and b[self.__reg.ccU.ccbAtomId2] in _atom_ids))):
+                                                if any(True for b in self.__reg.ccU.lastBondDictList
+                                                       if ((b['atom_id_1'] in _atom_ids
+                                                            and b['atom_id_2'] in _atom_ids2)
+                                                           or (b['atom_id_1'] in _atom_ids2
+                                                               and b['atom_id_2'] in _atom_ids))):
                                                     continue
 
                                             err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Coherence transfer type is onebond. "\
@@ -15632,7 +15646,7 @@ class NmrDpUtility:
         return False
 
     def __mergeLegacyData(self) -> bool:
-        """ Merge CS+MR+PK into next NMR unifed data files.
+        """ Merge CS+MR+PK into next NMR unified data files.
         """
 
         return self.__reg.dpR.mergeLegacyData()
@@ -16098,7 +16112,7 @@ class NmrDpUtility:
         return False
 
     def __mergeCoordAsNmrIf(self) -> bool:
-        """ Merge NMRIF metadata of the cooridnates (DAOTHER-8905: NMR data remediation Phase 2).
+        """ Merge NMRIF metadata of the coordinates (DAOTHER-8905: NMR data remediation Phase 2).
         """
 
         if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
@@ -16311,7 +16325,7 @@ class NmrDpUtility:
         return is_done
 
     def __discardPeakListRemediation(self) -> bool:
-        """ Distcard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep enviromment
+        """ Discard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep enviromment
             @note: This rediculaus reverse implementation is for OneDep only
         """
 

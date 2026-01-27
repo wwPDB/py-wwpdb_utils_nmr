@@ -2852,9 +2852,9 @@ class BasePKParserListener():
             _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
             _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
 
-            if any(True for b in self.ccU.lastBonds
-                   if ((b[self.ccU.ccbAtomId1] in _atom_ids and b[self.ccU.ccbAtomId2] in _atom_ids2)
-                       or (b[self.ccU.ccbAtomId1] in _atom_ids2 and b[self.ccU.ccbAtomId2] in _atom_ids))):
+            if any(True for b in self.ccU.lastBondDictList
+                   if ((b['atom_id_1'] in _atom_ids and b['atom_id_2'] in _atom_ids2)
+                       or (b['atom_id_1'] in _atom_ids2 and b['atom_id_2'] in _atom_ids))):
                 return True
 
             _atom_id, _atom_id2 = _atom_ids[0], _atom_ids2[0]
@@ -3363,9 +3363,9 @@ class BasePKParserListener():
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
 
-                        if any(True for b in self.ccU.lastBonds
-                               if ((b[self.ccU.ccbAtomId1] in _atom_ids and b[self.ccU.ccbAtomId2] in _atom_ids2)
-                                   or (b[self.ccU.ccbAtomId1] in _atom_ids2 and b[self.ccU.ccbAtomId2] in _atom_ids))):
+                        if any(True for b in self.ccU.lastBondDictList
+                               if ((b['atom_id_1'] in _atom_ids and b['atom_id_2'] in _atom_ids2)
+                                   or (b['atom_id_1'] in _atom_ids2 and b['atom_id_2'] in _atom_ids))):
                             continue
 
                         if self.software_name == 'PIPP':
@@ -3967,9 +3967,9 @@ class BasePKParserListener():
                        and self.ccU.updateChemCompDict(comp_id):
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
-                        if any(True for b in self.ccU.lastBonds
-                           if ((b[self.ccU.ccbAtomId1] in _atom_ids and b[self.ccU.ccbAtomId2] in _atom_ids2)
-                               or (b[self.ccU.ccbAtomId1] in _atom_ids2 and b[self.ccU.ccbAtomId2] in _atom_ids))):
+                        if any(True for b in self.ccU.lastBondDictList
+                           if ((b['atom_id_1'] in _atom_ids and b['atom_id_2'] in _atom_ids2)
+                               or (b['atom_id_1'] in _atom_ids2 and b['atom_id_2'] in _atom_ids))):
                             continue
 
                         if self.software_name == 'PIPP':
@@ -9087,7 +9087,7 @@ class BasePKParserListener():
 
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
-               and self.ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+               and self.ccU.lastChemCompDict['type'].upper() == 'D-PEPTIDE LINKING':
                 revertPolySeqRst(self.polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
@@ -9251,7 +9251,7 @@ class BasePKParserListener():
                     if ligands == 1:
                         compId = _compId = __compId
                     elif len(self.nonPoly) == 1 and self.ccU.updateChemCompDict(_compId, False):
-                        if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
+                        if self.ccU.lastChemCompDict['release_status'] == 'OBS':
                             compId = _compId = self.nonPoly[0]['comp_id'][0]
                             ligands = 1
                 if self.reasons is None and atomId in self.__uniqAtomIdToSeqKey:
@@ -9771,7 +9771,7 @@ class BasePKParserListener():
 
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
-               and self.ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+               and self.ccU.lastChemCompDict['type'].upper() == 'D-PEPTIDE LINKING':
                 revertPolySeqRst(self.polySeqRst, str(refChainId), _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
@@ -9931,7 +9931,7 @@ class BasePKParserListener():
                     if ligands == 1:
                         compId = _compId = __compId
                     elif len(self.nonPoly) == 1 and self.ccU.updateChemCompDict(_compId, False):
-                        if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
+                        if self.ccU.lastChemCompDict['release_status'] == 'OBS':
                             compId = _compId = self.nonPoly[0]['comp_id'][0]
                             ligands = 1
                 if self.reasons is None and atomId in self.__uniqAtomIdToSeqKey:
@@ -10870,14 +10870,14 @@ class BasePKParserListener():
                    and self.reasons is not None and 'non_poly_remap' in self.reasons:
                     if self.ccU.updateChemCompDict(cifCompId):
                         try:
-                            next(cca for cca in self.ccU.lastAtomList
-                                 if cca[self.ccU.ccaAtomId] == cifAtomId and cca[self.ccU.ccaLeavingAtomFlag] != 'Y')
+                            next(cca for cca in self.ccU.lastAtomDictList
+                                 if cca['atom_id'] == cifAtomId and cca['leaving_atom_flag'] != 'Y')
                         except StopIteration:
                             continue
                         try:
                             if len(authAtomId) > len(cifAtomId):
-                                next(cca for cca in self.ccU.lastAtomList
-                                     if cca[self.ccU.ccaAtomId] == authAtomId and cca[self.ccU.ccaLeavingAtomFlag] != 'Y')
+                                next(cca for cca in self.ccU.lastAtomDictList
+                                     if cca['atom_id'] == authAtomId and cca['leaving_atom_flag'] != 'Y')
                         except StopIteration:
                             break
 
@@ -11085,9 +11085,9 @@ class BasePKParserListener():
                 return atomId, asis
 
         if self.ccU.updateChemCompDict(compId):
-            cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
+            cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes\
-               and self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+               and self.ccU.lastChemCompDict['release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
@@ -11106,10 +11106,10 @@ class BasePKParserListener():
                         bondedTo = self.ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
-                                if cca[self.ccU.ccaLeavingAtomFlag] != 'Y'\
+                                if cca['leaving_atom_flag'] != 'Y'\
                                    or (self.csStat.peptideLike(compId)
-                                       and cca[self.ccU.ccaNTerminalAtomFlag] == 'N'
-                                       and cca[self.ccU.ccaCTerminalAtomFlag] == 'N'):
+                                       and cca['n_terminal_atom_flag'] == 'N'
+                                       and cca['c_terminal_atom_flag'] == 'N'):
                                     self.f.append(f"[Hydrogen not instantiated] {self.getCurrentSpectralPeak(n=index)}"
                                                   f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                   "Please re-upload the model file.")

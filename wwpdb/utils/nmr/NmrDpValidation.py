@@ -675,13 +675,13 @@ class NmrDpValidation:
             is_valid = True
 
             if cc_name is None:
-                cc_name = self.__reg.ccU.lastChemCompDict['_chem_comp.name']
+                cc_name = self.__reg.ccU.lastChemCompDict['name']
 
             if processing_site is not None and processing_site.startswith('BMRB'):
                 is_valid = False
                 cc_name += f', processing site {processing_site}'
             else:
-                cc_rel_status = self.__reg.ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+                cc_rel_status = self.__reg.ccU.lastChemCompDict['release_status']
 
         else:
             is_valid = False
@@ -2676,48 +2676,48 @@ class NmrDpValidation:
 
             half_ring_traces = []
 
-            for b1 in self.__reg.ccU.lastBonds:
+            for b1 in self.__reg.ccU.lastBondDictList:
 
-                if b1[self.__reg.ccU.ccbAromaticFlag] != 'Y':
+                if b1['aromatic_flag'] != 'Y':
                     continue
 
-                if b1[self.__reg.ccU.ccbAtomId1] == na_atom_id and b1[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE:
-                    na_ = b1[self.__reg.ccU.ccbAtomId2]
+                if b1['atom_id_1'] == na_atom_id and b1['atom_id_2'][0] not in PROTON_BEGIN_CODE:
+                    na_ = b1['atom_id_2']
 
-                elif b1[self.__reg.ccU.ccbAtomId2] == na_atom_id and b1[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE:
-                    na_ = b1[self.__reg.ccU.ccbAtomId1]
+                elif b1['atom_id_2'] == na_atom_id and b1['atom_id_1'][0] not in PROTON_BEGIN_CODE:
+                    na_ = b1['atom_id_1']
 
                 else:
                     continue
 
-                for b2 in self.__reg.ccU.lastBonds:
+                for b2 in self.__reg.ccU.lastBondDictList:
 
-                    if b2[self.__reg.ccU.ccbAromaticFlag] != 'Y':
+                    if b2['aromatic_flag'] != 'Y':
                         continue
 
-                    if b2[self.__reg.ccU.ccbAtomId1] == na_ and b2[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE\
-                            and b2[self.__reg.ccU.ccbAtomId2] != na_atom_id:
-                        na__ = b2[self.__reg.ccU.ccbAtomId2]
+                    if b2['atom_id_1'] == na_ and b2['atom_id_2'][0] not in PROTON_BEGIN_CODE\
+                            and b2['atom_id_2'] != na_atom_id:
+                        na__ = b2['atom_id_2']
 
-                    elif b2[self.__reg.ccU.ccbAtomId2] == na_ and b2[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE\
-                            and b2[self.__reg.ccU.ccbAtomId1] != na_atom_id:
-                        na__ = b2[self.__reg.ccU.ccbAtomId1]
+                    elif b2['atom_id_2'] == na_ and b2['atom_id_1'][0] not in PROTON_BEGIN_CODE\
+                            and b2['atom_id_1'] != na_atom_id:
+                        na__ = b2['atom_id_1']
 
                     else:
                         continue
 
-                    for b3 in self.__reg.ccU.lastBonds:
+                    for b3 in self.__reg.ccU.lastBondDictList:
 
-                        if b3[self.__reg.ccU.ccbAromaticFlag] != 'Y':
+                        if b3['aromatic_flag'] != 'Y':
                             continue
 
-                        if b3[self.__reg.ccU.ccbAtomId1] == na__ and b3[self.__reg.ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE\
-                                and b3[self.__reg.ccU.ccbAtomId2] != na_:
-                            na___ = b3[self.__reg.ccU.ccbAtomId2]
+                        if b3['atom_id_1'] == na__ and b3['atom_id_2'][0] not in PROTON_BEGIN_CODE\
+                                and b3['atom_id_2'] != na_:
+                            na___ = b3['atom_id_2']
 
-                        elif b3[self.__reg.ccU.ccbAtomId2] == na__ and b3[self.__reg.ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE\
-                                and b3[self.__reg.ccU.ccbAtomId1] != na_:
-                            na___ = b3[self.__reg.ccU.ccbAtomId1]
+                        elif b3['atom_id_2'] == na__ and b3['atom_id_1'][0] not in PROTON_BEGIN_CODE\
+                                and b3['atom_id_1'] != na_:
+                            na___ = b3['atom_id_1']
 
                         else:
                             continue
@@ -3843,9 +3843,9 @@ class NmrDpValidation:
             comp_id = comp_id.split('_')[0]
 
         elif comp_id not in STD_MON_DICT and self.__reg.ccU.updateChemCompDict(comp_id):
-            if '_chem_comp.mon_nstd_parent_comp_id' in self.__reg.ccU.lastChemCompDict:  # matches with comp_id in CCD
-                if self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in EMPTY_VALUE:
-                    comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
+            if 'parent_comp_id' in self.__reg.ccU.lastChemCompDict:  # matches with comp_id in CCD
+                if self.__reg.ccU.lastChemCompDict['parent_comp_id'] not in EMPTY_VALUE:
+                    comp_id = self.__reg.ccU.lastChemCompDict['parent_comp_id']
                     if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         comp_id = 'D' + comp_id
                     elif ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
@@ -3855,9 +3855,9 @@ class NmrDpValidation:
             ref_comp_id = ref_comp_id.split('_')[0]
 
         elif ref_comp_id not in STD_MON_DICT and self.__reg.ccU.updateChemCompDict(ref_comp_id):
-            if '_chem_comp.mon_nstd_parent_comp_id' in self.__reg.ccU.lastChemCompDict:  # matches with comp_id in CCD
-                if self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] not in EMPTY_VALUE:
-                    ref_comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
+            if 'parent_comp_id' in self.__reg.ccU.lastChemCompDict:  # matches with comp_id in CCD
+                if self.__reg.ccU.lastChemCompDict['parent_comp_id'] not in EMPTY_VALUE:
+                    ref_comp_id = self.__reg.ccU.lastChemCompDict['parent_comp_id']
                     if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         ref_comp_id = 'D' + ref_comp_id
                     elif comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
@@ -4730,8 +4730,8 @@ class NmrDpValidation:
 
                     if self.__reg.ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
 
-                        ref_atom_ids = [a[self.__reg.ccU.ccaAtomId] for a in self.__reg.ccU.lastAtomList]
-                        # if a[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y']
+                        ref_atom_ids = [a['atom_id'] for a in self.__reg.ccU.lastAtomDictList]
+                        # if a['leaving_atom_flag'] != 'Y']
                         unk_atom_ids = []
 
                         for atom_id in atom_ids:
@@ -4769,8 +4769,8 @@ class NmrDpValidation:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
                                                      f"++ Warning  - {warn}\n")
 
-                        ref_elems = set(a[self.__reg.ccU.ccaTypeSymbol] for a in self.__reg.ccU.lastAtomList
-                                        if a[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y')
+                        ref_elems = set(a['type_symbol'] for a in self.__reg.ccU.lastAtomDictList
+                                        if a['leaving_atom_flag'] != 'Y')
 
                         for elem in ref_elems:
                             if elem in PARAMAGNETIC_ELEMENTS or elem in FERROMAGNETIC_ELEMENTS:
@@ -4843,7 +4843,7 @@ class NmrDpValidation:
                         if comp_id in STD_MON_DICT:
 
                             self.__reg.ccU.updateChemCompDict(comp_id)
-                            ref_atom_ids = [a[self.__reg.ccU.ccaAtomId] for a in self.__reg.ccU.lastAtomList]
+                            ref_atom_ids = [a['atom_id'] for a in self.__reg.ccU.lastAtomDictList]
 
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
@@ -6374,7 +6374,7 @@ class NmrDpValidation:
                     cs_stats = self.__reg.csStat.get(comp_id)
                     if len(cs_stats) == 0:
                         if self.__reg.ccU.updateChemCompDict(comp_id):
-                            parent_comp_id = self.__reg.ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
+                            parent_comp_id = self.__reg.ccU.lastChemCompDict['parent_comp_id']
                             # DAOTHER-9198: retrieve BMRB chemical shift statittics from parent comp_id if possible (i.e. DNR -> DC)
                             if parent_comp_id in STD_MON_DICT:
                                 cs_stats = self.__reg.csStat.get(parent_comp_id)
@@ -8945,16 +8945,16 @@ class NmrDpValidation:
 
                                     checked = False
                                     if atom_id_[0] in PROTON_BEGIN_CODE:
-                                        cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                                    if cca[self.__reg.ccU.ccaAtomId] == atom_id_), None)
+                                        cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                                    if cca['atom_id'] == atom_id_), None)
                                         bonded_to = self.__reg.ccU.getBondedAtoms(comp_id, atom_id_)
                                         peptide_like = self.__reg.csStat.peptideLike(comp_id)
                                         if cca is not None and len(bonded_to) > 0:
                                             if coord_atom_site_ is not None and bonded_to[0] in coord_atom_site_['atom_id']\
-                                               and (cca[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y'
+                                               and (cca['leaving_atom_flag'] != 'Y'
                                                     or (peptide_like
-                                                        and cca[self.__reg.ccU.ccaNTerminalAtomFlag] == 'N'
-                                                        and cca[self.__reg.ccU.ccaCTerminalAtomFlag] == 'N')):
+                                                        and cca['n_terminal_atom_flag'] == 'N'
+                                                        and cca['c_terminal_atom_flag'] == 'N')):
                                                 checked = True
                                                 err = "Atom ("\
                                                     + self.getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id,
@@ -9324,7 +9324,7 @@ class NmrDpValidation:
 
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags else 'ndb_model'
 
-                # split concatination of auth_seq_id and ins_code (DAOTHER-10418)
+                # split concatenation of auth_seq_id and ins_code (DAOTHER-10418)
                 if auth_to_ins_code is not None and len(auth_to_ins_code) > 0\
                    and set(auth_seq_id_names) & set(loop.tags) == set(auth_seq_id_names):
                     auth_dat = loop.get_tag(auth_seq_id_names)
@@ -9571,8 +9571,8 @@ class NmrDpValidation:
                                         if not self.__reg.ccU.updateChemCompDict(comp_id.upper()):
                                             continue
 
-                                        cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                                    if cca[self.__reg.ccU.ccaAtomId] == atom_id.upper()), None)
+                                        cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                                    if cca['atom_id'] == atom_id.upper()), None)
 
                                         if cca is None:
                                             continue
@@ -12702,15 +12702,15 @@ class NmrDpValidation:
                             checked = coord_issue = False
                             if atom_id_[0] in PROTON_BEGIN_CODE:
                                 self.__reg.ccU.updateChemCompDict(comp_id)
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == atom_id_), None)
+                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList if cca['atom_id'] == atom_id_), None)
                                 bonded_to = self.__reg.ccU.getBondedAtoms(comp_id, atom_id_)
                                 peptide_like = self.__reg.csStat.peptideLike(comp_id)
                                 if cca is not None and len(bonded_to) > 0:
                                     if coord_atom_site_ is not None and bonded_to[0] in coord_atom_site_['atom_id']\
-                                       and (cca[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y'
+                                       and (cca['leaving_atom_flag'] != 'Y'
                                             or (peptide_like
-                                                and cca[self.__reg.ccU.ccaNTerminalAtomFlag] == 'N'
-                                                and cca[self.__reg.ccU.ccaCTerminalAtomFlag] == 'N')):
+                                                and cca['n_terminal_atom_flag'] == 'N'
+                                                and cca['c_terminal_atom_flag'] == 'N')):
                                         checked = True
                                         err = idx_msg + "Atom ("\
                                             + self.getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
@@ -12805,15 +12805,15 @@ class NmrDpValidation:
                         else:
 
                             if self.__reg.combined_mode and self.__reg.remediation_mode and self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == atom_id_), None)
+                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList if cca['atom_id'] == atom_id_), None)
                                 bonded_to = self.__reg.ccU.getBondedAtoms(comp_id, atom_id_)
                                 peptide_like = self.__reg.csStat.peptideLike(comp_id)
                                 if cca is not None and len(bonded_to) > 0:
                                     if coord_atom_site_ is not None and bonded_to[0] in coord_atom_site_['atom_id']\
-                                       and (cca[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y'
+                                       and (cca['leaving_atom_flag'] != 'Y'
                                             or (peptide_like
-                                                and cca[self.__reg.ccU.ccaNTerminalAtomFlag] == 'N'
-                                                and cca[self.__reg.ccU.ccaCTerminalAtomFlag] == 'N')):
+                                                and cca['n_terminal_atom_flag'] == 'N'
+                                                and cca['c_terminal_atom_flag'] == 'N')):
                                         err = idx_msg + "Atom ("\
                                             + self.getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
                                                                           comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
@@ -12948,7 +12948,7 @@ class NmrDpValidation:
                             last_point = first_point - sp_width
 
                             # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width
-                            # if absolute_peak_positios are true
+                            # if absolute_peak_positions are true
                             min_point = last_point - (sp_width * (1.0 if self.__reg.bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
                             max_point = first_point + (sp_width * (1.0 if self.__reg.bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
 
@@ -13135,7 +13135,7 @@ class NmrDpValidation:
                             last_point = first_point - sp_width
 
                             # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width
-                            # if absolute_peak_positios are true
+                            # if absolute_peak_positions are true
                             min_point = last_point - (sp_width * (1.0 if self.__reg.bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
                             max_point = first_point + (sp_width * (1.0 if self.__reg.bmrb_only else 3.0) if abs_positions[i - 1] else 0.0)
 

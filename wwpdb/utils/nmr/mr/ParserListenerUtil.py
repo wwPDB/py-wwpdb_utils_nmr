@@ -166,7 +166,7 @@ def toNefEx(string: str) -> str:
 
 
 def stripQuot(string: str) -> str:
-    """ Return strippped string by removing single/double quotation marks.
+    """ Return stripped string by removing single/double quotation marks.
     """
 
     _string = string.strip()
@@ -202,7 +202,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
     if None not in (refCompId, ccU):
         refCompId = translateToStdResName(refCompId, ccU=ccU)
         if ccU.updateChemCompDict(refCompId):
-            _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+            _refAtomIdList = [cca['atom_id'] for cca in ccU.lastAtomDictList]
             if "'" not in atomId and atomId in _refAtomIdList:
                 return atomId
             # DNA/RNA OH 5/3 prime terminus
@@ -781,7 +781,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
         if ccU.updateChemCompDict(refCompId):
             if atomId in refAtomIdList:
                 return atomId
-            _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+            _refAtomIdList = [cca['atom_id'] for cca in ccU.lastAtomDictList]
             if "'" not in atomId and atomId in _refAtomIdList:
                 return atomId
             # DNA/RNA OH 5/3 prime terminus
@@ -1561,7 +1561,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                         _atomId_.append(_atomId)
                 if len(_atomId_) == 1 and (score > 1 or len(canAtomIdList) == 1) and check_apostrophe(atomId, _atomId_[0]):
                     return _atomId_[0]
-        if atomId == 'X':  # micelle cennter
+        if atomId == 'X':  # micelle center
             if 'UNK' in refAtomIdList:  # 2mjq, 2mjr, 2mjs
                 return 'UNK'
             if 'UNX' in refAtomIdList:  # 2mjt
@@ -2200,8 +2200,8 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
         if refCompId == 'CYS':  # 6xyv
             return 'CYS'
         if ccU is not None and ccU.updateChemCompDict(compId):
-            if ccU.lastChemCompDict['_chem_comp.type'] == 'L-PEPTIDE LINKING'\
-               and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
+            if ccU.lastChemCompDict['type'] == 'L-PEPTIDE LINKING'\
+               and 'CYSTEINE' in ccU.lastChemCompDict['name']:
                 return 'CYS'
 
     if compId in ('CYO', 'CYX', 'CYZ', 'CZN'):
@@ -2212,7 +2212,7 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
         if compId.startswith('D'):
             d_peptide = False
             if ccU is not None and ccU.updateChemCompDict(compId):
-                if ccU.lastChemCompDict['_chem_comp.type'] == 'D-PEPTIDE LINKING':
+                if ccU.lastChemCompDict['type'] == 'D-PEPTIDE LINKING':
                     d_peptide = True
             if not d_peptide:  # 6qtf, 2lrr
                 if compId.startswith('DA'):
@@ -2295,8 +2295,8 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
             return compId[:3]
 
     if ccU is not None and ccU.updateChemCompDict(compId, False):
-        if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in ccU.lastChemCompDict:
-            replaced_by = ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
+        if ccU.lastChemCompDict['release_status'] == 'OBS' and 'replaced_by' in ccU.lastChemCompDict:
+            replaced_by = ccU.lastChemCompDict['replaced_by']
             if replaced_by not in EMPTY_VALUE and ccU.updateChemCompDict(replaced_by):
                 compId = replaced_by
 
@@ -2352,10 +2352,10 @@ def translateToLigandName(compId: str, refCompId: str, ccU) -> str:
 
     if ccU.updateChemCompDict(refCompId):
         _compId = translateToStdResName(compId, refCompId, ccU)
-        if '_chem_comp.mon_nstd_parent_comp_id' in ccU.lastChemCompDict:  # matches with comp_id in CCD
-            if ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] == _compId:
+        if 'parent_comp_id' in ccU.lastChemCompDict:  # matches with comp_id in CCD
+            if ccU.lastChemCompDict['parent_comp_id'] == _compId:
                 return refCompId
-        if compId.lower() in ccU.lastChemCompDict['_chem_comp.name'].lower():
+        if compId.lower() in ccU.lastChemCompDict['name'].lower():
             return refCompId
     return compId
 
@@ -2367,7 +2367,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          prevResult: Optional[dict] = None,
                          nmrPolySeq: Optional[List[dict]] = None, fullCheck: bool = True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
-        @return: properties about of the assembly of the cooridnates
+        @return: properties about of the assembly of the coordinates
     """
 
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
@@ -2624,7 +2624,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         ps2['seq_id'].insert(pos, cif_label_seq_id)
                                         ps2['auth_seq_id'].insert(pos, cif_auth_seq_id)
                                         ps2['comp_id'].insert(pos, nmr_comp_id)
-                                        if ps2['comp_id'] is not ps2['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
+                                        if ps2['comp_id'] is not ps2['auth_comp_id']:  # avoid double inserts to 'auth_comp_id'
                                             ps2['auth_comp_id'].insert(pos, nmr_comp_id)
 
                                         nmrExtPolySeq.append({'auth_chain_id': ps2['auth_chain_id'],
@@ -2666,8 +2666,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         break
 
                                 ps['auth_seq_id'].insert(pos, authSeqId)
-                                ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                # avoid doulble inserts to 'auth_comp_id'
+                                ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecules page
+                                # avoid double inserts to 'auth_comp_id'
                                 if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                     ps['auth_comp_id'].insert(pos, '.')
 
@@ -2757,8 +2757,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         continue
 
                                     ps['auth_seq_id'].insert(pos, auth_seq_id_)
-                                    ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                    # avoid doulble inserts to 'auth_comp_id'
+                                    ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecules page
+                                    # avoid double inserts to 'auth_comp_id'
                                     if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:
                                         ps['auth_comp_id'].insert(pos, '.')
 
@@ -3765,7 +3765,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                      'seq_id': ps['seq_id'][idx],
                                                      'auth_seq_id': authSeqId,
                                                      'alt_seq_id': authSeqId,
-                                                     # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                                     # DAOTHER-9644: comp_id must be specified at Macromolecules page
                                                      'comp_id': ps['comp_id'][idx],
                                                      'auth_comp_id': ps['auth_comp_id'][idx],
                                                      'alt_comp_id': ps['auth_comp_id'][idx],
@@ -4829,7 +4829,7 @@ def isAsymmetricRangeRestraint(atoms: List[dict], chainIdSet: List[str], symmetr
 
 
 def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List[str]:
-    """ Try to find candidate comp_ids that matche with a given atom_id.
+    """ Try to find candidate comp_ids that match with a given atom_id.
     """
 
     if atomIds[0] in ('C', 'CA', 'CB', 'CO', 'H', 'HN', 'HA', 'N', 'O',
@@ -4844,7 +4844,7 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in STD_MON_DICT or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            if _compId in STD_MON_DICT or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignment when ACE is in polymer
                 _atomId = atomIds[0]
                 if _atomId in EMPTY_VALUE:
                     return None
@@ -4860,7 +4860,7 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
 
 
 def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, isPolySeq: bool = True) -> List[str]:
-    """ Try to find candidate comp_ids that matche with a given atom_id.
+    """ Try to find candidate comp_ids that match with a given atom_id.
     """
 
     candidates = set()
@@ -4869,7 +4869,7 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+            # 2jw1: avoid early conclusion of GLY assignment when ACE is in polymer
             if _compId in STD_MON_DICT or _compId == 'ACE' or not isPolySeq:
                 failed = False
                 for atomId in atomIds:
@@ -5360,14 +5360,14 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                 ring = True
                 for a in atoms:
                     atomId = a['atom_id']
-                    cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
-                    if cca is None or cca[ccU.ccaAromaticFlag] != 'Y':
+                    cca = next((cca for cca in ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
+                    if cca is None or cca['aromatic_flag'] != 'Y':
                         bonded = ccU.getBondedAtoms(compId, atomId, exclProton=True)
                         attach = False
                         for b in bonded:
-                            _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
+                            _cca = next((_cca for _cca in ccU.lastAtomDictList if _cca['atom_id'] == b), None)
                             if _cca is not None:
-                                if _cca[ccU.ccaAromaticFlag] == 'Y':
+                                if _cca['aromatic_flag'] == 'Y':
                                     attach = True
                         if not attach:
                             ring = False
@@ -5384,19 +5384,19 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                     compId = a['comp_id']
                     atomId = a['atom_id']
                     if ccU.updateChemCompDict(compId):
-                        cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
+                        cca = next((cca for cca in ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
                         if cca is None:
                             aroma = False
                             break
-                        if cca[ccU.ccaAromaticFlag] != 'Y':
+                        if cca['aromatic_flag'] != 'Y':
                             if ccU.getTypeOfCompId(compId)[1] and atomId[0] in ('C', 'N') and not atomId.endswith("'"):
                                 continue
                             bonded = ccU.getBondedAtoms(compId, atomId, exclProton=True)
                             attach = False
                             for b in bonded:
-                                _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
+                                _cca = next((_cca for _cca in ccU.lastAtomDictList if _cca['atom_id'] == b), None)
                                 if _cca is not None:
-                                    if _cca[ccU.ccaAromaticFlag] == 'Y':
+                                    if _cca['aromatic_flag'] == 'Y':
                                         attach = True
                             if not attach:
                                 aroma = False
@@ -5478,10 +5478,10 @@ def isLikePheOrTyr(compId: str, ccU) -> bool:
         return False
 
     if ccU.updateChemCompDict(compId):
-        _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+        _refAtomIdList = [cca['atom_id'] for cca in ccU.lastAtomDictList]
         if 'CD1' not in _refAtomIdList or 'CD2' not in _refAtomIdList:
             return False
-        _compId = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+        _compId = ccU.lastChemCompDict.get('parent_comp_id', '?')
         return _compId in ('PHE', 'TYR')
 
     return False
@@ -5498,10 +5498,10 @@ def isLikeHis(compId: str, ccU) -> bool:
         return False
 
     if ccU.updateChemCompDict(compId):
-        _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+        _refAtomIdList = [cca['atom_id'] for cca in ccU.lastAtomDictList]
         if 'ND1' not in _refAtomIdList or 'NE2' not in _refAtomIdList:
             return False
-        _compId = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+        _compId = ccU.lastChemCompDict.get('parent_comp_id', '?')
         return _compId == 'HIS'
 
     return False
@@ -5662,7 +5662,7 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
 
 
 def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = None) -> Optional[List[dict]]:
-    """ Return structually connected partner residues for a given residue.
+    """ Return structurally connected partner residues for a given residue.
         @return: list of partner residues for a given residue descrived in struct_conn loop
     """
 
@@ -5741,7 +5741,7 @@ def getWatsonCrickPtnr(cR, authAsymId: str) -> Optional[List[str]]:
 
 
 def getStructConnPtnrAtom(cR, authAsymId: str, authSeqId: int, authAtomId: str) -> Optional[dict]:
-    """ Return structually connected partner atom for a given atom.
+    """ Return structurally connected partner atom for a given atom.
         @return: dictionary of connected partner atom in struct_conn loop
     """
 
@@ -6165,7 +6165,7 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
 
 
 def retrieveOriginalFileName(filePath: str) -> str:
-    """ Retrieve original filename by omitting internal sufixes used in NMR data remediation.
+    """ Retrieve original filename by omitting internal suffixes used in NMR data remediation.
     """
 
     if filePath in EMPTY_VALUE:
@@ -6478,7 +6478,7 @@ def getAuxLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
 
 def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
                 atom: List[dict], aux_atom: Optional[dict] = None, asis: bool = False) -> Optional[str]:
-    """ Return NMR-STAR sequence including entity ID for a given auth atom of the cooridnates.
+    """ Return NMR-STAR sequence including entity ID for a given auth atom of the coordinates.
         @return: a dictionary of NMR-STAR sequence/entity, None otherwise
     """
 
@@ -6617,7 +6617,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
 
 
 def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dict]) -> Optional[str]:
-    """ Return PDB_ins_code for a given auth atom of the cooridnates.
+    """ Return PDB_ins_code for a given auth atom of the coordinates.
         @return: PDB_ins_code
     """
 
@@ -6925,7 +6925,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         # RDC_val
         # RDC_val_err
         # RDC_val_scale_factor
-        # RDC_distance_depedent
+        # RDC_distance_dependent
 
         row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
@@ -9296,7 +9296,8 @@ def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
 
 
 def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, seqId: int, compId: str, atomId: str,
-                               seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning: bool = True) -> Optional[str]:
+                               seqKey: Tuple[str, int], coordAtomSite: Optional[dict],
+                               enableWarning: bool = True) -> Optional[str]:
     """ Check existence of specified atom in the coordinates.
         @return: waring message (None for valid case)
     """
@@ -9344,8 +9345,8 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
         return None
 
     if ccU.updateChemCompDict(compId):
-        cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
-        if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+        cca = next((cca for cca in ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
+        if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['release_status'] == 'REL':
             checked = False
             ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
             authSeqIdList = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
@@ -9359,7 +9360,7 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                 if atomId[0] in PROTON_BEGIN_CODE:
                     bondedTo = ccU.getBondedAtoms(compId, atomId)
                     if len(bondedTo) > 0:
-                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[ccU.ccaLeavingAtomFlag] != 'Y':
+                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca['leaving_atom_flag'] != 'Y':
                             return f"[Hydrogen not instantiated] "\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file."
@@ -9590,7 +9591,7 @@ def getPotentialType(fileType: str, mrSubtype: str, dstFunc: dict) -> Optional[s
 
 
 def getPdbxNmrSoftwareName(name: str) -> str:
-    """ Return _pdbx_nmr_software.name enumarated value for a given software name.
+    """ Return _pdbx_nmr_software.name enumerated value for a given software name.
     """
 
     if name == 'AMBER':

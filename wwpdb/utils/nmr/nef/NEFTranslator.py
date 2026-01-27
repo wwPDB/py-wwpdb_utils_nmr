@@ -119,6 +119,7 @@
 #                           (v4.5.0, DAOTHER-10105)
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
+# 27-Jan-2026  M. Yokochi - convert one-letter-code in CS loop if possible (DAOTHER-10487)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -176,10 +177,14 @@ try:
                                                ALT_DIHED_CONSTRAINT_TYPES,
                                                ALT_RDC_CONSTRAINT_TYPES,
                                                PERIPH_OFFSET_ATTEMPT,
-                                               MAX_CONFLICT_ATTEMPT)
+                                               MAX_CONFLICT_ATTEMPT,
+                                               LP_ITEM_TYPES,
+                                               SF_TAG_ITEM_TYPES,
+                                               READABLE_ITEM_TYPE)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            letterToDigit,
                                            indexToLetter,
+                                           getOneLetterCode,
                                            alignPolymerSequence,
                                            alignPolymerSequenceWithConflicts,
                                            assignPolymerSequence)
@@ -220,10 +225,14 @@ except ImportError:
                                    ALT_DIHED_CONSTRAINT_TYPES,
                                    ALT_RDC_CONSTRAINT_TYPES,
                                    PERIPH_OFFSET_ATTEMPT,
-                                   MAX_CONFLICT_ATTEMPT)
+                                   MAX_CONFLICT_ATTEMPT,
+                                   LP_ITEM_TYPES,
+                                   SF_TAG_ITEM_TYPES,
+                                   READABLE_ITEM_TYPE)
     from nmr.AlignUtil import (deepcopy,
                                letterToDigit,
                                indexToLetter,
+                               getOneLetterCode,
                                alignPolymerSequence,
                                alignPolymerSequenceWithConflicts,
                                assignPolymerSequence)
@@ -255,7 +264,6 @@ INTEGER_PAT = re.compile(r'^([+-]?[1-9]\d*|0)$')
 BAD_EXPR_PAT = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
 # separator pattern
 SEPARATOR_PAT = re.compile(r'[\&\\\|\;\:\,\/]')
-
 
 # data items in _Entity_deleted_atom category of NMR-STAR
 ENTITY_DELETED_ATOM_ITEMS = ('ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
@@ -400,7 +408,6 @@ class NEFTranslator:
                  '__ccU',
                  '__csStat',
                  '__c2S',
-                 'readableItemType',
                  '__cachedDictForValidStarAtomInXplor',
                  '__cachedDictForValidStarAtom',
                  '__cachedDictForStarAtom',
@@ -1401,20 +1408,6 @@ class NEFTranslator:
 
         # CifToNmrStar
         self.__c2S = CifToNmrStar(self.__log) if c2S is None else c2S
-
-        # readable item type
-        self.readableItemType = {'str': 'a string',
-                                 'bool': 'a boolean value',
-                                 'int': 'an integer',
-                                 'index-int': 'an unique positive integer',
-                                 'positive-int': 'a positive integer',
-                                 'positive-int-as-str': 'a positive integer',
-                                 'pointer-index': 'an integer acting as a pointer to the parent item',
-                                 'float': 'a floating point number',
-                                 'positive-float': 'a positive floating point number',
-                                 'range-float': 'a floating point number in a specific range',
-                                 'enum': 'an enumeration value',
-                                 'enum-int': 'an enumeration value restricted to integers'}
 
         self.__cachedDictForValidStarAtomInXplor = {}
         self.__cachedDictForValidStarAtom = {}
@@ -2482,6 +2475,21 @@ class NEFTranslator:
                             __auth_comp_id = _auth_comp_id.upper()
                             if __auth_comp_id != _auth_comp_id:
                                 loop.data[idx][auth_comp_id_col] = __auth_comp_id
+
+                elif 'Comp_ID' in loop.tags and has_coord and cif_br is None and cif_np is None\
+                        and all(all(self.__csStat.peptideLike(_comp_id) for _comp_id in ps['comp_id']) for ps in cif_ps)\
+                        and all(len(_comp_id) == 1 for _comp_id in loop.get_tag(['Comp_id'])):  # DAOTHER-10487
+                    comp_id_set = set()
+                    for ps in cif_ps:
+                        comp_id_set |= set(_comp_id for _comp_id in ps['comp_id'])
+                    one_letter_code_set = [getOneLetterCode(_comp_id) for _comp_id in comp_id_set]
+                    if one_letter_code_set.count('X') < 2:
+                        pre_seq_data = loop.get_tag(['Comp_ID'])
+                        if all(_comp_id in one_letter_code_set for _comp_id in pre_seq_data):
+                            comp_id_col = loop.tags.index('Comp_ID')
+                            for idx, _comp_id in enumerate(pre_seq_data):
+                                loop.data[idx][comp_id_col] = next(_comp_id_ for _comp_id_ in comp_id_set
+                                                                   if getOneLetterCode(_comp_id_) == _comp_id)
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and has_auth_asym_id\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
@@ -4310,7 +4318,7 @@ class NEFTranslator:
                                         lp_category: str = 'Atom_chem_shift', atom_type: str = 'Atom_type',
                                         isotope_number: str = 'Atom_isotope_number', atom_id: str = 'Atom_ID',
                                         allow_empty: bool = False) -> List[List[dict]]:
-        """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-SAR file.
+        """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -4319,7 +4327,7 @@ class NEFTranslator:
     def get_atom_type_from_cs_loop(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # noqa: E501, pylint: disable=no-self-use,line-too-long
                                    lp_category: str, atom_type: str, isotope_number: str, atom_id: str,
                                    allow_empty: bool) -> List[List[dict]]:
-        """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-SAR file.
+        """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of atom_type, isotope number, and atom_id for each CS loop
         """
@@ -4415,7 +4423,7 @@ class NEFTranslator:
     def get_star_ambig_code_from_cs_loop(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
                                          lp_category: str = 'Atom_chem_shift', comp_id: str = 'Comp_ID', atom_id: str = 'Atom_ID',
                                          ambig_code: str = 'Ambiguity_code', ambig_set_id: str = 'Ambiguity_set_ID') -> List[List[dict]]:
-        """ Extract unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file.
+        """ Extract unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of comp_id, atom_id, and ambiguity code for each CS loop
         """
@@ -4674,9 +4682,6 @@ class NEFTranslator:
 
             data = []  # data of all loops
 
-            item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index',
-                          'float', 'positive-float', 'range-float', 'enum', 'enum-int')
-
             for loop in loops:
 
                 if is_target_lp:
@@ -4701,12 +4706,12 @@ class NEFTranslator:
                 key_len = len(key_items)
 
                 for k in key_items:
-                    if k['type'] not in item_types:
-                        raise TypeError(f"Type {k['type']} of data item {k['name']} must be one of {item_types}.")
+                    if k['type'] not in LP_ITEM_TYPES:
+                        raise TypeError(f"Type {k['type']} of data item {k['name']} must be one of {LP_ITEM_TYPES}.")
 
                 for d in data_items:
-                    if d['type'] not in item_types:
-                        raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {item_types}.")
+                    if d['type'] not in LP_ITEM_TYPES:
+                        raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {LP_ITEM_TYPES}.")
 
                 if allowed_tags is not None:
 
@@ -5348,7 +5353,7 @@ class NEFTranslator:
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                             elif type == 'int':
                                 try:
@@ -5374,7 +5379,7 @@ class NEFTranslator:
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                             elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                 try:
@@ -5405,13 +5410,13 @@ class NEFTranslator:
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                 if (type == 'index-int' and ent[name] <= 0)\
                                    or (type == 'positive-int'
                                        and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                 if ent[name] == 0 and enforce_non_zero:
                                     if 'void-zero' in k:
                                         if self.replace_zero_by_null_in_case:
@@ -5420,7 +5425,7 @@ class NEFTranslator:
                                     else:
                                         f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                  f"{name} {val!r} should not be zero, "
-                                                 f"as defined by {self.readableItemType[type]}.")
+                                                 f"as defined by {READABLE_ITEM_TYPE[type]}.")
                                 if type == 'positive-int-as-str':
                                     row[j] = ent[name] = str(ent[name])
 
@@ -5450,16 +5455,16 @@ class NEFTranslator:
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                 if ent[name] <= 0:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                 if static_val[name] is None:
                                     static_val[name] = val
                                 elif val != static_val[name] and _test_on_index:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
+                                                     + f"{name} {val} vs {static_val[name]} must be {READABLE_ITEM_TYPE[type]}.")
                             elif type == 'float':
                                 try:
                                     ent[name] = float(val)
@@ -5477,7 +5482,7 @@ class NEFTranslator:
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                             elif type == 'positive-float':
                                 try:
@@ -5496,11 +5501,11 @@ class NEFTranslator:
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                 if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                 if ent[name] == 0.0 and enforce_non_zero:
                                     if 'void-zero' in k:
                                         if self.replace_zero_by_null_in_case:
@@ -5509,7 +5514,7 @@ class NEFTranslator:
                                     else:
                                         f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                  f"{name} {val!r} should not be zero, "
-                                                 f"as defined by {self.readableItemType[type]}.")
+                                                 f"as defined by {READABLE_ITEM_TYPE[type]}.")
 
                             elif type == 'range-float':
                                 try:
@@ -5534,7 +5539,7 @@ class NEFTranslator:
                                         ent[name] = None
                                         continue
                                     f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
-                                             f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                             f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                     continue
 
                                 if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
@@ -5551,7 +5556,7 @@ class NEFTranslator:
                                         elif enforce_sign:
                                             f.append(f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                      f"{name} {val!r} should not have "
-                                                     f"negative value for {self.readableItemType[type]}, {_range}.")
+                                                     f"negative value for {READABLE_ITEM_TYPE[type]}, {_range}.")
                                     elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                         if not enforce_range:
                                             ent[name] = None
@@ -5566,7 +5571,7 @@ class NEFTranslator:
                                         else:
                                             f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                      f"{name} {val!r} should not be zero, "
-                                                     f"as defined by {self.readableItemType[type]}, {_range}.")
+                                                     f"as defined by {READABLE_ITEM_TYPE[type]}, {_range}.")
                                 elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
                                      ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
                                      ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
@@ -5655,7 +5660,7 @@ class NEFTranslator:
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                             else:
                                 if val in EMPTY_VALUE:
@@ -5725,7 +5730,7 @@ class NEFTranslator:
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                     elif type == 'int':
                                         try:
@@ -5757,7 +5762,7 @@ class NEFTranslator:
                                                 continue
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                     elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                         try:
@@ -5794,14 +5799,14 @@ class NEFTranslator:
                                                 continue
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                         if (type == 'index-int' and ent[name] <= 0)\
                                            or (type == 'positive-int'
                                                and (ent[name] < 0
                                                     or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                         if ent[name] == 0 and enforce_non_zero:
                                             if 'void-zero' in d:
                                                 if self.replace_zero_by_null_in_case:
@@ -5810,7 +5815,7 @@ class NEFTranslator:
                                             else:
                                                 f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                          f"{name} {val!r} should not be zero, "
-                                                         f"as defined by {self.readableItemType[type]}.")
+                                                         f"as defined by {READABLE_ITEM_TYPE[type]}.")
                                         if type == 'positive-int-as-str':
                                             row[j] = ent[name] = str(ent[name])
 
@@ -5846,16 +5851,16 @@ class NEFTranslator:
                                                 continue
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                         if ent[name] <= 0:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                         if static_val[name] is None:
                                             static_val[name] = val
                                         elif val != static_val[name] and _test_on_index:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
+                                                             + f"{name} {val} vs {static_val[name]} must be {READABLE_ITEM_TYPE[type]}.")
 
                                     elif type == 'float':
                                         try:
@@ -5880,7 +5885,7 @@ class NEFTranslator:
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                     elif type == 'positive-float':
                                         try:
@@ -5905,10 +5910,10 @@ class NEFTranslator:
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                         if ent[name] == 0.0 and enforce_non_zero:
                                             if 'void-zero' in d:
                                                 if self.replace_zero_by_null_in_case:
@@ -5917,7 +5922,7 @@ class NEFTranslator:
                                             else:
                                                 f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                          f"{name} {val!r} should not be zero, "
-                                                         f"as defined by {self.readableItemType[type]}.")
+                                                         f"as defined by {READABLE_ITEM_TYPE[type]}.")
 
                                     elif type == 'range-float':
                                         try:
@@ -5958,7 +5963,7 @@ class NEFTranslator:
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
-                                                     f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                     f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                                             continue
 
                                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
@@ -5975,7 +5980,7 @@ class NEFTranslator:
                                                 elif enforce_sign:
                                                     f.append(f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                              f"{name} {val!r} should not have "
-                                                             f"negative value for {self.readableItemType[type]}, {_range}.")
+                                                             f"negative value for {READABLE_ITEM_TYPE[type]}, {_range}.")
                                             elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                                 if not enforce_range:
                                                     ent[name] = None
@@ -5990,7 +5995,7 @@ class NEFTranslator:
                                                 else:
                                                     f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                              f"{name} {val!r} should not be zero, "
-                                                             f"as defined by {self.readableItemType[type]}, {_range}.")
+                                                             f"as defined by {READABLE_ITEM_TYPE[type]}, {_range}.")
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in EMPTY_VALUE:
                                                     ent[name] = None
@@ -6127,7 +6132,7 @@ class NEFTranslator:
                                                 ent[name] = None
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                                     else:
                                         if val in EMPTY_VALUE:
@@ -6618,15 +6623,12 @@ class NEFTranslator:
             @return: list of extracted saveframe tags
         """
 
-        item_types = ('str', 'bool', 'int', 'positive-int', 'positive-int-as-str',
-                      'float', 'positive-float', 'range-float', 'enum', 'enum-int')
-
         tag_names = [t['name'] for t in tag_items]
         mand_tag_names = [t['name'] for t in tag_items if t['mandatory']]
 
         for t in tag_items:
-            if t['type'] not in item_types:
-                raise TypeError(f"Type {t['type']} of tag item {t['name']} must be one of {item_types}.")
+            if t['type'] not in SF_TAG_ITEM_TYPES:
+                raise TypeError(f"Type {t['type']} of tag item {t['name']} must be one of {SF_TAG_ITEM_TYPES}.")
 
         if allowed_tags is not None:
 
@@ -6696,7 +6698,7 @@ class NEFTranslator:
                         try:
                             ent[name] = val.lower() in TRUE_VALUE
                         except ValueError:
-                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                     elif type == 'int':
                         try:
@@ -6709,7 +6711,7 @@ class NEFTranslator:
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
-                                raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                     elif type in ('positive-int', 'positive-int-as-str'):
                         try:
@@ -6727,9 +6729,9 @@ class NEFTranslator:
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
-                                raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                         if ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                         if ent[name] == 0 and enforce_non_zero:
                             if 'void-zero' in t:
                                 if self.replace_zero_by_null_in_case:
@@ -6737,7 +6739,7 @@ class NEFTranslator:
                                 ent[name] = None
                             else:
                                 f.append(f"[Zero value error] {name} {val!r} should not be zero, "
-                                         f"as defined by {self.readableItemType[type]}.")
+                                         f"as defined by {READABLE_ITEM_TYPE[type]}.")
                         if type == 'positive-int-as-str':
                             ent[name] = str(ent[name])
 
@@ -6745,15 +6747,15 @@ class NEFTranslator:
                         try:
                             ent[name] = float(val)
                         except (ValueError, TypeError):
-                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
 
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
                         except (ValueError, TypeError):
-                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                         if ent[name] == 0.0 and enforce_non_zero:
                             if 'void-zero' in t:
                                 if self.replace_zero_by_null_in_case:
@@ -6761,7 +6763,7 @@ class NEFTranslator:
                                 ent[name] = None
                             else:
                                 f.append(f"[Zero value error] {name} {val!r} should not be zero, "
-                                         f"as defined by {self.readableItemType[type]}.")
+                                         f"as defined by {READABLE_ITEM_TYPE[type]}.")
 
                     elif type == 'range-float':
                         try:
@@ -6773,7 +6775,7 @@ class NEFTranslator:
                             if not enforce_range:
                                 ent[name] = None
                                 continue
-                            f.append(f"[Range value error] {name} {val!r} must be {self.readableItemType[type]}.")
+                            f.append(f"[Range value error] {name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                            or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
@@ -6786,7 +6788,7 @@ class NEFTranslator:
                                         f.append(f"[Range value error] {name} {val!r} must be within range {_range}.")
                                 elif enforce_sign:
                                     f.append(f"[Negative value error] {name} {val!r} should not have "
-                                             f"negative value for {self.readableItemType[type]}, {_range}.")
+                                             f"negative value for {READABLE_ITEM_TYPE[type]}, {_range}.")
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
                                 if not enforce_range:
                                     ent[name] = None
@@ -6799,7 +6801,7 @@ class NEFTranslator:
                                     ent[name] = None
                                 else:
                                     f.append(f"[Zero value error] {name} {val!r} should not be zero, "
-                                             f"as defined by {self.readableItemType[type]}, {_range}.")
+                                             f"as defined by {READABLE_ITEM_TYPE[type]}, {_range}.")
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
                              ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
                              ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
@@ -6857,7 +6859,7 @@ class NEFTranslator:
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
                         except (ValueError, TypeError):
-                            raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                     else:
                         ent[name] = val
 
@@ -6924,7 +6926,7 @@ class NEFTranslator:
         comp_id = comp_id.upper()
 
         if self.__ccU.updateChemCompDict(comp_id):
-            return atom_id in [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+            return atom_id in [a['atom_id'] for a in self.__ccU.lastAtomDictList]
 
         return False
 
@@ -7145,7 +7147,7 @@ class NEFTranslator:
         if atom_id[0] in ('H', 'Q', 'M'):
 
             if atom_id[-1] == '+' and atom_id[1].isdigit() and len_atom_id > 2 and self.__ccU.updateChemCompDict(comp_id):
-                if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
+                if self.__ccU.lastChemCompDict['type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                     _atom_list, _ambiguity_code, _details =\
                         self.get_valid_star_atom_for_ligand_remap(comp_id, 'HN' + atom_id[1:-1], coord_atom_site, methyl_only)
                     if _details is None:
@@ -7209,10 +7211,10 @@ class NEFTranslator:
                             for k, v in collections.Counter(root).most_common():
                                 if v != 2:
                                     continue
-                                cca = next((cca for cca in self.__ccU.lastAtomList
-                                            if cca[self.__ccU.ccaAtomId] == k and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                cca = next((cca for cca in self.__ccU.lastAtomDictList
+                                            if cca['atom_id'] == k and cca['leaving_atom_flag'] == 'N'), None)
                                 if cca is not None:
-                                    if cca[self.__ccU.ccaAromaticFlag] == 'Y':
+                                    if cca['aromatic_flag'] == 'Y':
                                         aliphatic = False
                                 branch = [branch for branch in self.__ccU.getBondedAtoms(comp_id, k, exclProton=True) if branch in _branch]
                                 if len(branch) == 2:
@@ -7383,16 +7385,16 @@ class NEFTranslator:
         atom_conv_dict = dict(zip(coord_atom_site['alt_atom_id'], coord_atom_site['atom_id']))
 
         if self.__ccU.updateChemCompDict(comp_id) and self.__annotation_mode:
-            cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+            cc_rel_status = self.__ccU.lastChemCompDict['release_status']
 
             if cc_rel_status == 'REL':
                 methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
                 not_methyl = not methyl_only or nef_atom[0] not in PROTON_BEGIN_CODE or len(methyl_atoms) == 0
-                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
-                         if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
-                alt_atom_dict = {a[self.__ccU.ccaAltAtomId]: a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
-                                 if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)
-                                 and a[self.__ccU.ccaAltAtomId] != a[self.__ccU.ccaAtomId]}
+                atoms = [a['atom_id'] for a in self.__ccU.lastAtomDictList
+                         if not_methyl or (not not_methyl and a['atom_id'] in methyl_atoms)]
+                alt_atom_dict = {a['alt_atom_id']: a['atom_id'] for a in self.__ccU.lastAtomDictList
+                                 if not_methyl or (not not_methyl and a['atom_id'] in methyl_atoms)
+                                 and a['alt_atom_id'] != a['atom_id']}
                 if nef_atom not in atoms and nef_atom in alt_atom_dict:
                     nef_atom = alt_atom_dict[nef_atom]
 
@@ -7407,8 +7409,8 @@ class NEFTranslator:
             else:
                 methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
                 not_methyl = not methyl_only or nef_atom[0] not in PROTON_BEGIN_CODE or len(methyl_atoms) == 0
-                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
-                         if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
+                atoms = [a['atom_id'] for a in self.__ccU.lastAtomDictList
+                         if not_methyl or (not not_methyl and a['atom_id'] in methyl_atoms)]
 
         else:
 
@@ -7806,7 +7808,7 @@ class NEFTranslator:
                     return (atom_list, ambiguity_code, details)
 
                 if atom_id[-1] == '+' and atom_id[1].isdigit() and len_atom_id > 2 and self.__ccU.updateChemCompDict(comp_id):
-                    if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
+                    if self.__ccU.lastChemCompDict['type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                         _atom_list, _ambiguity_code, _details =\
                             self.get_valid_star_atom(comp_id, 'HN' + atom_id[1:-1], None, leave_unmatched, methyl_only)
                         if _details is None:
@@ -7852,9 +7854,9 @@ class NEFTranslator:
                                 if len(_root) == 0 and len(_branch) == 0:
                                     _branch = [c for c in self.__ccU.getMethylAtoms(comp_id) if c[0] == 'C']  # 2jnp:QQM
                                 if len(_root) == 0 and len(_branch) > 1:
-                                    __branch = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
-                                                if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N')
-                                                and cca[self.__ccU.ccaLeavingAtomFlag] == 'N']
+                                    __branch = [cca['atom_id'] for cca in self.__ccU.lastAtomDictList
+                                                if cca['type_symbol'] in ('C', 'N')
+                                                and cca['leaving_atom_flag'] == 'N']
                                     if len(__branch) > 0:
                                         _atom_list = []
                                         for k in __branch:
@@ -7913,10 +7915,10 @@ class NEFTranslator:
                                     for k, v in collections.Counter(root).most_common():
                                         if v != 2:
                                             continue
-                                        cca = next((cca for cca in self.__ccU.lastAtomList
-                                                    if cca[self.__ccU.ccaAtomId] == k and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                        cca = next((cca for cca in self.__ccU.lastAtomDictList
+                                                    if cca['atom_id'] == k and cca['leaving_atom_flag'] == 'N'), None)
                                         if cca is not None:
-                                            if cca[self.__ccU.ccaAromaticFlag] == 'Y':
+                                            if cca['aromatic_flag'] == 'Y':
                                                 aliphatic = False
                                         branch = [branch for branch in self.__ccU.getBondedAtoms(comp_id, k, exclProton=True)
                                                   if branch in _branch]
@@ -7924,9 +7926,9 @@ class NEFTranslator:
                                             for b in branch:
                                                 protons.extend(self.__ccU.getBondedAtoms(comp_id, b, onlyProton=True))
                                 else:  # 2mlm
-                                    for cca in self.__ccU.lastAtomList:
-                                        if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N'):
-                                            _root = cca[self.__ccU.ccaAtomId]
+                                    for cca in self.__ccU.lastAtomDictList:
+                                        if cca['type_symbol'] in ('C', 'N'):
+                                            _root = cca['atom_id']
                                             for proton in self.__ccU.getBondedAtoms(comp_id, _root, onlyProton=True):
                                                 if proton.startswith('H' + atom_id[2:]):
                                                     root.append(_root)
@@ -7934,10 +7936,10 @@ class NEFTranslator:
                                     for k, v in collections.Counter(root).most_common():
                                         if v != 1:
                                             continue
-                                        cca = next((cca for cca in self.__ccU.lastAtomList
-                                                    if cca[self.__ccU.ccaAtomId] == k and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                        cca = next((cca for cca in self.__ccU.lastAtomDictList
+                                                    if cca['atom_id'] == k and cca['leaving_atom_flag'] == 'N'), None)
                                         if cca is not None:
-                                            if cca[self.__ccU.ccaAromaticFlag] == 'Y':
+                                            if cca['aromatic_flag'] == 'Y':
                                                 aliphatic = False
                                             protons.extend(self.__ccU.getBondedAtoms(comp_id, k, onlyProton=True))
                                 len_protons = len(protons)
@@ -8036,9 +8038,9 @@ class NEFTranslator:
                     if len(_root) == 0 and len(_branch) == 0:
                         _branch = [c for c in self.__ccU.getMethylAtoms(comp_id) if c[0] == 'C']  # 2jnp:QQM
                     if len(_root) == 0 and len(_branch) > 1:
-                        __branch = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
-                                    if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N')
-                                    and cca[self.__ccU.ccaLeavingAtomFlag] == 'N']
+                        __branch = [cca['atom_id'] for cca in self.__ccU.lastAtomDictList
+                                    if cca['type_symbol'] in ('C', 'N')
+                                    and cca['leaving_atom_flag'] == 'N']
                         if len(__branch) > 0:
                             _atom_list = []
                             for k in __branch:
@@ -8235,16 +8237,16 @@ class NEFTranslator:
                     return (atom_list, ambiguity_code, details)
 
             if self.__ccU.updateChemCompDict(comp_id):
-                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+                cc_rel_status = self.__ccU.lastChemCompDict['release_status']
 
                 if cc_rel_status == 'REL':
                     methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
                     not_methyl = not methyl_only or nef_atom[0] not in PROTON_BEGIN_CODE or len(methyl_atoms) == 0
-                    atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
-                             if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
-                    alt_atom_dict = {a[self.__ccU.ccaAltAtomId]: a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
-                                     if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)
-                                     and a[self.__ccU.ccaAltAtomId] != a[self.__ccU.ccaAtomId]}
+                    atoms = [a['atom_id'] for a in self.__ccU.lastAtomDictList
+                             if not_methyl or (not not_methyl and a['atom_id'] in methyl_atoms)]
+                    alt_atom_dict = {a['alt_atom_id']: a['atom_id'] for a in self.__ccU.lastAtomDictList
+                                     if not_methyl or (not not_methyl and a['atom_id'] in methyl_atoms)
+                                     and a['alt_atom_id'] != a['atom_id']}
                     if nef_atom not in atoms and nef_atom in alt_atom_dict:
                         nef_atom = alt_atom_dict[nef_atom]
 
@@ -8259,8 +8261,8 @@ class NEFTranslator:
                 else:
                     methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
                     not_methyl = not methyl_only or nef_atom[0] not in PROTON_BEGIN_CODE or len(methyl_atoms) == 0
-                    atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
-                             if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
+                    atoms = [a['atom_id'] for a in self.__ccU.lastAtomDictList
+                             if not_methyl or (not not_methyl and a['atom_id'] in methyl_atoms)]
 
             else:
 
@@ -8581,7 +8583,7 @@ class NEFTranslator:
         try:
 
             if self.__ccU.updateChemCompDict(comp_id):
-                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+                atoms = [a['atom_id'] for a in self.__ccU.lastAtomDictList]
 
             methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
@@ -9033,19 +9035,19 @@ class NEFTranslator:
 
         try:
 
-            ccb = next(b for b in self.__ccU.lastBonds
-                       if (b[self.__ccU.ccbAtomId1] == atom_id
-                           and (atom_id[0] in PROTON_BEGIN_CODE or b[self.__ccU.ccbAtomId2][0] in PROTON_BEGIN_CODE))
-                       or (b[self.__ccU.ccbAtomId2] == atom_id
-                           and (atom_id[0] in PROTON_BEGIN_CODE or b[self.__ccU.ccbAtomId1][0] in PROTON_BEGIN_CODE)))
+            ccb = next(b for b in self.__ccU.lastBondDictList
+                       if (b['atom_id_1'] == atom_id
+                           and (atom_id[0] in PROTON_BEGIN_CODE or b['atom_id_2'][0] in PROTON_BEGIN_CODE))
+                       or (b['atom_id_2'] == atom_id
+                           and (atom_id[0] in PROTON_BEGIN_CODE or b['atom_id_1'][0] in PROTON_BEGIN_CODE)))
 
-            hvy_col = self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2 if atom_id[0] in PROTON_BEGIN_CODE
-                                                   else self.__ccU.ccbAtomId1] == atom_id else self.__ccU.ccbAtomId2
-            pro_col = self.__ccU.ccbAtomId2 if self.__ccU.ccbAtomId1 == hvy_col else self.__ccU.ccbAtomId1
+            hvy_col = 'atom_id_1' if ccb['atom_id_2' if atom_id[0] in PROTON_BEGIN_CODE
+                                         else 'atom_id_1'] == atom_id else 'atom_id_2'
+            pro_col = 'atom_id_2' if 'atom_id_1' == hvy_col else 'atom_id_1'
 
             hvy = ccb[hvy_col]
 
-            return hvy, [b[pro_col] for b in self.__ccU.lastBonds if b[hvy_col] == hvy and b[pro_col][0] in PROTON_BEGIN_CODE]
+            return hvy, [b[pro_col] for b in self.__ccU.lastBondDictList if b[hvy_col] == hvy and b[pro_col][0] in PROTON_BEGIN_CODE]
 
         except StopIteration:
             return None, None
@@ -9075,22 +9077,22 @@ class NEFTranslator:
 
         try:
 
-            ccb = next(b for b in self.__ccU.lastBonds
-                       if (b[self.__ccU.ccbAtomId2] == hvy and b[self.__ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE)
-                       or (b[self.__ccU.ccbAtomId1] == hvy and b[self.__ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE))
+            ccb = next(b for b in self.__ccU.lastBondDictList
+                       if (b['atom_id_2'] == hvy and b['atom_id_1'][0] not in PROTON_BEGIN_CODE)
+                       or (b['atom_id_1'] == hvy and b['atom_id_2'][0] not in PROTON_BEGIN_CODE))
 
-            hvy_conn = ccb[self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2] == hvy else self.__ccU.ccbAtomId2]
+            hvy_conn = ccb['atom_id_1' if ccb['atom_id_2'] == hvy else 'atom_id_2']
 
-            hvy_gem = next(c[self.__ccU.ccbAtomId1 if c[self.__ccU.ccbAtomId2] == hvy_conn else self.__ccU.ccbAtomId2]
-                           for c in self.__ccU.lastBonds
-                           if (c[self.__ccU.ccbAtomId2] == hvy_conn and c[self.__ccU.ccbAtomId1] != hvy
-                               and c[self.__ccU.ccbAtomId1][0] not in PROTON_BEGIN_CODE
-                               and self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1] is not None
-                               and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1]) == h_list_len)
-                           or (c[self.__ccU.ccbAtomId1] == hvy_conn and c[self.__ccU.ccbAtomId2] != hvy
-                               and c[self.__ccU.ccbAtomId2][0] not in PROTON_BEGIN_CODE
-                               and self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1] is not None
-                               and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1]) == h_list_len))
+            hvy_gem = next(c['atom_id_1' if c['atom_id_2'] == hvy_conn else 'atom_id_2']
+                           for c in self.__ccU.lastBondDictList
+                           if (c['atom_id_2'] == hvy_conn and c['atom_id_1'] != hvy
+                               and c['atom_id_1'][0] not in PROTON_BEGIN_CODE
+                               and self.get_group(comp_id, c['atom_id_1'])[1] is not None
+                               and len(self.get_group(comp_id, c['atom_id_1'])[1]) == h_list_len)
+                           or (c['atom_id_1'] == hvy_conn and c['atom_id_2'] != hvy
+                               and c['atom_id_2'][0] not in PROTON_BEGIN_CODE
+                               and self.get_group(comp_id, c['atom_id_2'])[1] is not None
+                               and len(self.get_group(comp_id, c['atom_id_2'])[1]) == h_list_len))
 
             if hvy[0] != hvy_gem[0]:
                 return None, None

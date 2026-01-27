@@ -2115,7 +2115,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
                         if not ccU.updateChemCompDict(cif_comp_id):
                             continue
 
-                        if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
+                        if ccU.lastChemCompDict['release_status'] != 'REL':
                             continue
 
                         if getOneLetterCodeCan(cif_comp_id) == 'X':
@@ -2228,9 +2228,9 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
         if item is not None:
             _branch = [c for c in ccU.getMethylAtoms(compId if cifCompId is None else cifCompId) if c[0] == 'C']
             if len(_branch) > 1:
-                __branch = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList
-                            if cca[ccU.ccaTypeSymbol] in ('C', 'N')
-                            and cca[ccU.ccaLeavingAtomFlag] == 'N']
+                __branch = [cca['atom_id'] for cca in ccU.lastAtomDictList
+                            if cca['type_symbol'] in ('C', 'N')
+                            and cca['leaving_atom_flag'] == 'N']
                 total = 0
                 for k in __branch:
                     c = ccU.getBondedAtoms(compId if cifCompId is None else cifCompId, k, exclProton=True)
@@ -2242,9 +2242,9 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
     if atomId.startswith('QQ') and atomId not in ('QQR', 'QQM'):
         _branch = [c for c in ccU.getMethylAtoms(compId if cifCompId is None else cifCompId) if c[0] == 'C']
         if len(_branch) > 1:
-            __branch = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList
-                        if cca[ccU.ccaTypeSymbol] in ('C', 'N')
-                        and cca[ccU.ccaLeavingAtomFlag] == 'N']
+            __branch = [cca['atom_id'] for cca in ccU.lastAtomDictList
+                        if cca['type_symbol'] in ('C', 'N')
+                        and cca['leaving_atom_flag'] == 'N']
             total = 0
             for k in __branch:
                 c = ccU.getBondedAtoms(compId if cifCompId is None else cifCompId, k, exclProton=True)
@@ -2579,9 +2579,9 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
         if item is not None:
             _branch = [c for c in ccU.getMethylAtoms(cifCompId) if c[0] == 'C']
             if len(_branch) > 1:
-                __branch = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList
-                            if cca[ccU.ccaTypeSymbol] in ('C', 'N')
-                            and cca[ccU.ccaLeavingAtomFlag] == 'N']
+                __branch = [cca['atom_id'] for cca in ccU.lastAtomDictList
+                            if cca['type_symbol'] in ('C', 'N')
+                            and cca['leaving_atom_flag'] == 'N']
                 total = 0
                 for k in __branch:
                     c = ccU.getBondedAtoms(cifCompId, k, exclProton=True)
@@ -3365,7 +3365,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[di
         if not ccU.updateChemCompDict(ref_comp_id):
             continue
 
-        parent_comp_id = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+        parent_comp_id = ccU.lastChemCompDict.get('parent_comp_id', '?')
 
         if parent_comp_id not in EMPTY_VALUE:
             alt_ref_comp_id_dict[parent_comp_id] = ref_comp_id

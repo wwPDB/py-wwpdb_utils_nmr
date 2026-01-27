@@ -521,7 +521,7 @@ class OneDepAnnTasks:
         # 'pdbx_nmr_refine' category has no effective item to relate '_Conformer_family_coord_set'
         self.__uniqSfCatMap['pdbx_nmr_refine'] = ('conformer_family_coord_set', '_Conformer_family_coord_set')
 
-        # add pdbx_nmr_sample_condisions.label, pdbx_nmr_sample_condisions.conditions_id
+        # add pdbx_nmr_sample_conditions.label, pdbx_nmr_sample_conditions.conditions_id
         self.__sfTagMap.extend([('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Details', 1, None),
                                 ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'ID', 1, None)])
 
@@ -2290,7 +2290,7 @@ class OneDepAnnTasks:
                                                             row[lp_cif_tags.index(_tag_map[1])] = _row[lp_tags.index(lp_tag)]
 
                                             if _type in ('ionic strength', 'pH', 'pressure', 'temperature'):
-                                                if ' ' in _type:  # ionic strength (NMR-STAR) -> ionic_streandth (NMRIF)
+                                                if ' ' in _type:  # ionic strength (NMR-STAR) -> ionic_strength (NMRIF)
                                                     _type = _type.replace(' ', '_')
                                                 if _type in lp_cif_tags:
                                                     row[lp_cif_tags.index(_type)] = _val

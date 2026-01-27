@@ -2723,7 +2723,7 @@ class NmrDpUtility:
                                     single_poly = len(cif_ps) == 1 and cif_br is None and cif_np is None
 
                                 if self.__reg.remediation_mode\
-                                    and not (self.__reg.has_star_entity and single_poly):  # DAOTHER-10487
+                                   and not (self.__reg.has_star_entity and single_poly):  # DAOTHER-10487
 
                                     self.__reg.report.warning.appendDescription('sequence_mismatch',
                                                                                 {'file_name': file_name,

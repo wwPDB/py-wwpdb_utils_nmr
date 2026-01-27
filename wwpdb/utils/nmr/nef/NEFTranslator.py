@@ -119,6 +119,7 @@
 #                           (v4.5.0, DAOTHER-10105)
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
+# 27-Jan-2026  M. Yokochi - convert one-letter-code in CS loop if possible (DAOTHER-10487)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -183,6 +184,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            letterToDigit,
                                            indexToLetter,
+                                           getOneLetterCode,
                                            alignPolymerSequence,
                                            alignPolymerSequenceWithConflicts,
                                            assignPolymerSequence)
@@ -230,6 +232,7 @@ except ImportError:
     from nmr.AlignUtil import (deepcopy,
                                letterToDigit,
                                indexToLetter,
+                               getOneLetterCode,
                                alignPolymerSequence,
                                alignPolymerSequenceWithConflicts,
                                assignPolymerSequence)
@@ -2472,6 +2475,21 @@ class NEFTranslator:
                             __auth_comp_id = _auth_comp_id.upper()
                             if __auth_comp_id != _auth_comp_id:
                                 loop.data[idx][auth_comp_id_col] = __auth_comp_id
+
+                elif 'Comp_ID' in loop.tags and has_coord and cif_br is None and cif_np is None\
+                        and all(all(self.__csStat.peptideLike(_comp_id) for _comp_id in ps['comp_id']) for ps in cif_ps)\
+                        and all(len(_comp_id) == 1 for _comp_id in loop.get_tag(['Comp_id'])):  # DAOTHER-10487
+                    comp_id_set = set()
+                    for ps in cif_ps:
+                        comp_id_set |= set(_comp_id for _comp_id in ps['comp_id'])
+                    one_letter_code_set = [getOneLetterCode(_comp_id) for _comp_id in comp_id_set]
+                    if one_letter_code_set.count('X') < 2:
+                        pre_seq_data = loop.get_tag(['Comp_ID'])
+                        if all(_comp_id in one_letter_code_set for _comp_id in pre_seq_data):
+                            comp_id_col = loop.tags.index('Comp_ID')
+                            for idx, _comp_id in enumerate(pre_seq_data):
+                                loop.data[idx][comp_id_col] = next(_comp_id_ for _comp_id_ in comp_id_set
+                                                                   if getOneLetterCode(_comp_id_) == _comp_id)
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and has_auth_asym_id\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):

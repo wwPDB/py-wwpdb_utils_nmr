@@ -261,6 +261,8 @@
 # 03-Dec-2025  M. Yokochi - split concatenation of auth_seq_id and ins_code in CS/MR loops (DAOTHER-10418, NMR data remediation)
 # 07-Jan-2026  M. Yokochi - code refactoring: NmrDpConstant, NmrDpRegistry, NmrDpMrSplitter, NmrDpFirstAid, NmrDpValidation,
 #                           and NmrDpRemediation classes, v5.0.0)
+# 27-Jan-2026  M. Yokochi - raise error when entity exists and sequence inconsistency between the entity and loops, instead of warning,
+#                           do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -2713,7 +2715,15 @@ class NmrDpUtility:
 
                                 err = f"Invalid chain_id {chain_id!r} in a loop {lp_category2}."
 
-                                if self.__reg.remediation_mode:
+                                single_poly = False
+                                if self.__reg.caC is not None:
+                                    cif_ps = self.__reg.caC['polymer_sequence']
+                                    cif_br = self.__reg.caC['branched']
+                                    cif_np = self.__reg.caC['non_polymer']
+                                    single_poly = len(cif_ps) == 1 and cif_br is None and cif_np is None
+
+                                if self.__reg.remediation_mode\
+                                    and not (self.__reg.has_star_entity and single_poly):  # DAOTHER-10487
 
                                     self.__reg.report.warning.appendDescription('sequence_mismatch',
                                                                                 {'file_name': file_name,
@@ -6408,6 +6418,10 @@ class NmrDpUtility:
     def __remediateCsLoop__(self) -> bool:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
+
+        if not self.__reg.combined_mode and self.__reg.has_star_entity\
+           and self.__reg.report.error.hasSequenceMismatchError():  # DAOTHER-10487
+            return False
 
         __errors = self.__reg.report.getTotalErrors()
 

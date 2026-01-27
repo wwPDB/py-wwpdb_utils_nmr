@@ -127,7 +127,8 @@
 #                           (DAOTHER-7829, 9785, NMR data remediation)
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints
 #                           (DAOTHER-7829, 9785, NMR data remediation)
-# 07-Jan-2026  M. Yokochi - update report7s status code when adding error/warning description
+# 07-Jan-2026  M. Yokochi - update status code when adding error/warning description
+# 27-Jan-2026  M. Yokochi - add hasSequenceMismatchError() (DAOTHER-10487)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2520,14 +2521,25 @@ class NmrDpReportError:
 
         return d
 
-    def hasChemicalShiftError(self) -> bool:
-        """ Return whether errors for anomalous chemical shifts exist.
+    def hasSequenceMismatchError(self) -> bool:
+        """ Return whether sequence mismatch error exists.
         """
 
         if self.__contents is None:
             return False
 
-        return any(True for item in self.__contents if item == 'anomalous_data')
+        return any(True for k, v in self.__contents.items()
+                   if k == 'sequence_mismatch' and v is not None and len(v) > 0)
+
+    def hasChemicalShiftError(self) -> bool:
+        """ Return whether anomalous data error exists.
+        """
+
+        if self.__contents is None:
+            return False
+
+        return any(True for k, v in self.__contents.items()
+                   if k == 'anomalous_data' and v is not None and len(v) > 0)
 
     def sortFormatIssueError(self):
         """ Sort 'format_issue' error
@@ -2894,8 +2906,9 @@ class NmrDpReportWarning:
         if self.__contents is None:
             return False
 
-        return any(item in ('anomalous_data', 'anomalous_chemical_shift', 'unusual_data', 'unusual_chemical_shift')
-                   for item in self.__contents)
+        return any(True for k, v in self.__contents.items()
+                   if k in ('anomalous_data', 'anomalous_chemical_shift', 'unusual_data', 'unusual_chemical_shift')
+                   and v is not None and len(v) > 0)
 
     def sortChemicalShiftValidation(self):
         """ Sort warning about anomalous/unusual chemical shift.

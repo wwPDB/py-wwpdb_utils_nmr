@@ -184,7 +184,7 @@ class BaseTopologyParserListener():
                                    and atomNum['auth_atom_id'][0] not in PROTON_BEGIN_CODE]
                     authCompId = translateToStdResName(authCompId, ccU=self.ccU)
                     if self.ccU.updateChemCompDict(authCompId):
-                        chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                        chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
                         valid = True
                         for _atomId in authAtomIds:
                             if _atomId not in chemCompAtomIds:
@@ -255,14 +255,14 @@ class BaseTopologyParserListener():
                                     if ligands == 1:
                                         compId = __compId
                                     elif len(self.nonPolyModel) == 1 and self.ccU.updateChemCompDict(authCompId, False):
-                                        if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
+                                        if self.ccU.lastChemCompDict['release_status'] == 'OBS':
                                             compId = self.nonPolyModel[0]['comp_id'][0]
 
                             if compId is not None:
                                 compIdList.append(compId + '?')  # decide when coordinate is available
                                 chemCompAtomIds = None
                                 if self.ccU.updateChemCompDict(compId):
-                                    chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                                    chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
                                 for k, atomNum in self.atomNumberDict.items():
                                     if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                         atomNum['comp_id'] = compId
@@ -321,14 +321,14 @@ class BaseTopologyParserListener():
                                 if ligands == 1:
                                     compId = __compId
                                 elif len(self.nonPolyModel) == 1 and self.ccU.updateChemCompDict(authCompId, False):
-                                    if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
+                                    if self.ccU.lastChemCompDict['release_status'] == 'OBS':
                                         compId = self.nonPolyModel[0]['comp_id'][0]
 
                         if compId is not None:
                             compIdList.append(compId + '?')  # decide when coordinate is available
                             chemCompAtomIds = None
                             if self.ccU.updateChemCompDict(compId):
-                                chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                                chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
                             for k, atomNum in self.atomNumberDict.items():
                                 if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                     atomNum['comp_id'] = compId
@@ -371,7 +371,7 @@ class BaseTopologyParserListener():
                    and 'atom_id' not in atomNum:
                     compId = atomNum['comp_id']
                     if self.ccU.updateChemCompDict(compId):
-                        chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                        chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
                         if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
@@ -393,7 +393,7 @@ class BaseTopologyParserListener():
                         elif atomNum['comp_id'] != atomNum['auth_comp_id']:
                             authCompId = translateToStdResName(atomNum['auth_comp_id'], ccU=self.ccU)
                             if self.ccU.updateChemCompDict(authCompId):
-                                chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                                chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
                                 if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                    and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
@@ -532,7 +532,7 @@ class BaseTopologyParserListener():
                             if 'atom_type' in atomNum:
                                 authCompId = cmap['auth_comp_id']
                                 if self.ccU.updateChemCompDict(authCompId):
-                                    chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                                    chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
                                     if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
@@ -565,7 +565,7 @@ class BaseTopologyParserListener():
                             atomId = atomNum['auth_atom_id']
 
                         if self.ccU.updateChemCompDict(authCompId):
-                            chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                            chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
                             if atomId.endswith('*'):
                                 _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
@@ -615,7 +615,7 @@ class BaseTopologyParserListener():
                             atomId = atomNum['auth_atom_id']
 
                         if self.ccU.updateChemCompDict(authCompId):
-                            chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                            chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
                             if atomId.endswith('*'):
                                 _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
@@ -735,7 +735,7 @@ class BaseTopologyParserListener():
                                 compId = atomNum['comp_id']
                                 atomId = atomNum['auth_atom_id']
                                 if self.ccU.updateChemCompDict(compId):
-                                    chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                                    chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
                                     if atomId.endswith('*'):
                                         _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
@@ -758,9 +758,9 @@ class BaseTopologyParserListener():
                         if 'atom_id' in atomNum and orphan and test_seq_id == first_seq_id\
                            and self.csStat.peptideLike(translateToStdResName(atomNum['comp_id'], ccU=self.ccU)):
                             if self.ccU.updateChemCompDict(atomNum['comp_id']):
-                                chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
-                                leavingAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                                  if cca[self.ccU.ccaLeavingAtomFlag] == 'Y']
+                                chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
+                                leavingAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                                  if cca['leaving_atom_flag'] == 'Y']
                                 if atomNum['atom_id'] not in chemCompAtomIds or atomNum['atom_id'] in leavingAtomIds:
                                     delete_atom_nums.append(atom_num)
 
@@ -957,7 +957,7 @@ class BaseTopologyParserListener():
                                     compId = atomNum['comp_id']
                                     atomId = atomNum['auth_atom_id']
                                     if self.ccU.updateChemCompDict(compId):
-                                        chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                                        chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
                                         if atomId.endswith('*'):
                                             _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
@@ -1151,7 +1151,7 @@ class BaseTopologyParserListener():
         for authCompId, compId in comp_id_mapping.items():
             chemCompAtomIds = None
             if self.ccU.updateChemCompDict(compId):
-                chemCompAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
             authSeqKeys = []
 

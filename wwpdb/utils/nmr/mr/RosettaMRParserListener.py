@@ -2436,14 +2436,14 @@ class RosettaMRParserListener(ParseTreeListener):
                    and self.__reasons is not None and 'non_poly_remap' in self.__reasons:
                     if self.__ccU.updateChemCompDict(cifCompId):
                         try:
-                            next(cca for cca in self.__ccU.lastAtomList
-                                 if cca[self.__ccU.ccaAtomId] == cifAtomId and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y')
+                            next(cca for cca in self.__ccU.lastAtomDictList
+                                 if cca['atom_id'] == cifAtomId and cca['leaving_atom_flag'] != 'Y')
                         except StopIteration:
                             continue
                         try:
                             if len(authAtomId) > len(cifAtomId):
-                                next(cca for cca in self.__ccU.lastAtomList
-                                     if cca[self.__ccU.ccaAtomId] == authAtomId and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y')
+                                next(cca for cca in self.__ccU.lastAtomDictList
+                                     if cca['atom_id'] == authAtomId and cca['leaving_atom_flag'] != 'Y')
                         except StopIteration:
                             break
 
@@ -2667,9 +2667,9 @@ class RosettaMRParserListener(ParseTreeListener):
             return atomId, asis
 
         if self.__ccU.updateChemCompDict(compId):
-            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+            cca = next((cca for cca in self.__ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
             if cca is not None and seqKey not in self.__coordUnobsRes\
-               and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+               and self.__ccU.lastChemCompDict['release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
@@ -2688,10 +2688,10 @@ class RosettaMRParserListener(ParseTreeListener):
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
-                                if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                if cca['leaving_atom_flag'] != 'Y'\
                                    or (self.__csStat.peptideLike(compId)
-                                       and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
-                                       and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                       and cca['n_terminal_atom_flag'] == 'N'
+                                       and cca['c_terminal_atom_flag'] == 'N'):
                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")

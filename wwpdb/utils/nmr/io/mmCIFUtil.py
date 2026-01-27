@@ -14,7 +14,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Zukang Feng, Masashi Yokochi"
 __email__ = "zfeng@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 
 import sys
 import os
@@ -141,7 +141,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return None
+            if len(self.__dBlockList) != 1:
+                return None
+            blockName = self.__dBlockList[0]
 
         return self.__dBlockList[self.__dBlockMap[self.__get_ext_block_name(blockName, ext)]]
 
@@ -151,7 +153,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return {}
+            if len(self.__dBlockList) != 1:
+                return {}
+            blockName = self.__dBlockList[0]
 
         struct = {}
         for catName in self.getCategoryNameList(blockName, ext):
@@ -172,7 +176,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return []
+            if len(self.__dBlockList) != 1:
+                return []
+            blockName = self.__dBlockList[0]
 
         return self.getDataBlock(blockName, ext).getObjNameList()
 
@@ -187,7 +193,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return []
+            if len(self.__dBlockList) != 1:
+                return []
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -207,7 +215,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return 0
+            if len(self.__dBlockList) != 1:
+                return 0
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -221,7 +231,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return []
+            if len(self.__dBlockList) != 1:
+                return []
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -235,7 +247,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return []
+            if len(self.__dBlockList) != 1:
+                return []
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -266,7 +280,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -280,7 +296,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -303,7 +321,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         catObj = DataCategory(catName)
 
@@ -317,7 +337,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         idx = self.__dBlockMap[self.__get_ext_block_name(blockName, ext)]
 
@@ -333,7 +355,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         idx = self.__dBlockMap[self.__get_ext_block_name(blockName, ext)]
 
@@ -359,7 +383,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -373,7 +399,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -387,7 +415,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -402,7 +432,9 @@ class mmCIFUtil:
         """
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
@@ -454,7 +486,9 @@ class mmCIFUtil:
             return
 
         if blockName not in self.__dBlockMap:
-            return
+            if len(self.__dBlockList) != 1:
+                return
+            blockName = self.__dBlockList[0]
 
         catObj = self.getDataBlock(blockName, ext).getObj(catName)
 

@@ -43,7 +43,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 
 import sys
 import os
@@ -102,6 +102,12 @@ USE_REFLECTIONS = False
 # (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept
 USE_REFLECTIONS_KEEP_STEREO = False
 REORDER = False
+
+# allowed item types
+CIF_ITEM_TYPES = ('str', 'bool',
+                  'int', 'range-int', 'abs-int', 'range-abs-int',
+                  'float', 'range-float', 'abs-float', 'range-abs-float',
+                  'enum', 'starts-with-alnum')
 
 
 def M(axis: list, theta: float) -> list:
@@ -247,17 +253,13 @@ class CifReader:
                  '__categoryNameList',
                  '__hashCode',
                  '__cachePath',
-                 'itemTypes',
                  '__random_rotaion_test',
                  '__single_model_rotation_test',
                  '__min_features_for_clustering',
                  '__max_features_for_clustering',
                  '__min_samples_for_clustering',
                  '__max_samples_for_clustering',
-                 '__min_monomers_for_domain',
-                 '__rmsd_cutoff',
-                 '__d_cutoff',
-                 '__rmsd_overlaid_exactly')
+                 '__min_monomers_for_domain')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  use_cache: bool = True,
@@ -299,12 +301,6 @@ class CifReader:
         # cache file path
         self.__cachePath = None
 
-        # allowed item types
-        self.itemTypes = ('str', 'bool',
-                          'int', 'range-int', 'abs-int', 'range-abs-int',
-                          'float', 'range-float', 'abs-float', 'range-abs-float',
-                          'enum', 'starts-with-alnum')
-
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
         self.__single_model_rotation_test = True
@@ -325,14 +321,6 @@ class CifReader:
 
         # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
         assert self.__min_monomers_for_domain > 6
-
-        # criterion for cutoff RMSD value
-        self.__rmsd_cutoff = RMSD_CUTOFF_FOR_DOMAIN
-
-        self.__d_cutoff = self.__rmsd_cutoff ** 2
-
-        # criterion for detection of exactly overlaid models
-        self.__rmsd_overlaid_exactly = RMSD_OVERLAID_EXACTLY
 
     def parse(self, filePath: str, dirPath: Optional[str] = None) -> bool:
         """ Parse CIF file, and set internal active datablock if possible.
@@ -634,16 +622,16 @@ class CifReader:
         dataNames = [d['name'] for d in dataItems]
 
         for d in dataItems:
-            if d['type'] not in self.itemTypes:
-                raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {self.itemTypes}.")
+            if d['type'] not in CIF_ITEM_TYPES:
+                raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {CIF_ITEM_TYPES}.")
 
         filterNames = None
         if filterItems is not None:
             filterNames = [f['name'] for f in filterItems]
 
             for f in filterItems:
-                if f['type'] not in self.itemTypes:
-                    raise TypeError(f"Type {f['type']} of filter item {f['name']} must be one of {self.itemTypes}.")
+                if f['type'] not in CIF_ITEM_TYPES:
+                    raise TypeError(f"Type {f['type']} of filter item {f['name']} must be one of {CIF_ITEM_TYPES}.")
 
         if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
             self.__setDataBlock(self.getDataBlock(blockName))
@@ -1571,7 +1559,7 @@ class CifReader:
 
         d_var = np.multiply(d_var, factor)
 
-        max_d_var = min(np.max(d_var), self.__d_cutoff)
+        max_d_var = min(np.max(d_var), RMSD_CUTOFF_FOR_DOMAIN * RMSD_CUTOFF_FOR_DOMAIN)
 
         d_ord = np.ones(matrix_size, dtype=float)
 
@@ -1702,11 +1690,11 @@ class CifReader:
                     if self.__verbose and self.__debug:
                         self.__log.write(f'{result}\n')
 
-                    if score < min_score or (n_noise == 0 and min_score < self.__rmsd_overlaid_exactly):
+                    if score < min_score or (n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY):
                         min_score = score
                         min_result = result
 
-                        if n_noise == 0 and min_score < self.__rmsd_overlaid_exactly:
+                        if n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY:
                             abort = True
 
         if min_result is None:
@@ -1816,7 +1804,7 @@ class CifReader:
                     core_rmsd.append(math.sqrt(np.mean(np.array(_core_rmsd))))
                     _rmsd = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q)
                     align_rmsd.append(_rmsd)
-                    if _rmsd < self.__rmsd_overlaid_exactly and ref_model_id < test_model_id:
+                    if _rmsd < RMSD_OVERLAID_EXACTLY and ref_model_id < test_model_id:
                         exact_overlaid_model_ids.append({'ref_model_id': ref_model_id,
                                                          'test_model_id': test_model_id,
                                                          'rmsd_in_well_defined_region': float(f"{_rmsd:.4f}")})
@@ -1848,7 +1836,7 @@ class CifReader:
 
             item = {}
 
-            r = np.full((_total_models, _total_models), self.__rmsd_cutoff, dtype=float)
+            r = np.full((_total_models, _total_models), RMSD_CUTOFF_FOR_DOMAIN, dtype=float)
 
             _rmsd = []
 

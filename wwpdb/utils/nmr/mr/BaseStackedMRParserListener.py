@@ -4883,8 +4883,8 @@ class BaseStackedMRParserListener():
                 typeSymBols_ex = toRegEx(_factor['type_symbols'][0]) if lenTypeSymbols == 1 else None
                 for compId in _compIdSelect:
                     if self.ccU.updateChemCompDict(compId):
-                        for cca in self.ccU.lastAtomList:
-                            realTypeSymbol = cca[self.ccU.ccaTypeSymbol]
+                        for cca in self.ccU.lastAtomDictList:
+                            realTypeSymbol = cca['type_symbol']
                             if (lenTypeSymbols == 1 and re.match(typeSymBols_ex, realTypeSymbol))\
                                or (lenTypeSymbols == 2 and _factor['type_symbols'][0] <= realTypeSymbol <= _factor['type_symbols'][1]):
                                 _typeSymbolSelect.add(realTypeSymbol)
@@ -4902,10 +4902,10 @@ class BaseStackedMRParserListener():
                         _compIdSelect |= set(ps['comp_id'])
                 for compId in _compIdSelect:
                     if self.ccU.updateChemCompDict(compId):
-                        for cca in self.ccU.lastAtomList:
-                            if cca[self.ccU.ccaTypeSymbol] in _factor['type_symbol']\
-                               and cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                                _atomIdSelect.add(cca[self.ccU.ccaAtomId])
+                        for cca in self.ccU.lastAtomDictList:
+                            if cca['type_symbol'] in _factor['type_symbol']\
+                               and cca['leaving_atom_flag'] != 'Y':
+                                _atomIdSelect.add(cca['atom_id'])
 
                 _factor['atom_id'] = list(_atomIdSelect)
                 if len(_factor['atom_id']) == 0:
@@ -5098,7 +5098,7 @@ class BaseStackedMRParserListener():
             for compId in _compIdSelect:
                 if self.ccU.updateChemCompDict(compId):
                     nucleotide = self.csStat.getTypeOfCompId(compId)[1]
-                    refAtomIdList = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                    refAtomIdList = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
                     tmpAtomId = _factor['atom_ids'][0].upper()
                     if lenAtomIds == 1:
                         atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
@@ -5138,7 +5138,7 @@ class BaseStackedMRParserListener():
                     elif lenAtomIds == 2:
                         atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
                         atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
-                    _atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                    _atomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList if cca['leaving_atom_flag'] != 'Y']
                     if lenAtomIds == 1 and nucleotide:
                         _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(atomId_ex, _atomId_)]
                     matched = False
@@ -5334,7 +5334,7 @@ class BaseStackedMRParserListener():
                 for compId in _compIdSelect:
                     if self.ccU.updateChemCompDict(compId):
                         nucleotide = self.csStat.getTypeOfCompId(compId)[1]
-                        refAtomIdList = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList]
+                        refAtomIdList = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
                         tmpAtomId = _factor['atom_ids'][0].upper()
                         if lenAtomIds == 1:
                             atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
@@ -5357,7 +5357,7 @@ class BaseStackedMRParserListener():
                         elif lenAtomIds == 2:
                             atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
                             atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
-                        _atomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                        _atomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList if cca['leaving_atom_flag'] != 'Y']
                         if lenAtomIds == 1 and nucleotide:
                             _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(atomId_ex, _atomId_)]
                         for realAtomId in _atomIds:
@@ -5451,9 +5451,9 @@ class BaseStackedMRParserListener():
             _atomIdSelect = set()
             for compId in _compIdSelect:
                 if self.ccU.updateChemCompDict(compId):
-                    for cca in self.ccU.lastAtomList:
-                        if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                            realAtomId = cca[self.ccU.ccaAtomId]
+                    for cca in self.ccU.lastAtomDictList:
+                        if cca['leaving_atom_flag'] != 'Y':
+                            realAtomId = cca['atom_id']
                             _atomIdSelect.add(realAtomId)
                     if compId in _repNstdResidueInstance:
                         chainId, seqId = _repNstdResidueInstance[compId]
@@ -5470,9 +5470,9 @@ class BaseStackedMRParserListener():
                     else:
                         compId = nonPolyCompId['comp_id']
                         if self.ccU.updateChemCompDict(compId):
-                            for cca in self.ccU.lastAtomList:
-                                if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                                    realAtomId = cca[self.ccU.ccaAtomId]
+                            for cca in self.ccU.lastAtomDictList:
+                                if cca['leaving_atom_flag'] != 'Y':
+                                    realAtomId = cca['atom_id']
                                     _atomIdSelect.add(realAtomId)
                 else:
                     for np in self.nonPolySeq:
@@ -5485,9 +5485,9 @@ class BaseStackedMRParserListener():
                                 else:
                                     compId = nonPolyCompId['comp_id']
                                     if self.ccU.updateChemCompDict(compId):
-                                        for cca in self.ccU.lastAtomList:
-                                            if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                                                realAtomId = cca[self.ccU.ccaAtomId]
+                                        for cca in self.ccU.lastAtomDictList:
+                                            if cca['leaving_atom_flag'] != 'Y':
+                                                realAtomId = cca['atom_id']
                                                 _atomIdSelect.add(realAtomId)
 
             _factor['atom_id'] = list(_atomIdSelect)
@@ -5572,9 +5572,9 @@ class BaseStackedMRParserListener():
                 _atomIdSelect = set()
                 for compId in _compIdSelect:
                     if self.ccU.updateChemCompDict(compId):
-                        for cca in self.ccU.lastAtomList:
-                            if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                                realAtomId = cca[self.ccU.ccaAtomId]
+                        for cca in self.ccU.lastAtomDictList:
+                            if cca['leaving_atom_flag'] != 'Y':
+                                realAtomId = cca['atom_id']
                                 _atomIdSelect.add(realAtomId)
                         if compId in _repNstdResidueInstance:
                             chainId, seqId = _repNstdResidueInstance[compId]
@@ -5591,9 +5591,9 @@ class BaseStackedMRParserListener():
                         else:
                             compId = nonPolyCompId['comp_id']
                             if self.ccU.updateChemCompDict(compId):
-                                for cca in self.ccU.lastAtomList:
-                                    if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                                        realAtomId = cca[self.ccU.ccaAtomId]
+                                for cca in self.ccU.lastAtomDictList:
+                                    if cca['leaving_atom_flag'] != 'Y':
+                                        realAtomId = cca['atom_id']
                                         _atomIdSelect.add(realAtomId)
                     else:
                         for np in self.nonPolySeq:
@@ -5606,9 +5606,9 @@ class BaseStackedMRParserListener():
                                     else:
                                         compId = nonPolyCompId['comp_id']
                                         if self.ccU.updateChemCompDict(compId):
-                                            for cca in self.ccU.lastAtomList:
-                                                if cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
-                                                    realAtomId = cca[self.ccU.ccaAtomId]
+                                            for cca in self.ccU.lastAtomDictList:
+                                                if cca['leaving_atom_flag'] != 'Y':
+                                                    realAtomId = cca['atom_id']
                                                     _atomIdSelect.add(realAtomId)
 
                 _factor['atom_id'] = list(_atomIdSelect)
@@ -5775,12 +5775,12 @@ class BaseStackedMRParserListener():
     def __consumeFactor_expressions__(self, _factor: dict, cifCheck: bool, _atomSelection: List[dict],
                                       isPolySeq: bool = True, isChainSpecified: bool = True,
                                       altPolySeq: Optional[List[dict]] = None, resolved: bool = False) -> bool:
-        atomSpecified = True
-        if 'atom_not_specified' in _factor:
-            atomSpecified = not _factor['atom_not_specified']
         seqSpecified = True
         if 'seq_not_specified' in _factor:
             seqSpecified = not _factor['seq_not_specified']
+        atomSpecified = True
+        if 'atom_not_specified' in _factor:
+            atomSpecified = not _factor['atom_not_specified']
         foundCompId = False
 
         if self.reasons is not None and 'segment_id_poly_type_stats' in self.reasons\
@@ -5802,12 +5802,6 @@ class BaseStackedMRParserListener():
             r = self.__getNamedReasonsForReparsing('label_seq_scheme')
             if self.cur_subtype not in r or force:
                 r[self.cur_subtype] = True
-
-        def update_inhibit_label_seq_scheme(c):
-            r = self.__getNamedReasonsForReparsing('inhibit_label_seq_scheme')
-            if c not in r:
-                r[c] = {}
-            r[c][self.cur_subtype] = True
 
         chainIds = (_factor['chain_id'] if isChainSpecified
                     else [ps['auth_chain_id'] for ps in (self.polySeq if isPolySeq else altPolySeq)])
@@ -6101,12 +6095,12 @@ class BaseStackedMRParserListener():
                             compId = replacedBy
                             _coordAtomSite = deepcopy(coordAtomSite)
                             _coordAtomSite['comp_id'] = compId
-                            _coordAtomSite['atom_id'] = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                                         if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
-                            _coordAtomSite['alt_atom_id'] = [cca[self.ccU.ccaAltAtomId] for cca in self.ccU.lastAtomList
-                                                             if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
-                            _coordAtomSite['type_symbol'] = [cca[self.ccU.ccaTypeSymbol] for cca in self.ccU.lastAtomList
-                                                             if cca[self.ccU.ccaLeavingAtomFlag] != 'Y']
+                            _coordAtomSite['atom_id'] = [cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                                         if cca['leaving_atom_flag'] != 'Y']
+                            _coordAtomSite['alt_atom_id'] = [cca['alt_atom_id'] for cca in self.ccU.lastAtomDictList
+                                                             if cca['leaving_atom_flag'] != 'Y']
+                            _coordAtomSite['type_symbol'] = [cca['type_symbol'] for cca in self.ccU.lastAtomDictList
+                                                             if cca['leaving_atom_flag'] != 'Y']
                             _coordAtomSite['alt_comp_id'] = [coordAtomSite['alt_comp_id'][0]] * len(_coordAtomSite['atom_id'])
                             coordAtomSite = _coordAtomSite
 
@@ -6389,8 +6383,8 @@ class BaseStackedMRParserListener():
                                     elif self.preferAuthSeq and atomSpecified:
                                         may_exist = False
                                         if self.ccU.updateChemCompDict(compId):
-                                            cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                            if cca is not None and cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
+                                            cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId), None)
+                                            if cca is not None and cca['leaving_atom_flag'] != 'Y':
                                                 may_exist = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None and not may_exist:
@@ -6412,9 +6406,9 @@ class BaseStackedMRParserListener():
                                                     # _atom['type_symbol'] =\
                                                     #     _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                     if self.ccU.updateChemCompDict(compId):
-                                                        cca = next((cca for cca in self.ccU.lastAtomList
-                                                                    if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                                        if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                        cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                                    if cca['atom_id'] == _atomId), None)
+                                                        if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                             update_label_seq_scheme()
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
@@ -6432,9 +6426,9 @@ class BaseStackedMRParserListener():
                                                     _atom['type_symbol'] =\
                                                         _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                     if self.ccU.updateChemCompDict(compId):
-                                                        cca = next((cca for cca in self.ccU.lastAtomList
-                                                                    if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                                        if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                        cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                                    if cca['atom_id'] == _atomId), None)
+                                                        if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                             update_label_seq_scheme()
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 if (self.cur_subtype != 'dist' and not self.in_noe)\
@@ -6449,9 +6443,9 @@ class BaseStackedMRParserListener():
                                                     _atom['type_symbol'] =\
                                                         _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
                                                     if self.ccU.updateChemCompDict(compId):
-                                                        cca = next((cca for cca in self.ccU.lastAtomList
-                                                                    if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                                        if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                        cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                                    if cca['atom_id'] == _atomId), None)
+                                                        if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                             update_label_seq_scheme()
                                     elif _seqId_ in ps['auth_seq_id'] and atomSpecified\
                                             and (self.reasons is None or 'label_seq_scheme' not in self.reasons
@@ -6506,8 +6500,8 @@ class BaseStackedMRParserListener():
                                     if self.__lenAtomSelectionSet == 0:
                                         may_exist = False
                                         if self.ccU.updateChemCompDict(compId):
-                                            cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                            if cca is not None and cca[self.ccU.ccaLeavingAtomFlag] != 'Y':
+                                            cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId), None)
+                                            if cca is not None and cca['leaving_atom_flag'] != 'Y':
                                                 may_exist = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None and not may_exist:
@@ -6519,9 +6513,9 @@ class BaseStackedMRParserListener():
                                                 # _atom['type_symbol'] =\
                                                 #     _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 if self.ccU.updateChemCompDict(compId):
-                                                    cca = next((cca for cca in self.ccU.lastAtomList
-                                                                if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                                    if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                    cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                                if cca['atom_id'] == _atomId), None)
+                                                    if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                         update_label_seq_scheme()
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
@@ -6532,9 +6526,9 @@ class BaseStackedMRParserListener():
                                                 _atom['type_symbol'] =\
                                                     _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 if self.ccU.updateChemCompDict(compId):
-                                                    cca = next((cca for cca in self.ccU.lastAtomList
-                                                                if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                                    if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                    cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                                if cca['atom_id'] == _atomId), None)
+                                                    if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                         update_label_seq_scheme()
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
@@ -6542,9 +6536,9 @@ class BaseStackedMRParserListener():
                                                 _atom['type_symbol'] =\
                                                     _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
                                                 if self.ccU.updateChemCompDict(compId):
-                                                    cca = next((cca for cca in self.ccU.lastAtomList
-                                                                if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                                    if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                    cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                                if cca['atom_id'] == _atomId), None)
+                                                    if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                         update_label_seq_scheme()
 
                                 elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
@@ -6598,433 +6592,456 @@ class BaseStackedMRParserListener():
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if not atomSpecified or not seqSpecified:
                                             if self.ccU.updateChemCompDict(compId):
-                                                cca = next((cca for cca in self.ccU.lastAtomList
-                                                            if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                                if cca is None or (cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                            if cca['atom_id'] == _atomId), None)
+                                                if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                     if atomSiteAtomId is None or _atomId not in atomSiteAtomId:
                                                         continue
                                         _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True
 
-                            if (len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1 or not isPolySeq) and not atomSpecified:
-                                continue
-
-                            if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:
-                                continue
-
-                            if not isPolySeq and 'alt_auth_seq_id' in ps\
-                               and _seqId in ps['auth_seq_id'] and _seqId not in ps['alt_auth_seq_id']:
-                                continue
-
-                            if isinstance(origAtomId, str) and origAtomId.startswith('*'):
-                                continue
-
-                            origAtomId0 = origAtomId[0] if isinstance(origAtomId, list) else origAtomId
-
-                            # D_1300057999: verify if another polymer can take over in union expression
-                            if isPolySeq and len(_factor['chain_id']) > 1 and self.con_union_expr:
-                                hasAltPolymer = False
-                                for chainId1, chainId2 in itertools.combinations(_factor['chain_id'], 2):
-                                    ps1 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
-                                                if ps['auth_chain_id'] == chainId1), None)
-                                    if ps1 is not None:
-                                        if 'identical_auth_chain_id' in ps1 and chainId2 in ps1['identical_auth_chain_id']:
-                                            continue
-                                    ps2 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
-                                                if ps['auth_chain_id'] == chainId2), None)
-                                    if ps2 is not None and ps1['comp_id'] != ps2['comp_id']:
-                                        hasAltPolymer = True
-                                        break
-                                if hasAltPolymer:
-                                    hasAltPolymer = False
-                                    for chainId2 in _factor['chain_id']:
-                                        if chainId2 == chainId:
-                                            continue
-                                        ps2 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
-                                                    if ps['auth_chain_id'] == chainId2), None)
-                                        if ps2 is None or ('identical_auth_chain_id' in ps2 and chainId in ps2['identical_auth_chain_id']):
-                                            continue
-                                        if seqId in ps2['auth_seq_id']:
-                                            _, _coordAtomSite = self.getCoordAtomSiteOf(chainId2, seqId, cifCheck=cifCheck)
-                                            if _coordAtomSite is not None:
-                                                _atomSiteAtomId = _coordAtomSite['atom_id']
-                                                if origAtomId0 in _atomSiteAtomId:
-                                                    hasAltPolymer = True
-                                                    break
-                                                _compId = ps2['comp_id'][ps2['auth_seq_id'].index(seqId)]
-                                                _origAtomId0 = translateToStdAtomName(origAtomId0, _compId,
-                                                                                      _atomSiteAtomId, self.ccU, False)
-                                                __origAtomId0, _, details =\
-                                                    self.nefT.get_valid_star_atom(_compId, _origAtomId0, leave_unmatched=True)
-                                                if details is None and __origAtomId0[0] in _atomSiteAtomId:
-                                                    hasAltPolymer = True
-                                                    break
-                                    if hasAltPolymer:
-                                        continue
-
-                            if not (ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES
-                                    and _atomId not in XPLOR_NITROXIDE_NAMES):
-                                continue
-
-                            _compIdList = None if 'comp_id' not in _factor\
-                                else [translateToStdResName(_compId, ccU=self.ccU) for _compId in _factor['comp_id']]
-                            if self.ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
-                                if len(origAtomId) > 1:
-                                    typeSymbols = set()
-                                    for _atomId_ in origAtomId:
-                                        typeSymbol = next((cca[self.ccU.ccaTypeSymbol] for cca in self.ccU.lastAtomList
-                                                           if cca[self.ccU.ccaAtomId] == _atomId_), None)
-                                        if typeSymbol is not None:
-                                            typeSymbols.add(typeSymbol)
-                                            if len(typeSymbols) > 1:
-                                                break
-                                    if len(typeSymbols) > 1:
-                                        continue
-
-                                cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId), None)
-                                if cca is not None and cca[self.ccU.ccaLeavingAtomFlag] == 'Y' and (not atomSpecified or not seqSpecified):
-                                    continue
-
-                                if cca is not None and ('type_symbol' not in _factor
-                                                        or cca[self.ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                    selection = {'chain_id': chainId, 'seq_id': seqId,
-                                                 'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
-                                    if 'alt_chain_id' in _factor and not self.cur_union_expr:
-                                        selection['segment_id'] = _factor['alt_chain_id']
-                                    if len(self.__cur_auth_atom_id) > 0:
-                                        selection['auth_atom_id'] = self.__cur_auth_atom_id
-
-                                    if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
-                                        continue
-
-                                    if not seqSpecified:
-                                        continue
-
-                                    _atomSelection.append(selection)
-                                    if cifCheck and seqKey not in self.__coordUnobsRes\
-                                       and self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
-                                        if self.cur_subtype != 'plane' and coordAtomSite is not None:
-                                            checked = False
-                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                                if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
-                                                                                  or _atomId == 'P' or _atomId.startswith('HOP')):
-                                                    checked = True
-                                            if _atomId[0] in PROTON_BEGIN_CODE:
-                                                bondedTo = self.ccU.getBondedAtoms(compId, _atomId)
-                                                if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
-                                                    if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId:
-                                                        if cca[self.ccU.ccaLeavingAtomFlag] != 'Y'\
-                                                           or (self.csStat.peptideLike(compId)
-                                                               and cca[self.ccU.ccaNTerminalAtomFlag] == 'N'
-                                                               and cca[self.ccU.ccaCTerminalAtomFlag] == 'N'):
-                                                            checked = True
-                                                            if len(origAtomId) == 1:
-                                                                _atomSelection[-1]['hydrogen_not_instantiated'] = True
-                                                                self.f.append(f"[Hydrogen not instantiated] {self.getCurrentRestraint()}"
-                                                                              f"{chainId}:{seqId}:{compId}:{origAtomId0} "
-                                                                              "is not properly instantiated "
-                                                                              "in the coordinates. Please re-upload the model file.")
-                                                    elif bondedTo[0][0] == 'O':
-                                                        checked = True
-                                            if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes\
-                                               and self.csStat.peptideLike(compId):
-                                                if coordAtomSite is not None and _atomId in CARBOXYL_CODE\
-                                                   and not isCyclicPolymer(self.cR, self.polySeq, chainId, self.representativeModelId,
-                                                                           self.representativeAltId, self.modelNumName):
-                                                    self.f.append(f"[Coordinate issue] {self.getCurrentRestraint()}"
-                                                                  f"{chainId}:{seqId}:{compId}:{origAtomId0} is not properly instantiated "
-                                                                  "in the coordinates. Please re-upload the model file.")
-                                                    checked = True
-
-                                            if not checked and not self.cur_union_expr:
-                                                if chainId in LARGE_ASYM_ID:
-                                                    if isPolySeq and not self.preferAuthSeq\
-                                                       and ('label_seq_offset' not in self.reasonsForReParsing
-                                                            or chainId not in self.reasonsForReParsing['label_seq_offset']):
-                                                        if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE\
-                                                           and (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
-                                                            pass
-                                                        else:
-                                                            offset = self.getLabelSeqOffsetDueToUnobs(ps)
-                                                            self.__getNamedReasonsForReparsing('label_seq_offset')[chainId] = offset
-                                                            if offset != 0:
-                                                                update_label_seq_scheme()
-                                                    if self.monoPolymer\
-                                                       and (seqId < 1
-                                                            or (compId == 'ACE' and seqId == min(self.polySeq[0]['auth_seq_id']) - 1)
-                                                            or (compId == 'NH2' and seqId == max(self.polySeq[0]['auth_seq_id']) + 1)):
-                                                        self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                                                                      f"{chainId}:{seqId}:{compId}:{origAtomId0} "
-                                                                      "is not present in the coordinates. "
-                                                                      f"The residue number '{seqId}' is not present in polymer sequence "
-                                                                      f"of chain {chainId} of the coordinates. "
-                                                                      "Please update the sequence in the Macromolecules page.")
-                                                        if 'alt_chain_id' in _factor:
-                                                            self.__failure_chain_ids.append(chainId)
-                                                    else:
-                                                        if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq\
-                                                           and not self.with_axis:
-                                                            __preferAuthSeq = self.preferAuthSeq
-                                                            self.preferAuthSeq = False
-                                                            for __chainId in chainIds:
-                                                                if __chainId == chainId:
-                                                                    continue
-                                                                __psList = [__ps for __ps in (self.polySeq if isPolySeq else altPolySeq)
-                                                                            if __ps['auth_chain_id'] == __chainId]
-                                                                if len(__psList) == 0:
-                                                                    continue
-                                                                for __ps in __psList:
-                                                                    __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
-                                                                    _, __coordAtomSite =\
-                                                                        self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
-                                                                    if __coordAtomSite is not None\
-                                                                       and ((seqId in ps['auth_seq_id']
-                                                                             and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
-                                                                            or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
-                                                                        __compId = __coordAtomSite['comp_id']
-                                                                        __atomIds = self.getAtomIdList(_factor, __compId, atomId)
-                                                                        if compId != __compId\
-                                                                           and __atomIds[0] in __coordAtomSite['atom_id']:
-                                                                            update_label_seq_scheme()
-                                                                            if isChainSpecified:
-                                                                                update_inhibit_label_seq_scheme(chainId)
-                                                                            break
-                                                            self.preferAuthSeq = __preferAuthSeq
-
-                                                        if isPolySeq and not isChainSpecified and seqSpecified\
-                                                           and len(_factor['chain_id']) == 1\
-                                                           and _factor['chain_id'][0] != chainId and compId in STD_MON_DICT:
-                                                            continue
-
-                                                        if self.with_para and len(origAtomId0) >= 2\
-                                                           and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
-                                                            continue
-
-                                                        if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
-                                                            if (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
-                                                                _atomSelection.remove(selection)
-                                                                continue
-
-                                                            if self.has_nx:
-                                                                continue
-
-                                                        if self.cur_subtype == 'dihed' and _atomId == 'P'\
-                                                           and self.csStat.getTypeOfCompId(compId)[1]:
-                                                            continue
-
-                                                        warn_title = 'Anomalous data' if self.preferAuthSeq\
-                                                            and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
-                                                            and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes
-                                                                 and seqId != min(auth_seq_id_list))\
-                                                            else 'Atom not found'
-                                                        if seqKey in self.__coordUnobsAtom\
-                                                           and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in PROTON_BEGIN_CODE
-                                                                    and any(True for bondedTo
-                                                                            in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
-                                                                            if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
-                                                            warn_title = 'Coordinate issue'
-                                                        if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
-                                                            warn_title = 'Hydrogen not instantiated'
-                                                        self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
-                                                                      f"{chainId}:{seqId}:{compId}:{origAtomId0} "
-                                                                      "is not present in the coordinates.")
-                                                        if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
-                                                            _atomSelection.append(selection)
-                                                            continue
-
-                                                        if 'alt_chain_id' in _factor:
-                                                            self.__failure_chain_ids.append(chainId)
-
-                                elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                    if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
-                                        if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
-                                                                          or _atomId == 'P' or _atomId.startswith('HOP')):
-                                            continue
-
-                                    if cifCheck and self.cur_subtype != 'plane'\
-                                       and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
-                                       and (self.reasons is None or 'non_poly_remap' not in self.reasons)\
-                                       and not self.cur_union_expr:
-                                        if chainId in LARGE_ASYM_ID:
-                                            if self.monoPolymer\
-                                               and (seqId < 1
-                                                    or (compId == 'ACE' and seqId == min(self.polySeq[0]['auth_seq_id']) - 1)
-                                                    or (compId == 'NH2' and seqId == max(self.polySeq[0]['auth_seq_id']) + 1)):
-                                                self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                                                              f"{chainId}:{seqId}:{compId}:{origAtomId0} "
-                                                              "is not present in the coordinates. "
-                                                              f"The residue number '{seqId}' is not present in polymer sequence "
-                                                              f"of chain {chainId} of the coordinates. "
-                                                              "Please update the sequence in the Macromolecules page.")
-                                                if 'alt_chain_id' in _factor:
-                                                    self.__failure_chain_ids.append(chainId)
-
-                                            elif seqSpecified:
-                                                if resolved and altPolySeq is not None:
-                                                    continue
-
-                                                if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq and not self.with_axis:
-                                                    __preferAuthSeq = self.preferAuthSeq
-                                                    self.preferAuthSeq = False
-                                                    for __chainId in chainIds:
-                                                        if __chainId == chainId:
-                                                            continue
-                                                        __psList = [__ps for __ps in (self.polySeq if isPolySeq else altPolySeq)
-                                                                    if __ps['auth_chain_id'] == __chainId]
-                                                        if len(__psList) == 0:
-                                                            continue
-
-                                                        def update_label_seq_scheme_w_assert():
-                                                            r = self.__getNamedReasonsForReparsing('label_seq_scheme')
-                                                            if self.cur_subtype not in r:
-                                                                r[self.cur_subtype] = True
-                                                                if 'segment_id' in _factor\
-                                                                   and 'assert_label_scheme_scheme' not in self.reasonsForReParsing:
-                                                                    self.reasonsForReParsing['assert_label_seq_scheme'] = True  # 2m0k
-
-                                                        for __ps in __psList:
-                                                            __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
-                                                            _, __coordAtomSite =\
-                                                                self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
-                                                            if __coordAtomSite is not None\
-                                                               and ((seqId in ps['auth_seq_id']
-                                                                     and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
-                                                                    or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
-                                                                __compId = __coordAtomSite['comp_id']
-                                                                __atomIds = self.getAtomIdList(_factor, __compId, atomId)
-                                                                # 2ld5
-                                                                if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']\
-                                                                   and self.csStat.getTypeOfCompId(compId) ==\
-                                                                        self.csStat.getTypeOfCompId(__compId):
-                                                                    update_label_seq_scheme_w_assert()
-                                                                    if isChainSpecified:
-                                                                        update_inhibit_label_seq_scheme(chainId)
-                                                                    break
-                                                    self.preferAuthSeq = __preferAuthSeq
-
-                                                if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
-                                                   and _factor['chain_id'][0] != chainId and compId in STD_MON_DICT:
-                                                    continue
-                                                # 2mgt
-                                                if self.hasNonPoly and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
-                                                    if _atomId in self.__uniqAtomIdToSeqKey:  # 7jk8
-                                                        r = self.__getNamedReasonsForReparsing('np_atom_id_remap')
-                                                        if _atomId not in r:
-                                                            r[_atomId] = self.__uniqAtomIdToSeqKey[_atomId]
-                                                    _coordAtomSite = None
-                                                    ligands = 0
-                                                    for np in self.__nonPoly:
-                                                        if np['auth_chain_id'] == chainId and atomId == np['comp_id'][0]:
-                                                            ligands += len(np['seq_id'])
-                                                    if ligands == 0:
-                                                        for np in self.__nonPoly:
-                                                            if 'alt_comp_id' in np and np['auth_chain_id'] == chainId\
-                                                               and atomId == np['alt_comp_id'][0]:
-                                                                ligands += len(np['seq_id'])
-                                                    if ligands == 0:
-                                                        for np in self.__nonPoly:
-                                                            _, _coordAtomSite =\
-                                                                self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0],
-                                                                                        cifCheck=cifCheck)
-                                                            if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
-                                                                ligands += len(np['seq_id'])
-                                                    if ligands == 1:
-
-                                                        def update_np_seq_id_remap(c, s, d):
-                                                            r = self.__getNamedReasonsForReparsing('np_seq_id_remap')
-                                                            if c not in r:
-                                                                r[c] = {}
-                                                            if s in r[c]:
-                                                                if r[c][s] is not None:
-                                                                    if r[c][s] != d:
-                                                                        r[c][s] = None
-                                                                    else:
-                                                                        return True
-                                                            else:
-                                                                r[c][s] = d
-                                                                return True
-                                                            return False
-
-                                                        checked = False
-                                                        srcSeqId = _factor['seq_id'][0]
-                                                        for np in self.__nonPoly:
-                                                            if atomId == np['comp_id'][0]\
-                                                               or ('alt_comp_id' in np and atomId == np['alt_comp_id'][0]):
-                                                                checked = update_np_seq_id_remap(chainId, srcSeqId, np['seq_id'][0])
-                                                        for np in self.__nonPoly:
-                                                            if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
-                                                                checked = update_np_seq_id_remap(chainId, srcSeqId, np['seq_id'][0])
-                                                        if checked and isPolySeq and (self.reasons is None
-                                                                                      or (self.reasons is not None
-                                                                                          and 'np_seq_id_remap' in self.reasons)):
-                                                            continue
-                                                    # 2n3r
-                                                    elif ligands > 1 and isPolySeq and self.reasons is not None\
-                                                            and 'np_seq_id_remap' in self.reasons\
-                                                            and retrieveRemappedSeqId(self.reasons['np_seq_id_remap'],
-                                                                                      chainId, seqId)[0] is not None:
-                                                        continue
-
-                                                if extSeqScheme:
-                                                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
-                                                                  f"The residue '{seqId}:{compId}' is not present in polymer sequence "
-                                                                  f"of chain {chainId} of the coordinates. "
-                                                                  "Please update the sequence in the Macromolecules page.")
-                                                    if 'expected_comp_id' not in _factor:
-                                                        _factor['expected_comp_id'] = [compId]
-                                                    if compId not in _factor['expected_comp_id']:
-                                                        _factor['expected_comp_id'].append(compId)
-                                                    continue
-                                                # 5t1n: SANI -> PCS
-                                                if self.cur_subtype == 'rdc' and self.__lenAtomSelectionSet == 4 and\
-                                                   compId in NITROOXIDE_ANCHOR_RES_NAMES\
-                                                   and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in PARAMAGNETIC_ELEMENTS:
-                                                    self.paramagCenter = copy.copy(_factor)
-                                                    self.paramagCenter['atom_id'][0] = origAtomId0[:2].upper()
-                                                    continue
-
-                                                if self.with_para and len(origAtomId0) >= 2\
-                                                   and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
-                                                    continue
-
-                                                if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
-                                                    if self.has_nx or origAtomId0.startswith('HT'):
-                                                        continue
-
-                                                if self.cur_subtype == 'dihed' and _atomId == 'P'\
-                                                   and self.csStat.getTypeOfCompId(compId)[1]:
-                                                    continue
-
-                                                warn_title = 'Anomalous data' if self.preferAuthSeq\
-                                                    and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
-                                                    and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes
-                                                         and seqId != min(auth_seq_id_list))\
-                                                    else 'Atom not found'
-                                                if seqKey in self.__coordUnobsAtom\
-                                                   and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                        or (_atomId[0] in PROTON_BEGIN_CODE
-                                                            and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId,
-                                                                                                                 exclProton=True)
-                                                                    if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
-                                                    warn_title = 'Coordinate issue'
-                                                if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
-                                                    warn_title = 'Hydrogen not instantiated'
-                                                self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
-                                                              f"{chainId}:{seqId}:{compId}:{origAtomId0} "
-                                                              "is not present in the coordinates.")
-
-                                                if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
-                                                    continue
-
-                                                if self.cur_subtype == 'dist' and isPolySeq and isChainSpecified\
-                                                   and compId in STD_MON_DICT and self.csStat.peptideLike(compId):
-                                                    self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
-                                                if 'alt_chain_id' in _factor:
-                                                    self.__failure_chain_ids.append(chainId)
+                            self.__evaludateFactor_expressions__(_factor, cifCheck, ccdCheck, isPolySeq,
+                                                                 isChainSpecified, seqSpecified, atomSpecified,
+                                                                 chainIds, ps, altPolySeq, resolved,
+                                                                 min(auth_seq_id_list) if len(auth_seq_id_list) > 0 else None,
+                                                                 max(auth_seq_id_list) if len(auth_seq_id_list) > 0 else None,
+                                                                 _atomSelection, seqKey, coordAtomSite, atomSiteAtomId,
+                                                                 chainId, seqId, _seqId, compId, atomId, _atomId, origAtomId,
+                                                                 extSeqScheme)
 
         return foundCompId
+
+    def __evaludateFactor_expressions__(self, _factor: dict, cifCheck: bool, ccdCheck: bool, isPolySeq: bool,
+                                        isChainSpecified: bool, seqSpecified: bool, atomSpecified: bool, chainIds: List[str],
+                                        ps: List[dict], altPolySeq: Optional[List[dict]], resolved: bool,
+                                        minAuthSeqId: Optional[int], maxAuthSeqId: Optional[int], _atomSelection: List[dict],
+                                        seqKey: Tuple[str, int], coordAtomSite: Optional[dict], atomSiteAtomId: List[str],
+                                        chainId: str, seqId: int, _seqId: int, compId: Optional[str], atomId: str, _atomId: str,
+                                        origAtomId: str, extSeqScheme: bool):
+
+        if (len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1 or not isPolySeq) and not atomSpecified:
+            return
+
+        if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:
+            return
+
+        if not isPolySeq and 'alt_auth_seq_id' in ps\
+           and _seqId in ps['auth_seq_id'] and _seqId not in ps['alt_auth_seq_id']:
+            return
+
+        if isinstance(origAtomId, str) and origAtomId.startswith('*'):
+            return
+
+        origAtomId0 = origAtomId[0] if isinstance(origAtomId, list) else origAtomId
+
+        # D_1300057999: verify if another polymer can take over in union expression
+        if isPolySeq and len(_factor['chain_id']) > 1 and self.con_union_expr:
+            hasAltPolymer = False
+            for chainId1, chainId2 in itertools.combinations(_factor['chain_id'], 2):
+                ps1 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
+                            if ps['auth_chain_id'] == chainId1), None)
+                if ps1 is not None:
+                    if 'identical_auth_chain_id' in ps1 and chainId2 in ps1['identical_auth_chain_id']:
+                        continue
+                ps2 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
+                            if ps['auth_chain_id'] == chainId2), None)
+                if ps2 is not None and ps1['comp_id'] != ps2['comp_id']:
+                    hasAltPolymer = True
+                    break
+            if hasAltPolymer:
+                hasAltPolymer = False
+                for chainId2 in _factor['chain_id']:
+                    if chainId2 == chainId:
+                        continue
+                    ps2 = next((ps for ps in (self.polySeq if isPolySeq else altPolySeq)
+                                if ps['auth_chain_id'] == chainId2), None)
+                    if ps2 is None or ('identical_auth_chain_id' in ps2 and chainId in ps2['identical_auth_chain_id']):
+                        continue
+                    if seqId in ps2['auth_seq_id']:
+                        _, _coordAtomSite = self.getCoordAtomSiteOf(chainId2, seqId, cifCheck=cifCheck)
+                        if _coordAtomSite is not None:
+                            _atomSiteAtomId = _coordAtomSite['atom_id']
+                            if origAtomId0 in _atomSiteAtomId:
+                                hasAltPolymer = True
+                                break
+                            _compId = ps2['comp_id'][ps2['auth_seq_id'].index(seqId)]
+                            _origAtomId0 = translateToStdAtomName(origAtomId0, _compId,
+                                                                  _atomSiteAtomId, self.ccU, False)
+                            __origAtomId0, _, details =\
+                                self.nefT.get_valid_star_atom(_compId, _origAtomId0, leave_unmatched=True)
+                            if details is None and __origAtomId0[0] in _atomSiteAtomId:
+                                hasAltPolymer = True
+                                break
+                if hasAltPolymer:
+                    return
+
+        if not (ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES
+                and _atomId not in XPLOR_NITROXIDE_NAMES):
+            return
+
+        def update_label_seq_scheme():
+            r = self.__getNamedReasonsForReparsing('label_seq_scheme')
+            if self.cur_subtype not in r:
+                r[self.cur_subtype] = True
+
+        def update_inhibit_label_seq_scheme(c):
+            r = self.__getNamedReasonsForReparsing('inhibit_label_seq_scheme')
+            if c not in r:
+                r[c] = {}
+            r[c][self.cur_subtype] = True
+
+        _compIdList = None if 'comp_id' not in _factor\
+            else [translateToStdResName(_compId, ccU=self.ccU) for _compId in _factor['comp_id']]
+        if self.ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
+            if len(origAtomId) > 1:
+                typeSymbols = set()
+                for _atomId_ in origAtomId:
+                    typeSymbol = next((cca['type_symbol'] for cca in self.ccU.lastAtomDictList
+                                       if cca['atom_id'] == _atomId_), None)
+                    if typeSymbol is not None:
+                        typeSymbols.add(typeSymbol)
+                        if len(typeSymbols) > 1:
+                            break
+                if len(typeSymbols) > 1:
+                    return
+
+            cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId), None)
+            if cca is not None and cca['leaving_atom_flag'] == 'Y' and (not atomSpecified or not seqSpecified):
+                return
+
+            if cca is not None and ('type_symbol' not in _factor
+                                    or cca['type_symbol'] in _factor['type_symbol']):
+                selection = {'chain_id': chainId, 'seq_id': seqId,
+                             'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
+                if 'alt_chain_id' in _factor and not self.cur_union_expr:
+                    selection['segment_id'] = _factor['alt_chain_id']
+                if len(self.__cur_auth_atom_id) > 0:
+                    selection['auth_atom_id'] = self.__cur_auth_atom_id
+
+                if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
+                    return
+
+                if not seqSpecified:
+                    return
+
+                _atomSelection.append(selection)
+                if cifCheck and seqKey not in self.__coordUnobsRes\
+                   and self.ccU.lastChemCompDict['release_status'] == 'REL':
+                    if self.cur_subtype != 'plane' and coordAtomSite is not None:
+                        checked = False
+                        if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == minAuthSeqId:
+                            if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
+                                                              or _atomId == 'P' or _atomId.startswith('HOP')):
+                                checked = True
+                        if _atomId[0] in PROTON_BEGIN_CODE:
+                            bondedTo = self.ccU.getBondedAtoms(compId, _atomId)
+                            if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
+                                if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId:
+                                    if cca['leaving_atom_flag'] != 'Y'\
+                                       or (self.csStat.peptideLike(compId)
+                                           and cca['n_terminal_atom_flag'] == 'N'
+                                           and cca['c_terminal_atom_flag'] == 'N'):
+                                        checked = True
+                                        if len(origAtomId) == 1:
+                                            _atomSelection[-1]['hydrogen_not_instantiated'] = True
+                                            self.f.append(f"[Hydrogen not instantiated] {self.getCurrentRestraint()}"
+                                                          f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                                          "is not properly instantiated "
+                                                          "in the coordinates. Please re-upload the model file.")
+                                elif bondedTo[0][0] == 'O':
+                                    checked = True
+                        if seqId == maxAuthSeqId or (chainId, seqId + 1) in self.__coordUnobsRes\
+                           and self.csStat.peptideLike(compId):
+                            if coordAtomSite is not None and _atomId in CARBOXYL_CODE\
+                               and not isCyclicPolymer(self.cR, self.polySeq, chainId, self.representativeModelId,
+                                                       self.representativeAltId, self.modelNumName):
+                                self.f.append(f"[Coordinate issue] {self.getCurrentRestraint()}"
+                                              f"{chainId}:{seqId}:{compId}:{origAtomId0} is not properly instantiated "
+                                              "in the coordinates. Please re-upload the model file.")
+                                checked = True
+
+                        if not checked and not self.cur_union_expr:
+                            if chainId in LARGE_ASYM_ID:
+                                if isPolySeq and not self.preferAuthSeq\
+                                   and ('label_seq_offset' not in self.reasonsForReParsing
+                                        or chainId not in self.reasonsForReParsing['label_seq_offset']):
+                                    if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE\
+                                       and (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
+                                        pass
+                                    else:
+                                        offset = self.getLabelSeqOffsetDueToUnobs(ps)
+                                        self.__getNamedReasonsForReparsing('label_seq_offset')[chainId] = offset
+                                        if offset != 0:
+                                            update_label_seq_scheme()
+                                if self.monoPolymer\
+                                   and (seqId < 1
+                                        or (compId == 'ACE' and seqId == min(self.polySeq[0]['auth_seq_id']) - 1)
+                                        or (compId == 'NH2' and seqId == max(self.polySeq[0]['auth_seq_id']) + 1)):
+                                    self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
+                                                  f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                                  "is not present in the coordinates. "
+                                                  f"The residue number '{seqId}' is not present in polymer sequence "
+                                                  f"of chain {chainId} of the coordinates. "
+                                                  "Please update the sequence in the Macromolecules page.")
+                                    if 'alt_chain_id' in _factor:
+                                        self.__failure_chain_ids.append(chainId)
+                                else:
+                                    if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq\
+                                       and not self.with_axis:
+                                        __preferAuthSeq = self.preferAuthSeq
+                                        self.preferAuthSeq = False
+                                        for __chainId in chainIds:
+                                            if __chainId == chainId:
+                                                continue
+                                            __psList = [__ps for __ps in (self.polySeq if isPolySeq else altPolySeq)
+                                                        if __ps['auth_chain_id'] == __chainId]
+                                            if len(__psList) == 0:
+                                                continue
+                                            for __ps in __psList:
+                                                __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
+                                                _, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
+                                                if __coordAtomSite is not None\
+                                                   and ((seqId in ps['auth_seq_id']
+                                                         and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
+                                                        or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
+                                                    __compId = __coordAtomSite['comp_id']
+                                                    __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                                    if compId != __compId\
+                                                       and __atomIds[0] in __coordAtomSite['atom_id']:
+                                                        update_label_seq_scheme()
+                                                        if isChainSpecified:
+                                                            update_inhibit_label_seq_scheme(chainId)
+                                                        break
+                                        self.preferAuthSeq = __preferAuthSeq
+
+                                    if isPolySeq and not isChainSpecified and seqSpecified\
+                                       and len(_factor['chain_id']) == 1\
+                                       and _factor['chain_id'][0] != chainId and compId in STD_MON_DICT:
+                                        return
+
+                                    if self.with_para and len(origAtomId0) >= 2\
+                                       and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
+                                        return
+
+                                    if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
+                                        if (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
+                                            _atomSelection.remove(selection)
+                                            return
+
+                                        if self.has_nx:
+                                            return
+
+                                    if self.cur_subtype == 'dihed' and _atomId == 'P'\
+                                       and self.csStat.getTypeOfCompId(compId)[1]:
+                                        return
+
+                                    warn_title = 'Anomalous data' if self.preferAuthSeq\
+                                        and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
+                                        and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes
+                                             and seqId != minAuthSeqId)\
+                                        else 'Atom not found'
+                                    if seqKey in self.__coordUnobsAtom\
+                                       and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
+                                            or (_atomId[0] in PROTON_BEGIN_CODE
+                                                and any(True for bondedTo
+                                                        in self.ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                        if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
+                                        warn_title = 'Coordinate issue'
+                                    if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
+                                        warn_title = 'Hydrogen not instantiated'
+                                    self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
+                                                  f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                                  "is not present in the coordinates.")
+                                    if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
+                                        _atomSelection.append(selection)
+                                        return
+
+                                    if 'alt_chain_id' in _factor:
+                                        self.__failure_chain_ids.append(chainId)
+
+            elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
+                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == minAuthSeqId:
+                    if coordAtomSite is not None and ((_atomId in AMINO_PROTON_CODE and 'H1' in atomSiteAtomId)
+                                                      or _atomId == 'P' or _atomId.startswith('HOP')):
+                        return
+
+                if cifCheck and self.cur_subtype != 'plane'\
+                   and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
+                   and (self.reasons is None or 'non_poly_remap' not in self.reasons)\
+                   and not self.cur_union_expr:
+                    if chainId in LARGE_ASYM_ID:
+                        if self.monoPolymer\
+                           and (seqId < 1
+                                or (compId == 'ACE' and seqId == min(self.polySeq[0]['auth_seq_id']) - 1)
+                                or (compId == 'NH2' and seqId == max(self.polySeq[0]['auth_seq_id']) + 1)):
+                            self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
+                                          f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                          "is not present in the coordinates. "
+                                          f"The residue number '{seqId}' is not present in polymer sequence "
+                                          f"of chain {chainId} of the coordinates. "
+                                          "Please update the sequence in the Macromolecules page.")
+                            if 'alt_chain_id' in _factor:
+                                self.__failure_chain_ids.append(chainId)
+
+                        elif seqSpecified:
+                            if resolved and altPolySeq is not None:
+                                return
+
+                            if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq and not self.with_axis:
+                                __preferAuthSeq = self.preferAuthSeq
+                                self.preferAuthSeq = False
+                                for __chainId in chainIds:
+                                    if __chainId == chainId:
+                                        continue
+                                    __psList = [__ps for __ps in (self.polySeq if isPolySeq else altPolySeq)
+                                                if __ps['auth_chain_id'] == __chainId]
+                                    if len(__psList) == 0:
+                                        continue
+
+                                    def update_label_seq_scheme_w_assert():
+                                        r = self.__getNamedReasonsForReparsing('label_seq_scheme')
+                                        if self.cur_subtype not in r:
+                                            r[self.cur_subtype] = True
+                                            if 'segment_id' in _factor\
+                                               and 'assert_label_scheme_scheme' not in self.reasonsForReParsing:
+                                                self.reasonsForReParsing['assert_label_seq_scheme'] = True  # 2m0k
+
+                                    for __ps in __psList:
+                                        __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
+                                        _, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
+                                        if __coordAtomSite is not None\
+                                           and ((seqId in ps['auth_seq_id']
+                                                 and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
+                                                or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
+                                            __compId = __coordAtomSite['comp_id']
+                                            __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                            # 2ld5
+                                            if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']\
+                                               and self.csStat.getTypeOfCompId(compId) == self.csStat.getTypeOfCompId(__compId):
+                                                update_label_seq_scheme_w_assert()
+                                                if isChainSpecified:
+                                                    update_inhibit_label_seq_scheme(chainId)
+                                                break
+                                self.preferAuthSeq = __preferAuthSeq
+
+                            if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
+                               and _factor['chain_id'][0] != chainId and compId in STD_MON_DICT:
+                                return
+                            # 2mgt
+                            if self.hasNonPoly and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
+                                if _atomId in self.__uniqAtomIdToSeqKey:  # 7jk8
+                                    r = self.__getNamedReasonsForReparsing('np_atom_id_remap')
+                                    if _atomId not in r:
+                                        r[_atomId] = self.__uniqAtomIdToSeqKey[_atomId]
+                                _coordAtomSite = None
+                                ligands = 0
+                                for np in self.__nonPoly:
+                                    if np['auth_chain_id'] == chainId and atomId == np['comp_id'][0]:
+                                        ligands += len(np['seq_id'])
+                                if ligands == 0:
+                                    for np in self.__nonPoly:
+                                        if 'alt_comp_id' in np and np['auth_chain_id'] == chainId\
+                                           and atomId == np['alt_comp_id'][0]:
+                                            ligands += len(np['seq_id'])
+                                if ligands == 0:
+                                    for np in self.__nonPoly:
+                                        _, _coordAtomSite =\
+                                            self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                        if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
+                                            ligands += len(np['seq_id'])
+                                if ligands == 1:
+
+                                    def update_np_seq_id_remap(c, s, d):
+                                        r = self.__getNamedReasonsForReparsing('np_seq_id_remap')
+                                        if c not in r:
+                                            r[c] = {}
+                                        if s in r[c]:
+                                            if r[c][s] is not None:
+                                                if r[c][s] != d:
+                                                    r[c][s] = None
+                                                else:
+                                                    return True
+                                        else:
+                                            r[c][s] = d
+                                            return True
+                                        return False
+
+                                    checked = False
+                                    srcSeqId = _factor['seq_id'][0]
+                                    for np in self.__nonPoly:
+                                        if atomId == np['comp_id'][0]\
+                                           or ('alt_comp_id' in np and atomId == np['alt_comp_id'][0]):
+                                            checked = update_np_seq_id_remap(chainId, srcSeqId, np['seq_id'][0])
+                                    for np in self.__nonPoly:
+                                        if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
+                                            checked = update_np_seq_id_remap(chainId, srcSeqId, np['seq_id'][0])
+                                    if checked and isPolySeq\
+                                       and (self.reasons is None
+                                            or (self.reasons is not None and 'np_seq_id_remap' in self.reasons)):
+                                        return
+                                # 2n3r
+                                elif ligands > 1 and isPolySeq and self.reasons is not None\
+                                        and 'np_seq_id_remap' in self.reasons\
+                                        and retrieveRemappedSeqId(self.reasons['np_seq_id_remap'], chainId, seqId)[0] is not None:
+                                    return
+
+                            if extSeqScheme:
+                                self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
+                                              f"The residue '{seqId}:{compId}' is not present in polymer sequence "
+                                              f"of chain {chainId} of the coordinates. "
+                                              "Please update the sequence in the Macromolecules page.")
+                                if 'expected_comp_id' not in _factor:
+                                    _factor['expected_comp_id'] = [compId]
+                                if compId not in _factor['expected_comp_id']:
+                                    _factor['expected_comp_id'].append(compId)
+                                return
+                            # 5t1n: SANI -> PCS
+                            if self.cur_subtype == 'rdc' and self.__lenAtomSelectionSet == 4 and\
+                               compId in NITROOXIDE_ANCHOR_RES_NAMES\
+                               and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in PARAMAGNETIC_ELEMENTS:
+                                self.paramagCenter = copy.copy(_factor)
+                                self.paramagCenter['atom_id'][0] = origAtomId0[:2].upper()
+                                return
+
+                            if self.with_para and len(origAtomId0) >= 2\
+                               and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
+                                return
+
+                            if self.csStat.peptideLike(compId) and origAtomId0 in AMINO_PROTON_CODE:
+                                if self.has_nx or origAtomId0.startswith('HT'):
+                                    return
+
+                            if self.cur_subtype == 'dihed' and _atomId == 'P'\
+                               and self.csStat.getTypeOfCompId(compId)[1]:
+                                return
+
+                            warn_title = 'Anomalous data' if self.preferAuthSeq\
+                                and compId == 'PRO' and origAtomId0 in AMINO_PROTON_CODE\
+                                and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes
+                                     and seqId != minAuthSeqId)\
+                                else 'Atom not found'
+                            if seqKey in self.__coordUnobsAtom\
+                               and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
+                                    or (_atomId[0] in PROTON_BEGIN_CODE
+                                        and any(True for bondedTo in self.ccU.getBondedAtoms(compId, _atomId,
+                                                                                             exclProton=True)
+                                                if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
+                                warn_title = 'Coordinate issue'
+                            if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
+                                warn_title = 'Hydrogen not instantiated'
+                            self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
+                                          f"{chainId}:{seqId}:{compId}:{origAtomId0} "
+                                          "is not present in the coordinates.")
+
+                            if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
+                                return
+
+                            if self.cur_subtype == 'dist' and isPolySeq and isChainSpecified\
+                               and compId in STD_MON_DICT and self.csStat.peptideLike(compId):
+                                self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
+                            if 'alt_chain_id' in _factor:
+                                self.__failure_chain_ids.append(chainId)
 
     def __handleNoAtomSelection(self, _factor: dict, clauseName: str, cifCheck: bool, trial: int,
                                 chain_not_specified: bool, ambig_atom_sel: bool,
@@ -7146,7 +7163,8 @@ class BaseStackedMRParserListener():
 
                             if ligands == 1:
                                 for np in self.__nonPoly:
-                                    _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                    _, _coordAtomSite =\
+                                        self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
                                     if _coordAtomSite is not None and len(_factor['atom_id']) == 1\
                                        and _atomId is not None\
                                        and (_atomId in _coordAtomSite['atom_id']
@@ -7229,7 +7247,8 @@ class BaseStackedMRParserListener():
                                             pass
                                 else:
                                     for np in self.__nonPoly:
-                                        _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                        _, _coordAtomSite =\
+                                            self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
                                         if 'UNK' in _coordAtomSite['atom_id']:  # 2mjq, 2mjr, 2mjs
                                             ligands = update_np_seq_id_remap_request(np, ligands)
                                             break
@@ -7436,9 +7455,9 @@ class BaseStackedMRParserListener():
     @functools.lru_cache(maxsize=128)
     def getRealCompId(self, compId: str) -> str:
         if self.ccU.updateChemCompDict(compId, False):
-            if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS'\
-               and '_chem_comp.pdbx_replaced_by' in self.ccU.lastChemCompDict:
-                replacedBy = self.ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
+            if self.ccU.lastChemCompDict['release_status'] == 'OBS'\
+               and 'replaced_by' in self.ccU.lastChemCompDict:
+                replacedBy = self.ccU.lastChemCompDict['replaced_by']
                 if replacedBy not in EMPTY_VALUE and self.ccU.updateChemCompDict(replacedBy):
                     return replacedBy
         return compId

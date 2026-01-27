@@ -965,6 +965,27 @@ READABLE_FILE_TYPE = {'nef': 'NEF (NMR Exchange Format)',
                       'unknown': 'unknown'
                       }
 
+LP_ITEM_TYPES = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index',
+                 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+
+SF_TAG_ITEM_TYPES = ('str', 'bool', 'int', 'positive-int', 'positive-int-as-str',
+                     'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+
+# readable item type
+READABLE_ITEM_TYPE = {'str': 'a string',
+                      'bool': 'a boolean value',
+                      'int': 'an integer',
+                      'index-int': 'an unique positive integer',
+                      'positive-int': 'a positive integer',
+                      'positive-int-as-str': 'a positive integer',
+                      'pointer-index': 'an integer acting as a pointer to the parent item',
+                      'float': 'a floating point number',
+                      'positive-float': 'a positive floating point number',
+                      'range-float': 'a floating point number in a specific range',
+                      'enum': 'an enumeration value',
+                      'enum-int': 'an enumeration value restricted to integers'
+                      }
+
 # content type
 CONTENT_TYPE = {'nef': 'nmr-data-nef',
                 'nmr-star': 'nmr-data-str',

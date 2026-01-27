@@ -856,14 +856,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     atom2_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
                     atom3_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
                     atom_id_2 = atom_id_3 = None
-                    for ccb in self.ccU.lastBonds:
-                        if ccb[self.ccU.ccbAtomId1] in atom2_can and ccb[self.ccU.ccbAtomId2] in atom3_can:
-                            atom_id_2 = ccb[self.ccU.ccbAtomId1]
-                            atom_id_3 = ccb[self.ccU.ccbAtomId2]
+                    for ccb in self.ccU.lastBondDictList:
+                        if ccb['atom_id_1'] in atom2_can and ccb['atom_id_2'] in atom3_can:
+                            atom_id_2 = ccb['atom_id_1']
+                            atom_id_3 = ccb['atom_id_2']
                             break
-                        if ccb[self.ccU.ccbAtomId2] in atom2_can and ccb[self.ccU.ccbAtomId1] in atom3_can:
-                            atom_id_2 = ccb[self.ccU.ccbAtomId2]
-                            atom_id_3 = ccb[self.ccU.ccbAtomId1]
+                        if ccb['atom_id_2'] in atom2_can and ccb['atom_id_1'] in atom3_can:
+                            atom_id_2 = ccb['atom_id_2']
+                            atom_id_3 = ccb['atom_id_1']
                             break
                     if None in (atom_id_2, atom_id_3):
                         continue
@@ -1485,14 +1485,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     atom2_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
                     atom3_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
                     atom_id_2 = atom_id_3 = None
-                    for ccb in self.ccU.lastBonds:
-                        if ccb[self.ccU.ccbAtomId1] in atom2_can and ccb[self.ccU.ccbAtomId2] in atom3_can:
-                            atom_id_2 = ccb[self.ccU.ccbAtomId1]
-                            atom_id_3 = ccb[self.ccU.ccbAtomId2]
+                    for ccb in self.ccU.lastBondDictList:
+                        if ccb['atom_id_1'] in atom2_can and ccb['atom_id_2'] in atom3_can:
+                            atom_id_2 = ccb['atom_id_1']
+                            atom_id_3 = ccb['atom_id_2']
                             break
-                        if ccb[self.ccU.ccbAtomId2] in atom2_can and ccb[self.ccU.ccbAtomId1] in atom3_can:
-                            atom_id_2 = ccb[self.ccU.ccbAtomId2]
-                            atom_id_3 = ccb[self.ccU.ccbAtomId1]
+                        if ccb['atom_id_2'] in atom2_can and ccb['atom_id_1'] in atom3_can:
+                            atom_id_2 = ccb['atom_id_2']
+                            atom_id_3 = ccb['atom_id_1']
                             break
                     if None in (atom_id_2, atom_id_3):
                         continue
@@ -1654,7 +1654,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if not isinstance(atomId, str):
                     self.ccU.updateChemCompDict(compId)
-                    atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                    atomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList if atomId.match(cca['atom_id'])), None)
                     if atomId is None and carbohydrate:
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
@@ -1665,8 +1665,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
                         if not isinstance(atomId, str):
-                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                           if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                            atomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                           if atomId.match(cca['atom_id'])), None)
                             if atomId is None:
                                 resKey = (seqId, _compId)
                                 if resKey not in self.extResKey:
@@ -1727,7 +1727,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif nucleotide and angleName == 'CHI':
                         if self.ccU.updateChemCompDict(cifCompId):
                             try:
-                                next(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == 'N9')
+                                next(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == 'N9')
                                 atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['R']
                                 seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['R']
                             except StopIteration:
@@ -1787,8 +1787,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             self.ccU.updateChemCompDict(_cifCompId)
 
                             if isinstance(atomId, str):
-                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                                  if cca[self.ccU.ccaAtomId] == atomId), None)
+                                cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                                  if cca['atom_id'] == atomId), None)
                                 if cifAtomId is None:
                                     if ord == 0:
                                         _cifSeqId += seqOffset[ord + 1] - offset
@@ -1801,19 +1801,19 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
                             else:
-                                cifAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                              if atomId.match(cca[self.ccU.ccaAtomId])
+                                cifAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                              if atomId.match(cca['atom_id'])
                                               and (coordAtomSite is None
-                                                   or (coordAtomSite is not None and cca[self.ccU.ccaAtomId] in coordAtomSite['atom_id']))]
+                                                   or (coordAtomSite is not None and cca['atom_id'] in coordAtomSite['atom_id']))]
 
                                 if len(cifAtomIds) > 0:
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
-                                                          if any(True for b in self.ccU.lastBonds
-                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId
-                                                                      and b[self.ccU.ccbAtomId2] == _cifAtomId)
-                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId
-                                                                         and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                                          if any(True for b in self.ccU.lastBondDictList
+                                                                 if ((b['atom_id_1'] == prevCifAtomId
+                                                                      and b['atom_id_2'] == _cifAtomId)
+                                                                     or (b['atom_id_1'] == _cifAtomId
+                                                                         and b['atom_id_2'] == prevCifAtomId)))), None)
                                         if cifAtomId is None:
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
@@ -1953,7 +1953,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if not isinstance(atomId, str):
                     self.ccU.updateChemCompDict(compId)
-                    atomId = next(cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId]))
+                    atomId = next(cca['atom_id'] for cca in self.ccU.lastAtomDictList if atomId.match(cca['atom_id']))
 
                 self.retrieveLocalSeqScheme()
 
@@ -2014,8 +2014,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                              if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                              if cca['atom_id'] == atomId), None)
 
                             if cifAtomId is None:
                                 if _cifCompId is None and not self.allow_ext_seq:
@@ -4585,7 +4585,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                             _atomId_ = 'H'
                                         _atomId = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
                                 if len(_atomId) > 0:
-                                    cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId[0]), None)
+                                    cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId[0]), None)
                                     if cca is not None:
                                         if minLenCompId == 0 and 3 - (j + k) != 0:
                                             continue
@@ -4635,7 +4635,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                             _atomId_ = 'H'
                                         _atomId = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
                                 if len(_atomId) > 0:
-                                    cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId[0]), None)
+                                    cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId[0]), None)
                                     if cca is not None:
                                         self.col_order_of_dist_w_chain['comp_id_1'] = j
                                         self.col_order_of_dist_w_chain['atom_id_1'] = k
@@ -4684,7 +4684,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     if _atomId_ != atomId:
                                         _atomId = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
                                 if len(_atomId) > 0:
-                                    cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId[0]), None)
+                                    cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId[0]), None)
                                     if cca is not None:
                                         if minLenCompId == 0 and 12 - (j + k) != 3:
                                             continue
@@ -4734,7 +4734,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     if _atomId_ != atomId:
                                         _atomId = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
                                 if len(_atomId) > 0:
-                                    cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == _atomId[0]), None)
+                                    cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId[0]), None)
                                     if cca is not None:
                                         self.col_order_of_dist_w_chain['comp_id_2'] = j
                                         self.col_order_of_dist_w_chain['atom_id_2'] = k
@@ -5369,14 +5369,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     atom2_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
                     atom3_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
                     atom_id_2 = atom_id_3 = None
-                    for ccb in self.ccU.lastBonds:
-                        if ccb[self.ccU.ccbAtomId1] in atom2_can and ccb[self.ccU.ccbAtomId2] in atom3_can:
-                            atom_id_2 = ccb[self.ccU.ccbAtomId1]
-                            atom_id_3 = ccb[self.ccU.ccbAtomId2]
+                    for ccb in self.ccU.lastBondDictList:
+                        if ccb['atom_id_1'] in atom2_can and ccb['atom_id_2'] in atom3_can:
+                            atom_id_2 = ccb['atom_id_1']
+                            atom_id_3 = ccb['atom_id_2']
                             break
-                        if ccb[self.ccU.ccbAtomId2] in atom2_can and ccb[self.ccU.ccbAtomId1] in atom3_can:
-                            atom_id_2 = ccb[self.ccU.ccbAtomId2]
-                            atom_id_3 = ccb[self.ccU.ccbAtomId1]
+                        if ccb['atom_id_2'] in atom2_can and ccb['atom_id_1'] in atom3_can:
+                            atom_id_2 = ccb['atom_id_2']
+                            atom_id_3 = ccb['atom_id_1']
                             break
                     if None in (atom_id_2, atom_id_3):
                         continue
@@ -5588,7 +5588,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if not isinstance(atomId, str):
                     self.ccU.updateChemCompDict(compId)
-                    atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                    atomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList if atomId.match(cca['atom_id'])), None)
                     if atomId is None and carbohydrate:
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
@@ -5599,8 +5599,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
                         if not isinstance(atomId, str):
-                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                           if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                            atomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                           if atomId.match(cca['atom_id'])), None)
                             if atomId is None:
                                 resKey = (seqId, _compId)
                                 if resKey not in self.extResKey:
@@ -5658,7 +5658,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif nucleotide and angleName == 'CHI':
                         if self.ccU.updateChemCompDict(cifCompId):
                             try:
-                                next(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == 'N9')
+                                next(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == 'N9')
                                 atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['R']
                                 seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['R']
                             except StopIteration:
@@ -5718,8 +5718,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             self.ccU.updateChemCompDict(_cifCompId)
 
                             if isinstance(atomId, str):
-                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                                  if cca[self.ccU.ccaAtomId] == atomId), None)
+                                cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                                  if cca['atom_id'] == atomId), None)
                                 if cifAtomId is None:
                                     if ord == 0:
                                         _cifSeqId += seqOffset[ord + 1] - offset
@@ -5732,19 +5732,19 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
                             else:
-                                cifAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                              if atomId.match(cca[self.ccU.ccaAtomId])
+                                cifAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                              if atomId.match(cca['atom_id'])
                                               and (coordAtomSite is None
-                                                   or (coordAtomSite is not None and cca[self.ccU.ccaAtomId] in coordAtomSite['atom_id']))]
+                                                   or (coordAtomSite is not None and cca['atom_id'] in coordAtomSite['atom_id']))]
 
                                 if len(cifAtomIds) > 0:
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
-                                                          if any(True for b in self.ccU.lastBonds
-                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId
-                                                                      and b[self.ccU.ccbAtomId2] == _cifAtomId)
-                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId
-                                                                         and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                                          if any(True for b in self.ccU.lastBondDictList
+                                                                 if ((b['atom_id_1'] == prevCifAtomId
+                                                                      and b['atom_id_2'] == _cifAtomId)
+                                                                     or (b['atom_id_1'] == _cifAtomId
+                                                                         and b['atom_id_2'] == prevCifAtomId)))), None)
                                         if cifAtomId is None:
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
@@ -5884,7 +5884,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if not isinstance(atomId, str):
                     self.ccU.updateChemCompDict(compId)
-                    atomId = next(cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId]))
+                    atomId = next(cca['atom_id'] for cca in self.ccU.lastAtomDictList if atomId.match(cca['atom_id']))
 
                 self.retrieveLocalSeqScheme()
 
@@ -5945,8 +5945,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                              if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                              if cca['atom_id'] == atomId), None)
 
                             if cifAtomId is None:
                                 if _cifCompId is None and not self.allow_ext_seq:
@@ -6199,14 +6199,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 atom2_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
                 atom3_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
                 atom_id_2 = atom_id_3 = None
-                for ccb in self.ccU.lastBonds:
-                    if ccb[self.ccU.ccbAtomId1] in atom2_can and ccb[self.ccU.ccbAtomId2] in atom3_can:
-                        atom_id_2 = ccb[self.ccU.ccbAtomId1]
-                        atom_id_3 = ccb[self.ccU.ccbAtomId2]
+                for ccb in self.ccU.lastBondDictList:
+                    if ccb['atom_id_1'] in atom2_can and ccb['atom_id_2'] in atom3_can:
+                        atom_id_2 = ccb['atom_id_1']
+                        atom_id_3 = ccb['atom_id_2']
                         break
-                    if ccb[self.ccU.ccbAtomId2] in atom2_can and ccb[self.ccU.ccbAtomId1] in atom3_can:
-                        atom_id_2 = ccb[self.ccU.ccbAtomId2]
-                        atom_id_3 = ccb[self.ccU.ccbAtomId1]
+                    if ccb['atom_id_2'] in atom2_can and ccb['atom_id_1'] in atom3_can:
+                        atom_id_2 = ccb['atom_id_2']
+                        atom_id_3 = ccb['atom_id_1']
                         break
                 if None in (atom_id_2, atom_id_3):
                     continue

@@ -3043,12 +3043,12 @@ class NmrDpRemediation:
                                 continue
 
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                for b in self.__reg.ccU.lastBonds:
-                                    if atom_id in (b[self.__reg.ccU.ccbAtomId1], b[self.__reg.ccU.ccbAtomId2]):
-                                        _atom_id = b[self.__reg.ccU.ccbAtomId1] if b[self.__reg.ccU.ccbAtomId1] != atom_id\
-                                            else b[self.__reg.ccU.ccbAtomId2]
-                                        if any(True for a in self.__reg.ccU.lastAtomList
-                                               if _atom_id == a[self.__reg.ccU.ccaAtomId] and a[self.__reg.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                for b in self.__reg.ccU.lastBondDictList:
+                                    if atom_id in (b['atom_id_1'], b['atom_id_2']):
+                                        _atom_id = b['atom_id_1'] if b['atom_id_1'] != atom_id\
+                                            else b['atom_id_2']
+                                        if any(True for a in self.__reg.ccU.lastAtomDictList
+                                               if _atom_id == a['atom_id'] and a['leaving_atom_flag'] == 'Y'):
                                             leaving_atom_id = _atom_id
                                             break
 
@@ -3094,13 +3094,13 @@ class NmrDpRemediation:
                                     continue
 
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    for b in self.__reg.ccU.lastBonds:
-                                        if atom_id in (b[self.__reg.ccU.ccbAtomId1], b[self.__reg.ccU.ccbAtomId2]):
-                                            _atom_id = b[self.__reg.ccU.ccbAtomId1] if b[self.__reg.ccU.ccbAtomId1] != atom_id\
-                                                else b[self.__reg.ccU.ccbAtomId2]
-                                            if any(True for a in self.__reg.ccU.lastAtomList
-                                                   if _atom_id == a[self.__reg.ccU.ccaAtomId]
-                                                   and a[self.__reg.ccU.ccaLeavingAtomFlag] == 'Y'):
+                                    for b in self.__reg.ccU.lastBondDictList:
+                                        if atom_id in (b['atom_id_1'], b['atom_id_2']):
+                                            _atom_id = b['atom_id_1'] if b['atom_id_1'] != atom_id\
+                                                else b['atom_id_2']
+                                            if any(True for a in self.__reg.ccU.lastAtomDictList
+                                                   if _atom_id == a['atom_id']
+                                                   and a['leaving_atom_flag'] == 'Y'):
                                                 leaving_atom_id = _atom_id
                                                 break
 
@@ -5001,9 +5001,9 @@ class NmrDpRemediation:
                         if atom_id in ('H1', 'HT1') and 'H' in _atom_site_atom_id\
                            and atom_id not in _atom_site_atom_id:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                            if cca[self.__reg.ccU.ccaAtomId] == atom_id
-                                            and cca[self.__reg.ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                            if cca['atom_id'] == atom_id
+                                            and cca['leaving_atom_flag'] == 'N'), None)
                                 if cca is None:
                                     atom_id = 'H'
                                     if fill_auth_atom_id:
@@ -5015,9 +5015,9 @@ class NmrDpRemediation:
                         elif atom_id in ('H', 'HT1') and 'H1' in _atom_site_atom_id\
                                 and atom_id not in _atom_site_atom_id:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                            if cca[self.__reg.ccU.ccaAtomId] == atom_id
-                                            and cca[self.__reg.ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                            if cca['atom_id'] == atom_id
+                                            and cca['leaving_atom_flag'] == 'N'), None)
                                 if cca is None:
                                     atom_id = 'H1'
                                     if fill_auth_atom_id:
@@ -5036,7 +5036,7 @@ class NmrDpRemediation:
                             heme = False
                             if _row[9] not in EMPTY_VALUE:
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['_chem_comp.name']
+                                    heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['name']
                             if not heme:
                                 missing_ch3 = []
                         _atom_id = atom_id
@@ -5088,9 +5088,9 @@ class NmrDpRemediation:
                             _row[19] = None
                             fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
+                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
                                 if cca is not None:
-                                    _row[7] = cca[self.__reg.ccU.ccaTypeSymbol]
+                                    _row[7] = cca['type_symbol']
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                 else:
@@ -5394,7 +5394,7 @@ class NmrDpRemediation:
                         heme = False
                         if _row[9] not in EMPTY_VALUE:
                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['_chem_comp.name']
+                                heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['name']
                         if not heme:
                             missing_ch3 = []
                     _atom_id = atom_id
@@ -5433,9 +5433,9 @@ class NmrDpRemediation:
                         _row[19] = None
                         fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                         if self.__reg.ccU.updateChemCompDict(comp_id):
-                            cca = next((cca for cca in self.__reg.ccU.lastAtomList if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
+                            cca = next((cca for cca in self.__reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
                             if cca is not None:
-                                _row[7] = cca[self.__reg.ccU.ccaTypeSymbol]
+                                _row[7] = cca['type_symbol']
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                             else:
@@ -7060,9 +7060,9 @@ class NmrDpRemediation:
                                         if __seq_key is not None:
                                             __comp_id = __seq_key[2]
                                             if self.__reg.ccU.updateChemCompDict(comp_id):
-                                                cc_type = self.__reg.ccU.lastChemCompDict['_chem_comp.type']
+                                                cc_type = self.__reg.ccU.lastChemCompDict['type']
                                                 if self.__reg.ccU.updateChemCompDict(__comp_id):
-                                                    __cc_type = self.__reg.ccU.lastChemCompDict['_chem_comp.type']
+                                                    __cc_type = self.__reg.ccU.lastChemCompDict['type']
                                                     if cc_type == __cc_type:  # DAOTHER-9198
                                                         found = True
                                                         comp_id = __seq_key[2]
@@ -7235,10 +7235,10 @@ class NmrDpRemediation:
                                 _row[19] = None
                                 fill_auth_atom_id = _row[18] not in EMPTY_VALUE
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    cca = next((cca for cca in self.__reg.ccU.lastAtomList
-                                                if cca[self.__reg.ccU.ccaAtomId] == _row[6]), None)
+                                    cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                                if cca['atom_id'] == _row[6]), None)
                                     if cca is not None:
-                                        _row[7] = cca[self.__reg.ccU.ccaTypeSymbol]
+                                        _row[7] = cca['type_symbol']
                                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                                     else:

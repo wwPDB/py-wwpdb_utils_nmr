@@ -1968,8 +1968,8 @@ class NmrDpUtility:
 
                     if self.__reg.ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
 
-                        ref_elems = set(a[self.__reg.ccU.ccaTypeSymbol] for a in self.__reg.ccU.lastAtomList
-                                        if a[self.__reg.ccU.ccaLeavingAtomFlag] != 'Y')
+                        ref_elems = set(a['type_symbol'] for a in self.__reg.ccU.lastAtomDictList
+                                        if a['leaving_atom_flag'] != 'Y')
 
                         for elem in ref_elems:
                             if elem in PARAMAGNETIC_ELEMENTS or elem in FERROMAGNETIC_ELEMENTS:
@@ -7321,11 +7321,11 @@ class NmrDpUtility:
                                                    and self.__reg.ccU.updateChemCompDict(comp_id):
                                                     _atom_ids = self.__reg.dpV.getAtomIdList(comp_id, atom_id)
                                                     _atom_ids2 = self.__reg.dpV.getAtomIdList(comp_id, atom_id2)
-                                                    if any(True for b in self.__reg.ccU.lastBonds
-                                                           if ((b[self.__reg.ccU.ccbAtomId1] in _atom_ids
-                                                                and b[self.__reg.ccU.ccbAtomId2] in _atom_ids2)
-                                                               or (b[self.__reg.ccU.ccbAtomId1] in _atom_ids2
-                                                                   and b[self.__reg.ccU.ccbAtomId2] in _atom_ids))):
+                                                    if any(True for b in self.__reg.ccU.lastBondDictList
+                                                           if ((b['atom_id_1'] in _atom_ids
+                                                                and b['atom_id_2'] in _atom_ids2)
+                                                               or (b['atom_id_1'] in _atom_ids2
+                                                                   and b['atom_id_2'] in _atom_ids))):
                                                         continue
 
                                                 err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is onebond. "\
@@ -7859,11 +7859,11 @@ class NmrDpUtility:
                                                and self.__reg.ccU.updateChemCompDict(comp_id):
                                                 _atom_ids = self.__reg.dpV.getAtomIdList(comp_id, atom_id)
                                                 _atom_ids2 = self.__reg.dpV.getAtomIdList(comp_id, atom_id2)
-                                                if any(True for b in self.__reg.ccU.lastBonds
-                                                       if ((b[self.__reg.ccU.ccbAtomId1] in _atom_ids
-                                                            and b[self.__reg.ccU.ccbAtomId2] in _atom_ids2)
-                                                           or (b[self.__reg.ccU.ccbAtomId1] in _atom_ids2
-                                                               and b[self.__reg.ccU.ccbAtomId2] in _atom_ids))):
+                                                if any(True for b in self.__reg.ccU.lastBondDictList
+                                                       if ((b['atom_id_1'] in _atom_ids
+                                                            and b['atom_id_2'] in _atom_ids2)
+                                                           or (b['atom_id_1'] in _atom_ids2
+                                                               and b['atom_id_2'] in _atom_ids))):
                                                     continue
 
                                             err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Coherence transfer type is onebond. "\

@@ -202,7 +202,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
     if None not in (refCompId, ccU):
         refCompId = translateToStdResName(refCompId, ccU=ccU)
         if ccU.updateChemCompDict(refCompId):
-            _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+            _refAtomIdList = [cca['atom_id'] for cca in ccU.lastAtomDictList]
             if "'" not in atomId and atomId in _refAtomIdList:
                 return atomId
             # DNA/RNA OH 5/3 prime terminus
@@ -781,7 +781,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
         if ccU.updateChemCompDict(refCompId):
             if atomId in refAtomIdList:
                 return atomId
-            _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+            _refAtomIdList = [cca['atom_id'] for cca in ccU.lastAtomDictList]
             if "'" not in atomId and atomId in _refAtomIdList:
                 return atomId
             # DNA/RNA OH 5/3 prime terminus
@@ -2200,8 +2200,8 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
         if refCompId == 'CYS':  # 6xyv
             return 'CYS'
         if ccU is not None and ccU.updateChemCompDict(compId):
-            if ccU.lastChemCompDict['_chem_comp.type'] == 'L-PEPTIDE LINKING'\
-               and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
+            if ccU.lastChemCompDict['type'] == 'L-PEPTIDE LINKING'\
+               and 'CYSTEINE' in ccU.lastChemCompDict['name']:
                 return 'CYS'
 
     if compId in ('CYO', 'CYX', 'CYZ', 'CZN'):
@@ -2212,7 +2212,7 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
         if compId.startswith('D'):
             d_peptide = False
             if ccU is not None and ccU.updateChemCompDict(compId):
-                if ccU.lastChemCompDict['_chem_comp.type'] == 'D-PEPTIDE LINKING':
+                if ccU.lastChemCompDict['type'] == 'D-PEPTIDE LINKING':
                     d_peptide = True
             if not d_peptide:  # 6qtf, 2lrr
                 if compId.startswith('DA'):
@@ -2295,8 +2295,8 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
             return compId[:3]
 
     if ccU is not None and ccU.updateChemCompDict(compId, False):
-        if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in ccU.lastChemCompDict:
-            replaced_by = ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
+        if ccU.lastChemCompDict['release_status'] == 'OBS' and 'replaced_by' in ccU.lastChemCompDict:
+            replaced_by = ccU.lastChemCompDict['replaced_by']
             if replaced_by not in EMPTY_VALUE and ccU.updateChemCompDict(replaced_by):
                 compId = replaced_by
 
@@ -2352,10 +2352,10 @@ def translateToLigandName(compId: str, refCompId: str, ccU) -> str:
 
     if ccU.updateChemCompDict(refCompId):
         _compId = translateToStdResName(compId, refCompId, ccU)
-        if '_chem_comp.mon_nstd_parent_comp_id' in ccU.lastChemCompDict:  # matches with comp_id in CCD
-            if ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] == _compId:
+        if 'parent_comp_id' in ccU.lastChemCompDict:  # matches with comp_id in CCD
+            if ccU.lastChemCompDict['parent_comp_id'] == _compId:
                 return refCompId
-        if compId.lower() in ccU.lastChemCompDict['_chem_comp.name'].lower():
+        if compId.lower() in ccU.lastChemCompDict['name'].lower():
             return refCompId
     return compId
 
@@ -5360,14 +5360,14 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                 ring = True
                 for a in atoms:
                     atomId = a['atom_id']
-                    cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
-                    if cca is None or cca[ccU.ccaAromaticFlag] != 'Y':
+                    cca = next((cca for cca in ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
+                    if cca is None or cca['aromatic_flag'] != 'Y':
                         bonded = ccU.getBondedAtoms(compId, atomId, exclProton=True)
                         attach = False
                         for b in bonded:
-                            _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
+                            _cca = next((_cca for _cca in ccU.lastAtomDictList if _cca['atom_id'] == b), None)
                             if _cca is not None:
-                                if _cca[ccU.ccaAromaticFlag] == 'Y':
+                                if _cca['aromatic_flag'] == 'Y':
                                     attach = True
                         if not attach:
                             ring = False
@@ -5384,19 +5384,19 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                     compId = a['comp_id']
                     atomId = a['atom_id']
                     if ccU.updateChemCompDict(compId):
-                        cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
+                        cca = next((cca for cca in ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
                         if cca is None:
                             aroma = False
                             break
-                        if cca[ccU.ccaAromaticFlag] != 'Y':
+                        if cca['aromatic_flag'] != 'Y':
                             if ccU.getTypeOfCompId(compId)[1] and atomId[0] in ('C', 'N') and not atomId.endswith("'"):
                                 continue
                             bonded = ccU.getBondedAtoms(compId, atomId, exclProton=True)
                             attach = False
                             for b in bonded:
-                                _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
+                                _cca = next((_cca for _cca in ccU.lastAtomDictList if _cca['atom_id'] == b), None)
                                 if _cca is not None:
-                                    if _cca[ccU.ccaAromaticFlag] == 'Y':
+                                    if _cca['aromatic_flag'] == 'Y':
                                         attach = True
                             if not attach:
                                 aroma = False
@@ -5478,10 +5478,10 @@ def isLikePheOrTyr(compId: str, ccU) -> bool:
         return False
 
     if ccU.updateChemCompDict(compId):
-        _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+        _refAtomIdList = [cca['atom_id'] for cca in ccU.lastAtomDictList]
         if 'CD1' not in _refAtomIdList or 'CD2' not in _refAtomIdList:
             return False
-        _compId = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+        _compId = ccU.lastChemCompDict.get('parent_comp_id', '?')
         return _compId in ('PHE', 'TYR')
 
     return False
@@ -5498,10 +5498,10 @@ def isLikeHis(compId: str, ccU) -> bool:
         return False
 
     if ccU.updateChemCompDict(compId):
-        _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+        _refAtomIdList = [cca['atom_id'] for cca in ccU.lastAtomDictList]
         if 'ND1' not in _refAtomIdList or 'NE2' not in _refAtomIdList:
             return False
-        _compId = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+        _compId = ccU.lastChemCompDict.get('parent_comp_id', '?')
         return _compId == 'HIS'
 
     return False
@@ -9296,7 +9296,8 @@ def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
 
 
 def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, seqId: int, compId: str, atomId: str,
-                               seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning: bool = True) -> Optional[str]:
+                               seqKey: Tuple[str, int], coordAtomSite: Optional[dict],
+                               enableWarning: bool = True) -> Optional[str]:
     """ Check existence of specified atom in the coordinates.
         @return: waring message (None for valid case)
     """
@@ -9344,8 +9345,8 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
         return None
 
     if ccU.updateChemCompDict(compId):
-        cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
-        if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+        cca = next((cca for cca in ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
+        if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['release_status'] == 'REL':
             checked = False
             ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
             authSeqIdList = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
@@ -9359,7 +9360,7 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                 if atomId[0] in PROTON_BEGIN_CODE:
                     bondedTo = ccU.getBondedAtoms(compId, atomId)
                     if len(bondedTo) > 0:
-                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[ccU.ccaLeavingAtomFlag] != 'Y':
+                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca['leaving_atom_flag'] != 'Y':
                             return f"[Hydrogen not instantiated] "\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file."

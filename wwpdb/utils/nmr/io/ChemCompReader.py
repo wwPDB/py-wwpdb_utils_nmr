@@ -15,7 +15,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 
 import sys
 import os
@@ -33,6 +33,76 @@ except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    RESERVED_LIG_CODE,
                                    CCD_ID_PAT)
+
+
+# items of CCD category
+CCD_ITEM_DICT = {'chem_comp': [('_chem_comp.id', 'id', 'str', ''),
+                               ('_chem_comp.name', 'name', 'str', ''),
+                               ('_chem_comp.type', 'type', 'str', ''),
+                               ('_chem_comp.pdbx_type', 'pdb_type', 'str', ''),
+                               ('_chem_comp.formula', 'formula', 'str', ''),
+                               ('_chem_comp.mon_nstd_parent_comp_id', 'parent_comp_id', 'str', ''),
+                               ('_chem_comp.pdbx_synonyms', 'synonyms', 'str', ''),
+                               ('_chem_comp.pdbx_formal_charge', 'formal_charge', 'int', 0),
+                               ('_chem_comp.pdbx_initial_date', 'initial_date', 'str', ''),
+                               ('_chem_comp.pdbx_modified_date', 'modified_date', 'str', ''),
+                               ('_chem_comp.pdbx_ambiguous_flag', 'ambiguous_flag', 'str', ''),
+                               ('_chem_comp.pdbx_release_status', 'release_status', 'str', ''),
+                               ('_chem_comp.pdbx_replaced_by', 'replaced_by', 'str', ''),
+                               ('_chem_comp.pdbx_replaces', 'replaces', 'str', ''),
+                               ('_chem_comp.formula_weight', 'formula_weight', 'float', None),
+                               ('_chem_comp.one_letter_code', 'one_letter_code', 'str', ''),
+                               ('_chem_comp.three_letter_code', 'three_letter_code', 'str', ''),
+                               ('_chem_comp.pdbx_model_coordinates_details', 'model_coordinates_details', 'str', ''),
+                               ('_chem_comp.pdbx_model_coordinates_missing_flag', 'model_coordinates_missing_flag', 'str', ''),
+                               ('_chem_comp.pdbx_ideal_coordinates_details', 'ideal_coordinates_details', 'str', ''),
+                               ('_chem_comp.pdbx_ideal_coordinates_missing_flag', 'ideal_coordinates_missing_flag', 'str', ''),
+                               ('_chem_comp.pdbx_model_coordinates_db_code', 'model_coordinates_db_code', 'str', ''),
+                               ('_chem_comp.pdbx_subcomponent_list', 'subcomponent_list', 'str', ''),
+                               ('_chem_comp.pdbx_processing_site', 'processing_site', 'str', '')
+                               ],
+                 'chem_comp_atom': [('_chem_comp_atom.comp_id', 'comp_id', 'str', ''),
+                                    ('_chem_comp_atom.atom_id', 'atom_id', 'str', ''),
+                                    ('_chem_comp_atom.alt_atom_id', 'alt_atom_id', 'str', ''),
+                                    ('_chem_comp_atom.type_symbol', 'type_symbol', 'str', ''),
+                                    ('_chem_comp_atom.charge', 'charge', 'int', 0),
+                                    ('_chem_comp_atom.pdbx_align', 'align', 'str', ''),
+                                    ('_chem_comp_atom.pdbx_aromatic_flag', 'aromatic_flag', 'str', ''),
+                                    ('_chem_comp_atom.pdbx_leaving_atom_flag', 'leaving_atom_flag', 'str', ''),
+                                    ('_chem_comp_atom.pdbx_stereo_config', 'stereo_config', 'str', ''),
+                                    ('_chem_comp_atom.model_Cartn_x', 'x', 'float', None),
+                                    ('_chem_comp_atom.model_Cartn_y', 'y', 'float', None),
+                                    ('_chem_comp_atom.model_Cartn_z', 'z', 'float', None),
+                                    ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', 'x_ideal', 'float', None),
+                                    ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', 'y_ideal', 'float', None),
+                                    ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', 'z_ideal', 'float', None),
+                                    ('_chem_comp_atom.pdbx_component_atom_id', 'component_atom_id', 'str', ''),
+                                    ('_chem_comp_atom.pdbx_component_comp_id', 'component_comp_id', 'str', ''),
+                                    ('_chem_comp_atom.pdbx_ordinal', 'ordinal', 'int', None),
+                                    ('_chem_comp_atom.pdbx_backbone_atom_flag', 'backbone_atom_flag', 'str', ''),
+                                    ('_chem_comp_atom.pdbx_n_terminal_atom_flag', 'n_terminal_atom_flag', 'str', ''),
+                                    ('_chem_comp_atom.pdbx_c_terminal_atom_flag', 'c_terminal_atom_flag', 'str', '')
+                                    ],
+                 'chem_comp_bond': [('_chem_comp_bond.comp_id', 'comp_id', 'str', ''),
+                                    ('_chem_comp_bond.atom_id_1', 'atom_id_1', 'str', ''),
+                                    ('_chem_comp_bond.atom_id_2', 'atom_id_2', 'str', ''),
+                                    ('_chem_comp_bond.value_order', 'value_order', 'str', ''),
+                                    ('_chem_comp_bond.pdbx_aromatic_flag', 'aromatic_flag', 'str', ''),
+                                    ('_chem_comp_bond.pdbx_stereo_config', 'stereo_config', 'str', ''),
+                                    ('_chem_comp_bond.pdbx_ordinal', 'ordinal', 'int', None)
+                                    ],
+                 'chem_comp_descriptor': [('_pdbx_chem_comp_descriptor.comp_id', 'comp_id', 'str', ''),
+                                          ('_pdbx_chem_comp_descriptor.type', 'type', 'str', ''),
+                                          ('_pdbx_chem_comp_descriptor.program', 'program', 'str', ''),
+                                          ('_pdbx_chem_comp_descriptor.program_version', 'program_version', 'str', ''),
+                                          ('_pdbx_chem_comp_descriptor.descriptor', 'descriptor', 'str', '')],
+                 'chem_comp_identifier': [('_pdbx_chem_comp_identifier.comp_id', 'comp_id', 'str', ''),
+                                          ('_pdbx_chem_comp_identifier.type', 'type', 'str', ''),
+                                          ('_pdbx_chem_comp_identifier.program', 'program', 'str', ''),
+                                          ('_pdbx_chem_comp_identifier.program_version', 'program_version', 'str', ''),
+                                          ('_pdbx_chem_comp_identifier.identifier', 'identifier', 'str', '')
+                                          ]
+                 }
 
 
 def is_reserved_lig_code(comp_id: str) -> bool:
@@ -60,8 +130,7 @@ class ChemCompReader:
                  '__topCachePath',
                  '__filePath',
                  '__compId',
-                 '__lastCompId',
-                 '__itemDict')
+                 '__lastCompId')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__class_name__ = self.__class__.__name__
@@ -85,82 +154,6 @@ class ChemCompReader:
 
         # the compId of the current datablock
         self.__lastCompId = None
-
-        # items of CCD category
-        self.__itemDict = {
-            'chem_comp': [
-                ('_chem_comp.id', '%s', 'str', ''),
-                ('_chem_comp.name', '%s', 'str', ''),
-                ('_chem_comp.type', '%s', 'str', ''),
-                ('_chem_comp.pdbx_type', '%s', 'str', ''),
-                ('_chem_comp.formula', '%s', 'str', ''),
-                ('_chem_comp.mon_nstd_parent_comp_id', '%s', 'str', ''),
-                ('_chem_comp.pdbx_synonyms', '%s', 'str', ''),
-                ('_chem_comp.pdbx_formal_charge', '%s', 'str', ''),
-                ('_chem_comp.pdbx_initial_date', '%s', 'str', ''),
-                ('_chem_comp.pdbx_modified_date', '%s', 'str', ''),
-                ('_chem_comp.pdbx_ambiguous_flag', '%s', 'str', ''),
-                ('_chem_comp.pdbx_release_status', '%s', 'str', ''),
-                ('_chem_comp.pdbx_replaced_by', '%s', 'str', ''),
-                ('_chem_comp.pdbx_replaces', '%s', 'str', ''),
-                ('_chem_comp.formula_weight', '%s', 'str', ''),
-                ('_chem_comp.one_letter_code', '%s', 'str', ''),
-                ('_chem_comp.three_letter_code', '%s', 'str', ''),
-                ('_chem_comp.pdbx_model_coordinates_details', '%s', 'str', ''),
-                ('_chem_comp.pdbx_model_coordinates_missing_flag', '%s', 'str', ''),
-                ('_chem_comp.pdbx_ideal_coordinates_details', '%s', 'str', ''),
-                ('_chem_comp.pdbx_ideal_coordinates_missing_flag', '%s', 'str', ''),
-                ('_chem_comp.pdbx_model_coordinates_db_code', '%s', 'str', ''),
-                ('_chem_comp.pdbx_subcomponent_list', '%s', 'str', ''),
-                ('_chem_comp.pdbx_processing_site', '%s', 'str', '')
-            ],
-            'chem_comp_atom': [
-                ('_chem_comp_atom.comp_id', '%s', 'str', ''),
-                ('_chem_comp_atom.atom_id', '%s', 'str', ''),
-                ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
-                ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
-                ('_chem_comp_atom.charge', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
-                ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
-                ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
-                ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_backbone_atom_flag', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_n_terminal_atom_flag', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_c_terminal_atom_flag', '%s', 'str', '')
-            ],
-            'chem_comp_bond': [
-                ('_chem_comp_bond.comp_id', '%s', 'str', ''),
-                ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
-                ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
-                ('_chem_comp_bond.value_order', '%s', 'str', ''),
-                ('_chem_comp_bond.pdbx_aromatic_flag', '%s', 'str', ''),
-                ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
-                ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
-            ],
-            'chem_comp_descriptor': [
-                ('_pdbx_chem_comp_descriptor.comp_id', '%s', 'str', ''),
-                ('_pdbx_chem_comp_descriptor.type', '%s', 'str', ''),
-                ('_pdbx_chem_comp_descriptor.program', '%s', 'str', ''),
-                ('_pdbx_chem_comp_descriptor.program_version', '%s', 'str', ''),
-                ('_pdbx_chem_comp_descriptor.descriptor', '%s', 'str', '')
-            ],
-            'chem_comp_identifier': [
-                ('_pdbx_chem_comp_identifier.comp_id', '%s', 'str', ''),
-                ('_pdbx_chem_comp_identifier.type', '%s', 'str', ''),
-                ('_pdbx_chem_comp_identifier.program', '%s', 'str', ''),
-                ('_pdbx_chem_comp_identifier.program_version', '%s', 'str', ''),
-                ('_pdbx_chem_comp_identifier.identifier', '%s', 'str', '')
-            ]
-        }
 
     def setCachePath(self, topCachePath: str = '/data/components/ligand-dict-v4'):
         """ Set the top file tree of CCD.
@@ -228,13 +221,29 @@ class ChemCompReader:
 
         return self.__getRowList(catName='chem_comp_atom')
 
-    def getBonds(self) -> List[list]:
+    def getAtomDictList(self) -> List[dict]:
+        """ Get a list of dictionary of data from the chem_comp_atom category.
+        """
+
+        self.__updateDataBlock()
+
+        return self.__getDictList(catName='chem_comp_atom')
+
+    def getBondList(self) -> List[list]:
         """ Get a list of list of data from the chem_comp_bond category.
         """
 
         self.__updateDataBlock()
 
         return self.__getRowList(catName='chem_comp_bond')
+
+    def getBondDictList(self) -> List[dict]:
+        """ Get a list of dictionary of data from the chem_comp_bond category.
+        """
+
+        self.__updateDataBlock()
+
+        return self.__getDictList(catName='chem_comp_bond')
 
     def getChemCompDict(self) -> dict:
         """ Get a dictionary of the chem_comp category.
@@ -325,7 +334,7 @@ class ChemCompReader:
 
         return False
 
-    def __getDictList(self, catName: str = 'chem_comp') -> List[dict]:
+    def __getDictList(self, catName: str) -> List[dict]:
         """ Return a list of dictionaries of the input category.
         """
 
@@ -334,19 +343,31 @@ class ChemCompReader:
         if catObj is None:
             return []
 
+        def apply_type(ctype, default, val):
+            if val in EMPTY_VALUE:
+                return default
+            if ctype == 'int':
+                return int(val)
+            if ctype == 'float':
+                return float(val)
+            return val
+
         itDict = {itName: idxIt for idxIt, itName in enumerate(catObj.getItemNameList())}
 
-        colDict = {}
-        for itTup in self.__itemDict[catName]:
-            colDict[itTup[0]] = itDict[itTup[0]] if itTup[0] in itDict else -1
+        colTupList = []
+        for itTup in CCD_ITEM_DICT[catName]:
+            colTupList.append((itDict[itTup[0]] if itTup[0] in itDict else -1, itTup[2], itTup[3], itTup[1]))
 
         dList = []
         for row in catObj.getRowList():
-            dList.append({itName: '' if idxIt < 0 else row[idxIt] for itName, idxIt in colDict.items()})
+            uR = {}
+            for cTup in colTupList:
+                uR[cTup[3]] = apply_type(cTup[1], cTup[2], cTup[2] if cTup[0] < 0 else row[cTup[0]])
+            dList.append(uR)
 
         return dList
 
-    def __getRowList(self, catName: str = 'chem_comp_bond') -> List[list]:
+    def __getRowList(self, catName: str) -> List[list]:
         """ Return a list a list of data from the input category including
             data types and default value replacement.
         """
@@ -368,7 +389,7 @@ class ChemCompReader:
         itDict = {itName: idxIt for idxIt, itName in enumerate(catObj.getItemNameList())}
 
         colTupList = []
-        for itTup in self.__itemDict[catName]:
+        for itTup in CCD_ITEM_DICT[catName]:
             colTupList.append((itDict[itTup[0]] if itTup[0] in itDict else -1, itTup[2], itTup[3]))
 
         dList = []

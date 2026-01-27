@@ -2532,7 +2532,7 @@ class BaseCSParserListener():
 
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
-               and self.ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+               and self.ccU.lastChemCompDict['type'].upper() == 'D-PEPTIDE LINKING':
                 revertPolySeqRst(self.polySeqCs, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
@@ -2899,7 +2899,7 @@ class BaseCSParserListener():
 
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
-               and self.ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+               and self.ccU.lastChemCompDict['type'].upper() == 'D-PEPTIDE LINKING':
                 revertPolySeqRst(self.polySeqCs, str(refChainId), _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
@@ -3849,8 +3849,8 @@ class BaseCSParserListener():
                 return atomId, asis
 
         if self.ccU.updateChemCompDict(compId):
-            cca = next((cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == atomId), None)
-            if cca is not None and self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
+            cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == atomId), None)
+            if cca is not None and self.ccU.lastChemCompDict['release_status'] == 'REL':
                 ps = next((ps for ps in self.polySeq if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'])) if ps is not None else None
                 min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
@@ -3861,10 +3861,10 @@ class BaseCSParserListener():
                     bondedTo = self.ccU.getBondedAtoms(compId, atomId)
                     if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
-                            if cca[self.ccU.ccaLeavingAtomFlag] != 'Y'\
+                            if cca['leaving_atom_flag'] != 'Y'\
                                or (self.csStat.peptideLike(compId)
-                                   and cca[self.ccU.ccaNTerminalAtomFlag] == 'N'
-                                   and cca[self.ccU.ccaCTerminalAtomFlag] == 'N'):
+                                   and cca['n_terminal_atom_flag'] == 'N'
+                                   and cca['c_terminal_atom_flag'] == 'N'):
                                 self.f.append(f"[Hydrogen not instantiated] {self.getCurrentAssignment(n=index)}"
                                               f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                               "Please re-upload the model file.")
@@ -3906,7 +3906,7 @@ class BaseCSParserListener():
 
         def get_dummy_coord_atom_site(comp_id):
             if self.ccU.updateChemCompDict(comp_id):
-                atom_id_list = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if self.ccU.ccaLeavingAtomFlag != 'Y']
+                atom_id_list = [cca['atom_id'] for cca in self.ccU.lastAtomDictList if cca['leaving_atom_flag'] != 'Y']
                 return {'atom_id': atom_id_list} if len(atom_id_list) > 0 else None
             return None
 

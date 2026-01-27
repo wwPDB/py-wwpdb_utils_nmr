@@ -906,7 +906,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if not isinstance(atomId, str):
                     self.ccU.updateChemCompDict(compId)
-                    atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                    atomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList if atomId.match(cca['atom_id'])), None)
                     if atomId is None and carbohydrate:
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
@@ -917,8 +917,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             atomId = next(name for name, offset in zip(atomNames['Y'], seqOffset['Y']) if offset == 0)
 
                         if not isinstance(atomId, str):
-                            atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                           if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                            atomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                           if atomId.match(cca['atom_id'])), None)
                             if atomId is None:
                                 resKey = (seqId, _compId)
                                 if resKey not in self.extResKey:
@@ -976,7 +976,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     elif nucleotide and angleName == 'CHI':
                         if self.ccU.updateChemCompDict(cifCompId):
                             try:
-                                next(cca for cca in self.ccU.lastAtomList if cca[self.ccU.ccaAtomId] == 'N9')
+                                next(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == 'N9')
                                 atomNames = KNOWN_ANGLE_ATOM_NAMES['CHI']['R']
                                 seqOffset = KNOWN_ANGLE_SEQ_OFFSET['CHI']['R']
                             except StopIteration:
@@ -1036,8 +1036,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             self.ccU.updateChemCompDict(_cifCompId)
 
                             if isinstance(atomId, str):
-                                cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                                  if cca[self.ccU.ccaAtomId] == atomId), None)
+                                cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                                  if cca['atom_id'] == atomId), None)
                                 if cifAtomId is None:
                                     if ord == 0:
                                         _cifSeqId += seqOffset[ord + 1] - offset
@@ -1050,19 +1050,19 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
                             else:
-                                cifAtomIds = [cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                              if atomId.match(cca[self.ccU.ccaAtomId])
+                                cifAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                              if atomId.match(cca['atom_id'])
                                               and (coordAtomSite is None
-                                                   or (coordAtomSite is not None and cca[self.ccU.ccaAtomId] in coordAtomSite['atom_id']))]
+                                                   or (coordAtomSite is not None and cca['atom_id'] in coordAtomSite['atom_id']))]
 
                                 if len(cifAtomIds) > 0:
                                     if prevCifAtomId is not None and offset == prevOffset:
                                         cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds
-                                                          if any(True for b in self.ccU.lastBonds
-                                                                 if ((b[self.ccU.ccbAtomId1] == prevCifAtomId
-                                                                      and b[self.ccU.ccbAtomId2] == _cifAtomId)
-                                                                     or (b[self.ccU.ccbAtomId1] == _cifAtomId
-                                                                         and b[self.ccU.ccbAtomId2] == prevCifAtomId)))), None)
+                                                          if any(True for b in self.ccU.lastBondDictList
+                                                                 if ((b['atom_id_1'] == prevCifAtomId
+                                                                      and b['atom_id_2'] == _cifAtomId)
+                                                                     or (b['atom_id_1'] == _cifAtomId
+                                                                         and b['atom_id_2'] == prevCifAtomId)))), None)
                                         if cifAtomId is None:
                                             offset -= 1
                                             _cifSeqId = cifSeqId + offset
@@ -1201,7 +1201,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if not isinstance(atomId, str):
                     self.ccU.updateChemCompDict(compId)
-                    atomId = next(cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId]))
+                    atomId = next(cca['atom_id'] for cca in self.ccU.lastAtomDictList if atomId.match(cca['atom_id']))
 
                 self.retrieveLocalSeqScheme()
 
@@ -1262,8 +1262,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                              if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                              if cca['atom_id'] == atomId), None)
 
                             if cifAtomId is None:
                                 if _cifCompId is None and not self.allow_ext_seq:

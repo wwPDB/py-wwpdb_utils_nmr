@@ -2578,7 +2578,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if not isinstance(atomId, str):
                     self.ccU.updateChemCompDict(compId)
-                    atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                    atomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList if atomId.match(cca['atom_id'])), None)
                     if atomId is None:
                         resKey = (seqId, compId)
                         if resKey not in self.extResKey:
@@ -2633,8 +2633,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                              if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                              if cca['atom_id'] == atomId), None)
                             if cifAtomId is None:
                                 if ord == 0:
                                     _cifSeqId += seqOffset[ord + 1] - offset
@@ -2845,7 +2845,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 if not isinstance(atomId, str):
                     self.ccU.updateChemCompDict(compId)
-                    atomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList if atomId.match(cca[self.ccU.ccaAtomId])), None)
+                    atomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList if atomId.match(cca['atom_id'])), None)
                     if atomId is None:
                         resKey = (seqId, compId)
                         if resKey not in self.extResKey:
@@ -2900,8 +2900,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             self.ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.ccU.ccaAtomId] for cca in self.ccU.lastAtomList
-                                              if cca[self.ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
+                                              if cca['atom_id'] == atomId), None)
 
                             if cifAtomId is None:
                                 if _cifCompId is None and not self.allow_ext_seq:

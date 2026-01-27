@@ -128,7 +128,7 @@
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints
 #                           (DAOTHER-7829, 9785, NMR data remediation)
 # 07-Jan-2026  M. Yokochi - update status code when adding error/warning description
-# 27-Jan-2026  M. Yokochi - add hasSequenceMismatchError() (DAOTHER-10487)
+# 27-Jan-2026  M. Yokochi - add hasSequenceMismatchErrorInCsLoop() (DAOTHER-10487)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2521,15 +2521,21 @@ class NmrDpReportError:
 
         return d
 
-    def hasSequenceMismatchError(self) -> bool:
-        """ Return whether sequence mismatch error exists.
+    def hasSequenceMismatchErrorInCsLoop(self) -> bool:
+        """ Return whether sequence mismatch error exists in assigned chemical shifts.
         """
 
         if self.__contents is None:
             return False
 
-        return any(True for k, v in self.__contents.items()
-                   if k == 'sequence_mismatch' and v is not None and len(v) > 0)
+        for k, v in self.__contents.items():
+            if k != 'sequence_mismatch' or v is None or len(v) == 0:
+                continue
+            for c in v:
+                if 'category' in c and c['category'] in ('_nef_chemical_shift', '_Atom_chem_shift'):
+                    return True
+
+        return False
 
     def hasChemicalShiftError(self) -> bool:
         """ Return whether anomalous data error exists.

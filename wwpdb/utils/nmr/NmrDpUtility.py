@@ -2720,7 +2720,12 @@ class NmrDpUtility:
                                     cif_ps = self.__reg.caC['polymer_sequence']
                                     cif_br = self.__reg.caC['branched']
                                     cif_np = self.__reg.caC['non_polymer']
-                                    single_poly = len(cif_ps) == 1 and cif_br is None and cif_np is None
+                                    single_poly = len(cif_ps) == 1 and cif_br is None and cif_np is None\
+                                        and len(poly_seq1) == 1 and len(poly_seq2) == 1
+
+                                if self.__reg.has_star_entity and single_poly:
+                                    err = f"The sequence between the entity and {lp_category2} loop is inconsistent.\n"\
+                                        f"entity: {poly_seq1[0]}\nloop: {poly_seq2[0]}"
 
                                 if self.__reg.remediation_mode\
                                    and not (self.__reg.has_star_entity and single_poly):  # DAOTHER-10487
@@ -6420,7 +6425,7 @@ class NmrDpUtility:
         """
 
         if not self.__reg.combined_mode and self.__reg.has_star_entity\
-           and self.__reg.report.error.hasSequenceMismatchError():  # DAOTHER-10487
+           and self.__reg.report.error.hasSequenceMismatchErrorInCsLoop():  # DAOTHER-10487
             return False
 
         __errors = self.__reg.report.getTotalErrors()

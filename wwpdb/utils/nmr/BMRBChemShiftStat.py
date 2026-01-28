@@ -653,7 +653,8 @@ class BMRBChemShiftStat:
                     if 'aroma' in item['desc'] and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         return [item['atom_id'] for item in cs_stat
-                if 'aroma' in item['desc'] and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
+                if 'aroma' in item['desc']
+                and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
     def getMethylAtoms(self, comp_id: str) -> List[str]:
         """ Return atoms in methyl group of a given comp_id.
@@ -851,7 +852,8 @@ class BMRBChemShiftStat:
         self.rna_full = self.loadStatFromCsvFile(self.__work_dir + 'rna_full.csv', CS_STAT_NA_THRESHOLD)
 
         if not self.__lazy_others:
-            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD)
+            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv',
+                                                   CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD)
 
         self.__updateCompIdSet()
 
@@ -867,11 +869,13 @@ class BMRBChemShiftStat:
         self.__load_others = True
 
         if comp_id_interest is None:
-            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD)
+            self.others = self.loadStatFromCsvFile(self.__work_dir + 'others.csv',
+                                                   CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD)
             self.__updateCompIdSet()
 
         elif comp_id_interest not in self.__all_comp_ids and comp_id_interest not in self.__not_comp_ids:
-            stat = self.loadStatFromCsvFile(self.__work_dir + 'others.csv', CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD, comp_id_interest)
+            stat = self.loadStatFromCsvFile(self.__work_dir + 'others.csv',
+                                            CS_STAT_AA_THRESHOLD, CS_STAT_NA_THRESHOLD, comp_id_interest)
             if len(stat) > 0:
                 self.others.extend(stat)
                 self.__updateCompIdSet()
@@ -1018,7 +1022,8 @@ class BMRBChemShiftStat:
                             atm_list.append(_row)
 
                 # others.csv dependent code
-                elif comp_id == 'HEC' and (re.match(r'^HM[A-D]$', _atom_id) is not None or re.match(r'^HB[BC]$', _atom_id) is not None):
+                elif comp_id == 'HEC'\
+                        and (re.match(r'^HM[A-D]$', _atom_id) is not None or re.match(r'^HB[BC]$', _atom_id) is not None):
 
                     for i in range(1, 4):
                         _row = {}
@@ -1341,7 +1346,8 @@ class BMRBChemShiftStat:
                             atm_list.append(_row)
 
                 # others.csv dependent code
-                elif comp_id == 'HEC' and (re.match(r'^HM[A-D]$', _atom_id) is not None or re.match(r'^HB[BC]$', _atom_id) is not None):
+                elif comp_id == 'HEC'\
+                        and (re.match(r'^HM[A-D]$', _atom_id) is not None or re.match(r'^HB[BC]$', _atom_id) is not None):
 
                     for i in range(1, 4):
                         _row = {}

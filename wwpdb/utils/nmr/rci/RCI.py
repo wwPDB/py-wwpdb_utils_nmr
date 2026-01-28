@@ -6588,7 +6588,8 @@ class RCI:
                         L_end += 1
                         if L_residue_number not in (Real_first_residue, Real_last_residue):
                             L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
-                                          chem_shift_diff_mean, chem_shift_diff_abs_mean, l_atom_type, chem_shift_diff_len, smooth_factor])
+                                          chem_shift_diff_mean, chem_shift_diff_abs_mean,
+                                          l_atom_type, chem_shift_diff_len, smooth_factor])
 
                     else:
                         L_chem_shift_diff_tmp_list, L_chem_shift_diff_abs_tmp_list = [], []
@@ -6613,7 +6614,8 @@ class RCI:
                         L_end += 1
                         if L_residue_number not in (Real_first_residue, Real_last_residue):
                             L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
-                                          chem_shift_diff_mean, chem_shift_diff_abs_mean, l_atom_type, chem_shift_diff_len, smooth_factor])
+                                          chem_shift_diff_mean, chem_shift_diff_abs_mean,
+                                          l_atom_type, chem_shift_diff_len, smooth_factor])
 
                 else:
                     done = 1
@@ -6820,13 +6822,13 @@ class RCI:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_pos_HA * coefHApos,
-                                                                                        atom_type, self.HAp_exclude, self.H_Hertz_corr])
+                                                                                        self.coef_for_pos_HA * coefHApos, atom_type,
+                                                                                        self.HAp_exclude, self.H_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_neg_HA * coefHApos,
-                                                                                        atom_type, self.HAp_exclude, self.H_Hertz_corr])
+                                                                                        self.coef_for_neg_HA * coefHApos, atom_type,
+                                                                                        self.HAp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "C":
                                                                             CO_found = 1
@@ -6839,13 +6841,13 @@ class RCI:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_pos_CO * coefCOpos,
-                                                                                        atom_type, self.COp_exclude, self.CA_Hertz_corr])
+                                                                                        self.coef_for_pos_CO * coefCOpos, atom_type,
+                                                                                        self.COp_exclude, self.CA_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_neg_CO * coefCOpos,
-                                                                                        atom_type, self.COp_exclude, self.CA_Hertz_corr])
+                                                                                        self.coef_for_neg_CO * coefCOpos, atom_type,
+                                                                                        self.COp_exclude, self.CA_Hertz_corr])
 
                                                                         elif atom_type == "CB":
                                                                             CB_found = 1
@@ -6858,13 +6860,13 @@ class RCI:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_pos_CB * coefCBpos,
-                                                                                        atom_type, self.CBp_exclude, self.CA_Hertz_corr])
+                                                                                        self.coef_for_pos_CB * coefCBpos, atom_type,
+                                                                                        self.CBp_exclude, self.CA_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_neg_CB * coefCBpos,
-                                                                                        atom_type, self.CBp_exclude, self.CA_Hertz_corr])
+                                                                                        self.coef_for_neg_CB * coefCBpos, atom_type,
+                                                                                        self.CBp_exclude, self.CA_Hertz_corr])
 
                                                                         elif atom_type == "N":
                                                                             N_found = 1
@@ -6876,13 +6878,13 @@ class RCI:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_pos_N * coefNpos,
-                                                                                        atom_type, self.Np_exclude, self.N_Hertz_corr])
+                                                                                        self.coef_for_pos_N * coefNpos, atom_type,
+                                                                                        self.Np_exclude, self.N_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_neg_N * coefNpos,
-                                                                                        atom_type, self.Np_exclude, self.N_Hertz_corr])
+                                                                                        self.coef_for_neg_N * coefNpos, atom_type,
+                                                                                        self.Np_exclude, self.N_Hertz_corr])
 
                                                                         elif atom_type == "H":
                                                                             NH_found = 1
@@ -6894,13 +6896,13 @@ class RCI:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_pos_H * coefHpos,
-                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                        self.coef_for_pos_H * coefHpos, atom_type,
+                                                                                        self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_neg_H * coefHpos,
-                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                        self.coef_for_neg_H * coefHpos, atom_type,
+                                                                                        self.Hp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "HN":
                                                                             NH_found = 1
@@ -6912,13 +6914,13 @@ class RCI:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_pos_H * coefHpos,
-                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                        self.coef_for_pos_H * coefHpos, atom_type,
+                                                                                        self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_neg_H * coefHpos,
-                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                        self.coef_for_neg_H * coefHpos, atom_type,
+                                                                                        self.Hp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "NH":
                                                                             NH_found = 1
@@ -6930,13 +6932,13 @@ class RCI:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_pos_H * coefHpos,
-                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                        self.coef_for_pos_H * coefHpos, atom_type,
+                                                                                        self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([
                                                                                         resnumber, resname, true_diff_mean,
-                                                                                        self.coef_for_neg_H * coefHpos,
-                                                                                        atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                        self.coef_for_neg_H * coefHpos, atom_type,
+                                                                                        self.Hp_exclude, self.H_Hertz_corr])
 
                                                                 atoms_abs = []
 
@@ -7116,12 +7118,14 @@ class RCI:
                                                                     s_final_smooth = 3
                                                                     s_final_again = 1
                                                                 CA_CB_CO_HA_all_residues_abs_fsmooth =\
-                                                                    self.__final_smoothing(s_final_smooth, CA_CB_CO_HA_all_residues_abs_new)
+                                                                    self.__final_smoothing(s_final_smooth,
+                                                                                           CA_CB_CO_HA_all_residues_abs_new)
                                                                 if s_final_smooth != 0 and s_final_smooth != 9\
                                                                    and self.termini_corr_flag == 6:
                                                                     CA_CB_CO_HA_all_residues_abs_new2 =\
                                                                         self.__end_effect3(CA_CB_CO_HA_all_residues_abs_fsmooth)
-                                                                    CA_CB_CO_HA_all_residues_abs_fsmooth = CA_CB_CO_HA_all_residues_abs_new2
+                                                                    CA_CB_CO_HA_all_residues_abs_fsmooth =\
+                                                                        CA_CB_CO_HA_all_residues_abs_new2
                                                                 if s_final_again == 1:
                                                                     s_final_smooth = 3
                                                                     CA_CB_CO_HA_all_residues_abs_fsmooth =\
@@ -7168,9 +7172,11 @@ class RCI:
                                 coef_value = f"{coef_dictionary[coef_name]}"
                                 coefficients += coef_name + " " + coef_value + " "
                                 coefficients_for_plot += coef_name + coef_value
-                            out_title = f"{float(parameter):.2f}vs {self.function_flag} {treatment}{smoothing} "\
+                            out_title =\
+                                f"{float(parameter):.2f}vs {self.function_flag} {treatment}{smoothing} "\
                                 f"CA{coefCApos:.2f}CB{coefCBpos:.2f}CO%{coefCOpos:.2f}N{coefNpos:.2f}H{coefHpos:.2f}HA{coefHApos:.2f}"
-                            plot_file_name = f"{file}_{atoms_for_plot}_{comparison_method}_{smoothing}_{treatment}_{coefficients_for_plot}"
+                            plot_file_name =\
+                                f"{file}_{atoms_for_plot}_{comparison_method}_{smoothing}_{treatment}_{coefficients_for_plot}"
                             if comparison_method == "correlation":
                                 correlation_sorted.append([comparison_paramter, out_title,
                                                            md_plot_data, dynamr_plot_data, plot_file_name, dynamr_2_md, coefficients])
@@ -8471,11 +8477,13 @@ class RCI:
                     three_point_smooth_list.append(lists)
 
         if self.five_point_smooth_flag == 1:
-            return self.__grid_search(five_point_smooth_list, "5_pnt_smooth", self.COp_list, self.CAp_list, self.CBp_list, self.HAp_list,
+            return self.__grid_search(five_point_smooth_list, "5_pnt_smooth",
+                                      self.COp_list, self.CAp_list, self.CBp_list, self.HAp_list,
                                       self.Hp_list, self.Np_list, self.final_smooth)
 
         if self.three_point_smooth_flag == 1:
-            return self.__grid_search(three_point_smooth_list, "3_pnt_smooth", self.COp_list, self.CAp_list, self.CBp_list, self.HAp_list,
+            return self.__grid_search(three_point_smooth_list, "3_pnt_smooth",
+                                      self.COp_list, self.CAp_list, self.CBp_list, self.HAp_list,
                                       self.Hp_list, self.Np_list, self.final_smooth)
 
         if self.no_smoothing_flag == 1:

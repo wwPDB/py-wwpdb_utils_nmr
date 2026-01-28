@@ -149,8 +149,10 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
             if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-               and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                    or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+               and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                     and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                    or (chain_id_2 in self.reasons['model_chain_id_ext']
+                        and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                 self.allowZeroUpperLimit = True
         self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 

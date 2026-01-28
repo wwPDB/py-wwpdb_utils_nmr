@@ -169,7 +169,8 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
                 break
             if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                 hasSegCompId = True
-            if not hasSegCompId and compId not in STD_MON_DICT and self.mrAtomNameMapping is not None and atomName[0] in PROTON_BEGIN_CODE:
+            if not hasSegCompId and compId not in STD_MON_DICT and self.mrAtomNameMapping is not None\
+               and atomName[0] in PROTON_BEGIN_CODE:
                 _, compId, _atomName = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId, compId, atomName)
                 if _atomName != atomName:
                     atomName = _atomName
@@ -350,7 +351,8 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         pass
 
     # Enter a parse tree produced by GromacsPTParser#nonbonded_params_statement.
-    def enterNonbonded_params_statement(self, ctx: GromacsPTParser.Nonbonded_params_statementContext):  # pylint: disable=unused-argument
+    def enterNonbonded_params_statement(self, ctx: GromacsPTParser.Nonbonded_params_statementContext
+                                        ):  # pylint: disable=unused-argument
         self.nonbond_paramsStatements += 1
 
     # Exit a parse tree produced by GromacsPTParser#nonbonded_params_statement.

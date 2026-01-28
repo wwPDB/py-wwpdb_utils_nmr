@@ -2681,7 +2681,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 for ps in polySeq:
                     c = ps['chain_id']
 
-                    etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                    etype = next((e['type'] for e in entity_poly
+                                  if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
                     if etype is None:
                         continue
@@ -2719,21 +2720,28 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                             CARTN_DATA_ITEMS,
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
-                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': BEG_ATOM},
-                                                             {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
+                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                              'value': BEG_ATOM},
+                                                             {'name': 'pdbx_PDB_model_num', 'type': 'int',
+                                                              'value': representativeModelId},
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': (representativeAltId,)}
                                                              ])
 
                             _end = cR.getDictListWithFilter('atom_site',
                                                             CARTN_DATA_ITEMS,
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
-                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': END_ATOM},
-                                                             {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
+                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                              'value': END_ATOM},
+                                                             {'name': 'pdbx_PDB_model_num', 'type': 'int',
+                                                              'value': representativeModelId},
+                                                             {'name': 'label_alt_id', 'type': 'enum',
+                                                              'enum': (representativeAltId,)}
                                                              ])
 
-                            if len(_beg) == 1 and len(_end) == 1 and numpy.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
+                            if len(_beg) == 1 and len(_end) == 1\
+                               and numpy.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
                                 misPolyLink.append({'auth_chain_id': ps['auth_chain_id'],
                                                     'auth_seq_id_1': auth_seq_id_1,
                                                     'auth_seq_id_2': auth_seq_id_2})
@@ -3084,7 +3092,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         if _authSeqId == altAuthSeqId and _altCompId == altCompId and compId != _compId:
                                             seqKey = (authChainId, altAuthSeqId, altCompId)
                                             if seqKey not in splitLigand:
-                                                splitLigand[seqKey] = [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                                splitLigand[seqKey] =\
+                                                    [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
                                             splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
             if branched is not None and len(branched) > 0:
                 for br in branched:
@@ -3098,7 +3107,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         if _authSeqId == altAuthSeqId and _altCompId == altCompId and compId != _compId:
                                             seqKey = (authChainId, altAuthSeqId, altCompId)
                                             if seqKey not in splitLigand:
-                                                splitLigand[seqKey] = [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                                splitLigand[seqKey] =\
+                                                    [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
                                             splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
 
         contentSubtype = 'mod_residue'
@@ -3163,7 +3173,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
             for c in coord:
                 auth_asym_id_set.add(c['auth_asym_id'])
                 pdbx_auth_asym_id_set.add(c['pdbx_auth_asym_id'])
-            if len(pdbx_auth_asym_id_set) >= len(auth_asym_id_set):  # DAOTHER-10105: do not trust pdbx_auth_asym_id when the chain is split
+            # DAOTHER-10105: do not trust pdbx_auth_asym_id when the chain is split
+            if len(pdbx_auth_asym_id_set) >= len(auth_asym_id_set):
                 authAsymId = 'pdbx_auth_asym_id'
         if authSeqId is None:
             authSeqId = 'pdbx_auth_seq_id' if 'pdbx_auth_seq_id' in tags else 'auth_seq_id'
@@ -3283,7 +3294,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         authChainId = next(c['auth_chain_id'] for c in coord
                                            if c['chain_id'] == chainId and c['seq_id'] is not None
                                            and c['seq_id'] == seqId and c['comp_id'] == compId)
-                    coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
+                    coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId,
+                                             'atom_id': atomIds, 'type_symbol': typeSymbols}
                     if altAuthCompId is not None:
                         altCompIds = [c['comp_id'] for c in coord
                                       if c['chain_id'] == chainId and c['seq_id'] is not None
@@ -3445,7 +3457,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         authAtomNameToIdExt[_compId][c['alt_atom_id']] = c['atom_id']
 
                         # DAOTHER-8751, 8817 (D_1300043061)
-                        elif altAuthAtomId is not None and compId in authAtomNameToId and len(atomIds) != len(authAtomNameToId[compId]):
+                        elif altAuthAtomId is not None and compId in authAtomNameToId\
+                                and len(atomIds) != len(authAtomNameToId[compId]):
                             for c in coord:
                                 if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId:
                                     _compId = c['comp_id']
@@ -3519,7 +3532,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         if 'label_asym_id' in tags and 'label_seq_id' in tags:
 
                             unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                             [{'name': 'auth_asym_id', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
+                                                             [{'name': 'auth_asym_id', 'type': 'str',
+                                                               'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'auth_seq_id', 'type': 'str'},
                                                               {'name': 'label_asym_id', 'type': 'str'},
                                                               {'name': 'label_seq_id', 'type': 'str'}
@@ -3710,7 +3724,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                      {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': 'pdbx_auth_comp_id' if cR.hasItem('atom_site', 'pdbx_auth_comp_id') else 'auth_comp_id',
                                       'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'label_comp_id'},
-                                     {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'label_comp_id'},
+                                     {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'alt_comp_id',
+                                      'default-from': 'label_comp_id'},
                                      ]
 
                         if has_ins_code:
@@ -3866,7 +3881,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                    'entity_type': entityType,
                                                    'entity_src_method': entitySrcMethod,
                                                    'entity_desc': entityDesc,
-                                                   'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
+                                                   'entity_fw':
+                                                   entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
                                                    'entity_copies': entityCopies,
                                                    'entity_ec': entityEC,
                                                    'entity_parent': entityParent,
@@ -3972,7 +3988,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                                'entity_type': entityType,
                                                                'entity_src_method': entitySrcMethod,
                                                                'entity_desc': entityDesc,
-                                                               'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
+                                                               'entity_fw':
+                                                               entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
                                                                'entity_copies': entityCopies,
                                                                'entity_ec': entityEC,
                                                                'entity_parent': entityParent,
@@ -4056,7 +4073,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                    'entity_type': entityType,
                                                    'entity_src_method': entitySrcMethod,
                                                    'entity_desc': entityDesc,
-                                                   'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
+                                                   'entity_fw':
+                                                   entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
                                                    'entity_copies': 1,
                                                    'entity_ec': entityEC,
                                                    'entity_parent': entityParent,
@@ -4735,7 +4753,8 @@ def isDefinedInterChainRestraint(atoms: List[dict], keyword: str, symmetric: str
 
 
 def getAltProtonIdInBondConstraint(atoms: List[dict], csStat) -> Tuple[Optional[str], Optional[str]]:
-    """ Return alternative atom_id in swappable proton group, which involves in bond constraint (e.g. amino group in Watson-Crick pair).
+    """ Return alternative atom_id in swappable proton group, which involves in bond constraint
+        (e.g. amino group in Watson-Crick pair).
         @return: alternative atom_id for the first atom, alternative atom_id for the second atom
     """
 
@@ -6601,7 +6620,8 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
     _seqKey = next((_seqKey for _seqKey in authToStarSeq if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
     _auxSeqKey = None
     if has_aux_atom:
-        _auxSeqKey = next((_auxSeqKey for _auxSeqKey in authToStarSeq if auxChainId == _auxSeqKey[0] and auxSeqId == _auxSeqKey[1]), None)
+        _auxSeqKey = next((_auxSeqKey for _auxSeqKey in authToStarSeq
+                           if auxChainId == _auxSeqKey[0] and auxSeqId == _auxSeqKey[1]), None)
 
     if _seqKey is not None and (not has_aux_atom or (has_aux_atom and _auxSeqKey is not None)):
         if compId in EMPTY_VALUE or compId not in STD_MON_DICT:
@@ -6761,21 +6781,26 @@ def getRow(mrSubtype: str, id: int, indexId: int,
 
     if star_atom1 is None and star_atom2 is not None:  # procs
         row[1], row[2], row[3], row[4], row[5] =\
-            star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
+            star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], \
+            star_atom2['comp_id'], star_atom2['atom_id']
     elif mrSubtype != 'fchiral':
         if star_atom1 is not None:
             row[1], row[2], row[3], row[4], row[5] =\
-                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['atom_id']
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], \
+                star_atom1['comp_id'], star_atom1['atom_id']
         if star_atom2 is not None:
             row[6], row[7], row[8], row[9], row[10] =\
-                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], \
+                star_atom2['comp_id'], star_atom2['atom_id']
     else:
         if star_atom1 is not None:
             row[1], row[2], row[3], row[4], row[5] =\
-                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['auth_atom_id']
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], \
+                star_atom1['comp_id'], star_atom1['auth_atom_id']
         if star_atom2 is not None:
             row[6], row[7], row[8], row[9], row[10] =\
-                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['auth_atom_id']
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], \
+                star_atom2['comp_id'], star_atom2['auth_atom_id']
 
     if mrSubtype in ('dist', 'dihed', 'rdc', 'hbond', 'ssbond', 'prdc'):
         row[key_size] = indexId
@@ -7364,7 +7389,8 @@ def getAltPkRow(pkSubtype: str, _indexId: int, indexId: int, listId: int, entryI
     return row
 
 
-def getPkGenCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict, volume_or_height: str) -> Optional[List[Any]]:
+def getPkGenCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict, volume_or_height: str
+                    ) -> Optional[List[Any]]:
     """ Return row data for a _Peak_general_char loop.
         @return: data array
     """
@@ -7846,21 +7872,26 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
 
     if star_atom1 is None and star_atom2 is not None:  # procs
         row[1], row[2], row[3], row[4], row[5] =\
-            star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
+            star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], \
+            star_atom2['comp_id'], star_atom2['atom_id']
     elif contentSubtype != 'fchiral_restraint':
         if star_atom1 is not None:
             row[1], row[2], row[3], row[4], row[5] =\
-                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['atom_id']
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], \
+                star_atom1['comp_id'], star_atom1['atom_id']
         if star_atom2 is not None:
             row[6], row[7], row[8], row[9], row[10] =\
-                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], \
+                star_atom2['comp_id'], star_atom2['atom_id']
     else:
         if star_atom1 is not None:
             row[1], row[2], row[3], row[4], row[5] =\
-                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['auth_atom_id']
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], \
+                star_atom1['comp_id'], star_atom1['auth_atom_id']
         if star_atom2 is not None:
             row[6], row[7], row[8], row[9], row[10] =\
-                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['auth_atom_id']
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], \
+                star_atom2['comp_id'], star_atom2['auth_atom_id']
 
     if contentSubtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
         row[key_size] = indexId
@@ -8940,7 +8971,8 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
                 cifCompId = np['comp_id'][idx]
                 origCompId = np['auth_comp_id'][idx]
                 if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
-                    seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
+                    seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id'])
+                                 if _altSeqId_ == seqId)
                 if compId in (cifCompId, origCompId):
                     if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, False))
@@ -9184,7 +9216,8 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
             if not multiChain and not insCode:
                 if enableWarning:
                     warningMessage = f"[Sequence mismatch] "\
-                        f"Residue name {compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates."
+                        f"Residue name {compId!r} of the restraint does not match with "\
+                        f"{chainId}:{cifSeqId}:{cifCompId} of the coordinates."
                 continue
 
         if lenAtomId == 0:
@@ -9276,7 +9309,8 @@ def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
                         coordAtomSite = coordAtomSites[_seqKey]
                     elif seqKey in coordAtomSites:
                         coordAtomSite = coordAtomSites[seqKey]
-                    # DAOTHER-10105: handle inconsistency between auth_asym_id and pdbx_auth_asym_id due to chain split while annotation
+                    # DAOTHER-10105: handle inconsistency between auth_asym_id and pdbx_auth_asym_id
+                    # due to chain split while annotation
                     else:
                         for _chainId in caC['label_to_auth_chain']:
                             if _chainId == chainId:

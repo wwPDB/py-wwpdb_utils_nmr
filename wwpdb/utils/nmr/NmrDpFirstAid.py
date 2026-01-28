@@ -586,9 +586,11 @@ class NmrDpFirstAid:
                             if LOOP_PAT.match(line):
                                 pass_sf_loop = True
                                 if 'sf_category' in target:
-                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
+                                    ofh.write(target['sf_tag_prefix'] + '.'
+                                              + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
                                               + '   ' + sf_framecode + '\n')
-                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
+                                    ofh.write(target['sf_tag_prefix'] + '.'
+                                              + ('sf_category' if file_type == 'nef' else 'Sf_category')
                                               + '    ' + target['sf_category'] + '\n')
                                     ofh.write('#\n')
                                 ofh.write(line)
@@ -841,9 +843,11 @@ class NmrDpFirstAid:
                                     ofh.write('save_' + target['sf_framecode_2'] + '\n')
                                 else:
                                     ofh.write('save_' + target['sf_framecode_2'] + '\n')
-                                    ofh.write(target['sf_tag_prefix_2'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
+                                    ofh.write(target['sf_tag_prefix_2'] + '.'
+                                              + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
                                               + '   ' + target['sf_framecode_2'] + '\n')
-                                    ofh.write(target['sf_tag_prefix_2'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
+                                    ofh.write(target['sf_tag_prefix_2'] + '.'
+                                              + ('sf_category' if file_type == 'nef' else 'Sf_category')
                                               + '    ' + target['category_2'] + '\n')
                                     ofh.write('loop_\n')
                                     lp_tags = lp_vals = ''
@@ -1171,7 +1175,8 @@ class NmrDpFirstAid:
 
             return True
 
-        self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
+        self.__reg.sf_category_list, self.__reg.lp_category_list =\
+            self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in NMR_CONTENT_SUBTYPES}
@@ -1503,7 +1508,8 @@ class NmrDpFirstAid:
         if not self.__reg.rescue_mode:
             return True
 
-        self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
+        self.__reg.sf_category_list, self.__reg.lp_category_list =\
+            self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in NMR_CONTENT_SUBTYPES}

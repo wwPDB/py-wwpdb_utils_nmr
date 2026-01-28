@@ -215,8 +215,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithIndex(None, seqId1, compId1, atomId1.split('|', 1)[0], index, group)
-            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithIndex(None, seqId2, compId2, atomId2.split('|', 1)[0], index, group)
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithIndex(None, seqId1, compId1,
+                                                                           atomId1.split('|', 1)[0], index, group)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithIndex(None, seqId2, compId2,
+                                                                           atomId2.split('|', 1)[0], index, group)
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -337,17 +339,20 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by DynamoMRParser#distance_restraints_sw_segid.
-    def enterDistance_restraints_sw_segid(self, ctx: DynamoMRParser.Distance_restraints_sw_segidContext):  # pylint: disable=unused-argument
+    def enterDistance_restraints_sw_segid(self, ctx: DynamoMRParser.Distance_restraints_sw_segidContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist'
 
         self.closeSequence()
 
     # Exit a parse tree produced by DynamoMRParser#distance_restraints_sw_segid.
-    def exitDistance_restraints_sw_segid(self, ctx: DynamoMRParser.Distance_restraints_sw_segidContext):  # pylint: disable=unused-argument
+    def exitDistance_restraints_sw_segid(self, ctx: DynamoMRParser.Distance_restraints_sw_segidContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by DynamoMRParser#distance_restraint_sw_segid.
-    def enterDistance_restraint_sw_segid(self, ctx: DynamoMRParser.Distance_restraint_sw_segidContext):  # pylint: disable=unused-argument
+    def enterDistance_restraint_sw_segid(self, ctx: DynamoMRParser.Distance_restraint_sw_segidContext
+                                         ):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -520,17 +525,20 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by DynamoMRParser#distance_restraints_ew_segid.
-    def enterDistance_restraints_ew_segid(self, ctx: DynamoMRParser.Distance_restraints_ew_segidContext):  # pylint: disable=unused-argument
+    def enterDistance_restraints_ew_segid(self, ctx: DynamoMRParser.Distance_restraints_ew_segidContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist'
 
         self.closeSequence()
 
     # Exit a parse tree produced by DynamoMRParser#distance_restraints_ew_segid.
-    def exitDistance_restraints_ew_segid(self, ctx: DynamoMRParser.Distance_restraints_ew_segidContext):  # pylint: disable=unused-argument
+    def exitDistance_restraints_ew_segid(self, ctx: DynamoMRParser.Distance_restraints_ew_segidContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by DynamoMRParser#distance_restraint_ew_segid.
-    def enterDistance_restraint_ew_segid(self, ctx: DynamoMRParser.Distance_restraint_ew_segidContext):  # pylint: disable=unused-argument
+    def enterDistance_restraint_ew_segid(self, ctx: DynamoMRParser.Distance_restraint_ew_segidContext
+                                         ):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -2167,17 +2175,20 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by DynamoMRParser#coupling_restraints_sw_segid.
-    def enterCoupling_restraints_sw_segid(self, ctx: DynamoMRParser.Coupling_restraints_sw_segidContext):  # pylint: disable=unused-argument
+    def enterCoupling_restraints_sw_segid(self, ctx: DynamoMRParser.Coupling_restraints_sw_segidContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'jcoup'
 
         self.closeSequence()
 
     # Exit a parse tree produced by DynamoMRParser#coupling_restraints_sw_segid.
-    def exitCoupling_restraints_sw_segid(self, ctx: DynamoMRParser.Coupling_restraints_sw_segidContext):  # pylint: disable=unused-argument
+    def exitCoupling_restraints_sw_segid(self, ctx: DynamoMRParser.Coupling_restraints_sw_segidContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by DynamoMRParser#coupling_restraint_sw_segid.
-    def enterCoupling_restraint_sw_segid(self, ctx: DynamoMRParser.Coupling_restraint_sw_segidContext):  # pylint: disable=unused-argument
+    def enterCoupling_restraint_sw_segid(self, ctx: DynamoMRParser.Coupling_restraint_sw_segidContext
+                                         ):  # pylint: disable=unused-argument
         self.jcoupRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -2327,17 +2338,20 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by DynamoMRParser#coupling_restraints_ew_segid.
-    def enterCoupling_restraints_ew_segid(self, ctx: DynamoMRParser.Coupling_restraints_ew_segidContext):  # pylint: disable=unused-argument
+    def enterCoupling_restraints_ew_segid(self, ctx: DynamoMRParser.Coupling_restraints_ew_segidContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'jcoup'
 
         self.closeSequence()
 
     # Exit a parse tree produced by DynamoMRParser#coupling_restraints_ew_segid.
-    def exitCoupling_restraints_ew_segid(self, ctx: DynamoMRParser.Coupling_restraints_ew_segidContext):  # pylint: disable=unused-argument
+    def exitCoupling_restraints_ew_segid(self, ctx: DynamoMRParser.Coupling_restraints_ew_segidContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by DynamoMRParser#coupling_restraint_ew_segid.
-    def enterCoupling_restraint_ew_segid(self, ctx: DynamoMRParser.Coupling_restraint_ew_segidContext):  # pylint: disable=unused-argument
+    def enterCoupling_restraint_ew_segid(self, ctx: DynamoMRParser.Coupling_restraint_ew_segidContext
+                                         ):  # pylint: disable=unused-argument
         self.jcoupRestraints += 1
 
         self.atomSelectionSet.clear()

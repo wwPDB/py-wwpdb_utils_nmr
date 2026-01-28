@@ -320,7 +320,9 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/5zgg/5zgg-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/5zgg/5zgg.cif')
 
-    reader = CyanaMRReader(False, reasons={'non_poly_remap': {'PNS': {87: {'chain_id': 'A', 'seq_id': 1201, 'original_chain_id': None}}}})
+    reader = CyanaMRReader(False,
+                           reasons={'non_poly_remap':
+                                    {'PNS': {87: {'chain_id': 'A', 'seq_id': 1201, 'original_chain_id': None}}}})
     reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/8aig/final.upl.5_v4',
@@ -674,8 +676,10 @@ if __name__ == "__main__":
     print(reader_listener.getReasonsForReparsing())
 
     reasons_ = {'chain_seq_id_remap': [{'chain_id': 'B',
-                                        'seq_id_dict': {1200: 1120, 1201: 1121, 1202: 1122, 1203: 1123, 1204: 1124, 1205: 1125, 1206: 1126,
-                                                        1207: 1127, 1208: 1128, 1209: 1129, 1210: 1130, 1211: 1131, 1212: 1132, 1213: 1133},
+                                        'seq_id_dict': {1200: 1120, 1201: 1121, 1202: 1122, 1203: 1123,
+                                                        1204: 1124, 1205: 1125, 1206: 1126,
+                                                        1207: 1127, 1208: 1128, 1209: 1129, 1210: 1130,
+                                                        1211: 1131, 1212: 1132, 1213: 1133},
                                         'comp_id_set': ['THR', 'ALA', 'GLU', 'LEU', 'PRO', 'ASN', 'GLY',
                                                         'LYS', 'SER', 'ARG', 'ASP', 'GLN', 'VAL', 'PHE']}]}
 

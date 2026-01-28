@@ -1211,10 +1211,12 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                 idx2 += 1
                                 break
 
-            _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1, seqIdName=seq_id_name,
-                                                                       compIdName='alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id')
-            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2,
-                                                                       compIdName='auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id')
+            _ps1 = ps1 if offset_1 == 0\
+                else fillBlankCompIdWithOffset(ps1, offset_1, seqIdName=seq_id_name,
+                                               compIdName='alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id')
+            _ps2 = ps2 if offset_2 == 0\
+                else fillBlankCompIdWithOffset(ps2, offset_2,
+                                               compIdName='auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id')
 
             if conflict == 0:
                 if hasLargeInnerSeqGap(_ps2) and not hasLargeInnerSeqGap(_ps1):
@@ -1322,7 +1324,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                         break
                                     idx2 += 1
 
-                        if beg >= 0 and beg + 1 < len(_ps2['seq_id']) and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
+                        if beg >= 0 and beg + 1 < len(_ps2['seq_id'])\
+                           and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
                             beg = ps2['seq_id'].index(s_p)
                             end = ps2['seq_id'].index(s_q)
                             comp_ids = ps2['comp_id'][beg + 1:end]
@@ -1739,7 +1742,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                                         break
                                     idx2 += 1
 
-                        if beg >= 0 and beg + 1 < len(_ps2['seq_id']) and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
+                        if beg >= 0 and beg + 1 < len(_ps2['seq_id'])\
+                           and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
                             beg = ps2['seq_id'].index(s_p)
                             end = ps2['seq_id'].index(s_q)
                             comp_ids = ps2['comp_id'][beg + 1:end]
@@ -3942,7 +3946,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     cR_prev = CifReader(False, sys.stdout, use_cache=False)
     cR_prev.parse(cif_path)
 
-    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
+    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp')
+                          if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
 
     auth_seq_id = 'auth_seq_id' if cR_prev.hasItem('atom_site', 'auth_seq_id') else 'label_seq_id'
     auth_comp_id = 'auth_comp_id' if cR_prev.hasItem('atom_site', 'auth_comp_id') else 'label_comp_id'
@@ -3987,7 +3992,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                                                 ])
 
     for c in coord:
-        c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+        c_prev = next((c_prev for c_prev in coord_prev
+                       if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
 
         if c_prev is None:
             continue
@@ -4042,7 +4048,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                                                    [{'name': auth_seq_id, 'type': 'int', 'alt_name': 'seq_id'},
                                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                     {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
-                                                    {'name': 'pdbx_auth_atom_name', 'type': 'starts-with-alnum', 'alt_name': 'alt_atom_id'}
+                                                    {'name': 'pdbx_auth_atom_name', 'type': 'starts-with-alnum',
+                                                     'alt_name': 'alt_atom_id'}
                                                     ],
                                                    [{'name': auth_comp_id, 'type': 'enum', 'enum': nstd_residues_prev},
                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},

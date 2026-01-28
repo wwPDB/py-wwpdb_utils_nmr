@@ -236,7 +236,8 @@ class AmberMRReader:
                 listener.internal = self.__internal
                 listener.createSfDict = createSfDict
                 if createSfDict:
-                    listener.originalFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
+                    listener.originalFileName =\
+                        originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                     if listIdCounter is not None:
                         listener.listIdCounter = copy.copy(listIdCounter)
                     if entryId is not None:
@@ -355,7 +356,8 @@ class AmberMRReader:
 
                     if self.__verbose and self.__debug:
                         if listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                            self.__log.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
+                            self.__log.write(f"+{self.__class_name__}.parse() ++ Info  -\n"
+                                             + '\n'.join(listener.warningMessage) + '\n')
                         if isFilePath:
                             self.__log.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
 

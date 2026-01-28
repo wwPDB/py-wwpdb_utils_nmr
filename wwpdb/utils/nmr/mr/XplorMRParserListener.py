@@ -442,7 +442,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
-    def enterDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
+    def enterDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext
+                                         ):  # pylint: disable=unused-argument
         self.in_block = True
 
         self.classification = '.'
@@ -455,14 +456,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.addSf('dihedral angle database restraint')
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
-    def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
+    def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext
+                                        ):  # pylint: disable=unused-argument
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
-    def enterRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
+    def enterRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext
+                                          ):  # pylint: disable=unused-argument
         self.in_block = True
 
         self.radiStatements += 1
@@ -472,7 +475,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.addSf('radius of gyration restraint')
 
     # Exit a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
-    def exitRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
+    def exitRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext
+                                         ):  # pylint: disable=unused-argument
         self.in_block = False
 
         if self.createSfDict:
@@ -557,13 +561,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#one_bond_coupling_restraint.
-    def enterOne_bond_coupling_restraint(self, ctx: XplorMRParser.One_bond_coupling_restraintContext):  # pylint: disable=unused-argument
+    def enterOne_bond_coupling_restraint(self, ctx: XplorMRParser.One_bond_coupling_restraintContext
+                                         ):  # pylint: disable=unused-argument
         """
         @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
         """
 
     # Exit a parse tree produced by XplorMRParser#one_bond_coupling_restraint.
-    def exitOne_bond_coupling_restraint(self, ctx: XplorMRParser.One_bond_coupling_restraintContext):  # pylint: disable=unused-argument
+    def exitOne_bond_coupling_restraint(self, ctx: XplorMRParser.One_bond_coupling_restraintContext
+                                        ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by XplorMRParser#angle_db_restraint.
@@ -2007,14 +2013,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   f"Found inter-chain {spin_system} dipolar coupling vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                 self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                               f"Found inter-residue {spin_system} dipolar coupling vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2030,13 +2038,15 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   f"Found inter-residue {spin_system} dipolar coupling vector; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               f"Found zero {spin_system} dipolar coupling vector; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             else:
@@ -2044,7 +2054,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                   f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, "
                                   "which usually accepts 1H-1H dipolar coupling; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             combinationId = '.'
             if self.createSfDict:
@@ -2171,8 +2182,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps1 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain RDC vector; "
@@ -2825,7 +2838,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 pass
             else:
                 self.f.append("[Range value error] "
-                              f"The expectation distance 'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.adistExpectValue} END' "
+                              "The expectation distance "
+                              f"'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.adistExpectValue} END' "
                               f"must be within range {PROBABILITY_RANGE}.")
 
             self.adistExpectGrid = int(str(ctx.Integer()))
@@ -2844,7 +2858,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 pass
             else:
                 self.f.append("[Range value error] "
-                              f"The expectation distance 'XADC {str(ctx.Size())} {self.adistSizeMaxDist} {str(ctx.Integer())} END' "
+                              "The expectation distance "
+                              f"'XADC {str(ctx.Size())} {self.adistSizeMaxDist} {str(ctx.Integer())} END' "
                               f"must be within range {DIST_RESTRAINT_ERROR}.")
 
             self.adistSizeStep = int(str(ctx.Integer()))
@@ -3061,8 +3076,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps1 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain J-coupling vector; "
@@ -4872,11 +4889,13 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                   f"scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
     # Enter a parse tree produced by XplorMRParser#one_bond_coupling_statement.
-    def enterOne_bond_coupling_statement(self, ctx: XplorMRParser.One_bond_coupling_statementContext):  # pylint: disable=unused-argument
+    def enterOne_bond_coupling_statement(self, ctx: XplorMRParser.One_bond_coupling_statementContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by XplorMRParser#one_bond_coupling_statement.
-    def exitOne_bond_coupling_statement(self, ctx: XplorMRParser.One_bond_coupling_statementContext):  # pylint: disable=unused-argument
+    def exitOne_bond_coupling_statement(self, ctx: XplorMRParser.One_bond_coupling_statementContext
+                                        ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by XplorMRParser#one_bond_assign.
@@ -6926,7 +6945,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.factor['chain_id'] = self.polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.reasons is not None:
-                        if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                        if 'atom_id' not in self.factor\
+                           or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                             self.factor['atom_id'] = [None]
                             if not self.with_axis\
                                and 'segment_id_mismatch' in self.reasons\
@@ -7309,7 +7329,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         _atom['comp_id'] = coordAtomSite['comp_id']
 
                                 if _atom is not None and _atom['comp_id'] == compId:
-                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
+                                    _atomSelection.append({'chain_id': chainId, 'seq_id': seqId,
+                                                           'comp_id': compId, 'atom_id': _atomId})
 
                                 else:
                                     psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
@@ -7731,7 +7752,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'name' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          "The 'name' clause has no effect for a conjunction of "
+                                          f"factor {self.getReadableFactor(__factor)} "
                                           f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Not_op():
@@ -8183,7 +8205,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.reasons is not None:
-                            if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                            if 'atom_id' not in self.factor\
+                               or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                                 self.factor['atom_id'] = [None]
                                 if not self.with_axis\
                                    and 'segment_id_mismatch' in self.reasons\
@@ -8268,7 +8291,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.reasons is not None:
-                            if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                            if 'atom_id' not in self.factor\
+                               or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                                 if 'segment_id_mismatch' in self.reasons\
                                    and chainId not in self.reasons['segment_id_mismatch']:
                                     self.reasons = None

@@ -315,7 +315,8 @@ class OneDepAnnTasks:
         #     if tag_map[2] in sfCatList and tag_map[0] in self.__cifCategorySet:
         #         if tag_map not in self.__sfTagMap:
         #             print(f'                           ({tag_map[0]!r}, {tag_map[1]!r}, {"_" + tag_map[2]!r}, {tag_map[3]!r}, '
-        #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
+        #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, '
+        #                   f'{int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
         #             self.__sfTagMap.append(tag_map)
         # """
         self.__sfTagMap = [('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_13C_err',
@@ -531,7 +532,8 @@ class OneDepAnnTasks:
         #     if tag_map[2] in lpCatList and tag_map[0] in self.__cifCategorySet:
         #         if tag_map not in self.__lpTagMap:
         #             print(f'                           ({tag_map[0]!r}, {tag_map[1]!r}, {"_" + tag_map[2]!r}, {tag_map[3]!r}, '
-        #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
+        #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, '
+        #                   f'{int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
         #             self.__lpTagMap.append(tag_map)
         # """
         self.__lpTagMap = [('pdbx_nmr_chem_shift_experiment', 'assigned_chem_shift_list_id',
@@ -544,7 +546,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_chem_shift_ref', 'atom_group', '_Chem_shift_ref', 'Atom_group', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'atom_isotope_number', '_Chem_shift_ref', 'Atom_isotope_number', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'atom_type', '_Chem_shift_ref', 'Atom_type', 1, None),
-                           ('pdbx_nmr_chem_shift_ref', 'chem_shift_reference_id', '_Chem_shift_ref', 'Chem_shift_reference_ID', 1, None),
+                           ('pdbx_nmr_chem_shift_ref', 'chem_shift_reference_id',
+                            '_Chem_shift_ref', 'Chem_shift_reference_ID', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'chem_shift_units', '_Chem_shift_ref', 'Chem_shift_units', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'chem_shift_val', '_Chem_shift_ref', 'Chem_shift_val', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'correction_val', '_Chem_shift_ref', 'Correction_val', 1, None),
@@ -589,7 +592,8 @@ class OneDepAnnTasks:
                            # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id',
                            #  '_Sample_condition_variable', 'Sample_condition_list_ID', 1, None),
                            # replaced by
-                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_variable', 'Sample_condition_list_ID',
+                           ('pdbx_nmr_exptl_sample_conditions',
+                            'conditions_id', '_Sample_condition_variable', 'Sample_condition_list_ID',
                             33, '_Sample_condition_list.Sf_framecode'),
                            # add pdbx_nmr_exptl_sample_conditions.label
                            ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_variable', 'Sample_condition_list_ID',
@@ -607,11 +611,13 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_exptl_sample_conditions', 'pressure', '_Sample_condition_variable', 'Type', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'pressure', '_Sample_condition_variable', 'Val', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'pressure_err', '_Sample_condition_variable', 'Val_err', -22, 0),
-                           ('pdbx_nmr_exptl_sample_conditions', 'pressure_units', '_Sample_condition_variable', 'Val_units', -22, None),
+                           ('pdbx_nmr_exptl_sample_conditions',
+                            'pressure_units', '_Sample_condition_variable', 'Val_units', -22, None),
                            ('pdbx_nmr_exptl_sample_conditions', 'temperature', '_Sample_condition_variable', 'Type', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'temperature', '_Sample_condition_variable', 'Val', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'temperature_err', '_Sample_condition_variable', 'Val_err', -22, None),
-                           ('pdbx_nmr_exptl_sample_conditions', 'temperature_units', '_Sample_condition_variable', 'Val_units', -22, None),
+                           ('pdbx_nmr_exptl_sample_conditions',
+                            'temperature_units', '_Sample_condition_variable', 'Val_units', -22, None),
                            ('pdbx_nmr_refine', 'details', '_Conformer_family_refinement', 'Refine_details', 1, None),
                            ('pdbx_nmr_refine', 'method', '_Conformer_family_refinement', 'Refine_method', 1, None),
                            # add pdbx_nmr_refine.software_ordinal
@@ -646,7 +652,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectral_peak_software', 'spectral_peak_list_id',
                             '_Spectral_peak_software', 'Spectral_peak_list_ID', 1, None),
                            # add pdbx_nmr_spectral_peak_software.software_id
-                           ('pdbx_nmr_spectral_peak_software', 'spectral_peak_list_id', '_Spectral_peak_software', 'Software_ID', 1, None),
+                           ('pdbx_nmr_spectral_peak_software',
+                            'spectral_peak_list_id', '_Spectral_peak_software', 'Software_ID', 1, None),
                            ('pdbx_nmr_spectrometer', 'field_strength', '_NMR_spectrometer_view', 'Field_strength', 1, None),
                            ('pdbx_nmr_spectrometer', 'manufacturer', '_NMR_spectrometer_view', 'Manufacturer', 1, None),
                            ('pdbx_nmr_spectrometer', 'model', '_NMR_spectrometer_view', 'Model', 1, None),
@@ -655,7 +662,8 @@ class OneDepAnnTasks:
                             '_Systematic_chem_shift_offset', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'atom_isotope_number',
                             '_Systematic_chem_shift_offset', 'Atom_isotope_number', 1, None),
-                           ('pdbx_nmr_systematic_chem_shift_offset', 'atom_type', '_Systematic_chem_shift_offset', 'Atom_type', 1, None),
+                           ('pdbx_nmr_systematic_chem_shift_offset',
+                            'atom_type', '_Systematic_chem_shift_offset', 'Atom_type', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'entry_id', '_Systematic_chem_shift_offset', 'Entry_ID', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'type', '_Systematic_chem_shift_offset', 'Type', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'val', '_Systematic_chem_shift_offset', 'Val', 1, None),
@@ -2023,7 +2031,8 @@ class OneDepAnnTasks:
         for cif_category, (sf_category, sf_tag_prefix) in self.__uniqSfCatMap.items():
 
             if sf_category in self.__reg.sf_category_list:
-                sf_tag_maps = [tag_map for tag_map in self.__uniqSfTagMap if tag_map[0] == cif_category and tag_map[2] == sf_tag_prefix]
+                sf_tag_maps = [tag_map for tag_map in self.__uniqSfTagMap
+                               if tag_map[0] == cif_category and tag_map[2] == sf_tag_prefix]
                 sf_tags = [tag_map[3] for tag_map in sf_tag_maps]
                 sf_map_code = [tag_map[4] for tag_map in sf_tag_maps]
                 has_id_tag = 'ID' in sf_tags
@@ -2226,11 +2235,13 @@ class OneDepAnnTasks:
                                                     if None not in (max_lp_item, min_lp_item)\
                                                        and row[_lp_tags.index(max_lp_item)] not in EMPTY_VALUE\
                                                        and row[_lp_tags.index(max_lp_item)] not in EMPTY_VALUE:
-                                                        _row[idx] = f'{row[_lp_tags.index(min_lp_item)]}-{row[_lp_tags.index(max_lp_item)]}'
+                                                        _row[idx] = f'{row[_lp_tags.index(min_lp_item)]}-'\
+                                                            f'{row[_lp_tags.index(max_lp_item)]}'
                                             _row = replace_none(_row)
                                             cifObj.appendRow(self.__reg.entry_id, cif_category, _row)
 
-                                    elif any(lp_item == 'Type' for lp_item in lp_tags) and any(lp_item == 'Val' for lp_item in lp_tags):
+                                    elif any(lp_item == 'Type' for lp_item in lp_tags)\
+                                            and any(lp_item == 'Val' for lp_item in lp_tags):
 
                                         lp_cif_tags = sorted(list(set(lp_cif_tags)))
                                         lp_tags = list(set(lp_tags))
@@ -2362,7 +2373,7 @@ class OneDepAnnTasks:
                                                             found = True
                                                             break
                                                         if not found and isinstance(dst_val, int):
-                                                            for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                            for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):  # noqa: E501, pylint: disable=line-too-long
                                                                 _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
                                                                 found = True
                                                         if found:
@@ -2371,7 +2382,8 @@ class OneDepAnnTasks:
                                                         else:
                                                             _row[col] = '?'
                                                     for idx, lp_item in enumerate(_lp_tags):
-                                                        tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item)
+                                                        tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx]
+                                                                       if tag_map[3] == lp_item)
                                                         row[lp_items.index(lp_item)] = list_id if lp_item == list_id_tag else _row[idx]
                                                         if tag_map[4] == 33:
                                                             _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx]
@@ -2400,7 +2412,7 @@ class OneDepAnnTasks:
                                                             found = True
                                                             break
                                                         if not found and isinstance(dst_val, int):
-                                                            for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                            for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):  # noqa: E501, pylint: disable=line-too-long
                                                                 _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
                                                                 found = True
                                                         if found:
@@ -2409,7 +2421,8 @@ class OneDepAnnTasks:
                                                         else:
                                                             _row[col] = '?'
                                                     for idx, lp_item in enumerate(_lp_tags):
-                                                        tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item)
+                                                        tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx]
+                                                                       if tag_map[3] == lp_item)
                                                         row[lp_items.index(lp_item)] = list_id if lp_item == list_id_tag else _row[idx]
                                                         if tag_map[4] == 33:
                                                             _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx]

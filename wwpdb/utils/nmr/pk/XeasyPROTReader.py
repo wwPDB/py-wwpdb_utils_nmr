@@ -158,7 +158,9 @@ class XeasyPROTReader:
             lexer = XeasyPROTLexer(input)
             lexer.removeErrorListeners()
 
-            lexer_error_listener = LexerErrorListener(protFilePath, maxErrorReport=self.__maxLexerErrorReport, ignoreCodicError=True)
+            lexer_error_listener = LexerErrorListener(protFilePath,
+                                                      maxErrorReport=self.__maxLexerErrorReport,
+                                                      ignoreCodicError=True)
             lexer.addErrorListener(lexer_error_listener)
 
             messageList = lexer_error_listener.getMessageList()
@@ -176,7 +178,9 @@ class XeasyPROTReader:
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(protFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
+            parser_error_listener = ParserErrorListener(protFilePath,
+                                                        maxErrorReport=self.__maxParserErrorReport,
+                                                        ignoreCodicError=True)
             parser.addErrorListener(parser_error_listener)
             tree = parser.xeasy_prot()
 

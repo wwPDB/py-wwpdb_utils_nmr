@@ -4,7 +4,8 @@
 #
 # Updates:
 # 19-Jul-2023  M. Yokochi - add trustPdbxAuthAtomName() for OneDep validation package (DAOTHER-8705)
-# 19-Jul-2023  M. Yokochi - fix distance/dihedral angle/RDC averaging when lower/upper bounds are different in a restraint (DAOTER-8705)
+# 19-Jul-2023  M. Yokochi - fix distance/dihedral angle/RDC averaging when lower/upper bounds are different in a restraint
+#                           (DAOTER-8705)
 # 18-Dec-2023  M. Yokochi - retrieve non-leaving hydrogens independent of MolProbity (DAOTHER-8945)
 # 20-Dec-2023  M. Yokochi - add support for case 'Member_logic_code' value equals 'AND'
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
@@ -1271,7 +1272,8 @@ class NmrVrptUtility:
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_coordinates,
                    written by Kumaran Baskaran
-            @change: class method, use of wwpdb.utils.nmr.io.CifReader, use PDB_ins_code for atom identification, performance optimization
+            @change: class method, use of wwpdb.utils.nmr.io.CifReader, use PDB_ins_code for atom identification,
+                     performance optimization
         """
 
         if self.__has_prev_results:
@@ -1915,7 +1917,8 @@ class NmrVrptUtility:
                 if has_upper_linear_limit:
                     data_items.append({'name': 'RDC_upper_linear_limit', 'type': 'float', 'alt_name': 'upper_linear_limit'})
                 if has_target_val_uncertainty:
-                    data_items.append({'name': 'Target_value_uncertainty', 'type': 'abs-float', 'alt_name': 'target_value_uncertainty'})
+                    data_items.append({'name': 'Target_value_uncertainty', 'type': 'abs-float',
+                                       'alt_name': 'target_value_uncertainty'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 

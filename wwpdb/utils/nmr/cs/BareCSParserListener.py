@@ -209,15 +209,17 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             if not ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order)
                      and 'atom_name_instance' in self.__col_order)
-                    or ('value' in self.__col_order and ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order)
-                                                          and 'atom_name' in self.__col_order)
-                                                         or ('assignment' in self.__col_order and 'atom_name' not in self.__col_order)))):
+                    or ('value' in self.__col_order
+                        and ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order)
+                              and 'atom_name' in self.__col_order)
+                             or ('assignment' in self.__col_order and 'atom_name' not in self.__col_order)))):
                 return
 
             if not self.hasPolySeq:
                 return
 
-            if ('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name_instance' in self.__col_order:
+            if ('sequence_code' in self.__col_order or 'residue_name' in self.__col_order)\
+               and 'atom_name_instance' in self.__col_order:
 
                 chain_id = seq_id = comp_id = None
                 atom_ids, values, details = [], [], []
@@ -282,7 +284,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
                                            else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
-                        details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                        details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                       else str(self.anySelection[idx]))
 
                 if len(details) == 0:
                     details = None
@@ -421,7 +424,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
                                            else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
-                        details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                        details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                       else str(self.anySelection[idx]))
 
                 if len(details) == 0:
                     details = None
@@ -525,7 +529,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                             details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
                                            else str(self.anySelection[idx]))
                     elif self.__col_order[len_ord - 1] == 'details':
-                        details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str) else str(self.anySelection[idx]))
+                        details.append(self.anySelection[idx] if isinstance(self.anySelection[idx], str)
+                                       else str(self.anySelection[idx]))
 
                 if len(details) == 0:
                     details = None

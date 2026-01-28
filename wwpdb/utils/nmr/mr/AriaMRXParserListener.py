@@ -347,8 +347,10 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
             elif self.__cur_path == '/data_set/sequence':
                 sortPolySeqRst(self.__polySeqRstRef)
 
-                seqAlign, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRstRef, resolvedMultimer=self.reasons is not None)
-                chainAssign, _ = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.__polySeqRstRef, seqAlign)
+                seqAlign, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRstRef,
+                                                   resolvedMultimer=self.reasons is not None)
+                chainAssign, _ = assignPolymerSequence(self.pA, self.ccU, self.file_type,
+                                                       self.polySeq, self.__polySeqRstRef, seqAlign)
 
                 if chainAssign is not None and len(chainAssign) > 0:
                     for ca in chainAssign:
@@ -672,8 +674,9 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         self.allowZeroUpperLimit = True
                 self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                dstFunc = self.validateDistanceRange(self.cur_weight, self.cur_target_value, self.cur_lower_limit, self.cur_upper_limit,
-                                                     None, self.omitDistLimitOutlier)
+                dstFunc =\
+                    self.validateDistanceRange(self.cur_weight, self.cur_target_value, self.cur_lower_limit, self.cur_upper_limit,
+                                               None, self.omitDistLimitOutlier)
 
                 if dstFunc is None:
                     return
@@ -873,7 +876,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 lenAngleName = len(angleName)
                 try:
                     # For the case 'EPSIL' could be standard name 'EPSILON'
-                    angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
+                    angleName = next(name for name in KNOWN_ANGLE_NAMES
+                                     if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}, "
@@ -1173,7 +1177,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _angleName != fixedAngleName:
                                 continue
                             combinationId += 1
-                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.ccU):
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1'\
+                           and isLikePheOrTyr(atom2['comp_id'], self.ccU):
                             dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                               dstFunc)
                         if self.debug:

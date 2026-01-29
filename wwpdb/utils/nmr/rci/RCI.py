@@ -7170,7 +7170,7 @@ class RCI:
                             dynamr_2_md = entry[7]
                             for coef_name in entry[4]:
                                 coef_value = f"{coef_dictionary[coef_name]}"
-                                coefficients += coef_name + " " + coef_value + " "
+                                coefficients += f"{coef_name} {coef_value} "
                                 coefficients_for_plot += coef_name + coef_value
                             out_title =\
                                 f"{float(parameter):.2f}vs {self.function_flag} {treatment}{smoothing} "\

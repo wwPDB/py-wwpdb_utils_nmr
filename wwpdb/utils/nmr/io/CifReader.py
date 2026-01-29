@@ -1466,7 +1466,7 @@ class CifReader:
         for sc in struct_conf:
             for seq_id in range(sc['beg_seq_id'], sc['end_seq_id'] + 1):
                 if seq_id in seq_ids and sc['conf_type_id'] is not None and sc['helix_id'] is not None:
-                    ret[seq_ids.index(seq_id)] = sc['conf_type_id'] + ':' + sc['helix_id']
+                    ret[seq_ids.index(seq_id)] = f"{sc['conf_type_id']}:{sc['helix_id']}"
 
         struct_sheet_range = self.getDictListWithFilter('struct_sheet_range',
                                                         [{'name': 'sheet_id', 'type': 'str'},
@@ -1485,7 +1485,7 @@ class CifReader:
         for ssr in struct_sheet_range:
             for seq_id in range(ssr['beg_seq_id'], ssr['end_seq_id'] + 1):
                 if seq_id in seq_ids and ssr['sheet_id'] is not None and ssr['id'] is not None:
-                    ret[seq_ids.index(seq_id)] = 'STRN:' + ssr['sheet_id'] + ':' + ssr['id']
+                    ret[seq_ids.index(seq_id)] = f"STRN:{ssr['sheet_id']}:{ssr['id']}"
 
         return ret
 
@@ -1931,9 +1931,9 @@ class CifReader:
 
             _label = int(label)
 
-            dst_chain_ids = set(a['chain_id'] for a, l in zip(_atom_site_ref, list_labels)
+            dst_chain_ids = set(a['chain_id'] for a, l in zip(_atom_site_ref, list_labels)  # noqa: E741
                                 if l == label)  # noqa: E741
-            seq_keys = sorted(set((a['chain_id'], a['seq_id']) for a, l in zip(_atom_site_ref, list_labels)
+            seq_keys = sorted(set((a['chain_id'], a['seq_id']) for a, l in zip(_atom_site_ref, list_labels)  # noqa: E741
                                   if l == label),  # noqa: E741
                               key=itemgetter(0, 1))
 

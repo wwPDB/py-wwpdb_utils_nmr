@@ -260,7 +260,7 @@ class BaseTopologyParserListener():
                                             compId = self.nonPolyModel[0]['comp_id'][0]
 
                             if compId is not None:
-                                compIdList.append(compId + '?')  # decide when coordinate is available
+                                compIdList.append(f'{compId}?')  # decide when coordinate is available
                                 chemCompAtomIds = None
                                 if self.ccU.updateChemCompDict(compId):
                                     chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
@@ -327,7 +327,7 @@ class BaseTopologyParserListener():
                                         compId = self.nonPolyModel[0]['comp_id'][0]
 
                         if compId is not None:
-                            compIdList.append(compId + '?')  # decide when coordinate is available
+                            compIdList.append(f'{compId}?')  # decide when coordinate is available
                             chemCompAtomIds = None
                             if self.ccU.updateChemCompDict(compId):
                                 chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
@@ -672,7 +672,7 @@ class BaseTopologyParserListener():
 
             if len(self.__seqAlign) == 0:
                 mrFormatName = getRestraintFormatName(self.file_type)
-                _a_mr_format_name = 'the ' + mrFormatName
+                _a_mr_format_name = f'the {mrFormatName}'
 
                 ref_code = getOneLetterCodeCanSequence(self.polySeqModel[0]['comp_id'])
                 test_code = getOneLetterCodeCanSequence(self.polySeqPrmTop[0]['comp_id'])

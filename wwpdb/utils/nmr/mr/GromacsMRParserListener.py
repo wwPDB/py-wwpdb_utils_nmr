@@ -1978,7 +1978,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         restraint_name = getRestraintName(self.__cur_subtype)
 
-        sf_framecode = 'GROMACS_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = f"GROMACS_{restraint_name.replace(' ', '_')}_{list_id}"
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)

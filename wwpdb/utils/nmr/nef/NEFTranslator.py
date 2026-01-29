@@ -286,7 +286,7 @@ def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row: dict) -> str:
 
         if len(idx_tag_ids) > 0:
             for _j in idx_tag_ids:
-                f.append(tags[_j] + " " + str(row[tags[_j]]))
+                f.append(f'{tags[_j]} {row[tags[_j]]}')
 
             return f"[Check row of {', '.join(f)}] "
 
@@ -2155,7 +2155,7 @@ class NEFTranslator:
             else:
                 _tags_exist = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                    _tags = [seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
+                    _tags = [f'{seq_id}_{j}', f'{comp_id}_{j}', f'{chain_id}_{j}']
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         seq_data += loop.get_tag(_tags)
@@ -3675,13 +3675,13 @@ class NEFTranslator:
             else:
                 _tags_exist = _normal_chain_tag = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                    _tags = [seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
-                    _tags_ = [seq_id + '_' + str(j), comp_id + '_' + str(j)]
-                    _tags__ = [seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)]  # DAOTHER-7421
+                    _tags = [f'{seq_id}_{j}', f'{comp_id}_{j}', f'{chain_id}_{j}']
+                    _tags_ = [f'{seq_id}_{j}', f'{comp_id}_{j}']
+                    _tags__ = [f'{seq_id}_{j}', f'{comp_id}_{j}', f'{alt_chain_id}_{j}']  # DAOTHER-7421
 
-                    _alt_tags = [alt_seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
-                    _alt_tags_ = [alt_seq_id + '_' + str(j), comp_id + '_' + str(j)]
-                    _alt_tags__ = [alt_seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)]  # DAOTHER-7421
+                    _alt_tags = [f'{alt_seq_id}_{j}', f'{comp_id}_{j}', f'{chain_id}_{j}']
+                    _alt_tags_ = [f'{alt_seq_id}_{j}', f'{comp_id}_{j}']
+                    _alt_tags__ = [f'{alt_seq_id}_{j}', f'{comp_id}_{j}', f'{alt_chain_id}_{j}']  # DAOTHER-7421
 
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -4094,9 +4094,9 @@ class NEFTranslator:
             else:
                 _tags_exist = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                    _tags = [aseq_id + '_' + str(j), acomp_id + '_' + str(j), asym_id + '_' + str(j),
-                             seq_id + '_' + str(j), chain_id + '_' + str(j)]
-                    _tags_ = [aseq_id + '_' + str(j), acomp_id + '_' + str(j), asym_id + '_' + str(j), seq_id + '_' + str(j)]
+                    _tags = [f'{aseq_id}_{j}', f'{acomp_id}_{j}', f'{asym_id}_{j}',
+                             f'{seq_id}_{j}', f'{chain_id}_{j}']
+                    _tags_ = [f'{aseq_id}_{j}', f'{acomp_id}_{j}', f'{asym_id}_{j}', f'{seq_id}_{j}']
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         seq_data += loop.get_tag(_tags)
@@ -4277,7 +4277,7 @@ class NEFTranslator:
             else:
                 _tags_exist = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                    _tags = [comp_id + '_' + str(j), atom_id + '_' + str(j)]
+                    _tags = [f'{comp_id}_{j}', f'{atom_id}_{j}']
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         pair_data += loop.get_tag(_tags)
@@ -6854,7 +6854,7 @@ class NEFTranslator:
                                 if 'enum-alt' in t and val in t['enum-alt']:
                                     tagNames = [_t[0] for _t in star_data.tags]
                                     itCol = tagNames.index(name)
-                                    itName = '_' + category + '.' + t['name']
+                                    itName = f"_{category}.{t['name']}"
                                     if val == '?' and enforce_enum:
                                         if self.is_mandatory_tag(itName, file_type):
                                             f.append(f"[Enumeration error] The mandatory type {itName} {val!r} is missing "
@@ -7181,7 +7181,7 @@ class NEFTranslator:
             if atom_id[-1] == '+' and atom_id[1].isdigit() and len_atom_id > 2 and self.__ccU.updateChemCompDict(comp_id):
                 if self.__ccU.lastChemCompDict['type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                     _atom_list, _ambiguity_code, _details =\
-                        self.get_valid_star_atom_for_ligand_remap(comp_id, 'HN' + atom_id[1:-1], coord_atom_site, methyl_only)
+                        self.get_valid_star_atom_for_ligand_remap(comp_id, f'HN{atom_id[1:-1]}', coord_atom_site, methyl_only)
                     if _details is None:
                         atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                         return (atom_list, ambiguity_code, details)
@@ -7191,18 +7191,18 @@ class NEFTranslator:
 
         if details is not None and atom_id[-1] not in ('%', '*'):
             _atom_list, _ambiguity_code, _details =\
-                self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '%', coord_atom_site, methyl_only)
+                self.get_valid_star_atom_for_ligand_remap(comp_id, f'{atom_id}%', coord_atom_site, methyl_only)
             if _details is None:
                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
             elif atom_id[0] in PROTON_BEGIN_CODE or len_atom_id > 1:
                 atom_list, ambiguity_code, details =\
-                    self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '*', coord_atom_site, methyl_only)
+                    self.get_valid_star_atom_for_ligand_remap(comp_id, f'{atom_id}*', coord_atom_site, methyl_only)
                 if details is not None:
                     atom_list, ambiguity_code, details =\
                         self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
                     # 2l8r, comp_id=APR, atom_id=Q5D -> ['H5R1', 'H5R2']
                     if details is not None and atom_id[0] in ('Q', 'M'):
-                        protons = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
+                        protons = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[1:]}', onlyProton=True)
                         resolved = False
                         len_protons = len(protons)
                         if len_protons in (1, 3):
@@ -7212,7 +7212,7 @@ class NEFTranslator:
                             atom_list, ambiguity_code, details = protons, 2, None
                             resolved = True
                         if not resolved:
-                            protons = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[1:], onlyProton=True)
+                            protons = self.__ccU.getBondedAtoms(comp_id, f'N{atom_id[1:]}', onlyProton=True)
                             len_protons = len(protons)
                             if len_protons in (1, 3):
                                 atom_list, ambiguity_code, details = protons, 1, None
@@ -7220,23 +7220,23 @@ class NEFTranslator:
                                 atom_list, ambiguity_code, details = protons, 2, None
                         if atom_id.startswith('QQ') and self.__ccU.updateChemCompDict(comp_id):
                             root, _branch = [], []
-                            _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
+                            _root = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[2:]}', exclProton=True)
                             if len(_root) > 0:
-                                _branch.append('C' + atom_id[2:])
+                                _branch.append(f'C{atom_id[2:]}')
                                 root.extend(_root)
                             for e in '123ABC':
-                                _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:] + e, exclProton=True)
+                                _root = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[2:]}{e}', exclProton=True)
                                 if len(_root) > 0:
-                                    _branch.append('C' + atom_id[2:] + e)
+                                    _branch.append(f'C{atom_id[2:]}{e}')
                                     root.extend(_root)
-                            _root = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[2:], exclProton=True)
+                            _root = self.__ccU.getBondedAtoms(comp_id, f'N{atom_id[2:]}', exclProton=True)
                             if len(_root) > 0:
-                                _branch.append('N' + atom_id[2:])
+                                _branch.append(f'N{atom_id[2:]}')
                                 root.extend(_root)
                             for e in '123ABC':
-                                _root = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[2:] + e, exclProton=True)
+                                _root = self.__ccU.getBondedAtoms(comp_id, f'N{atom_id[2:]}{e}', exclProton=True)
                                 if len(_root) > 0:
-                                    _branch.append('N' + atom_id[2:] + e)
+                                    _branch.append(f'N{atom_id[2:]}{e}')
                                     root.extend(_root)
                             protons = []
                             aliphatic = True
@@ -7263,7 +7263,7 @@ class NEFTranslator:
                     elif details is not None and atom_id.endswith("'") and not atom_id.endswith("''")\
                             and (atom_id[0] in PROTON_BEGIN_CODE or atom_id[1].isdigit()):
                         _atom_list, _ambiguity_code, _details =\
-                            self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id[:-1] + "%'", coord_atom_site, methyl_only)
+                            self.get_valid_star_atom_for_ligand_remap(comp_id, f"{atom_id[:-1]}%'", coord_atom_site, methyl_only)
                         if _details is None:
                             atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
@@ -7305,11 +7305,11 @@ class NEFTranslator:
 
             if atom_id.startswith('QQ'):
                 atom_list, ambiguity_code, details =\
-                    self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[2:] + ('%' if nucleotide else '*'),
+                    self.get_star_atom_for_ligand_remap(comp_id, f"H{atom_id[2:]}{'%' if nucleotide else '*'}",
                                                         details, coord_atom_site, methyl_only)
                 if details is not None and comp_id not in STD_MON_DICT and self.__csStat.peptideLike(comp_id)\
                    and atom_id[2] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
-                    grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[2])
+                    grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, f'H{atom_id[2]}')
                     if len(grk_atoms) > 0:
                         atom_list = []
                         details = None
@@ -7323,7 +7323,7 @@ class NEFTranslator:
                     return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('HR') or atom_id.startswith('QR') or atom_id.startswith('QX'):
-                qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
+                qr_atoms = sorted(set(f'{atom_id[:-1]}%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
                                       if atom_id[0] in PROTON_BEGIN_CODE
                                       and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                 if len(qr_atoms) == 0:
@@ -7341,11 +7341,11 @@ class NEFTranslator:
                 min_len = 4 if atom_id.startswith('QQ') else 1  # ILE/LEU/THR:QB -> HB (2m6i), MG -> Magnesium (2n3r)
                 if atom_id[-1].isalnum():
                     atom_list, ambiguity_code, details =\
-                        self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + ('%' if nucleotide else '*'),
+                        self.get_star_atom_for_ligand_remap(comp_id, f"H{atom_id[1:]}{'%' if nucleotide else '*'}",
                                                             details, coord_atom_site, methyl_only)
                     if details is not None and comp_id not in STD_MON_DICT and self.__csStat.peptideLike(comp_id) and len_atom_id > 1\
                        and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
-                        grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
+                        grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, f'H{atom_id[1]}')
                         if len(grk_atoms) > 0:
                             atom_list = []
                             details = None
@@ -7360,16 +7360,16 @@ class NEFTranslator:
                     if len(atom_list) >= min_len:
                         return (atom_list, ambiguity_code, details)
                 atom_list, ambiguity_code, details =\
-                    self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + '*', details, coord_atom_site, methyl_only)
+                    self.get_star_atom_for_ligand_remap(comp_id, f'H{atom_id[1:]}*', details, coord_atom_site, methyl_only)
                 if details is None and len(atom_list) == 1:
                     atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                 if len(atom_list) >= min_len:
                     return (atom_list, ambiguity_code, details)
 
-        if len_atom_id > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id))
-                                or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
+        if len_atom_id > 2 and ((f'{atom_id}2' in self.__csStat.getAllAtoms(comp_id))
+                                or (f'{atom_id}22' in self.__csStat.getAllAtoms(comp_id))):
             atom_list, ambiguity_code, details =\
-                self.get_star_atom_for_ligand_remap(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
+                self.get_star_atom_for_ligand_remap(comp_id, f'{atom_id}%', details, coord_atom_site, methyl_only)
             return (atom_list, ambiguity_code, details)
 
         atom_list, ambiguity_code, details =\
@@ -7670,23 +7670,23 @@ class NEFTranslator:
 
             if self.__csStat.hasCompId(comp_id):
 
-                if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
+                if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and f'{nef_atom}1' in methyl_atoms:
                     atom_list, ambiguity_code, details =\
                         self.get_star_atom_for_ligand_remap(comp_id,
-                                                            nef_atom + '%', None, coord_atom_site, methyl_only)
+                                                            f'{nef_atom}%', None, coord_atom_site, methyl_only)
                     return (atom_list, ambiguity_code, details)
 
-                if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
+                if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and f'{nef_atom[:-1]}1' in methyl_atoms:
                     atom_list, ambiguity_code, details =\
                         self.get_star_atom_for_ligand_remap(comp_id,
-                                                            nef_atom[:-1] + '%', None, coord_atom_site, methyl_only)
+                                                            f'{nef_atom[:-1]}%', None, coord_atom_site, methyl_only)
                     return (atom_list, ambiguity_code, details)
 
-                if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
+                if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (f'{nef_atom[:-1]}1' not in methyl_atoms) and\
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     atom_list, ambiguity_code, details =\
                         self.get_star_atom_for_ligand_remap(comp_id,
-                                                            nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
+                                                            f"{nef_atom[:-2]}{'1' if nef_atom[-2].lower() == 'x' else '2'}%",
                                                             None, coord_atom_site, methyl_only)
                     return (atom_list, ambiguity_code, details)
 
@@ -7759,7 +7759,7 @@ class NEFTranslator:
                and not self.__annotation_mode:  # and atom_id[0] in ('Q', 'M'):
                 _atom_id = atom_id
                 if _atom_id[0] in ('Q', 'M'):
-                    _atom_id = 'H' + atom_id[1:] + '*'
+                    _atom_id = f'H{atom_id[1:]}*'
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
                                    'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
                 _atom_list, _ambiguity_code, _details =\
@@ -7794,14 +7794,14 @@ class NEFTranslator:
             if atom_id[0] in ('H', 'Q', 'M') and (self.__remediation_mode or atom_id[0] in ('H', 'M')):  # DAOTHER-8663, 8751
 
                 if atom_id.endswith('1') and not self.validate_comp_atom(comp_id, atom_id):
-                    _atom_id = atom_id[:-1] + '3'
+                    _atom_id = f'{atom_id[:-1]}3'
                     if self.validate_comp_atom(comp_id, _atom_id):
                         atom_list, ambiguity_code, details =\
                             self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                 if atom_id.endswith('1*') or atom_id.endswith('1%'):
-                    _atom_id = atom_id[:-2] + '3' + atom_id[-1]
+                    _atom_id = f'{atom_id[:-2]}3{atom_id[-1]}'
                     _atom_list, _ambiguity_code, _details =\
                         self.get_valid_star_atom(comp_id, _atom_id, None, True, methyl_only)
                     if _details is None:
@@ -7853,7 +7853,7 @@ class NEFTranslator:
                 if atom_id[-1] == '+' and atom_id[1].isdigit() and len_atom_id > 2 and self.__ccU.updateChemCompDict(comp_id):
                     if self.__ccU.lastChemCompDict['type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                         _atom_list, _ambiguity_code, _details =\
-                            self.get_valid_star_atom(comp_id, 'HN' + atom_id[1:-1], None, leave_unmatched, methyl_only)
+                            self.get_valid_star_atom(comp_id, f'HN{atom_id[1:-1]}', None, leave_unmatched, methyl_only)
                         if _details is None:
                             atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                             return (atom_list, ambiguity_code, details)
@@ -7871,12 +7871,12 @@ class NEFTranslator:
 
             if details is not None and atom_id[-1] not in ('%', '*'):
                 _atom_list, _ambiguity_code, _details =\
-                    self.get_valid_star_atom(comp_id, atom_id + '%', None, leave_unmatched, methyl_only)
+                    self.get_valid_star_atom(comp_id, f'{atom_id}%', None, leave_unmatched, methyl_only)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                 elif atom_id[0] in PROTON_BEGIN_CODE or len_atom_id > 1:
                     atom_list, ambiguity_code, details =\
-                        self.get_valid_star_atom(comp_id, atom_id + '*', details, leave_unmatched, methyl_only)
+                        self.get_valid_star_atom(comp_id, f'{atom_id}*', details, leave_unmatched, methyl_only)
                     if details is not None:
                         atom_list, ambiguity_code, details =\
                             self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
@@ -7885,14 +7885,14 @@ class NEFTranslator:
 
                             if atom_id.startswith('QQM'):  # 2n06, comp_id=CM8, atom_id=QQM -> ['HM2%', HM3%']
                                 root, _branch = [], []
-                                _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
+                                _root = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[2:]}', exclProton=True)
                                 if len(_root) > 0:
-                                    _branch.append('C' + atom_id[2:])
+                                    _branch.append(f'C{atom_id[2:]}')
                                     root.extend(_root)
                                 for e in '1234ABCD':
-                                    _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:] + e, exclProton=True)
+                                    _root = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[2:]}{e}', exclProton=True)
                                     if len(_root) > 0:
-                                        _branch.append('C' + atom_id[2:] + e)
+                                        _branch.append(f'C{atom_id[2:]}{e}')
                                         root.extend(_root)
                                 if len(_root) == 0 and len(_branch) == 0:
                                     _branch = [c for c in self.__ccU.getMethylAtoms(comp_id) if c[0] == 'C']  # 2jnp:QQM
@@ -7915,7 +7915,7 @@ class NEFTranslator:
                                             atom_list, ambiguity_code, details = _atom_list, 2, None
                                             return (atom_list, ambiguity_code, details)
 
-                            protons = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
+                            protons = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[1:]}', onlyProton=True)
                             resolved = False
                             len_protons = len(protons)
                             if len_protons in (1, 3):
@@ -7925,7 +7925,7 @@ class NEFTranslator:
                                 atom_list, ambiguity_code, details = protons, 2, None
                                 resolved = True
                             if not resolved:
-                                protons = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[1:], onlyProton=True)
+                                protons = self.__ccU.getBondedAtoms(comp_id, f'N{atom_id[1:]}', onlyProton=True)
                                 len_protons = len(protons)
                                 if len_protons in (1, 3):
                                     atom_list, ambiguity_code, details = protons, 1, None
@@ -7933,23 +7933,23 @@ class NEFTranslator:
                                     atom_list, ambiguity_code, details = protons, 2, None
                             if atom_id.startswith('QQ') and self.__ccU.updateChemCompDict(comp_id):
                                 root, _branch = [], []
-                                _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
+                                _root = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[2:]}', exclProton=True)
                                 if len(_root) > 0:
-                                    _branch.append('C' + atom_id[2:])
+                                    _branch.append(f'C{atom_id[2:]}')
                                     root.extend(_root)
                                 for e in '123ABC':
-                                    _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:] + e, exclProton=True)
+                                    _root = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[2:]}{e}', exclProton=True)
                                     if len(_root) > 0:
-                                        _branch.append('C' + atom_id[2:] + e)
+                                        _branch.append(f'C{atom_id[2:]}{e}')
                                         root.extend(_root)
-                                _root = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[2:], exclProton=True)
+                                _root = self.__ccU.getBondedAtoms(comp_id, f'N{atom_id[2:]}', exclProton=True)
                                 if len(_root) > 0:
-                                    _branch.append('N' + atom_id[2:])
+                                    _branch.append(f'N{atom_id[2:]}')
                                     root.extend(_root)
                                 for e in '123ABC':
-                                    _root = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[2:] + e, exclProton=True)
+                                    _root = self.__ccU.getBondedAtoms(comp_id, f'N{atom_id[2:]}{e}', exclProton=True)
                                     if len(_root) > 0:
-                                        _branch.append('N' + atom_id[2:] + e)
+                                        _branch.append(f'N{atom_id[2:]}{e}')
                                         root.extend(_root)
                                 protons = []
                                 aliphatic = True
@@ -7973,7 +7973,7 @@ class NEFTranslator:
                                         if cca['type_symbol'] in ('C', 'N'):
                                             _root = cca['atom_id']
                                             for proton in self.__ccU.getBondedAtoms(comp_id, _root, onlyProton=True):
-                                                if proton.startswith('H' + atom_id[2:]):
+                                                if proton.startswith(f'H{atom_id[2:]}'):
                                                     root.append(_root)
                                                     break
                                     for k, v in collections.Counter(root).most_common():
@@ -7995,7 +7995,7 @@ class NEFTranslator:
                         elif details is not None and atom_id.endswith("'") and not atom_id.endswith("''")\
                                 and (atom_id[0] in PROTON_BEGIN_CODE or atom_id[1].isdigit()):
                             _atom_list, _ambiguity_code, _details =\
-                                self.get_valid_star_atom(comp_id, atom_id[:-1] + "%'", None, leave_unmatched, methyl_only)
+                                self.get_valid_star_atom(comp_id, f"{atom_id[:-1]}%'", None, leave_unmatched, methyl_only)
                             if _details is None:
                                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
@@ -8040,7 +8040,7 @@ class NEFTranslator:
                and not self.__annotation_mode:  # and atom_id[0] in ('Q', 'M'):
                 _atom_id = atom_id
                 if _atom_id[0] in ('Q', 'M'):
-                    _atom_id = 'H' + atom_id[1:] + '*'
+                    _atom_id = f'H{atom_id[1:]}*'
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
                                    'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
                 _atom_list, _ambiguity_code, _details =\
@@ -8069,14 +8069,14 @@ class NEFTranslator:
 
                 if atom_id.startswith('QQM'):  # 2n06, comp_id=CM8, atom_id=QQM -> ['HM2%', HM3%']
                     root, _branch = [], []
-                    _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
+                    _root = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[2:]}', exclProton=True)
                     if len(_root) > 0:
-                        _branch.append('C' + atom_id[2:])
+                        _branch.append(f'C{atom_id[2:]}')
                         root.extend(_root)
                     for e in '1234ABCD':
-                        _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:] + e, exclProton=True)
+                        _root = self.__ccU.getBondedAtoms(comp_id, f'C{atom_id[2:]}{e}', exclProton=True)
                         if len(_root) > 0:
-                            _branch.append('C' + atom_id[2:] + e)
+                            _branch.append(f'C{atom_id[2:]}{e}')
                             root.extend(_root)
                     if len(_root) == 0 and len(_branch) == 0:
                         _branch = [c for c in self.__ccU.getMethylAtoms(comp_id) if c[0] == 'C']  # 2jnp:QQM
@@ -8101,11 +8101,11 @@ class NEFTranslator:
 
                 if atom_id.startswith('QQ'):
                     atom_list, ambiguity_code, details =\
-                        self.get_star_atom(comp_id, 'H' + atom_id[2:] + ('%' if nucleotide else '*'),
+                        self.get_star_atom(comp_id, f"H{atom_id[2:]}{'%' if nucleotide else '*'}",
                                            details, leave_unmatched, methyl_only)
                     if details is not None and comp_id not in STD_MON_DICT and self.__csStat.peptideLike(comp_id)\
                        and atom_id[2] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
-                        grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[2])
+                        grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, f'H{atom_id[2]}')
                         if len(grk_atoms) > 0:
                             atom_list = []
                             details = None
@@ -8119,7 +8119,7 @@ class NEFTranslator:
                         return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('HR') or atom_id.startswith('QR') or atom_id.startswith('QX'):
-                    qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
+                    qr_atoms = sorted(set(f'{atom_id[:-1]}%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
                                           if atom_id[0] in PROTON_BEGIN_CODE
                                           and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                     if len(qr_atoms) == 0:
@@ -8135,7 +8135,7 @@ class NEFTranslator:
 
                 if atom_id in ('QCD', 'QCE') and isLikePheOrTyr(comp_id, self.__ccU):  # 2js7 - peak list
                     atom_list, ambiguity_code, details =\
-                        self.get_star_atom(comp_id, atom_id[1:] + '%', details, leave_unmatched, methyl_only)
+                        self.get_star_atom(comp_id, f'{atom_id[1:]}%', details, leave_unmatched, methyl_only)
                     if len(atom_list) > 1:
                         return (atom_list, ambiguity_code, details)
 
@@ -8150,12 +8150,12 @@ class NEFTranslator:
                     min_len = 4 if atom_id.startswith('QQ') else 1  # ILE/LEU/THR:QB -> HB (2m6i), MG -> Magnesium (2n3r)
                     if atom_id[-1].isalnum():
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, 'H' + atom_id[1:] + ('%' if nucleotide else '*'),
+                            self.get_star_atom(comp_id, f"H{atom_id[1:]}{'%' if nucleotide else '*'}",
                                                details, leave_unmatched, methyl_only)
                         if details is not None and comp_id not in STD_MON_DICT and\
                            self.__csStat.peptideLike(comp_id) and len_atom_id > 1\
                            and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
-                            grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
+                            grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, f'H{atom_id[1]}')
                             if len(grk_atoms) > 0:
                                 atom_list = []
                                 details = None
@@ -8176,17 +8176,17 @@ class NEFTranslator:
                         pass
                     else:
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, 'H' + (atom_id[1:] if len(atom_id) < 3 else atom_id[1:-1]) + '*',
+                            self.get_star_atom(comp_id, f'H{atom_id[1:] if len(atom_id) < 3 else atom_id[1:-1]}*',
                                                details, leave_unmatched, methyl_only)
                         if details is None and len(atom_list) == 1:
                             atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                         if len(atom_list) >= min_len:
                             return (atom_list, ambiguity_code, details)
 
-            if len_atom_id > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id))
-                                    or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
+            if len_atom_id > 2 and ((f'{atom_id}2' in self.__csStat.getAllAtoms(comp_id))
+                                    or (f'{atom_id}22' in self.__csStat.getAllAtoms(comp_id))):
                 atom_list, ambiguity_code, details =\
-                    self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
+                    self.get_star_atom(comp_id, f'{atom_id}%', details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
             atom_list, ambiguity_code, details =\
@@ -8194,7 +8194,7 @@ class NEFTranslator:
 
             if details is not None and atom_id[-1] not in ('%', '*'):
                 _atom_list, _ambiguity_code, _details =\
-                    self.get_star_atom(comp_id, atom_id + '*', None, leave_unmatched, methyl_only)
+                    self.get_star_atom(comp_id, f'{atom_id}*', None, leave_unmatched, methyl_only)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
@@ -8560,23 +8560,23 @@ class NEFTranslator:
 
                 if self.__csStat.hasCompId(comp_id):
 
-                    if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
+                    if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and f'{nef_atom}1' in methyl_atoms:
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, nef_atom + '%', None,
+                            self.get_star_atom(comp_id, f'{nef_atom}%', None,
                                                leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
-                    if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
+                    if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and f'{nef_atom[:-1]}1' in methyl_atoms:
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, nef_atom[:-1] + '%', None,
+                            self.get_star_atom(comp_id, f'{nef_atom[:-1]}%', None,
                                                leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                     if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*')\
-                       and (nef_atom[:-1] + '1' not in methyl_atoms) and\
+                       and (f'{nef_atom[:-1]}1' not in methyl_atoms) and\
                        len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', None,
+                            self.get_star_atom(comp_id, f"{nef_atom[:-2]}{'1' if nef_atom[-2].lower() == 'x' else '2'}%", None,
                                                leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
@@ -8659,10 +8659,10 @@ class NEFTranslator:
                             elif atom_id == 'CO':
                                 _atom_id = 'C'
                         elif atom_id.startswith('QQ') and self.__remediation_mode:  # DAOTHER-8663
-                            _atom_id = 'H' + atom_id[2:] + '*'
+                            _atom_id = f'H{atom_id[2:]}*'
                         elif (atom_id in ('HR', 'HR%', 'HR*') or atom_id.startswith('QR') or atom_id.startswith('QX'))\
                                 and self.__remediation_mode:  # DAOTHER-8663
-                            qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
+                            qr_atoms = sorted(set(f'{atom_id[:-1]}%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
                                                   if atom_id[0] in PROTON_BEGIN_CODE
                                                   and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                             if len(qr_atoms) > 0:
@@ -8675,11 +8675,11 @@ class NEFTranslator:
                                 return (atom_list, details, atom_id_map)
                         elif atom_id.startswith('M') or (atom_id.startswith('Q') and self.__remediation_mode):  # DAOTHER-8663, 8751
                             if atom_id[-1].isalnum():
-                                _atom_id = 'H' + atom_id[1:] + '%'
+                                _atom_id = f'H{atom_id[1:]}%'
                             else:
-                                _atom_id = 'H' + atom_id[1:-1] + '*'
-                        elif atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
-                            _atom_id = atom_id + '%'
+                                _atom_id = f'H{atom_id[1:-1]}*'
+                        elif f'{atom_id}2' in self.__csStat.getAllAtoms(comp_id):
+                            _atom_id = f'{atom_id}%'
 
                         if _atom_id is None:
 
@@ -8750,9 +8750,9 @@ class NEFTranslator:
                                     min_len = min(name_len)
 
                                     if max_len == min_len or len(atom_id) == max_len:
-                                        nef_atom = atom_id[:-1] + '%'
+                                        nef_atom = f'{atom_id[:-1]}%'
                                     else:  # For example, HEM HM[A-D]
-                                        nef_atom = atom_id + '%'
+                                        nef_atom = f'{atom_id}%'
 
                                     atom_list.append(nef_atom)
                                     details[nef_atom] = None
@@ -8825,7 +8825,7 @@ class NEFTranslator:
                                             nef_atom_prefix = 'y'
                                             nef_atom_prefix_2 = 'x'
 
-                                        nef_atom = methyl_h_list[0][:-2] + nef_atom_prefix + '%'
+                                        nef_atom = f'{methyl_h_list[0][:-2]}{nef_atom_prefix}%'
 
                                         atom_list.append(nef_atom)
                                         details[nef_atom] = None
@@ -8833,7 +8833,7 @@ class NEFTranslator:
                                             atom_id_map[b] = nef_atom
                                             proc_atom_list.add(b)
 
-                                        nef_atom_2 = methyl_h_list_2[0][:-2] + nef_atom_prefix_2 + '%'
+                                        nef_atom_2 = f'{methyl_h_list_2[0][:-2]}{nef_atom_prefix_2}%'
 
                                         atom_list.append(nef_atom_2)
                                         details[nef_atom_2] = None
@@ -8844,7 +8844,7 @@ class NEFTranslator:
                                     elif has_methyl_proton:
 
                                         nef_atom_prefix = 'x' if methyl_h_list[0] < methyl_h_list_2[0] else 'y'
-                                        nef_atom = methyl_h_list[0][:-2] + nef_atom_prefix + '%'
+                                        nef_atom = f'{methyl_h_list[0][:-2]}{nef_atom_prefix}%'
 
                                         atom_list.append(nef_atom)
                                         details[nef_atom] = None
@@ -9466,7 +9466,7 @@ class NEFTranslator:
                                 if len(atom_list) == 0:
                                     out[data_index] = data
                                 else:
-                                    _atom_list = ['-' + a for a in atom_list]
+                                    _atom_list = [f'-{a}' for a in atom_list]
                                     out[data_index] = ','.join(_atom_list)
 
                     else:
@@ -11606,7 +11606,7 @@ class NEFTranslator:
                                               or (loop.category == '_nef_covalent_links' and has_covalent_links)):
                         lp = pynmrstar.Loop.from_scratch()
                         for _tag in ENTITY_DELETED_ATOM_ITEMS:
-                            lp.add_tag('_Entity_deleted_atom.' + _tag)
+                            lp.add_tag(f'_Entity_deleted_atom.{_tag}')
                         for d in aux_rows:
                             d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
                             lp.add_data(d)
@@ -11860,7 +11860,7 @@ class NEFTranslator:
                                           or (loop.category == '_nef_covalent_links' and has_covalent_links)):
                     lp = pynmrstar.Loop.from_scratch()
                     for _tag in ENTITY_DELETED_ATOM_ITEMS:
-                        lp.add_tag('_Entity_deleted_atom.' + _tag)
+                        lp.add_tag(f'_Entity_deleted_atom.{_tag}')
                     for d in aux_rows:
                         d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
                         lp.add_data(d)
@@ -11997,29 +11997,29 @@ class NEFTranslator:
                         elif tag_name == 'source_data_format_version':
                             sf.add_tag('format_version', NEF_VERSION)
                         else:
-                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag, tag[1])
                     elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
-                        nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                        nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                         if nef_tag is not None:
                             sf.add_tag(nef_tag,
                                        tag[1] if tag[1] not in ALT_DIST_CONSTRAINT_TYPES['nef']
                                        else ALT_DIST_CONSTRAINT_TYPES['nef'][tag[1]])
                     elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
-                        nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                        nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                         if nef_tag is not None:
                             sf.add_tag(nef_tag,
                                        tag[1] if tag[1] not in ALT_DIHED_CONSTRAINT_TYPES['nef']
                                        else ALT_DIHED_CONSTRAINT_TYPES['nef'][tag[1]])
                     elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
-                        nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                        nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                         if nef_tag is not None:
                             sf.add_tag(nef_tag,
                                        tag[1] if tag[1] not in ALT_RDC_CONSTRAINT_TYPES['nef']
                                        else ALT_RDC_CONSTRAINT_TYPES['nef'][tag[1]])
                     else:
-                        nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                        nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                         if nef_tag is not None:
                             sf.add_tag(nef_tag, tag[1])
 
@@ -12154,29 +12154,29 @@ class NEFTranslator:
                             elif tag_name == 'source_data_format_version':
                                 sf.add_tag('format_version', NEF_VERSION)
                             else:
-                                nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                                 if nef_tag is not None:
                                     sf.add_tag(nef_tag, tag[1])
                         elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
-                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag,
                                            tag[1] if tag[1] not in ALT_DIST_CONSTRAINT_TYPES['nef']
                                            else ALT_DIST_CONSTRAINT_TYPES['nef'][tag[1]])
                         elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
-                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag,
                                            tag[1] if tag[1] not in ALT_DIHED_CONSTRAINT_TYPES['nef']
                                            else ALT_DIHED_CONSTRAINT_TYPES['nef'][tag[1]])
                         elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
-                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag,
                                            tag[1] if tag[1] not in ALT_RDC_CONSTRAINT_TYPES['nef']
                                            else ALT_RDC_CONSTRAINT_TYPES['nef'][tag[1]])
                         else:
-                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag, tag[1])
 

@@ -3770,7 +3770,7 @@ class NmrDpUtility:
                             if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                 ps2 = _ps2
 
-                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
 
@@ -3807,7 +3807,7 @@ class NmrDpUtility:
                                         if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
-                                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id_)
+                                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id_}')
                                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id_)
                                         self.__reg.pA.doAlign()
 
@@ -4097,7 +4097,7 @@ class NmrDpUtility:
                             if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                 ps2 = _ps2
 
-                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
 
@@ -4134,7 +4134,7 @@ class NmrDpUtility:
                                         if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
-                                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id_)
+                                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id_}')
                                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id_)
                                         self.__reg.pA.doAlign()
 
@@ -4308,7 +4308,7 @@ class NmrDpUtility:
                                     input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, content_subtype)
 
                 if len(seq_align_set) > 0:
-                    self.__reg.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + content_subtype, seq_align_set)
+                    self.__reg.report.sequence_alignment.setItemValue(f'nmr_poly_seq_vs_{content_subtype}', seq_align_set)
 
                 if self.__alt_chain:
 
@@ -4356,7 +4356,7 @@ class NmrDpUtility:
                                             if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                                 ps2 = _ps2
 
-                                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                                             self.__reg.pA.doAlign()
 
@@ -4390,7 +4390,7 @@ class NmrDpUtility:
                                     if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                         ps2 = _ps2
 
-                                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                                     self.__reg.pA.doAlign()
 
@@ -4545,24 +4545,24 @@ class NmrDpUtility:
                                         if ps2['chain_id'] != k:
                                             continue
 
-                                        ps2['chain_id'] = v + '_'
+                                        ps2['chain_id'] = f'{v}_'
 
                                         break
 
-                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, k, v + '_')
+                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, k, f'{v}_')
 
                                 for v in mapping.values():
 
                                     for ps2 in poly_seq2:
 
-                                        if ps2['chain_id'] != v + '_':
+                                        if ps2['chain_id'] != f'{v}_':
                                             continue
 
                                         ps2['chain_id'] = v
 
                                         break
 
-                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, v + '_', v)
+                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, f'{v}_', v)
 
                             else:
                                 for k, v in mapping.items():
@@ -4648,11 +4648,11 @@ class NmrDpUtility:
             if ' ' in ref_gauge_code:
                 for p, g in enumerate(ref_gauge_code):
                     if g == ' ':
-                        ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                        ref_code = f'{ref_code[0:p]}-{ref_code[p + 1:]}'
             if ' ' in test_gauge_code:
                 for p, g in enumerate(test_gauge_code):
                     if g == ' ':
-                        test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                        test_code = f'{test_code[0:p]}-{test_code[p + 1:]}'
 
         return {'ref_seq_id': ps1['seq_id'], 'test_seq_id': ps2['seq_id'],
                 'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
@@ -5284,7 +5284,7 @@ class NmrDpUtility:
                                             item = 'anomalous_chemical_shift' if disulf['redox_state_pred_1'] == 'reduced'\
                                                 else 'unusual_chemical_shift'
 
-                                            disulf['warning_description_1'] = item + ': ' + warn
+                                            disulf['warning_description_1'] = f'{item}: {warn}'
 
                                         if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
@@ -5298,7 +5298,7 @@ class NmrDpUtility:
                                             item = 'anomalous_chemical_shift' if disulf['redox_state_pred_2'] == 'reduced'\
                                                 else 'unusual_chemical_shift'
 
-                                            disulf['warning_description_2'] = item + ': ' + warn
+                                            disulf['warning_description_2'] = f'{item}: {warn}'
 
                                     disulf_asm.append(disulf)
 
@@ -5473,7 +5473,7 @@ class NmrDpUtility:
                                             item = 'anomalous_chemical_shift' if other['redox_state_pred_1'] == 'reduced'\
                                                 else 'unusual_chemical_shift'
 
-                                            other['warning_description_1'] = item + ': ' + warn
+                                            other['warning_description_1'] = f'{item}: {warn}'
 
                                         if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
@@ -5487,7 +5487,7 @@ class NmrDpUtility:
                                             item = 'anomalous_chemical_shift' if other['redox_state_pred_2'] == 'reduced'\
                                                 else 'unusual_chemical_shift'
 
-                                            other['warning_description_2'] = item + ': ' + warn
+                                            other['warning_description_2'] = f'{item}: {warn}'
 
                                     other_asm.append(other)
 
@@ -6277,7 +6277,7 @@ class NmrDpUtility:
                                     if has_key_value(MANDATORY_SF_TAG_ITEMS[file_type], content_subtype):
 
                                         if any(True for item in MANDATORY_SF_TAG_ITEMS[file_type][content_subtype] if item == g[0]):
-                                            if not self.__reg.nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
+                                            if not self.__reg.nefT.is_mandatory_tag(f'_{sf_category}.{g[0]}', file_type):
                                                 ignorable = True  # author provides the meta data through DepUI after upload
 
                                     item = 'enum_mismatch_ignorable' if ignorable else 'enum_mismatch'
@@ -6806,7 +6806,7 @@ class NmrDpUtility:
 
                                             cs_atom_id_map = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
                                                               'src_atom_id': gem_atom_id_w_cs, 'dst_atom_id': atom_id,
-                                                              'content_subtype_name': subtype_name + 's'}
+                                                              'content_subtype_name': f'{subtype_name}s'}
 
                                             if cs_atom_id_map not in missing_cs_atoms:
                                                 missing_cs_atoms.append(cs_atom_id_map)
@@ -6824,7 +6824,7 @@ class NmrDpUtility:
                                                                                         seq_id_names[d], seq_id,
                                                                                         comp_id_names[d], comp_id,
                                                                                         atom_id_names[d], gem_atom_id_w_cs)\
-                                                + f" is in the assgined chemical shifts of {cs_list!r} saveframe."
+                                                + f" is in the assigned chemical shifts of {cs_list!r} saveframe."
 
                                             self.__reg.report.error.appendDescription('invalid_data',
                                                                                       {'file_name': file_name,
@@ -6847,7 +6847,7 @@ class NmrDpUtility:
                                                                                         seq_id_names[d], seq_id,
                                                                                         comp_id_names[d], comp_id,
                                                                                         atom_id_names[d], gem_atom_id_w_cs)\
-                                                + f" is in the assgined chemical shifts of {cs_list!r} saveframe."
+                                                + f" is in the assigned chemical shifts of {cs_list!r} saveframe."
 
                                             self.__reg.report.warning.appendDescription('missing_data',
                                                                                         {'file_name': file_name,
@@ -9746,10 +9746,10 @@ class NmrDpUtility:
                 if content_subtype != 'non_poly':
 
                     if content_subtype == 'poly_seq'\
-                       and self.__reg.cR.hasCategory(LP_CATEGORIES[file_type][content_subtype + '_alias']):
+                       and self.__reg.cR.hasCategory(LP_CATEGORIES[file_type][f'{content_subtype}_alias']):
                         lp_counts[content_subtype] = 1
 
-                elif self.__reg.cR.hasCategory(LP_CATEGORIES[file_type][content_subtype + '_alias']):
+                elif self.__reg.cR.hasCategory(LP_CATEGORIES[file_type][f'{content_subtype}_alias']):
                     lp_counts[content_subtype] = 1
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
@@ -9826,8 +9826,8 @@ class NmrDpUtility:
 
         if not self.__reg.cR.hasCategory(lp_category):
             alias = True
-            lp_category = LP_CATEGORIES[file_type][content_subtype + '_alias']
-            key_items = self.__reg.key_items[file_type][content_subtype + '_alias']
+            lp_category = LP_CATEGORIES[file_type][f'{content_subtype}_alias']
+            key_items = self.__reg.key_items[file_type][f'{content_subtype}_alias']
 
         try:
 
@@ -10170,12 +10170,12 @@ class NmrDpUtility:
 
             if not self.__reg.cR.hasCategory(lp_category):
                 alias = True
-                lp_category = LP_CATEGORIES[file_type][content_subtype + '_alias']
-                key_items = self.__reg.key_items[file_type][content_subtype + '_alias']
+                lp_category = LP_CATEGORIES[file_type][f'{content_subtype}_alias']
+                key_items = self.__reg.key_items[file_type][f'{content_subtype}_alias']
 
             elif content_subtype == 'coordinate' and 'pdbx_PDB_model_num' not in self.__reg.coord_atom_site_tags:
                 alias = True
-                key_items = self.__reg.key_items[file_type][content_subtype + '_alias']
+                key_items = self.__reg.key_items[file_type][f'{content_subtype}_alias']
 
             has_poly_seq = False
 
@@ -10450,7 +10450,7 @@ class NmrDpUtility:
                             if chain_id != ps2['chain_id']:
                                 continue
 
-                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
 
@@ -10477,7 +10477,7 @@ class NmrDpUtility:
                             seq_align_set.append(seq_align)
 
                 if len(seq_align_set) > 0:
-                    self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_' + content_subtype, seq_align_set)
+                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align_set)
 
         # sequence alignment between model and NMR data
 
@@ -10505,7 +10505,7 @@ class NmrDpUtility:
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
-                self.__reg.pA.setReferenceSequence(ps1['auth_comp_id'] if 'auth_comp_id' in ps1 else ps2['comp_id'], 'REF' + chain_id)
+                self.__reg.pA.setReferenceSequence(ps1['auth_comp_id'] if 'auth_comp_id' in ps1 else ps2['comp_id'], f'REF{chain_id}')
                 self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                 self.__reg.pA.doAlign()
 
@@ -10520,7 +10520,7 @@ class NmrDpUtility:
 
                 if length == unmapped + conflict:
                     if len(ps1['seq_id']) == 1 and 'alt_comp_id' in ps1 and ps1['alt_comp_id'][0] in ps2['comp_id']:
-                        self.__reg.pA.setReferenceSequence(ps1['alt_comp_id'], 'REF' + chain_id)
+                        self.__reg.pA.setReferenceSequence(ps1['alt_comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
 
@@ -10551,7 +10551,7 @@ class NmrDpUtility:
                     _ps1_ = __ps1
                     _ps2_ = __ps2
 
-                    self.__reg.pA.setReferenceSequence(_ps1_['comp_id'], 'REF' + chain_id)
+                    self.__reg.pA.setReferenceSequence(_ps1_['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(_ps2_['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
 
@@ -10599,7 +10599,7 @@ class NmrDpUtility:
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
-                self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                 self.__reg.pA.addTestSequence(ps2['auth_comp_id'] if 'auth_comp_id' in ps2 else ps2['comp_id'], chain_id)
                 self.__reg.pA.doAlign()
 
@@ -10614,7 +10614,7 @@ class NmrDpUtility:
 
                 if length == unmapped + conflict:
                     if len(ps2['seq_id']) == 1 and 'alt_comp_id' in ps2 and ps2['alt_comp_id'][0] in ps1['comp_id']:
-                        self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                        self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(ps2['alt_comp_id'], chain_id)
                         self.__reg.pA.doAlign()
 
@@ -10645,7 +10645,7 @@ class NmrDpUtility:
                     _ps1_ = __ps1
                     _ps2_ = __ps2
 
-                    self.__reg.pA.setReferenceSequence(_ps1_['comp_id'], 'REF' + chain_id)
+                    self.__reg.pA.setReferenceSequence(_ps1_['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(_ps2_['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
 
@@ -10685,7 +10685,7 @@ class NmrDpUtility:
         """ Compensate ladder-like Histidin tag in polymer sequence 2.
         """
 
-        self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+        self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
         self.__reg.pA.doAlign()
 
@@ -10779,11 +10779,11 @@ class NmrDpUtility:
             if ' ' in ref_gauge_code:
                 for p, g in enumerate(ref_gauge_code):
                     if g == ' ':
-                        ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                        ref_code = f'{ref_code[0:p]}-{ref_code[p + 1:]}'
             if ' ' in test_gauge_code:
                 for p, g in enumerate(test_gauge_code):
                     if g == ' ':
-                        test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                        test_code = f'{test_code[0:p]}-{test_code[p + 1:]}'
 
         matched = mid_code.count('|')
 
@@ -11000,7 +11000,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id2)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
 
@@ -11028,7 +11028,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
-                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
 
@@ -11049,7 +11049,7 @@ class NmrDpUtility:
                             if k1 == k2 == 'comp_id' or k1 not in ps1 or k2 not in ps2:
                                 continue
 
-                            self.__reg.pA.setReferenceSequence(ps1[k1], 'REF' + chain_id)
+                            self.__reg.pA.setReferenceSequence(ps1[k1], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2[k2], chain_id)
                             self.__reg.pA.doAlign()
 
@@ -11265,7 +11265,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id2)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
 
@@ -11313,7 +11313,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
-                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
 
@@ -11346,7 +11346,7 @@ class NmrDpUtility:
                             _ps1 = __ps1
                             _ps2 = __ps2
 
-                            self.__reg.pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                            self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
 
@@ -11813,7 +11813,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id2)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
 
@@ -11824,7 +11824,7 @@ class NmrDpUtility:
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                     if conflict > 0 and any(True for c in ps1['comp_id'] if len(c) > 3) and 'alt_comp_id' in ps1:
-                        self.__reg.pA.setReferenceSequence(ps1['alt_comp_id'], 'REF' + chain_id)
+                        self.__reg.pA.setReferenceSequence(ps1['alt_comp_id'], f'REF{chain_id}')
                         self.__reg.pA.doAlign()
 
                         myAlign = self.__reg.pA.getAlignment(chain_id)
@@ -11834,7 +11834,7 @@ class NmrDpUtility:
                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                         if conflict > 0:
-                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                            self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.doAlign()
 
                             myAlign = self.__reg.pA.getAlignment(chain_id)
@@ -11861,7 +11861,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
-                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                        self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
 
@@ -11894,7 +11894,7 @@ class NmrDpUtility:
                             _ps1 = __ps1
                             _ps2 = __ps2
 
-                            self.__reg.pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                            self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
 
@@ -12705,7 +12705,7 @@ class NmrDpUtility:
                     if index_tag in loop.tags:
                         continue
 
-                    lp_tag = lp_category + '.' + index_tag
+                    lp_tag = f'{lp_category}.{index_tag}'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -13454,7 +13454,7 @@ class NmrDpUtility:
 
                 else:
                     for i in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                        _tags = [t + '_' + str(i) for t in tags]
+                        _tags = [f'{t}_{i}' for t in tags]
 
                         if set(_tags) & set(loop.tags) == set(_tags):
                             update_auth_seq(loop, _tags)
@@ -14020,7 +14020,7 @@ class NmrDpUtility:
                         if weight_tag in loop.tags:
                             continue
 
-                        lp_tag = lp_category + '.' + weight_tag
+                        lp_tag = f'{lp_category}.{weight_tag}'
                         err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                         if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -14160,7 +14160,7 @@ class NmrDpUtility:
                             if tag_item in tagNames:
                                 continue
 
-                            sf_tag = '_' + sf_category + '.' + tag_item
+                            sf_tag = f'_{sf_category}.{tag_item}'
                             warn = WARN_TEMPLATE_FOR_MISSING_MANDATORY_SF_TAG % (sf_tag, file_type.upper())
 
                             if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(sf_tag, file_type):
@@ -14396,7 +14396,7 @@ class NmrDpUtility:
 
                         try:
 
-                            category = w['category'] if w['category'].startswith('_') else '_' + w['category']  # pynmrstar v2.6.5.1
+                            category = w['category'] if w['category'].startswith('_') else f"_{w['category']}"  # pynmrstar v2.6.5.1
 
                             content_subtype = next(c for c in input_source_dic['content_subtype']
                                                    if LP_CATEGORIES[file_type][c] == category and INDEX_TAGS[file_type][c] is not None)
@@ -15128,7 +15128,7 @@ class NmrDpUtility:
                         warn_desc = self.__reg.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
 
                         if (warn_desc is not None)\
-                           and warn_desc.split(' ')[0] == SF_TAG_PREFIXES[file_type][content_subtype].lstrip('_') + '.ID':
+                           and warn_desc.split(' ')[0] == f"{SF_TAG_PREFIXES[file_type][content_subtype].lstrip('_')}.ID":
                             continue
 
                         loop = sf.get_loop(lp_category)
@@ -15162,7 +15162,7 @@ class NmrDpUtility:
 
                             else:
 
-                                sf_tag = '_' + sf_category + '.ID'
+                                sf_tag = f'_{sf_category}.ID'
                                 warn = WARN_TEMPLATE_FOR_MISSING_MANDATORY_SF_TAG % (sf_tag, file_type.upper())
 
                                 if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(sf_tag, file_type):
@@ -16362,7 +16362,7 @@ class NmrDpUtility:
 
                             lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                            tags = [lp_category + '.' + item for item in items]
+                            tags = [f'{lp_category}.{item}' for item in items]
 
                             lp.add_tag(tags)
 

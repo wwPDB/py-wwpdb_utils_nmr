@@ -554,7 +554,7 @@ class ChemCompUtil:
 
         try:
 
-            fw = float(self.lastChemCompDict['formula_weight'])
+            fw = self.lastChemCompDict['formula_weight']
 
         except ValueError:
             return 0.0

@@ -2521,7 +2521,7 @@ class NmrDpReportError:
 
                 if (c['file_name'] == file_name or original_file_name not in EMPTY_VALUE)\
                    and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
-                    d.append(item + ': ' + c['description'])
+                    d.append(f"{item}: {c['description']}")
 
         if len(d) == 0:
             return None
@@ -2906,7 +2906,7 @@ class NmrDpReportWarning:
 
                 if (c['file_name'] == file_name or original_file_name not in EMPTY_VALUE)\
                    and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
-                    d.append(item + ': ' + c['description'])
+                    d.append(f"{item}: {c['description']}")
 
         if len(d) == 0:
             return None

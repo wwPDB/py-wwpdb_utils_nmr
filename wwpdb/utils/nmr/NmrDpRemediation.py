@@ -546,8 +546,8 @@ class NmrDpRemediation:
 
             for i in range(1, max_dim):
 
-                _chain_id_name = chain_id_name + '_' + str(i)
-                _entity_id_name = None if entity_id_name is None else entity_id_name + '_' + str(i)
+                _chain_id_name = f'{chain_id_name}_{i}'
+                _entity_id_name = None if entity_id_name is None else f'{entity_id_name}_{i}'
 
                 chain_id_col = loop.tags.index(_chain_id_name) if _chain_id_name in loop.tags else -1
                 entity_id_col = -1
@@ -670,14 +670,14 @@ class NmrDpRemediation:
 
             for i in range(1, max_dim):
 
-                _chain_id_name = chain_id_name + '_' + str(i)
-                _seq_id_name = seq_id_name + '_' + str(i)
+                _chain_id_name = f'{chain_id_name}_{i}'
+                _seq_id_name = f'{seq_id_name}_{i}'
 
                 chain_id_col = loop.tags.index(_chain_id_name) if _chain_id_name in loop.tags else -1
                 seq_id_col = loop.tags.index(_seq_id_name) if _seq_id_name in loop.tags else -1
                 seq_id_alt_col = -1
                 if seq_id_alt_name is not None:
-                    _seq_id_alt_name = seq_id_alt_name + '_' + str(i)
+                    _seq_id_alt_name = f'{seq_id_alt_name}_{i}'
                     seq_id_alt_col = loop.tags.index(_seq_id_alt_name) if _seq_id_alt_name in loop.tags else -1
 
                 if -1 in (chain_id_col, seq_id_col):
@@ -799,9 +799,9 @@ class NmrDpRemediation:
 
             for i in range(1, max_dim):
 
-                _chain_id_name = chain_id_name + '_' + str(i)
-                _seq_id_name = seq_id_name + '_' + str(i)
-                _comp_id_name = comp_id_name + '_' + str(i)
+                _chain_id_name = f'{chain_id_name}_{i}'
+                _seq_id_name = f'{seq_id_name}_{i}'
+                _comp_id_name = f'{comp_id_name}_{i}'
 
                 chain_id_col = loop.tags.index(_chain_id_name) if _chain_id_name in loop.tags else -1
                 seq_id_col = loop.tags.index(_seq_id_name) if _seq_id_name in loop.tags else -1
@@ -2243,8 +2243,8 @@ class NmrDpRemediation:
                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                              ]
 
-            tags = [lp_category + '.' + _item['name'] for _item in ea_key_items]
-            tags.extend([lp_category + '.' + _item['name'] for _item in ea_data_items])
+            tags = [f"{lp_category}.{_item['name']}" for _item in ea_key_items]
+            tags.extend([f"{lp_category}.{_item['name']}" for _item in ea_data_items])
 
             ea_loop.add_tag(tags)
 
@@ -2343,18 +2343,18 @@ class NmrDpRemediation:
         has_index_tag = INDEX_TAGS[file_type][content_subtype] is not None
 
         if has_index_tag:
-            loop.add_tag(lp_category + '.' + INDEX_TAGS[file_type][content_subtype])
+            loop.add_tag(f'{lp_category}.{INDEX_TAGS[file_type][content_subtype]}')
 
         for key_item in key_items:
-            loop.add_tag(lp_category + '.' + key_item['name'])
+            loop.add_tag(f"{lp_category}.{key_item['name']}")
 
         for data_item in data_items:
             data_name = data_item['name']
             if data_name != 'NEF_index' or (data_name == 'NEF_index' and has_nef_index):
-                loop.add_tag(lp_category + '.' + data_name)
+                loop.add_tag(f'{lp_category}.{data_name}')
 
         if has_entry_id:
-            loop.add_tag(lp_category + '.Entry_ID')
+            loop.add_tag(f'{lp_category}.Entry_ID')
 
         cif_poly_seq = self.__reg.caC['polymer_sequence']
         entity_assembly = self.__reg.caC['entity_assembly']
@@ -2575,7 +2575,7 @@ class NmrDpRemediation:
                                {'name': 'atom_name_2', 'type': 'str'}
                                ]
 
-                tags = [lp_category + '.' + _item['name'] for _item in b_key_items]
+                tags = [f"{lp_category}.{_item['name']}" for _item in b_key_items]
 
                 b_loop.add_tag(tags)
 
@@ -2900,8 +2900,8 @@ class NmrDpRemediation:
                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                 ]
 
-                tags = [lp_category + '.' + _item['name'] for _item in b_key_items]
-                tags.extend([lp_category + '.' + _item['name'] for _item in b_data_items])
+                tags = [f"{lp_category}.{_item['name']}" for _item in b_key_items]
+                tags.extend([f"{lp_category}.{_item['name']}" for _item in b_data_items])
 
                 b_loop.add_tag(tags)
 
@@ -3034,8 +3034,8 @@ class NmrDpRemediation:
                                       {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                       ]
 
-                    tags = [lp_category + '.' + _item['name'] for _item in eda_key_items]
-                    tags.extend([lp_category + '.' + _item['name'] for _item in eda_data_items])
+                    tags = [f"{lp_category}.{_item['name']}" for _item in eda_key_items]
+                    tags.extend([f"{lp_category}.{_item['name']}" for _item in eda_data_items])
 
                     eda_loop.add_tag(tags)
 
@@ -3506,7 +3506,7 @@ class NmrDpRemediation:
                 auth_asym_ids.append(_item['auth_asym_id'])
             auth_asym_id_list = ','.join(auth_asym_ids)
             if len(auth_asym_id_list) > 12 and ',' in auth_asym_id_list:
-                last_asym_id = ',..,' + auth_asym_id_list.rsplit(',', maxsplit=1)[-1]
+                last_asym_id = f",..,{auth_asym_id_list.rsplit(',', maxsplit=1)[-1]}"
                 max_len = 11 - len(last_asym_id)
                 while True:
                     if auth_asym_id_list[max_len] == ',':
@@ -3645,8 +3645,8 @@ class NmrDpRemediation:
                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
-                tags = [lp_category + '.' + _item['name'] for _item in ecn_key_items]
-                tags.extend([lp_category + '.' + _item['name'] for _item in ecn_data_items])
+                tags = [f"{lp_category}.{_item['name']}" for _item in ecn_key_items]
+                tags.extend([f"{lp_category}.{_item['name']}" for _item in ecn_data_items])
 
                 ecn_loop.add_tag(tags)
 
@@ -3679,8 +3679,8 @@ class NmrDpRemediation:
                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
-                tags = [lp_category + '.' + _item['name'] for _item in esn_key_items]
-                tags.extend([lp_category + '.' + _item['name'] for _item in esn_data_items])
+                tags = [f"{lp_category}.{_item['name']}" for _item in esn_key_items]
+                tags.extend([f"{lp_category}.{_item['name']}" for _item in esn_data_items])
 
                 esn_loop.add_tag(tags)
 
@@ -3710,8 +3710,8 @@ class NmrDpRemediation:
                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                  ]
 
-                tags = [lp_category + '.' + _item['name'] for _item in ek_key_items]
-                tags.extend([lp_category + '.' + _item['name'] for _item in ek_data_items])
+                tags = [f"{lp_category}.{_item['name']}" for _item in ek_key_items]
+                tags.extend([f"{lp_category}.{_item['name']}" for _item in ek_data_items])
 
                 ek_loop.add_tag(tags)
 
@@ -3743,8 +3743,8 @@ class NmrDpRemediation:
                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                               ]
 
-            tags = [lp_category + '.' + _item['name'] for _item in eci_key_items]
-            tags.extend([lp_category + '.' + _item['name'] for _item in eci_data_items])
+            tags = [f"{lp_category}.{_item['name']}" for _item in eci_key_items]
+            tags.extend([f"{lp_category}.{_item['name']}" for _item in eci_data_items])
 
             eci_loop.add_tag(tags)
 
@@ -3855,8 +3855,8 @@ class NmrDpRemediation:
                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                                   ]
 
-                tags = [lp_category + '.' + _item['name'] for _item in eps_key_items]
-                tags.extend([lp_category + '.' + _item['name'] for _item in eps_data_items])
+                tags = [f"{lp_category}.{_item['name']}" for _item in eps_key_items]
+                tags.extend([f"{lp_category}.{_item['name']}" for _item in eps_data_items])
 
                 eps_loop.add_tag(tags)
 
@@ -4171,7 +4171,7 @@ class NmrDpRemediation:
 
         chain_id = cif_ps['chain_id']
 
-        self.__reg.pA.setReferenceSequence(cif_ps['comp_id'], 'REF' + chain_id)
+        self.__reg.pA.setReferenceSequence(cif_ps['comp_id'], f'REF{chain_id}')
         self.__reg.pA.addTestSequence(nmr_ps['comp_id'], chain_id)
         self.__reg.pA.doAlign()
 
@@ -4637,7 +4637,7 @@ class NmrDpRemediation:
 
             lp = pynmrstar.Loop.from_scratch(lp_category)
 
-            tags = [lp_category + '.' + item for item in items]
+            tags = [f'{lp_category}.{item}' for item in items]
 
             lp.add_tag(tags)
 
@@ -5045,8 +5045,8 @@ class NmrDpRemediation:
                                 atom_id = 'H1'
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
-                        elif atom_id in AMINO_PROTON_CODE and 'C' + atom_id[1:] in _atom_site_atom_id:
-                            bonded = self.__reg.ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
+                        elif atom_id in AMINO_PROTON_CODE and f'C{atom_id[1:]}' in _atom_site_atom_id:
+                            bonded = self.__reg.ccU.getBondedAtoms(comp_id, f'C{atom_id[1:]}', onlyProton=True)
                             if len(bonded) == 1 and bonded[0] in _atom_site_atom_id:
                                 atom_id = bonded[0]
                                 if fill_auth_atom_id:
@@ -5807,7 +5807,7 @@ class NmrDpRemediation:
 
             lp = pynmrstar.Loop.from_scratch(lp_category)
 
-            tags = [lp_category + '.' + item for item in items]
+            tags = [f'{lp_category}.{item}' for item in items]
 
             lp.add_tag(tags)
 
@@ -6156,7 +6156,7 @@ class NmrDpRemediation:
                                         else:
                                             len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                             if len_in_grp == 2:
-                                                _row[23] = (atom_id[0:-1] + '1')\
+                                                _row[23] = f'{atom_id[0:-1]}1'\
                                                     if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                             elif len_in_grp == 3:
                                                 _row[23] = (atom_id[-1] + atom_id[0:-1])\
@@ -6238,7 +6238,7 @@ class NmrDpRemediation:
                                                 else:
                                                     len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                                     if len_in_grp == 2:
-                                                        _row[23] = (atom_id[0:-1] + '1')\
+                                                        _row[23] = f'{atom_id[0:-1]}1'\
                                                             if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3'\
                                                             else atom_id
                                                     elif len_in_grp == 3:
@@ -6446,7 +6446,7 @@ class NmrDpRemediation:
                                     else:
                                         len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                         if len_in_grp == 2:
-                                            _row[23] = (atom_id[0:-1] + '1')\
+                                            _row[23] = f'{atom_id[0:-1]}1'\
                                                 if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                         elif len_in_grp == 3:
                                             _row[23] = (atom_id[-1] + atom_id[0:-1])\
@@ -6552,7 +6552,7 @@ class NmrDpRemediation:
                                             else:
                                                 len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                                 if len_in_grp == 2:
-                                                    _row[23] = (atom_id[0:-1] + '1')\
+                                                    _row[23] = f'{atom_id[0:-1]}1'\
                                                         if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
                                                 elif len_in_grp == 3:
                                                     _row[23] = (atom_id[-1] + atom_id[0:-1])\
@@ -6786,7 +6786,7 @@ class NmrDpRemediation:
                                                     else:
                                                         len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                                         if len_in_grp == 2:
-                                                            _row[23] = (atom_id[0:-1] + '1')\
+                                                            _row[23] = f'{atom_id[0:-1]}1'\
                                                                 if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3'\
                                                                 else atom_id
                                                         elif len_in_grp == 3:
@@ -7703,7 +7703,7 @@ class NmrDpRemediation:
 
                     aux_items = ['Ambiguous_shift_set_ID', 'Atom_chem_shift_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID']
 
-                    aux_tags = [aux_lp_category + '.' + item for item in aux_items]
+                    aux_tags = [f'{aux_lp_category}.{item}' for item in aux_items]
 
                     aux_lp.add_tag(aux_tags)
 
@@ -8066,7 +8066,7 @@ class NmrDpRemediation:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + test_chain_id)
+                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     self.__reg.pA.doAlign()
 
@@ -11094,7 +11094,7 @@ class NmrDpRemediation:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + test_chain_id)
+                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     self.__reg.pA.doAlign()
 
@@ -13226,7 +13226,7 @@ class NmrDpRemediation:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], 'REF' + test_chain_id)
+                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     self.__reg.pA.doAlign()
 
@@ -16222,8 +16222,8 @@ class NmrDpRemediation:
                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                          ]
 
-        tags = [lp_category + '.' + _item['name'] for _item in cf_key_items]
-        tags.extend([lp_category + '.' + _item['name'] for _item in cf_data_items])
+        tags = [f"{lp_category}.{_item['name']}" for _item in cf_key_items]
+        tags.extend([f"{lp_category}.{_item['name']}" for _item in cf_data_items])
 
         cf_loop.add_tag(tags)
 
@@ -16331,7 +16331,7 @@ class NmrDpRemediation:
 
             items = ['Type', 'Count', 'Entry_ID']
 
-            tags = [lp_category + '.' + item for item in items]
+            tags = [f'{lp_category}.{item}' for item in items]
 
             lp.add_tag(tags)
 
@@ -16363,7 +16363,7 @@ class NmrDpRemediation:
 
             lp = pynmrstar.Loop.from_scratch(lp_category)
 
-            tags = [lp_category + '.' + item for item in items]
+            tags = [f'{lp_category}.{item}' for item in items]
 
             lp.add_tag(tags)
 
@@ -16541,7 +16541,7 @@ class NmrDpRemediation:
 
                     items = ['Revision_ID', 'Creation_date', 'Update_record', 'Creation_method', 'Entry_ID']
 
-                    tags = [lp_category + '.' + item for item in items]
+                    tags = [f'{lp_category}.{item}' for item in items]
 
                     lp.add_tag(tags)
 
@@ -17663,8 +17663,8 @@ class NmrDpRemediation:
                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
                          ]
 
-        tags = [lp_category + '.' + _item['name'] for _item in cf_key_items]
-        tags.extend([lp_category + '.' + _item['name'] for _item in cf_data_items])
+        tags = [f"{lp_category}.{_item['name']}" for _item in cf_key_items]
+        tags.extend([f"{lp_category}.{_item['name']}" for _item in cf_data_items])
 
         cf_loop.add_tag(tags)
 
@@ -17989,9 +17989,9 @@ class NmrDpRemediation:
 
                         if 'XPLOR-NIH_' in sf_framecode or sf_framecode.startswith('CNS'):
                             if 'XPLOR-NIH' in sf_framecode:
-                                alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
+                                alt_sf_framecode = f'XPLOR-NIH/CNS{sf_framecode[9:]}'
                             else:
-                                alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
+                                alt_sf_framecode = f'XPLOR-NIH/{sf_framecode}'
 
                         else:
                             alt_sf_framecode = sf_framecode
@@ -18087,9 +18087,9 @@ class NmrDpRemediation:
 
                         if 'XPLOR-NIH_' in sf_framecode or sf_framecode.startswith('CNS'):
                             if 'XPLOR-NIH' in sf_framecode:
-                                alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
+                                alt_sf_framecode = f'XPLOR-NIH/CNS{sf_framecode[9:]}'
                             else:
-                                alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
+                                alt_sf_framecode = f'XPLOR-NIH/{sf_framecode}'
 
                         else:
                             alt_sf_framecode = sf_framecode
@@ -18234,7 +18234,7 @@ class NmrDpRemediation:
 
             items = ['Type', 'Count', 'Entry_ID']
 
-            tags = [lp_category + '.' + item for item in items]
+            tags = [f'{lp_category}.{item}' for item in items]
 
             lp.add_tag(tags)
 
@@ -18265,7 +18265,7 @@ class NmrDpRemediation:
 
             lp = pynmrstar.Loop.from_scratch(lp_category)
 
-            tags = [lp_category + '.' + item for item in items]
+            tags = [f'{lp_category}.{item}' for item in items]
 
             lp.add_tag(tags)
 

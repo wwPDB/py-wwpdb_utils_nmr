@@ -5122,7 +5122,7 @@ class BaseStackedMRParserListener():
                         if atomId[-1] in ('%', '*', '#'):
                             if atomId[0] == 'H' and len(atomId) > 2:
                                 if atomId[1] != 'M':
-                                    _atomId = 'Q' + atomId[1:-1]
+                                    _atomId = f'Q{atomId[1:-1]}'
                                 else:
                                     _atomId = atomId[1:-1]
                             elif atomId[0] in ('Q', 'M'):
@@ -5229,7 +5229,7 @@ class BaseStackedMRParserListener():
             _factor['atom_id'] = list(_atomIdSelect)
 
             if len(_compIdSelect) > 0 and len(_atomIdSelect) == 0 and self.mrAtomNameMapping is not None:
-                tmpAtomId = 'Q' + _factor['atom_ids'][0][1:-1].upper()
+                tmpAtomId = f"Q{_factor['atom_ids'][0][1:-1].upper()}"
                 for chainId in _factor['chain_id']:
                     ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
@@ -5360,7 +5360,7 @@ class BaseStackedMRParserListener():
                             if atomId[-1] in ('%', '*', '#'):
                                 if atomId[0] == 'H' and len(atomId) > 2:
                                     if atomId[1] != 'M':
-                                        _atomId = 'Q' + atomId[1:-1]
+                                        _atomId = f'Q{atomId[1:-1]}'
                                     else:
                                         _atomId = atomId[1:-1]
                                 elif atomId[0] in ('Q', 'M'):
@@ -6285,20 +6285,20 @@ class BaseStackedMRParserListener():
                         else:
                             if compId == 'ASN':
                                 if atomId == 'HD21':
-                                    _atomId = atomId[:-1] + '2'
+                                    _atomId = f'{atomId[:-1]}2'
                                     if self.nefT.validate_comp_atom(compId, _atomId):
                                         atomIds = self.nefT.get_valid_star_atom(compId, _atomId)[0]
                                 elif atomId == 'HD22':
-                                    _atomId = atomId[:-1] + '1'
+                                    _atomId = f'{atomId[:-1]}1'
                                     if self.nefT.validate_comp_atom(compId, _atomId):
                                         atomIds = self.nefT.get_valid_star_atom(compId, _atomId)[0]
                             elif compId == 'GLN':
                                 if atomId == 'HE21':
-                                    _atomId = atomId[:-1] + '2'
+                                    _atomId = f'{atomId[:-1]}2'
                                     if self.nefT.validate_comp_atom(compId, _atomId):
                                         atomIds = self.nefT.get_valid_star_atom(compId, _atomId)[0]
                                 elif atomId == 'HE22':
-                                    _atomId = atomId[:-1] + '1'
+                                    _atomId = f'{atomId[:-1]}1'
                                     if self.nefT.validate_comp_atom(compId, _atomId):
                                         atomIds = self.nefT.get_valid_star_atom(compId, _atomId)[0]
 
@@ -6394,9 +6394,9 @@ class BaseStackedMRParserListener():
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                         _atom['type_symbol'] = coordAtomSite['type_symbol'][atomSiteAtomId.index(_atomId)]
-                                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in atomSiteAtomId
-                                                                               or ('H' + _atomId[-1]) in atomSiteAtomId):
-                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in atomSiteAtomId else 'H' + _atomId[-1]
+                                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in atomSiteAtomId
+                                                                               or f'H{_atomId[-1]}' in atomSiteAtomId):
+                                        _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in atomSiteAtomId else f'H{_atomId[-1]}'
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                         _atom['type_symbol'] = coordAtomSite['type_symbol'][atomSiteAtomId.index(_atomId)]
@@ -6438,10 +6438,10 @@ class BaseStackedMRParserListener():
                                                         if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                             update_label_seq_scheme()
                                             elif _atomId in ('HN1', 'HN2', 'HN3')\
-                                                    and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                         or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                                    else 'H' + _atomId[-1]
+                                                    and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                         or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                                    else f'H{_atomId[-1]}'
                                                 if (self.cur_subtype != 'dist' and not self.in_noe)\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
@@ -6496,10 +6496,10 @@ class BaseStackedMRParserListener():
                                                 if self.__lenAtomSelectionSet > 0:
                                                     self.setLocalSeqScheme()
                                             elif _atomId in ('HN1', 'HN2', 'HN3')\
-                                                    and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                         or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                                    else 'H' + _atomId[-1]
+                                                    and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                         or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                                    else f'H{_atomId[-1]}'
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] =\
@@ -6548,10 +6548,10 @@ class BaseStackedMRParserListener():
                                                     if cca is None or (cca is not None and cca['leaving_atom_flag'] == 'Y'):
                                                         update_label_seq_scheme()
                                             elif _atomId in ('HN1', 'HN2', 'HN3')\
-                                                    and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                         or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                                    else 'H' + _atomId[-1]
+                                                    and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                         or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                                    else f'H{_atomId[-1]}'
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] =\
@@ -6590,10 +6590,10 @@ class BaseStackedMRParserListener():
                                                     _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 self.authSeqId = 'auth_seq_id'
                                             elif _atomId in ('HN1', 'HN2', 'HN3')\
-                                                    and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                         or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                                    else 'H' + _atomId[-1]
+                                                    and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                         or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                                    else f'H{_atomId[-1]}'
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] =\
@@ -8559,7 +8559,7 @@ class BaseStackedMRParserListener():
            and self.cur_subtype not in ('dist', 'dihed', 'rdc', 'plane', 'jcoup', 'hvycs', 'procs', 'rama', 'diff', 'nbase', 'geo'):
             software_name = 'XPLOR-NIH'
 
-        sf_framecode = f'{software_name}_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = f"{software_name}_{restraint_name.replace(' ', '_')}_{list_id}"
 
         sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode,

@@ -1837,8 +1837,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     if _atomId in coordAtomSite['atom_id']:
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
-                                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                                               or ('H' + _atomId[-1] in coordAtomSite['atom_id'])):
+                                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                                               or f'H{_atomId[-1]}' in coordAtomSite['atom_id']):
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
@@ -2213,7 +2213,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                        and 'alt_chain_id' in self.factor:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
                         for atom in self.factor['atom_selection']:
-                            atom['segment_id'] = 'not ' + atom['segment_id']
+                            atom['segment_id'] = f"not {atom['segment_id']}"
 
                     else:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)

@@ -172,7 +172,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             # fit_method = self.__noteSelection[1]
             # vol_method = self.__noteSelection[2]
             # if len(self.__noteSelection) > 3:
-            #     vol_method += ' ' + self.__noteSelection[3]
+            #     vol_method += f' {self.__noteSelection[3]}'
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -346,7 +346,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             # fit_method = self.__noteSelection[1]
             # vol_method = self.__noteSelection[2]
             # if len(self.__noteSelection) > 3:
-            #     vol_method += ' ' + self.__noteSelection[3]
+            #     vol_method += f' {self.__noteSelection[3]}'
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -538,7 +538,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             # fit_method = self.__noteSelection[1]
             # vol_method = self.__noteSelection[2]
             # if len(self.__noteSelection) > 3:
-            #     vol_method += ' ' + self.__noteSelection[3]
+            #     vol_method += f' {self.__noteSelection[3]}'
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return

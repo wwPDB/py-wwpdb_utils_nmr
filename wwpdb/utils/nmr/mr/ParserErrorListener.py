@@ -104,7 +104,7 @@ class ParserErrorListener(ErrorListener):
                 else:
                     _term = substitution_pattern.sub('', term)
 
-                msg = g[0] + ' expecting ' + _term
+                msg = f'{g[0]} expecting {_term}'
 
         _dict = {'file_path': self.__filePath,
                  'line_number': line,
@@ -133,7 +133,7 @@ class ParserErrorListener(ErrorListener):
         if 'at input' in _dict['message']:  # parser error
             try:
                 p = _dict['message'].index('at input')
-                _dict['message'] = _dict['message'][0:p] + 'at input:'
+                _dict['message'] = f"{_dict['message'][0:p]}at input:"
             except ValueError:
                 pass
 

@@ -181,9 +181,9 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
             if tag[0].endswith('_label'):
                 if tag[1] not in EMPTY_VALUE:
                     if not tag[1].startswith('$'):
-                        sf.tags[idx][1] = '$' + tag[1]
+                        sf.tags[idx][1] = f'${tag[1]}'
                 else:
-                    id_tag = tag[0][:-6] + '_ID'
+                    id_tag = f'{tag[0][:-6]}_ID'
                     id_val = get_first_sf_tag(sf, id_tag)
                     if id_val not in EMPTY_VALUE:
                         parent_sf_framecode = get_parent_sf_framecode(f'_{tag[0][:-6]}', id_val)
@@ -196,7 +196,7 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
                 continue
             id_cols = [-1] * len(label_cols)
             for idx, label_col in enumerate(label_cols):
-                id_tag = lp.tags[label_col][:-6] + '_ID'
+                id_tag = f'{lp.tags[label_col][:-6]}_ID'
                 if id_tag in lp.tags:
                     id_cols[idx] = lp.tags.index(id_tag)
             for idx, row in enumerate(lp.data):
@@ -204,7 +204,7 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
                     if col in label_cols:
                         if val not in EMPTY_VALUE:
                             if not val.startswith('$'):
-                                lp.data[idx][col] = '$' + val
+                                lp.data[idx][col] = f'${val}'
                         else:
                             id_col = next((id_col for label_col, id_col in zip(label_cols, id_cols) if col == label_col), -1)
                             if id_col == -1 or row[id_col] in EMPTY_VALUE:
@@ -350,7 +350,7 @@ class CifToNmrStar:
                         name = originalFileName
                     if datablockName is None:
                         name = os.path.basename(cifPath)
-                    ofh.write('data_' + name + '\n\n')
+                    ofh.write(f'data_{name}\n\n')
                     for line in ifh:
                         ofh.write(line)
 
@@ -388,7 +388,7 @@ class CifToNmrStar:
 
                 for category, itVals in dBlockStruct.items():
                     try:
-                        current_order = self.category_order.index('_' + category)
+                        current_order = self.category_order.index(f'_{category}')
                     except ValueError:
                         continue
                     # print(f"{block_name} {category} {current_order}")
@@ -404,7 +404,7 @@ class CifToNmrStar:
 
                     item['sf_category_flag'] = False
                     for _item, _value in zip(itVals['Items'], itVals['Values'][0]):
-                        tag = '_' + category + '.' + _item
+                        tag = f'_{category}.{_item}'
                         tag = tag.lower()
                         if tag in self.schema:
                             sdict = {k: v for k, v in self.schema[tag].items() if v not in EMPTY_VALUE}
@@ -418,7 +418,7 @@ class CifToNmrStar:
                                 entry_id = _value
 
                     if 'Sf_category' not in itVals['Items']:
-                        _tag = '_' + category.lower() + '.sf_category'
+                        _tag = f'_{category.lower()}.sf_category'
                         if _tag in self.schema:
                             sdict = {k: v for k, v in self.schema[_tag].items() if v not in EMPTY_VALUE}
                             if 'sf_category' not in item:
@@ -465,13 +465,13 @@ class CifToNmrStar:
                 if block_name in dup_block_name_list:
                     if split_block_name[-1].isdigit():
                         split_block_name.pop()
-                    item['new_block_name'] = '_'.join(split_block_name) + '_' + str(item['block_name_ext'])
+                    item['new_block_name'] = f"{'_'.join(split_block_name)}_{item['block_name_ext']}"
 
                 elif any(block_name.startswith(pat) for pat in block_name_pat_w_list_0):  # STARCh output
                     if split_block_name[-1].isdigit():
                         list_id = int(split_block_name[-1]) + 1
                         split_block_name.pop()
-                        item['new_block_name'] = '_'.join(split_block_name) + '_' + str(list_id)
+                        item['new_block_name'] = f"{'_'.join(split_block_name)}_{list_id}"
 
                 if item['ordered']:
                     continue
@@ -482,7 +482,7 @@ class CifToNmrStar:
                     else:
                         list_id = 1
                         while True:
-                            block_name = item['sf_category'] + '_' + str(list_id)
+                            block_name = f"{item['sf_category']}_{list_id}"
                             if block_name not in reserved_block_names:
                                 break
                             list_id += 1
@@ -498,7 +498,7 @@ class CifToNmrStar:
                         else:
                             list_id = 1
                             while True:
-                                block_name = item['sf_category'] + '_' + str(list_id)
+                                block_name = f"{item['sf_category']}_{list_id}"
                                 if block_name not in reserved_block_names:
                                     break
                                 list_id += 1
@@ -616,11 +616,11 @@ class CifToNmrStar:
                     for idx, _item in enumerate(itVals['Items']):
                         lp.add_tag(_item)
                         if sf_category != item['super_category']:
-                            tag = '_' + category + '.' + _item
+                            tag = f'_{category}.{_item}'
                             tag = tag.lower()
                             if tag in self.schema:
                                 sdict = {k: v for k, v in self.schema[tag].items() if v not in EMPTY_VALUE}
-                                if 'Parent tag' in sdict and sdict['Parent tag'] == '_' + sf_tag_prefix + '.ID':
+                                if 'Parent tag' in sdict and sdict['Parent tag'] == f'_{sf_tag_prefix}.ID':
                                     list_id_idx = idx
                         if _item == 'Entry_ID':
                             entry_id_idx = idx
@@ -648,7 +648,7 @@ class CifToNmrStar:
                     sf.add_loop(lp)
 
                     if list_id_idx == -1:
-                        set_lp_tag(lp, sf_tag_prefix + '_ID', _cur_list_id)
+                        set_lp_tag(lp, f'{sf_tag_prefix}_ID', _cur_list_id)
 
             if sf is not None:
                 strData.add_saveframe(sf)
@@ -724,7 +724,7 @@ class CifToNmrStar:
                 filled = False
 
                 for tag in sf.tags:
-                    fqtn = (sf.tag_prefix + '.' + tag[0]).lower()
+                    fqtn = f'{sf.tag_prefix}.{tag[0]}'.lower()
 
                     try:
                         if self.schema[fqtn]['entryIdFlg'] == 'Y':
@@ -737,7 +737,7 @@ class CifToNmrStar:
                 if not filled:
                     entry_id_tag = 'ID' if sf.category == 'entry_information' else 'Entry_ID'
 
-                    fqtn = (sf.tag_prefix + '.' + entry_id_tag).lower()
+                    fqtn = f'{sf.tag_prefix}.{entry_id_tag}'.lower()
 
                     try:
                         if self.schema[fqtn]['entryIdFlg'] == 'Y':
@@ -750,7 +750,7 @@ class CifToNmrStar:
                     filled = False
 
                     for tag in lp.tags:
-                        fqtn = (lp.category + '.' + tag).lower()
+                        fqtn = f'{lp.category}.{tag}'.lower()
 
                         try:
                             if self.schema[fqtn]['entryIdFlg'] == 'Y' or tag == 'Entry_ID':
@@ -772,7 +772,7 @@ class CifToNmrStar:
             filled = False
 
             for tag in sf.tags:
-                fqtn = (sf.tag_prefix + '.' + tag[0]).lower()
+                fqtn = f'{sf.tag_prefix}.{tag[0]}'.lower()
 
                 try:
                     if self.schema[fqtn]['entryIdFlg'] == 'Y':
@@ -785,7 +785,7 @@ class CifToNmrStar:
             if not filled:
                 entry_id_tag = 'ID' if sf.category == 'entry_information' else 'Entry_ID'
 
-                fqtn = (sf.tag_prefix + '.' + entry_id_tag).lower()
+                fqtn = f'{sf.tag_prefix}.{entry_id_tag}'.lower()
 
                 try:
                     if self.schema[fqtn]['entryIdFlg'] == 'Y':
@@ -798,7 +798,7 @@ class CifToNmrStar:
                 filled = False
 
                 for tag in lp.tags:
-                    fqtn = (lp.category + '.' + tag).lower()
+                    fqtn = f'{lp.category}.{tag}'.lower()
 
                     try:
                         if self.schema[fqtn]['entryIdFlg'] == 'Y' or tag == 'Entry_ID':
@@ -820,7 +820,7 @@ class CifToNmrStar:
             filled = False
 
             for tag in lp.tags:
-                fqtn = (lp.category + '.' + tag).lower()
+                fqtn = f'{lp.category}.{tag}'.lower()
 
                 try:
                     if self.schema[fqtn]['entryIdFlg'] == 'Y' or tag == 'Entry_ID':
@@ -856,7 +856,7 @@ class CifToNmrStar:
             sf = strData
 
             for tag in sf.tags:
-                fqtn = (sf.tag_prefix + '.' + tag[0]).lower()
+                fqtn = f'{sf.tag_prefix}.{tag[0]}'.lower()
 
                 try:
                     if self.schema[fqtn]['lclSfIdFlg'] == 'Y':
@@ -868,7 +868,7 @@ class CifToNmrStar:
             for lp in sf.loops:
 
                 for tag in lp.tags:
-                    fqtn = (lp.category + '.' + tag).lower()
+                    fqtn = f'{lp.category}.{tag}'.lower()
 
                     try:
                         if self.schema[fqtn]['lclSfIdFlg'] == 'Y':
@@ -882,7 +882,7 @@ class CifToNmrStar:
             lp = strData
 
             for tag in lp.tags:
-                fqtn = (lp.category + '.' + tag).lower()
+                fqtn = f'{lp.category}.{tag}'.lower()
 
                 try:
                     if self.schema[fqtn]['lclSfIdFlg'] == 'Y':

@@ -234,7 +234,7 @@ class BMRBAnnTasks:
                     #
                     # lp = pynmrstar.Loop.from_scratch(lp_category)
                     #
-                    # tags = [lp_category + '.' + item for item in items]
+                    # tags = [f'{lp_category}.{item}' for item in items]
                     #
                     # lp.add_tag(tags)
                     #
@@ -510,7 +510,7 @@ class BMRBAnnTasks:
 
                                     lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                                    tags = [lp_category + '.' + item for item in items]
+                                    tags = [f'{lp_category}.{item}' for item in items]
 
                                     lp.add_tag(tags)
 
@@ -1255,7 +1255,7 @@ class BMRBAnnTasks:
                         elif minus_code_count == 2 and row[1].startswith('-'):
                             try:
                                 _val = row[1][1:].split('-')
-                                _val_0 = float('-' + _val[0])
+                                _val_0 = float(f'-{_val[0]}')
                                 _val_1 = float(_val[1])
                                 _eff_digits_0 = eff_digits(_val[0])
                                 _eff_digits_1 = eff_digits(_val[1])
@@ -2863,7 +2863,7 @@ class BMRBAnnTasks:
 
                         lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                        tags = [lp_category + '.' + item for item in items]
+                        tags = [f'{lp_category}.{item}' for item in items]
 
                         lp.add_tag(tags)
 
@@ -2953,7 +2953,7 @@ class BMRBAnnTasks:
 
                 lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                tags = [lp_category + '.' + item for item in items]
+                tags = [f'{lp_category}.{item}' for item in items]
 
                 lp.add_tag(tags)
 

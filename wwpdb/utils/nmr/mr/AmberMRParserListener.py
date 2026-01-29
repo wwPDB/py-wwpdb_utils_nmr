@@ -1199,7 +1199,7 @@ class AmberMRParserListener(ParseTreeListener):
                     iat = self.iat[col]
 
                     varNum = col + 1
-                    varName = 'igr' + str(varNum)
+                    varName = f'igr{varNum}'
 
                     if iat > 0 and self.igr is not None and varNum in self.igr:
                         if len(self.igr[varNum]) > 0:
@@ -1254,10 +1254,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                         f"Surprisingly '{varName}={valArray}' consists of a single integer.")
                                 else:
-                                    mask = [str(val) + '@' + grnam
+                                    mask = [f'{val}@{grnam}'
                                             for col_, (val, grnam) in enumerate(zip(self.igr[varNum], self.grnam[varNum]))
                                             if val > 0 and col_ < maxCol]
-                                    varName2 = 'grnam' + str(varNum)
+                                    varName2 = f'grnam{varNum}'
                                     valArray2 = ','.join([val for col_, val in enumerate(self.grnam[varNum])
                                                           if len(val) > 0 and col_ < maxCol])
                                     if len(mask) != len(set(mask)):
@@ -5549,10 +5549,10 @@ class AmberMRParserListener(ParseTreeListener):
                 if coordAtomSite is not None:
                     if _atomId in coordAtomSite['atom_id']:
                         found = True
-                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                               or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
-                            else 'H' + _atomId[-1]
+                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                               or f'H{_atomId[-1]}' in coordAtomSite['atom_id']):
+                        _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in coordAtomSite['atom_id']\
+                            else f'H{_atomId[-1]}'
                         found = True
                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                         found = True
@@ -5565,10 +5565,10 @@ class AmberMRParserListener(ParseTreeListener):
                                 self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
                                 seqKey = _seqKey
-                            elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                                       or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                    else 'H' + _atomId[-1]
+                            elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                                       or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                    else f'H{_atomId[-1]}'
                                 found = True
                                 self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
@@ -5588,10 +5588,10 @@ class AmberMRParserListener(ParseTreeListener):
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
                             seqKey = _seqKey
-                        elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                                   or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                else 'H' + _atomId[-1]
+                        elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                                   or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                            _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                else f'H{_atomId[-1]}'
                             found = True
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
@@ -5974,10 +5974,10 @@ class AmberMRParserListener(ParseTreeListener):
                 if coordAtomSite is not None:
                     if _atomId in coordAtomSite['atom_id']:
                         found = True
-                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                               or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
-                            else 'H' + _atomId[-1]
+                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                               or f'H{_atomId[-1]}' in coordAtomSite['atom_id']):
+                        _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in coordAtomSite['atom_id']\
+                            else f'H{_atomId[-1]}'
                         found = True
                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                         found = True
@@ -5990,10 +5990,10 @@ class AmberMRParserListener(ParseTreeListener):
                                 self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
                                 seqKey = _seqKey
-                            elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                                       or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                    else 'H' + _atomId[-1]
+                            elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                                       or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                    else f'H{_atomId[-1]}'
                                 found = True
                                 self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
@@ -6013,10 +6013,10 @@ class AmberMRParserListener(ParseTreeListener):
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
                             seqKey = _seqKey
-                        elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                                   or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                else 'H' + _atomId[-1]
+                        elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                                   or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                            _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                else f'H{_atomId[-1]}'
                             found = True
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
@@ -6121,10 +6121,10 @@ class AmberMRParserListener(ParseTreeListener):
                 if coordAtomSite is not None:
                     if _atomId in coordAtomSite['atom_id']:
                         found = True
-                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                               or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
-                            else 'H' + _atomId[-1]
+                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                               or f'H{_atomId[-1]}' in coordAtomSite['atom_id']):
+                        _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in coordAtomSite['atom_id']\
+                            else f'H{_atomId[-1]}'
                         found = True
                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                         found = True
@@ -6137,10 +6137,10 @@ class AmberMRParserListener(ParseTreeListener):
                                 self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
                                 seqKey = _seqKey
-                            elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                                       or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                    else 'H' + _atomId[-1]
+                            elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                                       or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                    else f'H{_atomId[-1]}'
                                 found = True
                                 self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
@@ -6160,10 +6160,10 @@ class AmberMRParserListener(ParseTreeListener):
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
                             seqKey = _seqKey
-                        elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                                   or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                else 'H' + _atomId[-1]
+                        elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                                   or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                            _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                else f'H{_atomId[-1]}'
                             found = True
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
@@ -6649,10 +6649,10 @@ class AmberMRParserListener(ParseTreeListener):
                 if coordAtomSite is not None:
                     if _atomId in coordAtomSite['atom_id']:
                         found = True
-                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                               or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
-                            else 'H' + _atomId[-1]
+                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                               or f'H{_atomId[-1]}' in coordAtomSite['atom_id']):
+                        _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in coordAtomSite['atom_id']\
+                            else f'H{_atomId[-1]}'
                         found = True
                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                         found = True
@@ -6666,10 +6666,10 @@ class AmberMRParserListener(ParseTreeListener):
                                 self.__authSeqId = 'label_seq_id'
                                 seqKey = _seqKey
                             elif _atomId in ('HN1', 'HN2', 'HN3')\
-                                    and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                         or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                    else 'H' + _atomId[-1]
+                                    and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                         or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                    else f'H{_atomId[-1]}'
                                 found = True
                                 self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
@@ -6689,10 +6689,10 @@ class AmberMRParserListener(ParseTreeListener):
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
                             seqKey = _seqKey
-                        elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                                   or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                else 'H' + _atomId[-1]
+                        elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                                   or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                            _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                else f'H{_atomId[-1]}'
                             found = True
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
@@ -6786,10 +6786,10 @@ class AmberMRParserListener(ParseTreeListener):
                 if coordAtomSite is not None:
                     if _atomId in coordAtomSite['atom_id']:
                         found = True
-                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                               or ('H' + _atomId[-1]) in coordAtomSite['atom_id']):
-                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in coordAtomSite['atom_id']\
-                            else 'H' + _atomId[-1]
+                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                               or f'H{_atomId[-1]}' in coordAtomSite['atom_id']):
+                        _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in coordAtomSite['atom_id']\
+                            else f'H{_atomId[-1]}'
                         found = True
                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                         found = True
@@ -6803,10 +6803,10 @@ class AmberMRParserListener(ParseTreeListener):
                                 self.__authSeqId = 'label_seq_id'
                                 seqKey = _seqKey
                             elif _atomId in ('HN1', 'HN2', 'HN3')\
-                                    and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                         or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                    else 'H' + _atomId[-1]
+                                    and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                         or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                                _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                    else f'H{_atomId[-1]}'
                                 found = True
                                 self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
@@ -6826,10 +6826,10 @@ class AmberMRParserListener(ParseTreeListener):
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
                             seqKey = _seqKey
-                        elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                                   or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
-                            _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                                else 'H' + _atomId[-1]
+                        elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                                   or f'H{_atomId[-1]}' in _coordAtomSite['atom_id']):
+                            _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                                else f'H{_atomId[-1]}'
                             found = True
                             self.__preferAuthSeq = False
                             self.__authSeqId = 'label_seq_id'
@@ -7778,7 +7778,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.IGR8():
                 varNum = 8
 
-            varName = 'igr' + str(varNum)
+            varName = f'igr{varNum}'
 
             if self.igr is None:
                 self.igr = {}
@@ -8048,7 +8048,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.GRNAM8():
                 varNum = 8
 
-            varName = 'grnam' + str(varNum)
+            varName = f'grnam{varNum}'
 
             if ctx.Qstrings():
                 if self.setGrnamCol[varNum] is not None and len(self.setGrnamCol[varNum]) > 0:
@@ -8094,7 +8094,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.GRNAM8_Lp():
                 varNum = 8
 
-            varName = 'grnam' + str(varNum)
+            varName = f'grnam{varNum}'
 
             if self.grnam is None:
                 self.grnam = {}
@@ -11260,10 +11260,10 @@ class AmberMRParserListener(ParseTreeListener):
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
                 found = True
-            elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                      or ('H' + atomId[-1]) in coordAtomSite['atom_id']):
-                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id']\
-                    else 'H' + atomId[-1]
+            elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                      or f'H{atomId[-1]}' in coordAtomSite['atom_id']):
+                atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in coordAtomSite['atom_id']\
+                    else f'H{atomId[-1]}'
                 found = True
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
@@ -11276,10 +11276,10 @@ class AmberMRParserListener(ParseTreeListener):
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
                         seqKey = _seqKey
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                            else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                            else f'H{atomId[-1]}'
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
@@ -11299,10 +11299,10 @@ class AmberMRParserListener(ParseTreeListener):
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                        else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                        else f'H{atomId[-1]}'
                     found = True
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
@@ -11324,10 +11324,10 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = False
                 self.__authSeqId = 'label_seq_id'
                 seqKey = _seqKey
-            elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                      or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id']\
-                    else 'H' + atomId[-1]
+            elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                      or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id']\
+                    else f'H{atomId[-1]}'
                 found = True
                 self.__preferAuthSeq = False
                 self.__authSeqId = 'label_seq_id'
@@ -11457,7 +11457,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         restraint_name = getRestraintName(self.__cur_subtype)
 
-        sf_framecode = 'AMBER_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = f"AMBER_{restraint_name.replace(' ', '_')}_{list_id}"
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)

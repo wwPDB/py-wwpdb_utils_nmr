@@ -98,9 +98,9 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
             if col_name in cs_atom_like_names or col_name.endswith('#') or col_name.endswith('#'):
                 self.__col_order.append('atom_name_instance')
             elif col_name.startswith('Q')\
-                    or (col_name.startswith('M') and 'H' + col_name[1:].replace('%', '2').replace('#', '2') in cs_atom_like_names):
+                    or (col_name.startswith('M') and f"H{col_name[1:].replace('%', '2').replace('#', '2')}" in cs_atom_like_names):
                 self.__col_order.append('atom_name_instance')
-            elif (col_name.endswith('%') or col_name.endswith('#')) and col_name[:-1] + '2' in cs_atom_like_names:
+            elif (col_name.endswith('%') or col_name.endswith('#')) and f'{col_name[:-1]}2' in cs_atom_like_names:
                 self.__col_order.append('atom_name_instance')
             elif 'RES' in col_name or 'SEQ' in col_name or 'COMP' in col_name or 'GROUP' in col_name or 'LABEL' in col_name:
                 if 'COMP_ID' in col_name or 'NAME' in col_name or 'TYPE' in col_name or 'GROUP' in col_name or 'LABEL' in col_name:
@@ -248,7 +248,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
-                                            comp_id = 'D' + comp_id
+                                            comp_id = f'D{comp_id}'
                                 elif self.__col_order.count('residue_name') == 0\
                                         and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__rev_reduced_residue_name_pat.search(self.anySelection[idx]).groups()
@@ -261,7 +261,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
-                                            comp_id = 'D' + comp_id
+                                            comp_id = f'D{comp_id}'
                                 else:
                                     comp_id = self.anySelection[idx]
                         elif order == 'residue_name':
@@ -355,7 +355,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
-                                            comp_id = 'D' + comp_id
+                                            comp_id = f'D{comp_id}'
                                 elif self.__col_order.count('residue_name') == 0\
                                         and self.__rev_reduced_residue_name_pat.match(self.anySelection[idx]):
                                     g = self.__rev_reduced_residue_name_pat.search(self.anySelection[idx]).groups()
@@ -368,7 +368,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                             except StopIteration:
                                                 pass
                                         elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
-                                            comp_id = 'D' + comp_id
+                                            comp_id = f'D{comp_id}'
                                 comp_id = self.anySelection[idx]
                         elif order == 'residue_name':
                             if isinstance(self.anySelection[idx], str):

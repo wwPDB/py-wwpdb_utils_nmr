@@ -4123,7 +4123,7 @@ class BaseLinearMRParserListener():
                 __atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != __atomId and coordAtomSite is not None\
                    and (__atomId in coordAtomSite['atom_id']
-                        or (__atomId.endswith('%') and __atomId[:-1] + '2' in coordAtomSite['atom_id'])):
+                        or (__atomId.endswith('%') and f'{__atomId[:-1]}2' in coordAtomSite['atom_id'])):
                     atomId = __atomId
                 elif self.reasons is not None and 'branched_remap' in self.reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.reasons['branched_remap'], chainId, cifSeqId)
@@ -4406,7 +4406,7 @@ class BaseLinearMRParserListener():
                 __atomId = retrieveAtomIdFromMRMap(self.ccU, self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != __atomId and coordAtomSite is not None\
                    and (__atomId in coordAtomSite['atom_id']
-                        or (__atomId.endswith('%') and __atomId[:-1] + '2' in coordAtomSite['atom_id'])):
+                        or (__atomId.endswith('%') and f'{__atomId[:-1]}2' in coordAtomSite['atom_id'])):
                     atomId = __atomId
                 elif self.reasons is not None and 'branched_remap' in self.reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.reasons['branched_remap'], chainId, cifSeqId)
@@ -4697,9 +4697,9 @@ class BaseLinearMRParserListener():
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
                 found = True
-            elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                      or ('H' + atomId[-1]) in coordAtomSite['atom_id']):
-                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + atomId[-1]
+            elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                      or f'H{atomId[-1]}' in coordAtomSite['atom_id']):
+                atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                 found = True
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
@@ -4714,9 +4714,9 @@ class BaseLinearMRParserListener():
                         self.authSeqId = 'label_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                         found = True
                         self.__preferAuthSeq = False
                         self.authSeqId = 'label_seq_id'
@@ -4739,9 +4739,9 @@ class BaseLinearMRParserListener():
                         self.authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                         found = True
                         self.authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
@@ -4766,9 +4766,9 @@ class BaseLinearMRParserListener():
                     self.authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.__preferAuthSeq = False
                     self.authSeqId = 'label_seq_id'
@@ -4791,9 +4791,9 @@ class BaseLinearMRParserListener():
                     self.authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
@@ -4823,9 +4823,9 @@ class BaseLinearMRParserListener():
                     self.authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.__preferAuthSeq = False
                     self.authSeqId = 'label_seq_id'
@@ -4848,9 +4848,9 @@ class BaseLinearMRParserListener():
                     self.authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
@@ -4965,9 +4965,9 @@ class BaseLinearMRParserListener():
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
                 found = True
-            elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                      or ('H' + atomId[-1]) in coordAtomSite['atom_id']):
-                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + atomId[-1]
+            elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                      or f'H{atomId[-1]}' in coordAtomSite['atom_id']):
+                atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                 found = True
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
@@ -4982,9 +4982,9 @@ class BaseLinearMRParserListener():
                         self.authSeqId = 'label_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                         found = True
                         self.__preferAuthSeq = False
                         self.authSeqId = 'label_seq_id'
@@ -5007,9 +5007,9 @@ class BaseLinearMRParserListener():
                         self.authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                         found = True
                         self.authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
@@ -5034,9 +5034,9 @@ class BaseLinearMRParserListener():
                     self.authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.__preferAuthSeq = False
                     self.authSeqId = 'label_seq_id'
@@ -5059,9 +5059,9 @@ class BaseLinearMRParserListener():
                     self.authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
@@ -5093,9 +5093,9 @@ class BaseLinearMRParserListener():
                         self.authSeqId = 'label_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                         found = True
                         self.__preferAuthSeq = False
                         self.authSeqId = 'label_seq_id'
@@ -5117,9 +5117,9 @@ class BaseLinearMRParserListener():
                         self.authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                         found = True
                         self.authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
@@ -6288,8 +6288,8 @@ class BaseLinearMRParserListener():
 
         restraint_name = getRestraintName(self.cur_subtype)
 
-        sf_framecode = (self.software_name if softwareName is None else softwareName)\
-            + '_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = f"{self.software_name if softwareName is None else softwareName}_"\
+            f"{restraint_name.replace(' ', '_')}_{list_id}"
 
         sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.entryId, self.originalFileName,
                           constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)

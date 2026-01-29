@@ -3391,7 +3391,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                        and 'alt_chain_id' in self.factor:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
                         for atom in self.factor['atom_selection']:
-                            atom['segment_id'] = 'not ' + atom['segment_id']
+                            atom['segment_id'] = f"not {atom['segment_id']}"
 
                     else:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)

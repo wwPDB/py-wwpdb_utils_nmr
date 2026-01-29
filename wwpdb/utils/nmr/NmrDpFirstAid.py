@@ -553,7 +553,7 @@ class NmrDpFirstAid:
                             if pass_sf_framecode:
                                 if pass_sf_loop:
                                     if CATEGORY_PAT.match(line):
-                                        target['lp_category'] = '_' + CATEGORY_PAT.search(line).groups()[0]
+                                        target['lp_category'] = f'_{CATEGORY_PAT.search(line).groups()[0]}'
                                         content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
                                                                 if v == target['lp_category']), None)
                                         if content_subtype is not None:
@@ -655,7 +655,7 @@ class NmrDpFirstAid:
                                 for line in ifh:
                                     if pass_loop:
                                         if CATEGORY_PAT.match(line):
-                                            _lp_category = '_' + CATEGORY_PAT.search(line).groups()[0]
+                                            _lp_category = f'_{CATEGORY_PAT.search(line).groups()[0]}'
                                             if lp_category == _lp_category:
                                                 target['loop_location'] = lp_loc
                                                 content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
@@ -663,7 +663,7 @@ class NmrDpFirstAid:
                                                 if content_subtype is not None:
                                                     target['sf_category'] = SF_CATEGORIES[file_type][content_subtype]
                                                     target['sf_tag_prefix'] = SF_TAG_PREFIXES[file_type][content_subtype]
-                                                    target['sf_framecode'] = target['sf_category'] + '_1'
+                                                    target['sf_framecode'] = f"{target['sf_category']}_1"
                                             pass_loop = False
                                     elif LOOP_PAT.match(line):
                                         pass_loop = True
@@ -769,7 +769,7 @@ class NmrDpFirstAid:
                                         pass_sf_loop = True
                                     elif not pass_sf_loop:
                                         if CATEGORY_PAT.match(line):
-                                            category = '_' + CATEGORY_PAT.search(line).groups()[0]
+                                            category = f'_{CATEGORY_PAT.search(line).groups()[0]}'
                                             if category == category_1:
                                                 if not pass_category_1:
                                                     target['category_1_begin'] = i
@@ -793,7 +793,7 @@ class NmrDpFirstAid:
                                                         target['content_subtype_2'] = content_subtype
                                                         target['sf_tag_prefix_2'] = SF_TAG_PREFIXES[file_type][content_subtype]
                                                         target['sf_category_2'] = SF_CATEGORIES[file_type][content_subtype]
-                                                        target['sf_framecode_2'] = target['sf_category_2'] + '_1'
+                                                        target['sf_framecode_2'] = f"{target['sf_category_2']}_1"
                                                     content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
                                                                             if v == category), None)
                                                     if content_subtype is not None:
@@ -801,7 +801,7 @@ class NmrDpFirstAid:
                                                         target['content_subtype_2'] = content_subtype
                                                         target['sf_tag_prefix_2'] = SF_TAG_PREFIXES[file_type][content_subtype]
                                                         target['sf_category_2'] = SF_CATEGORIES[file_type][content_subtype]
-                                                        target['sf_framecode_2'] = target['sf_category_2'] + '_1'
+                                                        target['sf_framecode_2'] = f"{target['sf_category_2']}_1"
                                                     if 'category_type_2' not in target:
                                                         content_subtype = target['content_subtype_1']
                                                         target['category_type_2'] = 'loop'
@@ -1025,11 +1025,11 @@ class NmrDpFirstAid:
                 if rescued:
                     if ONEDEP_ANY_UPLOAD_FILE_NAME_PAT.match(srcPath):
                         g = ONEDEP_ANY_UPLOAD_FILE_NAME_PAT.search(srcPath).groups()
-                        srcPath = g[0] + '-upload-convert_' + g[1] + '.V' + g[2]
+                        srcPath = f'{g[0]}-upload-convert_{g[1]}.V{g[2]}'
                     else:
                         if ONEDEP_ANY_FILE_NAME_PAT.match(srcPath):
                             g = ONEDEP_ANY_FILE_NAME_PAT.search(srcPath).groups()
-                            srcPath = g[0] + '.V' + str(int(g[1]) + 1)
+                            srcPath = f'{g[0]}.V{int(g[1]) + 1}'
 
                     self.__reg.star_data[file_list_id].write_to_file(srcPath,
                                                                      show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
@@ -1121,7 +1121,7 @@ class NmrDpFirstAid:
 
                     if self.getSaveframeByName(file_list_id, sf_framecode) is None:
 
-                        itName = '_' + sf_category + '.sf_framecode'
+                        itName = f'_{sf_category}.sf_framecode'
 
                         if self.__reg.resolve_conflict:
                             warn = f"{itName} {sf_framecode!r} should be matched "\
@@ -1261,7 +1261,7 @@ class NmrDpFirstAid:
 
                 if 'index' not in loop.tags:
 
-                    lp_tag = lp_category + '.index'
+                    lp_tag = f'{lp_category}.index'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1278,7 +1278,7 @@ class NmrDpFirstAid:
                         for idx, row in enumerate(loop, start=1):
                             row.append(idx)
 
-                        loop.add_tag(lp_category + '.index')
+                        loop.add_tag(f'{lp_category}.index')
 
                     except ValueError:
                         pass
@@ -1296,7 +1296,7 @@ class NmrDpFirstAid:
 
                 if 'element' not in loop.tags:
 
-                    lp_tag = lp_category + '.element'
+                    lp_tag = f'{lp_category}.element'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1318,7 +1318,7 @@ class NmrDpFirstAid:
                                 atom_type = 'H'
                             row.append(atom_type)
 
-                        loop.add_tag(lp_category + '.element')
+                        loop.add_tag(f'{lp_category}.element')
 
                     except ValueError:
                         pass
@@ -1337,7 +1337,7 @@ class NmrDpFirstAid:
 
                 if 'isotope_number' not in loop.tags:
 
-                    lp_tag = lp_category + '.isotope_number'
+                    lp_tag = f'{lp_category}.isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1359,7 +1359,7 @@ class NmrDpFirstAid:
                                 atom_type = 'H'
                             row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
-                        loop.add_tag(lp_category + '.isotope_number')
+                        loop.add_tag(f'{lp_category}.isotope_number')
 
                     except ValueError:
                         pass
@@ -1380,7 +1380,7 @@ class NmrDpFirstAid:
 
                 if 'name' not in loop.tags:
 
-                    lp_tag = lp_category + '.name'
+                    lp_tag = f'{lp_category}.name'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1394,7 +1394,7 @@ class NmrDpFirstAid:
 
                     try:
 
-                        loop.add_tag(lp_category + '.name', update_data=True)
+                        loop.add_tag(f'{lp_category}.name', update_data=True)
 
                     except ValueError:
                         pass
@@ -1404,7 +1404,7 @@ class NmrDpFirstAid:
                 try:
 
                     tag = next(tag for tag in sf.tags if tag[0] == 'tensor_residue_type')
-                    sf.add_tag(sf_category + '.tensor_residue_name', tag[1])
+                    sf.add_tag(f'{sf_category}.tensor_residue_name', tag[1])
                     sf.remove_tag('tensor_residue_type')
 
                 except StopIteration:
@@ -1438,11 +1438,11 @@ class NmrDpFirstAid:
 
             for j in range(1, max_dim):
 
-                _residue_type = 'residue_type_' + str(j)
+                _residue_type = f'residue_type_{j}'
 
                 try:
                     tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == _residue_type)
-                    loop.tags[tag_pos] = 'residue_name_' + str(j)
+                    loop.tags[tag_pos] = f'residue_name_{j}'
                 except StopIteration:
                     pass
 
@@ -1479,7 +1479,7 @@ class NmrDpFirstAid:
 
                     if self.getSaveframeByName(file_list_id, sf_framecode) is None:
 
-                        itName = '_' + sf_category + '.Sf_framecode'
+                        itName = f'_{sf_category}.Sf_framecode'
 
                         if self.__reg.resolve_conflict:
                             warn = f"{itName} {sf_framecode!r} should be matched "\
@@ -1585,7 +1585,7 @@ class NmrDpFirstAid:
 
                 if 'Atom_type' not in loop.tags:
 
-                    lp_tag = lp_category + '.Atom_type'
+                    lp_tag = f'{lp_category}.Atom_type'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1607,7 +1607,7 @@ class NmrDpFirstAid:
                                 atom_type = 'H'
                             row.append(atom_type)
 
-                        loop.add_tag(lp_category + '.Atom_type')
+                        loop.add_tag(f'{lp_category}.Atom_type')
 
                     except ValueError:
                         pass
@@ -1626,7 +1626,7 @@ class NmrDpFirstAid:
 
                 if 'Atom_isotope_number' not in loop.tags:
 
-                    lp_tag = lp_category + '.Atom_isotope_number'
+                    lp_tag = f'{lp_category}.Atom_isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1648,7 +1648,7 @@ class NmrDpFirstAid:
                                 atom_type = 'H'
                             row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
-                        loop.add_tag(lp_category + '.Atom_isotope_number')
+                        loop.add_tag(f'{lp_category}.Atom_isotope_number')
 
                     except ValueError:
                         pass
@@ -1671,14 +1671,14 @@ class NmrDpFirstAid:
 
                 for i in range(1, 3):
                     for original_item in original_items:
-                        tag = original_item + '_' + str(i)
+                        tag = f'{original_item}_{i}'
                         if tag in loop.tags:
                             loop.remove_tag(tag)
 
-                    tag = 'Original_PDB_atom_name_' + str(i)
+                    tag = f'Original_PDB_atom_name_{i}'
                     if tag in loop.tags:
 
-                        _tag = 'Auth_atom_name_' + str(i)
+                        _tag = f'Auth_atom_name_{i}'
                         if _tag not in loop.tags:
                             _dat = loop.get_tag([tag])
 
@@ -1693,7 +1693,7 @@ class NmrDpFirstAid:
 
                 if 'Torsion_angle_name' not in loop.tags:
 
-                    lp_tag = lp_category + '.Torsion_angle_name'
+                    lp_tag = f'{lp_category}.Torsion_angle_name'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1707,7 +1707,7 @@ class NmrDpFirstAid:
 
                     try:
 
-                        loop.add_tag(lp_category + '.Torsion_angle_name', update_data=True)
+                        loop.add_tag(f'{lp_category}.Torsion_angle_name', update_data=True)
 
                     except ValueError:
                         pass
@@ -1716,7 +1716,7 @@ class NmrDpFirstAid:
 
                 if 'Atom_type' not in loop.tags:
 
-                    lp_tag = lp_category + '.Atom_type'
+                    lp_tag = f'{lp_category}.Atom_type'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1736,14 +1736,14 @@ class NmrDpFirstAid:
                             atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(atom_type)
 
-                        loop.add_tag(lp_category + '.Atom_type')
+                        loop.add_tag(f'{lp_category}.Atom_type')
 
                     except ValueError:
                         pass
 
                 if 'Atom_isotope_number' not in loop.tags:
 
-                    lp_tag = lp_category + '.Atom_isotope_number'
+                    lp_tag = f'{lp_category}.Atom_isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1763,14 +1763,14 @@ class NmrDpFirstAid:
                             atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
-                        loop.add_tag(lp_category + '.Atom_isotope_number')
+                        loop.add_tag(f'{lp_category}.Atom_isotope_number')
 
                     except ValueError:
                         pass
 
                 if 'Axis_code' not in loop.tags:
 
-                    lp_tag = lp_category + '.Axis_code'
+                    lp_tag = f'{lp_category}.Axis_code'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1792,7 +1792,7 @@ class NmrDpFirstAid:
                             iso_num = row[iso_num_name_col]
                             row.append(iso_num + atom_type)
 
-                        loop.add_tag(lp_category + '.Axis_code')
+                        loop.add_tag(f'{lp_category}.Axis_code')
 
                     except ValueError:
                         pass

@@ -1770,7 +1770,7 @@ class NmrDpValidation:
 
                 for tag in sf.tags:
                     if isinstance(tag[1], str) and len(tag[1]) == 0:
-                        tags_with_null_str.append('_' + sf_category + '.' + tag[0])
+                        tags_with_null_str.append(f'_{sf_category}.{tag[0]}')
                         tag[1] = '.'
 
         if len(tags_with_null_str) > 0:
@@ -2734,7 +2734,7 @@ class NmrDpValidation:
                         else:
                             continue
 
-                        half_ring_traces.append(na_atom_id + ':' + na_ + ':' + na__ + ':' + na___)
+                        half_ring_traces.append(f"{na_atom_id}:{na_}:{na__}:{na___}")
 
             len_half_ring_traces = len(half_ring_traces)
 
@@ -2754,11 +2754,11 @@ class NmrDpValidation:
 
                     # hexagonal ring
                     if half_ring_trace_1[3] == half_ring_trace_2[3]:
-                        ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[2] + ':' + half_ring_trace_2[1])
+                        ring_traces.append(f'{half_ring_traces[i]}:{half_ring_trace_2[2]}:{half_ring_trace_2[1]}')
 
                     # pentagonal ring
                     elif half_ring_trace_1[3] == half_ring_trace_2[2] and half_ring_trace_1[2] == half_ring_trace_2[3]:
-                        ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[1])
+                        ring_traces.append(f'{half_ring_traces[i]}:{half_ring_trace_2[1]}')
 
             if len(ring_traces) == 0:
                 self.__reg.cpC['near_ring'][seq_key] = None
@@ -3864,7 +3864,7 @@ class NmrDpValidation:
                 if self.__reg.ccU.lastChemCompDict['parent_comp_id'] not in EMPTY_VALUE:
                     comp_id = self.__reg.ccU.lastChemCompDict['parent_comp_id']
                     if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
-                        comp_id = 'D' + comp_id
+                        comp_id = f'D{comp_id}'
                     elif ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         comp_id = comp_id[1]
 
@@ -3876,7 +3876,7 @@ class NmrDpValidation:
                 if self.__reg.ccU.lastChemCompDict['parent_comp_id'] not in EMPTY_VALUE:
                     ref_comp_id = self.__reg.ccU.lastChemCompDict['parent_comp_id']
                     if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
-                        ref_comp_id = 'D' + ref_comp_id
+                        ref_comp_id = f'D{ref_comp_id}'
                     elif comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         ref_comp_id = ref_comp_id[1]
 
@@ -3990,8 +3990,8 @@ class NmrDpValidation:
 
             for j in range(1, max_dim):
 
-                _comp_id_name = comp_id_name + '_' + str(j)
-                _atom_id_name = atom_id_name + '_' + str(j)
+                _comp_id_name = f'{comp_id_name}_{j}'
+                _atom_id_name = f'{atom_id_name}_{j}'
 
                 comp_id_col = loop.tags.index(_comp_id_name) if _comp_id_name in loop.tags else -1
                 atom_id_col = loop.tags.index(_atom_id_name) if _atom_id_name in loop.tags else -1
@@ -4023,17 +4023,17 @@ class NmrDpValidation:
 
         id_col = loop.tags.index('ID')
         if 'Index_ID' not in loop.tags:
-            tag = loop.category + '.Index_ID'
+            tag = f'{loop.category}.Index_ID'
             for idx in range(len(loop)):
                 loop.data[idx].append(idx + 1)
             loop.add_tag(tag)
             lp.add_tag(tag)
         if 'Member_ID' not in loop.tags:
-            tag = loop.category + '.Member_ID'
+            tag = f'{loop.category}.Member_ID'
             loop.add_tag(tag, update_data=True)
             lp.add_tag(tag)
         if 'Member_logic_code' not in loop.tags:
-            tag = loop.category + '.Member_logic_code'
+            tag = f'{loop.category}.Member_logic_code'
             loop.add_tag(tag, update_data=True)
             lp.add_tag(tag)
 
@@ -4383,13 +4383,13 @@ class NmrDpValidation:
 
         id_col = loop.tags.index('ID')
         if 'Index_ID' not in loop.tags:
-            tag = loop.category + '.Index_ID'
+            tag = f'{loop.category}.Index_ID'
             for idx in range(len(loop)):
                 loop.data[idx].append(idx + 1)
             loop.add_tag(tag)
             lp.add_tag(tag)
         if 'Combination_ID' not in loop.tags:
-            tag = loop.category + '.Combination_ID'
+            tag = f'{loop.category}.Combination_ID'
             loop.add_tag(tag, update_data=True)
             lp.add_tag(tag)
 
@@ -4637,7 +4637,7 @@ class NmrDpValidation:
                                 continue
 
                         elif len(atom_id) > 2 and atom_id.endswith('"') and atom_id[-2].isdigit():  # 7zew, 7zex: H5" -> H5''
-                            self.__fixAtomNomenclature(comp_id, {atom_id: atom_id[:-1] + "''"})
+                            self.__fixAtomNomenclature(comp_id, {atom_id: f"{atom_id[:-1]}''"})
                             continue
 
                         atom_id_ = atom_id
@@ -4666,14 +4666,14 @@ class NmrDpValidation:
                         if not self.__reg.nefT.validate_comp_atom(comp_id, atom_id_):
 
                             if self.__reg.csStat.peptideLike(comp_id) and atom_id_.startswith('H') and atom_id_.endswith('1')\
-                               and self.__reg.nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2')\
-                               and self.__reg.nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3')\
+                               and self.__reg.nefT.validate_comp_atom(comp_id, f'{atom_id_[:-1]}2')\
+                               and self.__reg.nefT.validate_comp_atom(comp_id, f'{atom_id_[:-1]}3')\
                                and not content_subtype.startswith('spectral_peak'):
 
                                 _atom_id_ = atom_id_[:-1]
-                                _atom_id_1 = _atom_id_ + '1'
-                                _atom_id_2 = _atom_id_ + '2'
-                                _atom_id_3 = _atom_id_ + '3'
+                                _atom_id_1 = f'{_atom_id_}1'
+                                _atom_id_2 = f'{_atom_id_}2'
+                                _atom_id_3 = f'{_atom_id_}3'
 
                                 warn = f"{comp_id}:{_atom_id_1}/{_atom_id_2} should be {comp_id}:{_atom_id_3}/{_atom_id_2} "\
                                     "according to the IUPAC atom nomenclature, respectively."
@@ -4817,7 +4817,7 @@ class NmrDpValidation:
                                     continue
 
                             elif len(atom_id) > 2 and atom_id.endswith('"') and atom_id[-2].isdigit():  # 7zew, 7zex: H5" -> H5''
-                                self.__fixAtomNomenclature(comp_id, {atom_id: atom_id[:-1] + "''"})
+                                self.__fixAtomNomenclature(comp_id, {atom_id: f"{atom_id[:-1]}''"})
                                 continue
 
                             atom_id_ = atom_id
@@ -5381,7 +5381,7 @@ class NmrDpValidation:
 
                     aux_items = ['Ambiguous_shift_set_ID', 'Atom_chem_shift_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID']
 
-                    aux_tags = [aux_lp_category + '.' + item for item in aux_items]
+                    aux_tags = [f'{aux_lp_category}.{item}' for item in aux_items]
 
                     aux_lp.add_tag(aux_tags)
 
@@ -5966,8 +5966,8 @@ class NmrDpValidation:
 
                         redundant = False
 
-                        _val_1 = str(val_1) if val_1 >= 0.0 else '(' + str(val_1) + ')'
-                        _val_2 = str(val_2) if val_2 >= 0.0 else '(' + str(val_2) + ')'
+                        _val_1 = str(val_1) if val_1 >= 0.0 else f'({val_1})'
+                        _val_2 = str(val_2) if val_2 >= 0.0 else f'({val_2})'
 
                         if content_subtype == 'dist_restraint':
 
@@ -6109,8 +6109,8 @@ class NmrDpValidation:
 
         key_base = SF_TAG_PREFIXES['nmr-star'][content_subtype].lstrip('_')
 
-        parent_key_name = key_base + '.ID'
-        child_key_name = key_base + '_ID'
+        parent_key_name = f'{key_base}.ID'
+        child_key_name = f'{key_base}_ID'
 
         try:
 
@@ -6221,7 +6221,7 @@ class NmrDpValidation:
         ambig_code_name = 'Ambiguity_code'  # NMR-STAR specific
         occupancy_name = 'Occupancy'  # NMR-STAR specific
 
-        full_value_name = lp_category + '.' + value_name
+        full_value_name = f'{lp_category}.{value_name}'
 
         max_inclusive = 0.01
 
@@ -7999,7 +7999,7 @@ class NmrDpValidation:
 
                         idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
-                        err = idx_msg + "Non-magnetic susceptible spin appears in RDC vector; "\
+                        err = f"{idx_msg}Non-magnetic susceptible spin appears in RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
@@ -8040,7 +8040,7 @@ class NmrDpValidation:
 
                         if self.__reg.symmetric == 'no':
 
-                            err = idx_msg + "Found inter-chain RDC vector; "\
+                            err = f"{idx_msg}Found inter-chain RDC vector; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
                                 f"in a loop {lp_category}."
 
@@ -8053,7 +8053,7 @@ class NmrDpValidation:
 
                         else:
 
-                            err = idx_msg + "Found inter-chain RDC vector; "\
+                            err = f"{idx_msg}Found inter-chain RDC vector; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
                                 f"in a loop {lp_category}. "\
                                 "However, it might be an artificial RDC constraint on solid-state NMR "\
@@ -8070,7 +8070,7 @@ class NmrDpValidation:
 
                         idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
-                        err = idx_msg + "Found inter-residue RDC vector; "\
+                        err = f"{idx_msg}Found inter-residue RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
                             f"in a loop {lp_category}."
 
@@ -8094,7 +8094,7 @@ class NmrDpValidation:
 
                             idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
-                            err = idx_msg + "Found inter-residue RDC vector; "\
+                            err = f"{idx_msg}Found inter-residue RDC vector; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
                                 f"in a loop {lp_category}."
 
@@ -8109,7 +8109,7 @@ class NmrDpValidation:
 
                         idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
-                        err = idx_msg + "Found zero RDC vector; "\
+                        err = f"{idx_msg}Found zero RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
                         self.__reg.report.error.appendDescription('invalid_data',
@@ -8130,7 +8130,7 @@ class NmrDpValidation:
 
                                     idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
-                                    warn = idx_msg + "Found an RDC vector over multiple covalent bonds; "\
+                                    warn = f"{idx_msg}Found an RDC vector over multiple covalent bonds; "\
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
                                         f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
@@ -8366,7 +8366,7 @@ class NmrDpValidation:
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.mapCoordDisulfideBond2Nmr() ++ Warning  - {warn}\n")
 
-                    disulf['warning_description_1'] = item + ': ' + warn
+                    disulf['warning_description_1'] = f'{item}: {warn}'
 
                 if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
@@ -8386,7 +8386,7 @@ class NmrDpValidation:
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.mapCoordDisulfideBond2Nmr() ++ Warning  - {warn}\n")
 
-                    disulf['warning_description_2'] = item + ': ' + warn
+                    disulf['warning_description_2'] = f'{item}: {warn}'
 
                 asm.append(disulf)
 
@@ -8675,7 +8675,7 @@ class NmrDpValidation:
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.mapCoordOtherBond2Nmr() ++ Warning  - {warn}\n")
 
-                    other['warning_description_1'] = item + ': ' + warn
+                    other['warning_description_1'] = f'{item}: {warn}'
 
                 if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
@@ -8695,7 +8695,7 @@ class NmrDpValidation:
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.mapCoordOtherBond2Nmr() ++ Warning  - {warn}\n")
 
-                    other['warning_description_2'] = item + ': ' + warn
+                    other['warning_description_2'] = f'{item}: {warn}'
 
                 asm.append(other)
 
@@ -11403,7 +11403,7 @@ class NmrDpValidation:
 
         lp = pynmrstar.Loop.from_scratch(lp_category)
 
-        tags = [lp_category + '.' + item for item in items]
+        tags = [f'{lp_category}.{item}' for item in items]
 
         lp.add_tag(tags)
 
@@ -12349,7 +12349,7 @@ class NmrDpValidation:
 
         has_seq_align = False
 
-        sa_name = 'nmr_poly_seq_vs_' + content_subtype
+        sa_name = f'nmr_poly_seq_vs_{content_subtype}'
 
         if has_key_value(seq_align_dic, sa_name):
 
@@ -12729,7 +12729,7 @@ class NmrDpValidation:
                     if index_tag is not None and index_tag in row:
                         idx_msg = f"[Check row of {index_tag} {row[index_tag]}] "
 
-                    err = idx_msg + "Atom ("\
+                    err = f"{idx_msg}Atom ("\
                         + self.getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
                                                       comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
                         + ") is not present in the coordinates."
@@ -12797,7 +12797,7 @@ class NmrDpValidation:
                                                 and cca['n_terminal_atom_flag'] == 'N'
                                                 and cca['c_terminal_atom_flag'] == 'N')):
                                         checked = True
-                                        err = idx_msg + "Atom ("\
+                                        err = f"{idx_msg}Atom ("\
                                             + self.getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
                                                                           comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
                                             + ") is not properly instantiated in the coordinates. Please re-upload the model file."
@@ -12821,7 +12821,7 @@ class NmrDpValidation:
                                     if seq_key in coord_unobs_atom and atom_id_ in coord_unobs_atom[seq_key]['atom_ids']:
                                         coord_issue = True
 
-                            _atom_id, _, _ = self.__getAtomIdListWithAmbigCode(comp_id, atom_id_ + '%')
+                            _atom_id, _, _ = self.__getAtomIdListWithAmbigCode(comp_id, f'{atom_id_}%')
 
                             if content_subtype.startswith('spectral_peak')\
                                or (len(_atom_id) > 0 and coord_atom_site_ is not None and _atom_id[0] in coord_atom_site_['atom_id']):
@@ -12900,7 +12900,7 @@ class NmrDpValidation:
                                             or (peptide_like
                                                 and cca['n_terminal_atom_flag'] == 'N'
                                                 and cca['c_terminal_atom_flag'] == 'N')):
-                                        err = idx_msg + "Atom ("\
+                                        err = f"{idx_msg}Atom ("\
                                             + self.getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
                                                                           comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
                                             + ") is not properly instantiated in the coordinates. Please re-upload the model file."
@@ -14090,7 +14090,7 @@ class NmrDpValidation:
         if content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint',
                                'spectral_peak', 'spectral_peak_alt'):
 
-            sa_name = 'nmr_poly_seq_vs_' + content_subtype
+            sa_name = f'nmr_poly_seq_vs_{content_subtype}'
 
             if has_key_value(seq_align_dic, sa_name):
 
@@ -14362,7 +14362,7 @@ class NmrDpValidation:
                 if row[atom_type] in EMPTY_VALUE or row[iso_number] in EMPTY_VALUE or row[value_name] in EMPTY_VALUE:
                     continue
 
-                data_type = str(row[iso_number]) + row[atom_type].lower() + '_chemical_shifts'
+                data_type = f'{row[iso_number]}{row[atom_type].lower()}_chemical_shifts'
 
                 if data_type in count:
                     count[data_type] += 1
@@ -14402,7 +14402,7 @@ class NmrDpValidation:
                     for data_type in count:
 
                         atom_group = {}
-                        atom_group['atom_group'] = 'all_' + data_type
+                        atom_group['atom_group'] = f'all_{data_type}'
                         atom_group['number_of_assigned_shifts'] = 0
                         atom_group['number_of_target_shifts'] = 0
                         atom_group['completeness'] = 0.0
@@ -14552,7 +14552,7 @@ class NmrDpValidation:
                     for data_type in count:
 
                         atom_group = {}
-                        atom_group['atom_group'] = 'backbone_' + data_type
+                        atom_group['atom_group'] = f'backbone_{data_type}'
                         atom_group['number_of_assigned_shifts'] = 0
                         atom_group['number_of_target_shifts'] = 0
                         atom_group['completeness'] = 0.0
@@ -14684,7 +14684,7 @@ class NmrDpValidation:
                     for data_type in count:
 
                         atom_group = {}
-                        atom_group['atom_group'] = 'sidechain_' + data_type
+                        atom_group['atom_group'] = f'sidechain_{data_type}'
                         atom_group['number_of_assigned_shifts'] = 0
                         atom_group['number_of_target_shifts'] = 0
                         atom_group['completeness'] = 0.0
@@ -14816,7 +14816,7 @@ class NmrDpValidation:
                     for data_type in count:
 
                         atom_group = {}
-                        atom_group['atom_group'] = 'methyl_' + data_type
+                        atom_group['atom_group'] = f'methyl_{data_type}'
                         atom_group['number_of_assigned_shifts'] = 0
                         atom_group['number_of_target_shifts'] = 0
                         atom_group['completeness'] = 0.0
@@ -14927,7 +14927,7 @@ class NmrDpValidation:
                     for data_type in count:
 
                         atom_group = {}
-                        atom_group['atom_group'] = 'aromatic_' + data_type
+                        atom_group['atom_group'] = f'aromatic_{data_type}'
                         atom_group['number_of_assigned_shifts'] = 0
                         atom_group['number_of_target_shifts'] = 0
                         atom_group['completeness'] = 0.0
@@ -15053,7 +15053,7 @@ class NmrDpValidation:
                 if row[atom_type] in EMPTY_VALUE or row[iso_number] in EMPTY_VALUE or row[value_name] in EMPTY_VALUE:
                     continue
 
-                data_type = str(row[iso_number]) + row[atom_type].lower() + '_chemical_shifts'
+                data_type = f'{row[iso_number]}{row[atom_type].lower()}_chemical_shifts'
 
                 chain_id = row[chain_id_name]
                 seq_id = row[seq_id_name]
@@ -17009,13 +17009,13 @@ class NmrDpValidation:
                     metal = metal.title()
 
                     if 1.9 - delta_minus <= target_value <= 2.1 or not balanced:
-                        other_bond_type = 'N...' + metal
+                        other_bond_type = f'N...{metal}'
                         other_bond = True
                     elif target_value < 1.9 - delta_minus:
-                        other_bond_type = 'N...' + metal + ' (too close!)'
+                        other_bond_type = f'N...{metal} (too close!)'
                         other_bond = True
                     elif target_value <= 3.2:
-                        other_bond_type = 'N...' + metal + ' (too far!)'
+                        other_bond_type = f'N...{metal} (too far!)'
                         other_bond = True
 
                 elif (atom_id_1_ == 'O' and not is_non_metal_element(comp_id_2, atom_id_2))\
@@ -17025,13 +17025,13 @@ class NmrDpValidation:
                     metal = metal.title()
 
                     if 2.0 - delta_minus <= target_value <= 2.2 or not balanced:
-                        other_bond_type = 'O...' + metal
+                        other_bond_type = f'O...{metal}'
                         other_bond = True
                     elif target_value < 2.0 - delta_minus:
-                        other_bond_type = 'O...' + metal + ' (too close!)'
+                        other_bond_type = f'O...{metal} (too close!)'
                         other_bond = True
                     elif target_value <= 3.4:
-                        other_bond_type = 'O...' + metal + ' (too far!)'
+                        other_bond_type = f'O...{metal} (too far!)'
                         other_bond = True
 
                 elif (atom_id_1_ == 'P' and not is_non_metal_element(comp_id_2, atom_id_2))\
@@ -17041,13 +17041,13 @@ class NmrDpValidation:
                     metal = metal.title()
 
                     if 2.1 - delta_minus <= target_value <= 2.5 or not balanced:
-                        other_bond_type = 'P...' + metal
+                        other_bond_type = f'P...{metal}'
                         other_bond = True
                     elif target_value < 2.1 - delta_minus:
-                        other_bond_type = 'P...' + metal + ' (too close!)'
+                        other_bond_type = f'P...{metal} (too close!)'
                         other_bond = True
                     elif target_value <= 4.0:
-                        other_bond_type = 'P...' + metal + ' (too far!)'
+                        other_bond_type = f'P...{metal} (too far!)'
                         other_bond = True
 
                 elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2))\
@@ -17057,13 +17057,13 @@ class NmrDpValidation:
                     metal = metal.title()
 
                     if 2.2 - delta_minus <= target_value <= 2.6 or not balanced:
-                        other_bond_type = 'S...' + metal
+                        other_bond_type = f'S...{metal}'
                         other_bond = True
                     elif target_value < 2.2 - delta_minus:
-                        other_bond_type = 'S...' + metal + ' (too close!)'
+                        other_bond_type = f'S...{metal} (too close!)'
                         other_bond = True
                     elif target_value <= 4.2:
-                        other_bond_type = 'S...' + metal + ' (too far!)'
+                        other_bond_type = f'S...{metal} (too far!)'
                         other_bond = True
 
                 elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2))\
@@ -17073,13 +17073,13 @@ class NmrDpValidation:
                     metal = metal.title()
 
                     if 2.3 - delta_minus <= target_value <= 2.7 or not balanced:
-                        other_bond_type = 'Se...' + metal
+                        other_bond_type = f'Se...{metal}'
                         other_bond = True
                     elif target_value < 2.3 - delta_minus:
-                        other_bond_type = 'Se...' + metal + ' (too close!)'
+                        other_bond_type = f'Se...{metal} (too close!)'
                         other_bond = True
                     elif target_value <= 4.4:
-                        other_bond_type = 'Se...' + metal + ' (too far!)'
+                        other_bond_type = f'Se...{metal} (too far!)'
                         other_bond = True
 
                 elif chain_id_1 != chain_id_2:
@@ -17345,13 +17345,13 @@ class NmrDpValidation:
                 metal = metal.title()
 
                 if 1.9 <= target_value <= 2.1:
-                    other_bond_type = 'N...' + metal
+                    other_bond_type = f'N...{metal}'
                     other_bond = True
                 elif target_value < 1.9:
-                    other_bond_type = 'N...' + metal + ' (too close!)'
+                    other_bond_type = f'N...{metal} (too close!)'
                     other_bond = True
                 elif target_value <= 3.2:
-                    other_bond_type = 'N...' + metal + ' (too far!)'
+                    other_bond_type = f'N...{metal} (too far!)'
                     other_bond = True
 
             elif (atom_id_1_ == 'O' and not is_non_metal_element(comp_id_2, atom_id_2))\
@@ -17361,13 +17361,13 @@ class NmrDpValidation:
                 metal = metal.title()
 
                 if 2.0 <= target_value <= 2.2:
-                    other_bond_type = 'O...' + metal
+                    other_bond_type = f'O...{metal}'
                     other_bond = True
                 elif target_value < 2.0:
-                    other_bond_type = 'O...' + metal + ' (too close!)'
+                    other_bond_type = f'O...{metal} (too close!)'
                     other_bond = True
                 elif target_value <= 3.4:
-                    other_bond_type = 'O...' + metal + ' (too far!)'
+                    other_bond_type = f'O...{metal} (too far!)'
                     other_bond = True
 
             elif (atom_id_1_ == 'P' and not is_non_metal_element(comp_id_2, atom_id_2))\
@@ -17377,13 +17377,13 @@ class NmrDpValidation:
                 metal = metal.title()
 
                 if 2.1 <= target_value <= 2.5:
-                    other_bond_type = 'P...' + metal
+                    other_bond_type = f'P...{metal}'
                     other_bond = True
                 elif target_value < 2.1:
-                    other_bond_type = 'P...' + metal + ' (too close!)'
+                    other_bond_type = f'P...{metal} (too close!)'
                     other_bond = True
                 elif target_value <= 4.0:
-                    other_bond_type = 'P...' + metal + ' (too far!)'
+                    other_bond_type = f'P...{metal} (too far!)'
                     other_bond = True
 
             elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2))\
@@ -17393,13 +17393,13 @@ class NmrDpValidation:
                 metal = metal.title()
 
                 if 2.2 <= target_value <= 2.6:
-                    other_bond_type = 'S...' + metal
+                    other_bond_type = f'S...{metal}'
                     other_bond = True
                 elif target_value < 2.2:
-                    other_bond_type = 'S...' + metal + ' (too close!)'
+                    other_bond_type = f'S...{metal} (too close!)'
                     other_bond = True
                 elif target_value <= 4.2:
-                    other_bond_type = 'S...' + metal + ' (too far!)'
+                    other_bond_type = f'S...{metal} (too far!)'
                     other_bond = True
 
             elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2))\
@@ -17409,13 +17409,13 @@ class NmrDpValidation:
                 metal = metal.title()
 
                 if 2.3 <= target_value <= 2.7:
-                    other_bond_type = 'Se...' + metal
+                    other_bond_type = f'Se...{metal}'
                     other_bond = True
                 elif target_value < 2.3:
-                    other_bond_type = 'Se...' + metal + ' (too close!)'
+                    other_bond_type = f'Se...{metal} (too close!)'
                     other_bond = True
                 elif target_value <= 4.4:
-                    other_bond_type = 'Se...' + metal + ' (too far!)'
+                    other_bond_type = f'Se...{metal} (too far!)'
                     other_bond = True
 
             elif chain_id_1 != chain_id_2:
@@ -17860,7 +17860,7 @@ class NmrDpValidation:
                             else:
                                 j = 2
                                 while True:
-                                    _data_type = data_type + '_' + str(j)
+                                    _data_type = f'{data_type}_{j}'
                                     if _data_type not in c:
                                         c[_data_type] = [None] * len(c['seq_id'])
                                     if c[_data_type][b] is None:
@@ -17905,7 +17905,7 @@ class NmrDpValidation:
                             phi_psi_value[comp_id] = []
 
                         phi_psi_value[comp_id].append([phi['value'], psi['value'],
-                                                       phi['chain_id'] + ':' + str(phi['seq_id']) + ':' + phi['comp_id']])
+                                                       f"{phi['chain_id']}:{phi['seq_id']}:{phi['comp_id']}"])
 
                         if (phi['error'] is not None) or (psi['error'] is not None):
 
@@ -17944,7 +17944,7 @@ class NmrDpValidation:
                             chi1_chi2_value[comp_id] = []
 
                         chi1_chi2_value[comp_id].append([chi1['value'], chi2['value'],
-                                                         chi1['chain_id'] + ':' + str(chi1['seq_id']) + ':' + chi1['comp_id']])
+                                                         f"{chi1['chain_id']}:{chi1['seq_id']}:{chi1['comp_id']}"])
 
                         if (chi1['error'] is not None) or (chi2['error'] is not None):
 
@@ -18372,7 +18372,7 @@ class NmrDpValidation:
                             else:
                                 j = 2
                                 while True:
-                                    _data_type = data_type + '_' + str(j)
+                                    _data_type = f'{data_type}_{j}'
                                     if _data_type not in c:
                                         c[_data_type] = [None] * len(c['seq_id'])
                                     if c[_data_type][b] is None:
@@ -18633,14 +18633,14 @@ class NmrDpValidation:
             pass
 
         if iso_number_1 < iso_number_2:
-            vector_type = atom_id_1 + '-' + atom_id_2
+            vector_type = f'{atom_id_1}-{atom_id_2}'
         elif iso_number_2 < iso_number_1:
-            vector_type = atom_id_2 + '-' + atom_id_1
+            vector_type = f'{atom_id_2}-{atom_id_1}'
         else:
             sorted_atom_ids = sorted([atom_id_1, atom_id_2])
-            vector_type = sorted_atom_ids[0] + '-' + sorted_atom_ids[1]
+            vector_type = f'{sorted_atom_ids[0]}-{sorted_atom_ids[1]}'
 
-        return vector_type + '_bond_vectors'
+        return f'{vector_type}_bond_vectors'
 
     def __calculateStatsOfSpectralPeak(self, file_list_id: int, sf_framecode: str,
                                        num_dim: int, lp_data: Optional[List[dict]], ent: dict):

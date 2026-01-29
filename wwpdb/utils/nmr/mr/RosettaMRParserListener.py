@@ -2220,7 +2220,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 _atomId_ = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != _atomId_ and coordAtomSite is not None\
                    and (_atomId_ in coordAtomSite['atom_id']
-                        or (_atomId_.endswith('%') and _atomId_[:-1] + '2' in coordAtomSite['atom_id'])):
+                        or (_atomId_.endswith('%') and f'{_atomId_[:-1]}2' in coordAtomSite['atom_id'])):
                     atomId = _atomId_
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
@@ -2503,9 +2503,9 @@ class RosettaMRParserListener(ParseTreeListener):
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
                 found = True
-            elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                      or ('H' + atomId[-1]) in coordAtomSite['atom_id']):
-                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + atomId[-1]
+            elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                      or f'H{atomId[-1]}' in coordAtomSite['atom_id']):
+                atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                 found = True
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
@@ -2520,9 +2520,9 @@ class RosettaMRParserListener(ParseTreeListener):
                         self.__authSeqId = 'label_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
@@ -2545,9 +2545,9 @@ class RosettaMRParserListener(ParseTreeListener):
                         self.__authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                              or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                        atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                         found = True
                         self.__authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
@@ -2572,9 +2572,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
@@ -2597,9 +2597,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
@@ -2629,9 +2629,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.__preferAuthSeq = False
                     self.__authSeqId = 'label_seq_id'
@@ -2654,9 +2654,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
-                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
-                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                elif atomId in ('HN1', 'HN2', 'HN3') and (f'{atomId[-1]}HN' in _coordAtomSite['atom_id']
+                                                          or f'H{atomId[-1]}' in _coordAtomSite['atom_id']):
+                    atomId = f'{atomId[-1]}HN' if f'{atomId[-1]}HN' in _coordAtomSite['atom_id'] else f'H{atomId[-1]}'
                     found = True
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
@@ -5987,7 +5987,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         restraint_name = getRestraintName(self.__cur_subtype)
 
-        sf_framecode = 'ROSETTA_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = f"ROSETTA_{restraint_name.replace(' ', '_')}_{list_id}"
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)

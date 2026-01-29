@@ -272,7 +272,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
-                                        compId = 'D' + compId
+                                        compId = f'D{compId}'
                                 compIds.append(compId)
                             elif self.__col_order.count('residue_name') == 0\
                                     and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
@@ -286,7 +286,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
-                                        compId = 'D' + compId
+                                        compId = f'D{compId}'
                                 compIds.append(compId)
                             else:
                                 compIds.append(self.anySelection[idx])
@@ -575,7 +575,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
-                                        compId = 'D' + compId
+                                        compId = f'D{compId}'
                                 compIds.append(compId)
                             elif self.__col_order.count('residue_name') == 0\
                                     and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
@@ -589,7 +589,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         except StopIteration:
                                             pass
                                     elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
-                                        compId = 'D' + compId
+                                        compId = f'D{compId}'
                                 compIds.append(compId)
                             else:
                                 compIds.append(self.anySelection[idx])

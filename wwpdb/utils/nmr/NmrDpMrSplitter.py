@@ -2491,7 +2491,7 @@ class NmrDpMrSplitter:
                     hint = f" Tips for {mr_format_name} restraints: {hint!r} pattern must be present in the file."
 
                 warn = f"Constraint type of the restraint file ({mr_format_name}) could not be identified."\
-                    + hint + " Did you accidentally select wrong format?"
+                    f"{hint} Did you accidentally select wrong format?"
 
                 self.__reg.report.warning.appendDescription('missing_content',
                                                             {'file_name': file_name, 'description': warn})
@@ -2520,7 +2520,7 @@ class NmrDpMrSplitter:
                     subtype_name += "AMBER restart coordinates (aka. .crd or .rst file), "
 
                 if len(subtype_name) > 0:
-                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
 
                 hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', "\
                     "'%FLAG RESIDUE_POINTER', and '%FLAG AMBER_ATOM_TYPE' lines must be present in the file."
@@ -2531,7 +2531,7 @@ class NmrDpMrSplitter:
                         "referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
                 err = f"{file_name!r} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
-                    + hint + " Did you accidentally select wrong format? Please re-upload the AMBER topology file."
+                    f"{hint} Did you accidentally select wrong format? Please re-upload the AMBER topology file."
 
                 self.__reg.report.error.appendDescription('content_mismatch',
                                                           {'file_name': file_name, 'description': err})
@@ -2558,14 +2558,14 @@ class NmrDpMrSplitter:
                     subtype_name += "Disulfide bond restraints, "
 
                 if len(subtype_name) > 0:
-                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
 
                 hint = " Tips for CHARMM topology: '{Number of atoms} EXT' header line must be present in the file. "\
                     "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} "\
                     "{Cartn_x} {Cartn_y} {Cartn_z} {segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
 
                 err = f"{file_name!r} is not CHARMM topology (aka. CRD or CHARM CARD file) {subtype_name}."\
-                    + hint + " Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
+                    f"{hint} Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
 
                 self.__reg.report.error.appendDescription('content_mismatch',
                                                           {'file_name': file_name, 'description': err})
@@ -2592,13 +2592,13 @@ class NmrDpMrSplitter:
                     subtype_name += "Disulfide bond restraints, "
 
                 if len(subtype_name) > 0:
-                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
 
                 hint = " Tips for GROMACS topology: Proper contents starting with '[ system ]', '[ molecules ]', "\
                     "and '[ atoms ]' lines must be present in the file."
 
                 err = f"{file_name!r} is not GROMACS topology {subtype_name}."\
-                    + hint + " Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
+                    f"{hint} Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
 
                 self.__reg.report.error.appendDescription('content_mismatch',
                                                           {'file_name': file_name, 'description': err})

@@ -42,9 +42,11 @@ class TestNmrDpUtility(unittest.TestCase):
         if report['error'] is None:
             print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{entry_id}: {status}, {error_type}")
@@ -63,7 +65,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + entry_id + '-nef2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + entry_id + '-nef2str.str', type='file')
-        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + entry_id + '-nef2str-str-deposit-log.json', type='file')
+        self.utility.addOutput(name='report_file_path',
+                               value=self.data_dir_path + entry_id + '-nef2str-str-deposit-log.json',
+                               type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setVerbose(False)
 
@@ -76,9 +80,11 @@ class TestNmrDpUtility(unittest.TestCase):
         if report['error'] is None:
             print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{entry_id}: {status}, {error_type}")
@@ -104,9 +110,11 @@ class TestNmrDpUtility(unittest.TestCase):
         if report['error'] is None:
             print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{entry_id}: {status}, {error_type}")
@@ -117,7 +125,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(self.data_dir_path + entry_id + '-nef2str.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-str2nef-consistency-log.json', type='file')
+        self.utility.addInput(name='report_file_path',
+                              value=self.data_dir_path + entry_id + '-str2nef-consistency-log.json',
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
@@ -125,7 +135,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + entry_id + '-str2nef-release-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-str2nef-next.str')
         self.utility.addOutput(name='nef_file_path', value=self.data_dir_path + entry_id + '-str2nef.nef', type='file')
-        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + entry_id + '-str2nef-nef-release-log.json', type='file')
+        self.utility.addOutput(name='report_file_path',
+                               value=self.data_dir_path + entry_id + '-str2nef-nef-release-log.json',
+                               type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setVerbose(False)
 
@@ -141,9 +153,11 @@ class TestNmrDpUtility(unittest.TestCase):
         if report['error'] is None:
             print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            print(f"{entry_id}: {status}\n "
+                  f"missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{entry_id}: {status}, {error_type}")

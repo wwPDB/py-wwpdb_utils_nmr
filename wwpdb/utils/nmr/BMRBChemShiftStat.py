@@ -1848,6 +1848,9 @@ class BMRBChemShiftStat:
         if comp_id == 'C' and atom_id == 'H3':  # DAOTHER-9198 (RNA linking)
             return True, 'CH', 'HN3'
 
+        if comp_id == 'GNG' and atom_id == 'H1':  # GNG:H1 is in BMRB CS statistics
+            return True, 'GNG', 'H1'
+
         if verbose:
             self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() "
                              f"++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD, {_ref_atom_ids}\n")

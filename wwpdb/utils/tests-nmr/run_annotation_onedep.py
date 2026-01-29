@@ -1075,7 +1075,8 @@ class gen_auth_view_onedep:
         #         text_data = get_first_sf_tag(sf, 'Text_data')
         #         if len(text_data) > 0:
         #             set_sf_tag(sf, 'Text_data', '.')
-        #     star_data.write_to_file(self.__ann_wo_raw_pk_star_file_path, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
+        #     star_data.write_to_file(self.__ann_wo_raw_pk_star_file_path,
+        #                             show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
         # """
 
 

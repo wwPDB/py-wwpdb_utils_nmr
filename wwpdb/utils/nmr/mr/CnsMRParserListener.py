@@ -1678,8 +1678,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps1 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain J-coupling vector; "
@@ -2743,7 +2745,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                      "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "
+                                      "Found a diffusion anisotropy vector over multiple covalent bonds "
+                                      "in the 'DANIsotropy' statement; "
                                       f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                       f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -3553,7 +3556,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.factor['chain_id'] = self.polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.reasons is not None:
-                        if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                        if 'atom_id' not in self.factor\
+                           or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                             self.factor['atom_id'] = [None]
                             if not self.with_axis\
                                and 'segment_id_mismatch' in self.reasons\
@@ -3933,8 +3937,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     if _atomId in coordAtomSite['atom_id']:
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
-                                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                                               or ('H' + _atomId[-1] in coordAtomSite['atom_id'])):
+                                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                                               or f'H{_atomId[-1]}' in coordAtomSite['atom_id']):
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
@@ -4456,7 +4460,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                          f"The 'name' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                          f"The 'name' clause has no effect for a conjunction of "
+                                          f"factor {self.getReadableFactor(__factor)} "
                                           f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.NONE():
@@ -4496,7 +4501,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                        and 'alt_chain_id' in self.factor:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
                         for atom in self.factor['atom_selection']:
-                            atom['segment_id'] = 'not ' + atom['segment_id']
+                            atom['segment_id'] = f"not {atom['segment_id']}"
 
                     else:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
@@ -4904,7 +4909,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.reasons is not None:
-                            if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                            if 'atom_id' not in self.factor\
+                               or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                                 self.factor['atom_id'] = [None]
                                 if not self.with_axis\
                                    and 'segment_id_mismatch' in self.reasons\
@@ -4989,7 +4995,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.reasons is not None:
-                            if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                            if 'atom_id' not in self.factor\
+                               or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                                 if 'segment_id_mismatch' in self.reasons\
                                    and chainId not in self.reasons['segment_id_mismatch']:
                                     self.reasons = None

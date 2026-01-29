@@ -170,11 +170,13 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_restraint.
-    def enterDihedral_angle_restraint(self, ctx: SchrodingerMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+    def enterDihedral_angle_restraint(self, ctx: SchrodingerMRParser.Dihedral_angle_restraintContext
+                                      ):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_restraint.
-    def exitDihedral_angle_restraint(self, ctx: SchrodingerMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+    def exitDihedral_angle_restraint(self, ctx: SchrodingerMRParser.Dihedral_angle_restraintContext
+                                     ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#angle_restraint.
@@ -397,11 +399,13 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     self.distRestraints -= 1
 
     # Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
-    def exitDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext):  # pylint: disable=unused-argument
+    def exitDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext
+                                      ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_statement.
-    def enterDihedral_angle_statement(self, ctx: SchrodingerMRParser.Dihedral_angle_statementContext):  # pylint: disable=unused-argument
+    def enterDihedral_angle_statement(self, ctx: SchrodingerMRParser.Dihedral_angle_statementContext
+                                      ):  # pylint: disable=unused-argument
         self.dihedStatements += 1
         self.cur_subtype = 'dihed'
 
@@ -409,7 +413,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.addSf()
 
     # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_statement.
-    def exitDihedral_angle_statement(self, ctx: SchrodingerMRParser.Dihedral_angle_statementContext):  # pylint: disable=unused-argument
+    def exitDihedral_angle_statement(self, ctx: SchrodingerMRParser.Dihedral_angle_statementContext
+                                     ):  # pylint: disable=unused-argument
         if self.createSfDict:
             self.trimSfWoLp()
 
@@ -1923,7 +1928,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                         self.factor['chain_id'] = self.polySeq[0]['auth_chain_id']
                         self.factor['auth_chain_id'] = alt_pattern
                     elif self.reasons is not None:
-                        if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                        if 'atom_id' not in self.factor\
+                           or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                             if 'segment_id_mismatch' in self.reasons\
                                and chainId not in self.reasons['segment_id_mismatch']:
                                 self.reasons = None
@@ -2783,9 +2789,12 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                 _origin =\
                                     self.cR.getDictListWithFilter('atom_site',
                                                                   CARTN_DATA_ITEMS,
-                                                                  [{'name': self.authAsymId, 'type': 'str', 'value': _atom['chain_id']},
-                                                                   {'name': self.authSeqId, 'type': 'int', 'value': _atom['seq_id']},
-                                                                   {'name': self.authAtomId, 'type': 'str', 'value': _atom['atom_id']},
+                                                                  [{'name': self.authAsymId, 'type': 'str',
+                                                                    'value': _atom['chain_id']},
+                                                                   {'name': self.authSeqId, 'type': 'int',
+                                                                    'value': _atom['seq_id']},
+                                                                   {'name': self.authAtomId, 'type': 'str',
+                                                                    'value': _atom['atom_id']},
                                                                    {'name': self.modelNumName, 'type': 'int',
                                                                     'value': self.representativeModelId},
                                                                    {'name': 'label_alt_id', 'type': 'enum',
@@ -2871,9 +2880,12 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                 _origin =\
                                     self.cR.getDictListWithFilter('atom_site',
                                                                   CARTN_DATA_ITEMS,
-                                                                  [{'name': self.authAsymId, 'type': 'str', 'value': _atom['chain_id']},
-                                                                   {'name': self.authSeqId, 'type': 'int', 'value': _atom['seq_id']},
-                                                                   {'name': self.authAtomId, 'type': 'str', 'value': _atom['atom_id']},
+                                                                  [{'name': self.authAsymId, 'type': 'str',
+                                                                    'value': _atom['chain_id']},
+                                                                   {'name': self.authSeqId, 'type': 'int',
+                                                                    'value': _atom['seq_id']},
+                                                                   {'name': self.authAtomId, 'type': 'str',
+                                                                    'value': _atom['atom_id']},
                                                                    {'name': self.modelNumName, 'type': 'int',
                                                                     'value': self.representativeModelId},
                                                                    {'name': 'label_alt_id', 'type': 'enum',
@@ -2982,9 +2994,12 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                 _origin =\
                                     self.cR.getDictListWithFilter('atom_site',
                                                                   _CARTN_DATA_ITEMS,
-                                                                  [{'name': self.authAsymId, 'type': 'str', 'value': _atom['chain_id']},
-                                                                   {'name': self.authSeqId, 'type': 'int', 'value': _atom['seq_id']},
-                                                                   {'name': self.authAtomId, 'type': 'str', 'value': _atom['atom_id']},
+                                                                  [{'name': self.authAsymId, 'type': 'str',
+                                                                    'value': _atom['chain_id']},
+                                                                   {'name': self.authSeqId, 'type': 'int',
+                                                                    'value': _atom['seq_id']},
+                                                                   {'name': self.authAtomId, 'type': 'str',
+                                                                    'value': _atom['atom_id']},
                                                                    {'name': self.modelNumName, 'type': 'int',
                                                                     'value': self.representativeModelId},
                                                                    {'name': 'label_alt_id', 'type': 'enum',
@@ -3120,9 +3135,12 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                 _origin =\
                                     self.cR.getDictListWithFilter('atom_site',
                                                                   _CARTN_DATA_ITEMS,
-                                                                  [{'name': self.authAsymId, 'type': 'str', 'value': _atom['chain_id']},
-                                                                   {'name': self.authSeqId, 'type': 'int', 'value': _atom['seq_id']},
-                                                                   {'name': self.authAtomId, 'type': 'str', 'value': _atom['atom_id']},
+                                                                  [{'name': self.authAsymId, 'type': 'str',
+                                                                    'value': _atom['chain_id']},
+                                                                   {'name': self.authSeqId, 'type': 'int',
+                                                                    'value': _atom['seq_id']},
+                                                                   {'name': self.authAtomId, 'type': 'str',
+                                                                    'value': _atom['atom_id']},
                                                                    {'name': self.modelNumName, 'type': 'int',
                                                                     'value': self.representativeModelId},
                                                                    {'name': 'label_alt_id', 'type': 'enum',
@@ -3373,7 +3391,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                        and 'alt_chain_id' in self.factor:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
                         for atom in self.factor['atom_selection']:
-                            atom['segment_id'] = 'not ' + atom['segment_id']
+                            atom['segment_id'] = f"not {atom['segment_id']}"
 
                     else:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)

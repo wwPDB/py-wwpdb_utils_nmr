@@ -1238,8 +1238,9 @@ class NmrDpMrSplitter:
             a_mr_format_name = ('an ' if mr_format_name[0] in ('AINMX') else 'a ') + _mr_format_name
 
             atom_like_names =\
-                self.__reg.csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ari', 'nm-res-bar', 'nm-res-bio', 'nm-res-dyn',
-                                                                                     'nm-res-isd', 'nm-res-ros', 'nm-res-syb', 'nm-res-oth')
+                self.__reg.csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ari', 'nm-res-bar', 'nm-res-bio',
+                                                                                     'nm-res-dyn', 'nm-res-isd', 'nm-res-ros',
+                                                                                     'nm-res-syb', 'nm-res-oth')
                                                                   or is_aux_amb or is_aux_cha or is_aux_gro or is_aux_pdb else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
@@ -2181,7 +2182,8 @@ class NmrDpMrSplitter:
                     if os.path.exists(file_path + '-corrected'):
                         file_path = file_path + '-corrected'
 
-                    # use ANTLR SSL prediction mode for performance gain if restaurants have deep but simple atom selection (DAOTHER-10315)
+                    # use ANTLR SSL prediction mode for performance gain if restaurants have deep
+                    # but simple atom selection (DAOTHER-10315)
                     if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
                         has_deep_l_pattern = False
                         with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
@@ -2249,7 +2251,8 @@ class NmrDpMrSplitter:
                                     err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
                                 if is_not_ascii:
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} "\
+                                        "and must be 'ascii'.\n"
                                 elif not div_test and has_content and self.__reg.remediation_mode:
                                     fixed = self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     corrected |= fixed
@@ -2293,7 +2296,8 @@ class NmrDpMrSplitter:
                             if _err is not None and not COMMENT_PAT.match(_err) and not _err.isspace():
                                 s = '. ' if _err.startswith('Do you') else ':\n'
                                 err = err[:len_err] +\
-                                    ("However, the error may be due to missing statement (e.g. 'noe', 'restraint dihedral', 'sanisotropy') "
+                                    ("However, the error may be due to missing statement "
+                                     "(e.g. 'noe', 'restraint dihedral', 'sanisotropy') "
                                      f"at the beginning of {_err.strip().split(' ')[0]!r} "
                                      "and note that the statement should be ended with 'end' tag "
                                      if _err.lower().strip().startswith('class')
@@ -2375,7 +2379,8 @@ class NmrDpMrSplitter:
             except ValueError as e:
 
                 self.__reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - " + str(e))
+                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
+                                                          "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {str(e)}\n")
@@ -2486,7 +2491,7 @@ class NmrDpMrSplitter:
                     hint = f" Tips for {mr_format_name} restraints: {hint!r} pattern must be present in the file."
 
                 warn = f"Constraint type of the restraint file ({mr_format_name}) could not be identified."\
-                    + hint + " Did you accidentally select wrong format?"
+                    f"{hint} Did you accidentally select wrong format?"
 
                 self.__reg.report.warning.appendDescription('missing_content',
                                                             {'file_name': file_name, 'description': warn})
@@ -2515,7 +2520,7 @@ class NmrDpMrSplitter:
                     subtype_name += "AMBER restart coordinates (aka. .crd or .rst file), "
 
                 if len(subtype_name) > 0:
-                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
 
                 hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', "\
                     "'%FLAG RESIDUE_POINTER', and '%FLAG AMBER_ATOM_TYPE' lines must be present in the file."
@@ -2526,7 +2531,7 @@ class NmrDpMrSplitter:
                         "referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
                 err = f"{file_name!r} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
-                    + hint + " Did you accidentally select wrong format? Please re-upload the AMBER topology file."
+                    f"{hint} Did you accidentally select wrong format? Please re-upload the AMBER topology file."
 
                 self.__reg.report.error.appendDescription('content_mismatch',
                                                           {'file_name': file_name, 'description': err})
@@ -2553,14 +2558,14 @@ class NmrDpMrSplitter:
                     subtype_name += "Disulfide bond restraints, "
 
                 if len(subtype_name) > 0:
-                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
 
                 hint = " Tips for CHARMM topology: '{Number of atoms} EXT' header line must be present in the file. "\
-                    "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} {Cartn_x} {Cartn_y} {Cartn_z} "\
-                    "{segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
+                    "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} "\
+                    "{Cartn_x} {Cartn_y} {Cartn_z} {segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
 
                 err = f"{file_name!r} is not CHARMM topology (aka. CRD or CHARM CARD file) {subtype_name}."\
-                    + hint + " Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
+                    f"{hint} Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
 
                 self.__reg.report.error.appendDescription('content_mismatch',
                                                           {'file_name': file_name, 'description': err})
@@ -2587,13 +2592,13 @@ class NmrDpMrSplitter:
                     subtype_name += "Disulfide bond restraints, "
 
                 if len(subtype_name) > 0:
-                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
 
                 hint = " Tips for GROMACS topology: Proper contents starting with '[ system ]', '[ molecules ]', "\
                     "and '[ atoms ]' lines must be present in the file."
 
                 err = f"{file_name!r} is not GROMACS topology {subtype_name}."\
-                    + hint + " Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
+                    f"{hint} Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
 
                 self.__reg.report.error.appendDescription('content_mismatch',
                                                           {'file_name': file_name, 'description': err})
@@ -2977,7 +2982,8 @@ class NmrDpMrSplitter:
             except Exception as e:
 
                 self.__reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - " + str(e))
+                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() "
+                                                          "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - {str(e)}\n")
@@ -3980,7 +3986,8 @@ class NmrDpMrSplitter:
             if not has_mr_header:
 
                 dst_name_prefix = os.path.splitext(os.path.basename(dst_file))[0]
-                dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(dst_name_prefix)]
+                dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names
+                                 if div_name.startswith(dst_name_prefix)]
 
                 if (not file_name.endswith('str') or mr_file_path.endswith('-remediated.mr')) and len(dst_file_list) == 0:
                     dst_file_list.append(dst_file)
@@ -4148,7 +4155,8 @@ class NmrDpMrSplitter:
                         else:
                             _file_name = ''
 
-                        err = f"The restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
+                        err = f"The restraint file {file_name!r} {_file_name}{ins_msg}does not match with "\
+                            "any known restraint format. "\
                             "@todo: It needs to be reviewed or marked as entry without restraints."
 
                         self.__reg.report.error.appendDescription('internal_error',
@@ -5025,7 +5033,8 @@ class NmrDpMrSplitter:
                             else:
                                 _file_name = ''
 
-                            err = f"The restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
+                            err = f"The restraint file {file_name!r} {_file_name}{ins_msg}does not match with "\
+                                "any known restraint format. "\
                                 "@todo: It needs to be reviewed or marked as entry without restraints."
 
                             self.__reg.report.error.appendDescription('internal_error',
@@ -6371,7 +6380,8 @@ class NmrDpMrSplitter:
                                             has_parser_error = parser_err_listener is not None\
                                                 and parser_err_listener.getMessageList() is not None
                                             if test_file_type == 'nm-res-ros':
-                                                _content_subtype = listener.getEffectiveContentSubtype() if listener is not None else None
+                                                _content_subtype = listener.getEffectiveContentSubtype() if listener is not None\
+                                                    else None
                                             else:
                                                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                                             if _content_subtype is not None and len(_content_subtype) == 0:
@@ -6847,7 +6857,8 @@ class NmrDpMrSplitter:
         file_name = os.path.basename(div_try_file)
 
         _, _, valid_types, possible_types =\
-            self.__detectOtherPossibleFormatAsErrorOfLegacyMr(div_try_file if j3 > 0 else div_ext_file, file_name, 'nm-res-mr', [], True)
+            self.__detectOtherPossibleFormatAsErrorOfLegacyMr(div_try_file if j3 > 0 else div_ext_file,
+                                                              file_name, 'nm-res-mr', [], True)
 
         len_valid_types = len(valid_types)
         len_possible_types = len(possible_types)
@@ -7981,7 +7992,8 @@ class NmrDpMrSplitter:
 
         return is_valid, err, _valid_types, _possible_types
 
-    def __detectOtherPossibleFormatAsErrorOfLegacyMr__(self, file_path: str, file_name: str, file_type: str, dismiss_err_lines: List[int],
+    def __detectOtherPossibleFormatAsErrorOfLegacyMr__(self, file_path: str, file_name: str, file_type: str,
+                                                       dismiss_err_lines: List[int],
                                                        _file_type: str, agreed_w_cns: bool = False
                                                        ) -> Tuple[bool, str, Optional[str], dict, dict]:
         """ Report other possible format as error of a given legacy restraint file.
@@ -8060,7 +8072,8 @@ class NmrDpMrSplitter:
                                     if description['line_number'] in dismiss_err_lines:
                                         continue
                                     _err = f"[Syntax error as {_a_mr_format_name} file] "\
-                                           f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                           f"line {description['line_number']}:{description['column_position']} "\
+                                           f"{description['message']}\n"
                                     if 'input' in description:
                                         enc = detect_encoding(description['input'])
                                         is_not_ascii = False
@@ -8082,7 +8095,8 @@ class NmrDpMrSplitter:
                                     if description['line_number'] in dismiss_err_lines:
                                         continue
                                     _err += f"[Syntax error as {_a_mr_format_name} file] "\
-                                            f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                            f"line {description['line_number']}:{description['column_position']} "\
+                                            f"{description['message']}\n"
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
@@ -8091,12 +8105,14 @@ class NmrDpMrSplitter:
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, "\
                                 "the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth'\
-                                and (lexer_err_listener.getMessageList() is not None or parser_err_listener.getMessageList() is not None):
+                                and (lexer_err_listener.getMessageList() is not None
+                                     or parser_err_listener.getMessageList() is not None):
                             is_valid = False
                             err = ''
 
                         if is_valid:
-                            if has_content and lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None:
+                            if has_content and lexer_err_listener.getMessageList() is None\
+                               and parser_err_listener.getMessageList() is None:
                                 genuine_type = _file_type
                             valid_types[_file_type] = len(_content_subtype)
                         elif _file_type != 'nm-aux-xea':  # 2lcn

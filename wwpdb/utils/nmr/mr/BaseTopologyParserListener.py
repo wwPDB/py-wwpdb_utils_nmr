@@ -214,7 +214,8 @@ class BaseTopologyParserListener():
                                         _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
                                         atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
-                                    atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
+                                    atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds,
+                                                                    ccU=self.ccU, unambig=self.unambig)
 
                                     if atomId[0] not in PROTON_BEGIN_CODE or atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
@@ -259,7 +260,7 @@ class BaseTopologyParserListener():
                                             compId = self.nonPolyModel[0]['comp_id'][0]
 
                             if compId is not None:
-                                compIdList.append(compId + '?')  # decide when coordinate is available
+                                compIdList.append(f'{compId}?')  # decide when coordinate is available
                                 chemCompAtomIds = None
                                 if self.ccU.updateChemCompDict(compId):
                                     chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
@@ -279,7 +280,8 @@ class BaseTopologyParserListener():
                                             _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
                                             atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
-                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
+                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds,
+                                                                        ccU=self.ccU, unambig=self.unambig)
 
                                         if chemCompAtomIds is not None and atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
@@ -325,7 +327,7 @@ class BaseTopologyParserListener():
                                         compId = self.nonPolyModel[0]['comp_id'][0]
 
                         if compId is not None:
-                            compIdList.append(compId + '?')  # decide when coordinate is available
+                            compIdList.append(f'{compId}?')  # decide when coordinate is available
                             chemCompAtomIds = None
                             if self.ccU.updateChemCompDict(compId):
                                 chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
@@ -335,8 +337,9 @@ class BaseTopologyParserListener():
 
                                     if compId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
-                                                                                  None, compId, atomNum['auth_atom_id'], None, None, True)
+                                        _, _, atomId =\
+                                            retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                       None, compId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -344,7 +347,8 @@ class BaseTopologyParserListener():
                                         _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
                                         atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
-                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
+                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds,
+                                                                    ccU=self.ccU, unambig=self.unambig)
 
                                     if chemCompAtomIds is not None and atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
@@ -397,8 +401,9 @@ class BaseTopologyParserListener():
 
                                 if authCompId in nonPolyCompIdList and self.mrAtomNameMapping is not None\
                                    and atomNum['auth_atom_id'][0] in PROTON_BEGIN_CODE and k not in retrievedAtomNumList:
-                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
-                                                                              None, authCompId, atomNum['auth_atom_id'], None, None, True)
+                                    _, _, atomId =\
+                                        retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping,
+                                                                   None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                 else:
                                     atomId = atomNum['auth_atom_id']
 
@@ -406,7 +411,8 @@ class BaseTopologyParserListener():
                                     _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
                                     atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
-                                atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
+                                atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds,
+                                                                ccU=self.ccU, unambig=self.unambig)
 
                                 if atomId is not None and atomId in chemCompAtomIds:
                                     atomNum['atom_id'] = atomId
@@ -451,7 +457,8 @@ class BaseTopologyParserListener():
                                  if 'identical_chain_id' in ps_cif and len(ps_cif['seq_id']) > 3)
                 len_top_na = sum(len(ps_top['seq_id']) for ps_top in self.polySeqPrmTop
                                  if len(ps_top['seq_id']) > 3
-                                 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']))
+                                 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?')
+                                         for compId in ps_top['comp_id']))
                 if len_cif_na == len_top_na:
                     chainIdList = []
                     seqIdList = []
@@ -665,7 +672,7 @@ class BaseTopologyParserListener():
 
             if len(self.__seqAlign) == 0:
                 mrFormatName = getRestraintFormatName(self.file_type)
-                _a_mr_format_name = 'the ' + mrFormatName
+                _a_mr_format_name = f'the {mrFormatName}'
 
                 ref_code = getOneLetterCodeCanSequence(self.polySeqModel[0]['comp_id'])
                 test_code = getOneLetterCodeCanSequence(self.polySeqPrmTop[0]['comp_id'])
@@ -741,7 +748,8 @@ class BaseTopologyParserListener():
                                         _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
                                         atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
-                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
+                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds,
+                                                                    ccU=self.ccU, unambig=self.unambig)
                                     if atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
                                         continue
@@ -963,7 +971,8 @@ class BaseTopologyParserListener():
                                             _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
                                             atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
-                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.ccU, unambig=self.unambig)
+                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds,
+                                                                        ccU=self.ccU, unambig=self.unambig)
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
                                             continue

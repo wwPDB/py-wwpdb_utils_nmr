@@ -69,7 +69,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + entry_id + '-disulfide-bond-nef2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-disulfide-bond-next.nef')
-        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str', type='file')
+        self.utility.addOutput(name='nmr-star_file_path',
+                               value=self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str',
+                               type='file')
         self.utility.addOutput(name='report_file_path',
                                value=self.data_dir_path + entry_id + '-disulfide-bond-nef2str-str-deposit-log.json',
                                type='file')

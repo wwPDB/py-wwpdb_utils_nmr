@@ -292,7 +292,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(os.path.join(TESTOUTPUT, "2l9r-nef2str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "2l9r-next.nef"))
         self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "2l9r-nef2str.str"), type="file")
-        self.utility.addOutput(name="report_file_path", value=os.path.join(TESTOUTPUT, "2l9r-nef2str-str-deposit-log.json"), type="file")
+        self.utility.addOutput(name="report_file_path",
+                               value=os.path.join(TESTOUTPUT, "2l9r-nef2str-str-deposit-log.json"),
+                               type="file")
         self.utility.addOutput(name="entry_id", value="NEED_ACC_NO", type="param")
         self.utility.setVerbose(False)
 
@@ -331,7 +333,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name="check_mandatory_tag", value=True, type="param")
         self.utility.setLog(os.path.join(TESTOUTPUT, "mth1743-test-20190919-nef2str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "mth1743-test-20190919-next.nef"))
-        self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "mth1743-test-20190919-nef2str.str"), type="file")
+        self.utility.addOutput(name="nmr-star_file_path",
+                               value=os.path.join(TESTOUTPUT, "mth1743-test-20190919-nef2str.str"),
+                               type="file")
         self.utility.addOutput(name="report_file_path",
                                value=os.path.join(TESTOUTPUT, "mth1743-test-20190919-nef2str-str-deposit-log.json"),
                                type="file")
@@ -469,7 +473,9 @@ class TestNmrDpUtility(unittest.TestCase):
     @unittest.skipIf(skipsome is True, "Skip some tests")
     def test_nmr_str_consistency_check_review(self):
         self.utility.setSource(os.path.join(self.data_dir_path, "D_800107_nmr-data-str-review_P1.str.V20.rev"))
-        self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "D_800107_model_P1.cif.V3"), type="file")
+        self.utility.addInput(name="coordinate_file_path",
+                              value=os.path.join(self.data_dir_path, "D_800107_model_P1.cif.V3"),
+                              type="file")
         self.utility.setLog(os.path.join(TESTOUTPUT, "D_800107_nmr-data-str-consistency-log.json"))
 
         self.utility.op("nmr-str-consistency-check")
@@ -479,7 +485,9 @@ class TestNmrDpUtility(unittest.TestCase):
     @unittest.skipIf(skipsome is True, "Skip some tests")
     def test_nmr_str_consistency_check_daother_5926(self):
         self.utility.setSource(os.path.join(self.data_dir_path, "swallow_NMR-Star_3-1.str"))
-        self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "D_800365_model_P1.cif.V4"), type="file")
+        self.utility.addInput(name="coordinate_file_path",
+                              value=os.path.join(self.data_dir_path, "D_800365_model_P1.cif.V4"),
+                              type="file")
         self.utility.addInput(name="nonblk_anomalous_cs", value=True, type="param")
         self.utility.addInput(name="nonblk_bad_nterm", value=True, type="param")
         self.utility.addInput(name="resolve_conflict", value=True, type="param")
@@ -496,7 +504,9 @@ class TestNmrDpUtility(unittest.TestCase):
             self.test_nmr_str_consistency_check_daother_5926()
 
         self.utility.setSource(os.path.join(self.data_dir_path, "swallow_NMR-Star_3-1.str"))
-        self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "D_800365_model_P1.cif.V4"), type="file")
+        self.utility.addInput(name="coordinate_file_path",
+                              value=os.path.join(self.data_dir_path, "D_800365_model_P1.cif.V4"),
+                              type="file")
         self.utility.addInput(name="report_file_path", value=jsonLogPath, type="file")
         self.utility.addInput(name="nonblk_anomalous_cs", value=True, type="param")
         self.utility.addInput(name="nonblk_bad_nterm", value=True, type="param")

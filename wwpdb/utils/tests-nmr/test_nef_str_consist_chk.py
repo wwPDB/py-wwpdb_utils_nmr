@@ -30,7 +30,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def __test_nmr_nef_consistency(self, entry_id):
         self.utility.setSource(self.data_dir_path + self.nef_data_file_path[entry_id]['nef'])
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.nef_data_file_path[entry_id]['cif'], type='file')
+        self.utility.addInput(name='coordinate_file_path',
+                              value=self.data_dir_path + self.nef_data_file_path[entry_id]['cif'],
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
@@ -49,7 +51,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def __test_nmr_str_consistency(self, entry_id):  # pylint: disable=unused-private-member
         self.utility.setSource(self.data_dir_path + self.str_data_file_path[entry_id]['str'])
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.str_data_file_path[entry_id]['cif'], type='file')
+        self.utility.addInput(name='coordinate_file_path',
+                              value=self.data_dir_path + self.str_data_file_path[entry_id]['cif'],
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')

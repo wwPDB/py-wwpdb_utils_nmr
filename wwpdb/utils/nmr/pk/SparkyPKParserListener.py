@@ -304,7 +304,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
                     self.checkAssignments2D(index, assignments, dstFunc)
 
-                if not has_assignments and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
+                if not has_assignments\
+                   and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
                     _ass_ = ass.replace('NH', 'HN')
                     assignments = []
                     hint = None
@@ -464,7 +465,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
                     self.checkAssignments3D(index, assignments, dstFunc)
 
-                if not has_assignments and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
+                if not has_assignments\
+                   and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
                     _ass_ = ass.replace('NH', 'HN')
                     assignments = []
                     hint = None
@@ -635,7 +637,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
                     self.checkAssignments4D(index, assignments, dstFunc)
 
-                if not has_assignments and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
+                if not has_assignments\
+                   and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
                     _ass_ = ass.replace('NH', 'HN')
                     assignments = []
                     hint = None
@@ -761,8 +764,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         self.peaks2D -= 1
                         return
 
-                    dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_dev, y_dev, None, None,
-                                                  x_hz, y_hz, x_lw_hz, y_lw_hz, height, None, volume, None)
+                    dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_dev, y_dev,
+                                                  None, None,
+                                                  x_hz, y_hz, x_lw_hz, y_lw_hz,
+                                                  height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks2D -= 1
@@ -876,8 +881,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         self.peaks3D -= 1
                         return
 
-                    dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, z_dev, None, None, None,
-                                                  x_hz, y_hz, z_hz, x_lw_hz, y_lw_hz, z_lw_hz, height, None, volume, None)
+                    dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, z_dev,
+                                                  None, None, None,
+                                                  x_hz, y_hz, z_hz, x_lw_hz, y_lw_hz, z_lw_hz,
+                                                  height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks3D -= 1
@@ -1002,8 +1009,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         self.peaks4D -= 1
                         return
 
-                    dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_dev, y_dev, z_dev, a_dev, None, None, None, None,
-                                                  x_hz, y_hz, z_hz, a_hz, x_lw_hz, y_lw_hz, z_lw_hz, a_lw_hz, height, None, volume, None)
+                    dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_dev, y_dev, z_dev, a_dev,
+                                                  None, None, None, None,
+                                                  x_hz, y_hz, z_hz, a_hz, x_lw_hz, y_lw_hz, z_lw_hz, a_lw_hz,
+                                                  height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks4D -= 1

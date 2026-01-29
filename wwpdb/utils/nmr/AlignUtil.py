@@ -418,7 +418,7 @@ def getGaugeCode(seqIdList: List[int], offset: int = 0) -> str:
 
             if None in (lastSeqId, nextSeqId) or nextSeqId > lastSeqId + 1:
                 p = idx + offset
-                gaugeCode = gaugeCode[0:p] + ' ' + gaugeCode[p:]
+                gaugeCode = f'{gaugeCode[0:p]} {gaugeCode[p:]}'
                 offset += 1
         else:
             lastSeqId = seqId
@@ -1083,7 +1083,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     if not any(cmp2 not in cmp1 for cmp1, cmp2 in zip(ps1['comp_id'], ps2['comp_id'])):
                         ps2['comp_id'] = copy.copy(ps1['comp_id'])
 
-            pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+            pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
             pA.addTestSequence(ps2['comp_id'], chain_id)
             pA.doAlign()
 
@@ -1102,7 +1102,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                                   or conflict == 1):
                 _ps2 = fillInnerBlankCompId(ps2)
 
-                pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                 pA.addTestSequence(_ps2['comp_id'], chain_id)
                 pA.doAlign()
 
@@ -1130,7 +1130,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
             prefer_ps1_alt_comp_id = prefer_ps2_auth_comp_id = False
 
             if _matched > 0 and conflict > 0 and not_decided_ps2_comp_id and 'auth_comp_id' in ps2:
-                pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                 pA.addTestSequence(ps2['auth_comp_id'], chain_id)
                 pA.doAlign()
 
@@ -1150,7 +1150,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                         prefer_ps2_auth_comp_id = True
 
             elif _matched > 0 and conflict > 0 and 'alt_comp_id' in ps1 and conservative:
-                pA.setReferenceSequence(ps1['alt_comp_id'], 'REF' + chain_id)
+                pA.setReferenceSequence(ps1['alt_comp_id'], f'REF{chain_id}')
                 pA.addTestSequence(ps2['comp_id'], chain_id)
                 pA.doAlign()
 
@@ -1211,10 +1211,12 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                 idx2 += 1
                                 break
 
-            _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1, seqIdName=seq_id_name,
-                                                                       compIdName='alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id')
-            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2,
-                                                                       compIdName='auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id')
+            _ps1 = ps1 if offset_1 == 0\
+                else fillBlankCompIdWithOffset(ps1, offset_1, seqIdName=seq_id_name,
+                                               compIdName='alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id')
+            _ps2 = ps2 if offset_2 == 0\
+                else fillBlankCompIdWithOffset(ps2, offset_2,
+                                               compIdName='auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id')
 
             if conflict == 0:
                 if hasLargeInnerSeqGap(_ps2) and not hasLargeInnerSeqGap(_ps1):
@@ -1277,7 +1279,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 _ps1_ = __ps1
                 _ps2_ = __ps2
 
-                pA.setReferenceSequence(_ps1_['alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id'], 'REF' + chain_id)
+                pA.setReferenceSequence(_ps1_['alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id'], f'REF{chain_id}')
                 pA.addTestSequence(_ps2_['auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id'], chain_id)
                 pA.doAlign()
 
@@ -1322,7 +1324,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                         break
                                     idx2 += 1
 
-                        if beg >= 0 and beg + 1 < len(_ps2['seq_id']) and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
+                        if beg >= 0 and beg + 1 < len(_ps2['seq_id'])\
+                           and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
                             beg = ps2['seq_id'].index(s_p)
                             end = ps2['seq_id'].index(s_q)
                             comp_ids = ps2['comp_id'][beg + 1:end]
@@ -1451,11 +1454,11 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 if ' ' in ref_gauge_code:
                     for p, g in enumerate(ref_gauge_code):
                         if g == ' ':
-                            ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                            ref_code = f'{ref_code[0:p]}-{ref_code[p + 1:]}'
                 if ' ' in test_gauge_code:
                     for p, g in enumerate(test_gauge_code):
                         if g == ' ':
-                            test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                            test_code = f'{test_code[0:p]}-{test_code[p + 1:]}'
                 # 5n8m: nmr restraint remediation
                 _ps1['seq_id'] = seq_id1
                 _ps2['seq_id'] = seq_id2
@@ -1574,7 +1577,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                     if not any(cmp2 not in cmp1 for cmp1, cmp2 in zip(ps1['comp_id'], ps2['comp_id'])):
                         ps2['comp_id'] = copy.copy(ps1['comp_id'])
 
-            pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+            pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
             pA.addTestSequence(ps2['comp_id'], chain_id)
             pA.doAlign()
 
@@ -1591,7 +1594,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
             if _matched > 0 and conflict > 0:
                 _ps1, _ps2 = beautifyPolySeq(ps1, ps2, seqIdName1='seq_id')
 
-                pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                 pA.addTestSequence(_ps2['comp_id'], chain_id)
                 pA.doAlign()
 
@@ -1694,7 +1697,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                 _ps1_ = __ps1
                 _ps2_ = __ps2
 
-                pA.setReferenceSequence(_ps1_['comp_id'], 'REF' + chain_id)
+                pA.setReferenceSequence(_ps1_['comp_id'], f'REF{chain_id}')
                 pA.addTestSequence(_ps2_['comp_id'], chain_id)
                 pA.doAlign()
 
@@ -1739,7 +1742,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                                         break
                                     idx2 += 1
 
-                        if beg >= 0 and beg + 1 < len(_ps2['seq_id']) and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
+                        if beg >= 0 and beg + 1 < len(_ps2['seq_id'])\
+                           and _ps2['seq_id'][beg] == s_p and _ps2['seq_id'][beg + 1] == s_p + 1:
                             beg = ps2['seq_id'].index(s_p)
                             end = ps2['seq_id'].index(s_q)
                             comp_ids = ps2['comp_id'][beg + 1:end]
@@ -1823,11 +1827,11 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                 if ' ' in ref_gauge_code:
                     for p, g in enumerate(ref_gauge_code):
                         if g == ' ':
-                            ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                            ref_code = f'{ref_code[0:p]}-{ref_code[p + 1:]}'
                 if ' ' in test_gauge_code:
                     for p, g in enumerate(test_gauge_code):
                         if g == ' ':
-                            test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                            test_code = f'{test_code[0:p]}-{test_code[p + 1:]}'
                 # 5n8m: nmr restraint remediation
                 _ps1['seq_id'] = seq_id1
                 _ps2['seq_id'] = seq_id2
@@ -1892,7 +1896,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
     warnings = []
 
     mrFormatName = getRestraintFormatName(fileType)
-    _a_mr_format_name = 'the ' + mrFormatName
+    _a_mr_format_name = f'the {mrFormatName}'
 
     mr_chains = len(polySeqRst) if len(polySeqRst) < LEN_LARGE_ASYM_ID else LEN_LARGE_ASYM_ID
 
@@ -1974,7 +1978,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
         ps1 = next(ps1 for ps1 in polySeqModel if ps1[chain_id_name] == chain_id)
         ps2 = next(ps2 for ps2 in polySeqRst if ps2['chain_id'] == chain_id2)
 
-        pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+        pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
         pA.addTestSequence(ps2['comp_id'], chain_id)
         pA.doAlign()
 
@@ -1998,7 +2002,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
             _ps1 = __ps1
             _ps2 = __ps2
 
-            pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+            pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
             pA.addTestSequence(_ps2['comp_id'], chain_id)
             pA.doAlign()
 
@@ -2208,7 +2212,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
     """
 
     if atomId.endswith('"'):
-        atomId = atomId[:-1] + "''"
+        atomId = f"{atomId[:-1]}''"
     lenAtomId = len(atomId)
 
     elemName = atomId[0]
@@ -2223,8 +2227,8 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
 
     if atomId.startswith('QQ') and lenAtomId > 2 and atomId not in ('QQR', 'QQM'):
         item = next((item for item in mapping
-                     if item['original_atom_id'] in ('H' + atomId[2:] + '22',
-                                                     '2H' + atomId[2:] + '2')), None)
+                     if item['original_atom_id'] in (f'H{atomId[2:]}22',
+                                                     f'2H{atomId[2:]}2')), None)
         if item is not None:
             _branch = [c for c in ccU.getMethylAtoms(compId if cifCompId is None else cifCompId) if c[0] == 'C']
             if len(_branch) > 1:
@@ -2256,54 +2260,54 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
     if elemName in ('Q', 'M'):
 
         item = next((item for item in mapping
-                     if item['original_atom_id'] in ('H' + atomId[1:] + '2', '2H' + atomId[1:])), None)
+                     if item['original_atom_id'] in (f'H{atomId[1:]}2', f'2H{atomId[1:]}')), None)
 
         if item is not None:
 
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return seqId, compId, atomId
 
-            authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+            authAtomId = f"{item['auth_atom_id'][:-1]}%" if item['auth_atom_id'][0].isalpha() else f"%{item['auth_atom_id'][1:]}"
 
             if not authAtomId.startswith('%'):
                 methyl = ccU.getMethylAtoms(item['auth_comp_id'])
                 if item['auth_atom_id'] in methyl:
-                    authAtomId = 'M' + authAtomId[1:-1]
+                    authAtomId = f'M{authAtomId[1:-1]}'
 
             return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
         if lenAtomId > 1:
 
             item = next((item for item in mapping
-                         if item['original_atom_id'] == '2H' + atomId[1:]), None)
+                         if item['original_atom_id'] == f'2H{atomId[1:]}'), None)
 
             if item is not None:
 
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return seqId, compId, atomId
 
-                authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+                authAtomId = f"{item['auth_atom_id'][:-1]}%" if item['auth_atom_id'][0].isalpha() else f"%{item['auth_atom_id'][1:]}"
 
                 if not authAtomId.startswith('%'):
                     methyl = ccU.getMethylAtoms(item['auth_comp_id'])
                     if item['auth_atom_id'] in methyl:
-                        authAtomId = 'M' + authAtomId[1:-1]
+                        authAtomId = f'M{authAtomId[1:-1]}'
 
                 return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
             if atomId[1] == 'H' and lenAtomId > 2:
 
-                item = next((item for item in mapping if item['original_atom_id'] == atomId[1:] + '2'), None)
+                item = next((item for item in mapping if item['original_atom_id'] == f'{atomId[1:]}2'), None)
 
                 if item is not None:
 
                     if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                         return seqId, compId, atomId
 
-                    authAtomId = item['auth_atom_id'][:lenAtomId] + '%'
+                    authAtomId = f"{item['auth_atom_id'][:lenAtomId]}%"
                     methyl = ccU.getMethylAtoms(item['auth_comp_id'])
                     if item['auth_atom_id'] in methyl:
-                        authAtomId = 'M' + authAtomId[1:-1]
+                        authAtomId = f'M{authAtomId[1:-1]}'
 
                     return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
@@ -2327,7 +2331,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
                 return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
 
             if atomId[-1] == '1':
-                _atomId = '3' + atomId[:-1]
+                _atomId = f'3{atomId[:-1]}'
 
                 item = next((item for item in mapping
                              if item['original_atom_id'] == _atomId), None)
@@ -2403,16 +2407,16 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
                     next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(atomId))
 
         item = next((item for item in mapping
-                     if item['original_atom_id'] == atomId + '2'), None)
+                     if item['original_atom_id'] == f'{atomId}2'), None)
 
         if item is not None and item['auth_atom_id'][-1] == '2':
-            return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%'
+            return item['auth_seq_id'], item['auth_comp_id'], f"{item['auth_atom_id'][:-1]}%"
 
         item = next((item for item in mapping
-                     if item['original_atom_id'] == '2' + atomId), None)
+                     if item['original_atom_id'] == f'2{atomId}'), None)
 
         if item is not None and item['auth_atom_id'][-1] == '2':
-            return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%'
+            return item['auth_seq_id'], item['auth_comp_id'], f"{item['auth_atom_id'][:-1]}%"
 
         return seqId, compId, atomId
 
@@ -2427,7 +2431,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
         if coordAtomSite is not None and atomId in coordAtomSite['atom_id']:
             return seqId, compId, atomId
 
-    _atomId = 'H' + atomId[1:]
+    _atomId = f'H{atomId[1:]}'
 
     item = next((item for item in mapping
                  if item['original_atom_id'] == _atomId), None)
@@ -2458,7 +2462,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
 
         return item['auth_seq_id'], item['auth_comp_id'], _atomId_
 
-    _atomId = 'H' + atomId[1:] + '2'
+    _atomId = f'H{atomId[1:]}2'
 
     item = next((item for item in mapping
                  if item['original_atom_id'] == _atomId), None)
@@ -2492,7 +2496,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
     if atomId[-1] in ('1', '2'):
 
         order = int(atomId[-1]) - 1
-        _atomId = 'H' + atomId[1:-1]
+        _atomId = f'H{atomId[1:-1]}'
 
         item = next((item for item in mapping
                      if item['original_atom_id'] == _atomId), None)
@@ -2544,7 +2548,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
     """
 
     if atomId.endswith('"'):
-        atomId = atomId[:-1] + "''"
+        atomId = f"{atomId[:-1]}''"
     lenAtomId = len(atomId)
 
     elemName = atomId[0]
@@ -2574,8 +2578,8 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
 
     if atomId.startswith('QQ') and lenAtomId > 2 and atomId not in ('QQR', 'QQM'):
         item = next((item for item in mapping
-                     if item['original_atom_id'] in ('H' + atomId[2:] + '22',
-                                                     '2H' + atomId[2:] + '2')), None)
+                     if item['original_atom_id'] in (f'H{atomId[2:]}22',
+                                                     f'2H{atomId[2:]}2')), None)
         if item is not None:
             _branch = [c for c in ccU.getMethylAtoms(cifCompId) if c[0] == 'C']
             if len(_branch) > 1:
@@ -2593,55 +2597,55 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
     if elemName in ('Q', 'M'):
 
         item = next((item for item in mapping
-                     if item['original_atom_id'] in ('H' + atomId[1:] + '2', '2H' + atomId[1:])), None)
+                     if item['original_atom_id'] in (f'H{atomId[1:]}2', f'2H{atomId[1:]}')), None)
 
         if item is not None:
 
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return atomId
 
-            authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+            authAtomId = f"{item['auth_atom_id'][:-1]}%" if item['auth_atom_id'][0].isalpha() else f"%{item['auth_atom_id'][1:]}"
 
             if not authAtomId.startswith('%'):
                 methyl = ccU.getMethylAtoms(item['auth_comp_id'])
                 if item['auth_atom_id'] in methyl:
-                    authAtomId = 'M' + authAtomId[1:-1]
+                    authAtomId = f'M{authAtomId[1:-1]}'
 
             return authAtomId
 
         if lenAtomId > 1:
 
             item = next((item for item in mapping
-                         if item['original_atom_id'] == '2H' + atomId[1:]), None)
+                         if item['original_atom_id'] == f'2H{atomId[1:]}'), None)
 
             if item is not None:
 
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return atomId
 
-                authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+                authAtomId = f"{item['auth_atom_id'][:-1]}%" if item['auth_atom_id'][0].isalpha() else f"%{item['auth_atom_id'][1:]}"
 
                 if not authAtomId.startswith('%'):
                     methyl = ccU.getMethylAtoms(item['auth_comp_id'])
                     if item['auth_atom_id'] in methyl:
-                        authAtomId = 'M' + authAtomId[1:-1]
+                        authAtomId = f'M{authAtomId[1:-1]}'
 
                 return authAtomId
 
             if atomId[1] == 'H' and lenAtomId > 2:
 
-                item = next((item for item in mapping if item['original_atom_id'] == atomId[1:] + '2'), None)
+                item = next((item for item in mapping if item['original_atom_id'] == f'{atomId[1:]}2'), None)
 
                 if item is not None:
 
                     if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                         return atomId
 
-                    authAtomId = item['auth_atom_id'][:lenAtomId] + '%'
+                    authAtomId = f"{item['auth_atom_id'][:lenAtomId]}%"
 
                     methyl = ccU.getMethylAtoms(item['auth_comp_id'])
                     if item['auth_atom_id'] in methyl:
-                        authAtomId = 'M' + authAtomId[1:-1]
+                        authAtomId = f'M{authAtomId[1:-1]}'
 
                     return authAtomId
 
@@ -2665,7 +2669,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
                 return item['auth_atom_id']
 
             if atomId[-1] == '1':
-                _atomId = '3' + atomId[:-1]
+                _atomId = f'3{atomId[:-1]}'
 
                 item = next((item for item in mapping
                              if item['original_atom_id'] == _atomId), None)
@@ -2738,16 +2742,16 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
                 return next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(atomId))
 
         item = next((item for item in mapping
-                     if item['original_atom_id'] == atomId + '2'), None)
+                     if item['original_atom_id'] == f'{atomId}2'), None)
 
         if item is not None and item['auth_atom_id'][-1] == '2':
-            return item['auth_atom_id'][:-1] + '%'
+            return f"{item['auth_atom_id'][:-1]}%"
 
         item = next((item for item in mapping
-                     if item['original_atom_id'] == '2' + atomId), None)
+                     if item['original_atom_id'] == f'2{atomId}'), None)
 
         if item is not None and item['auth_atom_id'][-1] == '2':
-            return item['auth_atom_id'][:-1] + '%'
+            return f"{item['auth_atom_id'][:-1]}%"
 
         return atomId
 
@@ -2762,7 +2766,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
         if coordAtomSite is not None and atomId in coordAtomSite['atom_id']:
             return atomId
 
-    _atomId = 'H' + atomId[1:]
+    _atomId = f'H{atomId[1:]}'
 
     item = next((item for item in mapping
                  if item['original_atom_id'] == _atomId), None)
@@ -2791,7 +2795,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
 
         return _atomId_
 
-    _atomId = 'H' + atomId[1:] + '2'
+    _atomId = f'H{atomId[1:]}2'
 
     item = next((item for item in mapping
                  if item['original_atom_id'] == _atomId), None)
@@ -2823,7 +2827,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
     if atomId[-1] in ('1', '2'):
 
         order = int(atomId[-1]) - 1
-        _atomId = 'H' + atomId[1:-1]
+        _atomId = f'H{atomId[1:-1]}'
 
         item = next((item for item in mapping
                      if item['original_atom_id'] == _atomId), None)
@@ -3031,7 +3035,7 @@ def splitPolySeqRstForMultimers(pA, polySeqModel: List[dict], polySeqRst: List[d
                              'seq_id': _test_ps['seq_id'][beg:end],
                              'comp_id': _test_ps['comp_id'][beg:end]}
 
-                pA.setReferenceSequence(ref_ps['comp_id'], 'REF' + ref_chain_id)
+                pA.setReferenceSequence(ref_ps['comp_id'], f'REF{ref_chain_id}')
                 pA.addTestSequence(_test_ps_['comp_id'], ref_chain_id)
                 pA.doAlign()
 
@@ -3180,7 +3184,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
 
                 if idx == 0 and half_gap == 0:
 
-                    pA.setReferenceSequence(ref_ps['comp_id'], 'REF' + ref_chain_id)
+                    pA.setReferenceSequence(ref_ps['comp_id'], f'REF{ref_chain_id}')
                     pA.addTestSequence(test_ps['comp_id'], ref_chain_id)
                     pA.doAlign()
 
@@ -3244,7 +3248,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
                              'seq_id': _test_ps['seq_id'][beg:end],
                              'comp_id': _test_ps['comp_id'][beg:end]}
 
-                pA.setReferenceSequence(ref_ps['comp_id'], 'REF' + _ref_chain_id)
+                pA.setReferenceSequence(ref_ps['comp_id'], f'REF{_ref_chain_id}')
                 pA.addTestSequence(_test_ps_['comp_id'], _ref_chain_id)
                 pA.doAlign()
 
@@ -3502,7 +3506,7 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
             for br in branchedModel:
                 b_ref_chain_id = br['auth_chain_id']
 
-                pA.setReferenceSequence(br['comp_id'], 'REF' + b_ref_chain_id)
+                pA.setReferenceSequence(br['comp_id'], f'REF{b_ref_chain_id}')
                 pA.addTestSequence(test_ps['comp_id'], b_ref_chain_id)
                 pA.doAlign()
 
@@ -3562,7 +3566,7 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
 
                 ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_id)
 
-                pA.setReferenceSequence(ref_ps['comp_id'], 'REF' + ref_chain_id)
+                pA.setReferenceSequence(ref_ps['comp_id'], f'REF{ref_chain_id}')
                 pA.addTestSequence(_test_ps['comp_id'], ref_chain_id)
                 pA.doAlign()
 
@@ -3581,7 +3585,7 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
 
                 ref_br = next(br for br in branchedModel if br['auth_chain_id'] == b_ref_chain_id)
 
-                pA.setReferenceSequence(ref_br['comp_id'], 'REF' + b_ref_chain_id)
+                pA.setReferenceSequence(ref_br['comp_id'], f'REF{b_ref_chain_id}')
                 pA.addTestSequence(_test_ps['comp_id'], b_ref_chain_id)
                 pA.doAlign()
 
@@ -3942,7 +3946,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     cR_prev = CifReader(False, sys.stdout, use_cache=False)
     cR_prev.parse(cif_path)
 
-    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
+    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp')
+                          if d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT]
 
     auth_seq_id = 'auth_seq_id' if cR_prev.hasItem('atom_site', 'auth_seq_id') else 'label_seq_id'
     auth_comp_id = 'auth_comp_id' if cR_prev.hasItem('atom_site', 'auth_comp_id') else 'label_comp_id'
@@ -3987,7 +3992,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                                                 ])
 
     for c in coord:
-        c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+        c_prev = next((c_prev for c_prev in coord_prev
+                       if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
 
         if c_prev is None:
             continue
@@ -4042,7 +4048,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                                                    [{'name': auth_seq_id, 'type': 'int', 'alt_name': 'seq_id'},
                                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                     {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
-                                                    {'name': 'pdbx_auth_atom_name', 'type': 'starts-with-alnum', 'alt_name': 'alt_atom_id'}
+                                                    {'name': 'pdbx_auth_atom_name', 'type': 'starts-with-alnum',
+                                                     'alt_name': 'alt_atom_id'}
                                                     ],
                                                    [{'name': auth_comp_id, 'type': 'enum', 'enum': nstd_residues_prev},
                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},

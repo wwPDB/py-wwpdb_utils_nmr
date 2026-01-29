@@ -81,6 +81,7 @@ except ImportError:
                                   set_sf_tag)
 
 
+__pynmrstar_v3_4__ = version.parse(pynmrstar.__version__) >= version.parse("3.4.0")
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
 
 
@@ -234,7 +235,7 @@ class NmrDpFirstAid:
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
-                ofh.write('data_' + os.path.basename(srcPath) + '\n\n')
+                ofh.write(f'data_{os.path.basename(srcPath)}\n\n')
                 for line in ifh:
                     if i < j:
                         ofh.write(line)
@@ -552,7 +553,7 @@ class NmrDpFirstAid:
                             if pass_sf_framecode:
                                 if pass_sf_loop:
                                     if CATEGORY_PAT.match(line):
-                                        target['lp_category'] = '_' + CATEGORY_PAT.search(line).groups()[0]
+                                        target['lp_category'] = f'_{CATEGORY_PAT.search(line).groups()[0]}'
                                         content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
                                                                 if v == target['lp_category']), None)
                                         if content_subtype is not None:
@@ -586,10 +587,12 @@ class NmrDpFirstAid:
                             if LOOP_PAT.match(line):
                                 pass_sf_loop = True
                                 if 'sf_category' in target:
-                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
-                                              + '   ' + sf_framecode + '\n')
-                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
-                                              + '    ' + target['sf_category'] + '\n')
+                                    ofh.write(f"{target['sf_tag_prefix']}."
+                                              f"{'sf_framecode' if file_type == 'nef' else 'Sf_framecode'}   "
+                                              f"{sf_framecode}\n")
+                                    ofh.write(f"{target['sf_tag_prefix']}."
+                                              f"{'sf_category' if file_type == 'nef' else 'Sf_category'}    "
+                                              f"{target['sf_category']}\n")
                                     ofh.write('#\n')
                                 ofh.write(line)
                         elif sf_named_pattern.match(line):
@@ -604,214 +607,16 @@ class NmrDpFirstAid:
         except StopIteration:
             pass
 
-        msg_template = "You attempted to parse one loop but the source you provided had more than one loop. "\
-            "Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
+        if not __pynmrstar_v3_4__:
 
-        try:
+            msg_template = "You attempted to parse one loop but the source you provided had more than one loop. "\
+                "Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
 
-            msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'Saveframe(s), instead of the datablock, must hook more than one loop. Loops detected:'\
-                + msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'")
+            try:
 
-            self.__reg.report.warning.appendDescription('corrected_format_issue',
-                                                        {'file_name': file_name, 'description': warn})
-
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
-
-            msg_pattern = re.compile(r'^' + msg_template + r" \[(.*)\]$")
-
-            targets = []
-
-            for msg in message['error']:
-
-                if msg_template not in msg:
-                    continue
-
-                try:
-
-                    g = msg_pattern.search(msg).groups()
-
-                    for lp_obj in g[0].split(', '):
-
-                        lp_category = str(PYNMRSTAR_LP_OBJ_PAT.search(lp_obj).groups()[0])
-
-                        if lp_category == 'None':
-                            continue
-
-                        target = {'lp_category': lp_category}
-
-                        pass_loop = False
-
-                        lp_loc = -1
-                        i = 0
-
-                        with open(_srcPath, 'r', encoding='utf-8') as ifh:
-                            for line in ifh:
-                                if pass_loop:
-                                    if CATEGORY_PAT.match(line):
-                                        _lp_category = '_' + CATEGORY_PAT.search(line).groups()[0]
-                                        if lp_category == _lp_category:
-                                            target['loop_location'] = lp_loc
-                                            content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
-                                                                    if v == target['lp_category']), None)
-                                            if content_subtype is not None:
-                                                target['sf_category'] = SF_CATEGORIES[file_type][content_subtype]
-                                                target['sf_tag_prefix'] = SF_TAG_PREFIXES[file_type][content_subtype]
-                                                target['sf_framecode'] = target['sf_category'] + '_1'
-                                        pass_loop = False
-                                elif LOOP_PAT.match(line):
-                                    pass_loop = True
-                                    lp_loc = i
-                                elif STOP_PAT.match(line):
-                                    if 'loop_location' in target and 'stop_location' not in target:
-                                        target['stop_location'] = i
-                                        break
-
-                                i += 1
-
-                        targets.append(target)
-
-                except AttributeError:
-                    pass
-
-            if len(targets) > 0:
-                target_loop_locations = [target['loop_location'] for target in targets]
-                target_stop_locations = [target['stop_location'] for target in targets]
-                ignored_loop_locations = []
-                for target in targets:
-                    if 'sf_category' not in target:
-                        ignored_loop_locations.extend(list(range(target['loop_location'], target['stop_location'] + 1)))
-
-                i = 0
-
-                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
-                    ofh.write('data_' + os.path.basename(srcPath) + '\n\n')
-                    for line in ifh:
-                        if i in target_loop_locations:
-                            target = next(target for target in targets if target['loop_location'] == i)
-                            if 'sf_category' in target:
-                                ofh.write('save_' + target['sf_framecode'] + '\n')
-                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
-                                          + '   ' + target['sf_framecode'] + '\n')
-                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
-                                          + '    ' + target['sf_category'] + '\n')
-                                ofh.write('#\n')
-                        if i not in ignored_loop_locations:
-                            ofh.write(line)
-                        if i in target_stop_locations:
-                            target = next(target for target in targets if target['stop_location'] == i)
-                            if 'sf_category' in target:
-                                ofh.write('save_\n')
-
-                        i += 1
-
-                    _srcPath = ofh.name
-                    tmpPaths.append(_srcPath)
-
-        except StopIteration:
-            pass
-
-        msg_template = "One saveframe cannot have tags with different categories (or tags that don't match the set category)!"
-
-        try:
-
-            msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = msg
-
-            _msg_template = r"One saveframe cannot have tags with different categories \(or tags that don't match the set category\)!"
-
-            msg_pattern = re.compile(r'^' + _msg_template + r" '(.*)' vs '(.*)'.$")
-
-            targets = []
-
-            for msg in message['error']:
-
-                if msg_template not in msg:
-                    continue
-
-                try:
-
-                    target = {}
-
-                    g = msg_pattern.search(msg).groups()
-
-                    try:
-                        category_1 = str(g[0])
-                        category_2 = str(g[1])
-                    except IndexError:
-                        continue
-
-                    target = {'category_1': category_1, 'category_2': category_2}
-
-                    pass_sf_framecode = pass_category_1 = pass_category_2 = pass_sf_loop = False
-
-                    i = 0
-
-                    with open(_srcPath, 'r', encoding='utf-8') as ifh:
-                        for line in ifh:
-                            if pass_sf_framecode:
-                                if SAVE_PAT.match(line):
-                                    if 'category_1_begin' in target and 'category_2_begin' in target:
-                                        targets.append(target)
-                                        break
-                                    pass_sf_framecode = pass_category_1 = pass_category_2 = pass_sf_loop = False
-                                elif LOOP_PAT.match(line):
-                                    pass_sf_loop = True
-                                elif not pass_sf_loop:
-                                    if CATEGORY_PAT.match(line):
-                                        category = '_' + CATEGORY_PAT.search(line).groups()[0]
-                                        if category == category_1:
-                                            if not pass_category_1:
-                                                target['category_1_begin'] = i
-                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items()
-                                                                        if v == category), None)
-                                                if content_subtype is not None:
-                                                    target['content_subtype_1'] = content_subtype
-                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
-                                                                        if v == category), None)
-                                                if content_subtype is not None:
-                                                    target['content_subtype_1'] = content_subtype
-                                            pass_category_1 = True
-                                            target['category_1_end'] = i
-                                        elif category == category_2 and pass_category_1:
-                                            if not pass_category_2:
-                                                target['category_2_begin'] = i
-                                                content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items()
-                                                                        if v == category), None)
-                                                if content_subtype is not None:
-                                                    target['category_type_2'] = 'saveframe'
-                                                    target['content_subtype_2'] = content_subtype
-                                                    target['sf_tag_prefix_2'] = SF_TAG_PREFIXES[file_type][content_subtype]
-                                                    target['sf_category_2'] = SF_CATEGORIES[file_type][content_subtype]
-                                                    target['sf_framecode_2'] = target['sf_category_2'] + '_1'
-                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
-                                                                        if v == category), None)
-                                                if content_subtype is not None:
-                                                    target['category_type_2'] = 'loop'
-                                                    target['content_subtype_2'] = content_subtype
-                                                    target['sf_tag_prefix_2'] = SF_TAG_PREFIXES[file_type][content_subtype]
-                                                    target['sf_category_2'] = SF_CATEGORIES[file_type][content_subtype]
-                                                    target['sf_framecode_2'] = target['sf_category_2'] + '_1'
-                                                if 'category_type_2' not in target:
-                                                    content_subtype = target['content_subtype_1']
-                                                    target['category_type_2'] = 'loop'
-                                                    target['content_subtype_2'] = content_subtype
-                                            pass_category_2 = True
-                                            target['category_2_end'] = i
-                                elif LOOP_PAT.match(line):
-                                    pass_sf_loop = True
-                            elif SF_ANONYMOUS_PAT.match(line):
-                                pass_sf_framecode = True
-                                pass_category_1 = pass_category_2 = pass_sf_loop = False
-
-                            i += 1
-
-                except AttributeError:
-                    pass
-
-            if len(targets) > 0:
+                msg = next(msg for msg in message['error'] if msg_template in msg)
+                warn = 'Saveframe(s), instead of the datablock, must hook more than one loop. Loops detected:'\
+                    + msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'")
 
                 self.__reg.report.warning.appendDescription('corrected_format_issue',
                                                             {'file_name': file_name, 'description': warn})
@@ -819,122 +624,325 @@ class NmrDpFirstAid:
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
-                target_category_begins = [target['category_2_begin'] for target in targets]
-                target_category_ends = [target['category_2_end'] for target in targets]
+                msg_pattern = re.compile(r'^' + msg_template + r" \[(.*)\]$")
 
-                loop_category_locations = []
-                for target in targets:
-                    _range = list(range(target['category_2_begin'], target['category_2_end'] + 1))
-                    if target['category_type_2'] == 'loop':
-                        loop_category_locations.extend(_range)
+                targets = []
 
-                i = 0
+                for msg in message['error']:
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
-                    for line in ifh:
-                        if i in target_category_begins:
-                            target = next(target for target in targets if target['category_2_begin'] == i)
-                            if target['content_subtype_1'] != target['content_subtype_2']:
-                                ofh.write('save_\n')
-                                if target['category_type_2'] == 'saveframe':
-                                    ofh.write('save_' + target['sf_framecode_2'] + '\n')
-                                else:
-                                    ofh.write('save_' + target['sf_framecode_2'] + '\n')
-                                    ofh.write(target['sf_tag_prefix_2'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
-                                              + '   ' + target['sf_framecode_2'] + '\n')
-                                    ofh.write(target['sf_tag_prefix_2'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
-                                              + '    ' + target['category_2'] + '\n')
-                                    ofh.write('loop_\n')
-                                    lp_tags = lp_vals = ''
-                            elif target['category_type_2'] == 'loop':
-                                ofh.write('loop_\n')
-                                lp_tags = lp_vals = ''
-                        if i not in loop_category_locations:
-                            ofh.write(line)
-                        else:
-                            g = TAGVALUE_PAT.search(line).groups()
-                            try:
-                                lp_tags += f"_{g[0]}.{g[1]}\n"
-                                lp_vals += f" {g[2].strip(' ')} "
-                            except IndexError:
+                    if msg_template not in msg:
+                        continue
+
+                    try:
+
+                        g = msg_pattern.search(msg).groups()
+
+                        for lp_obj in g[0].split(', '):
+
+                            lp_category = str(PYNMRSTAR_LP_OBJ_PAT.search(lp_obj).groups()[0])
+
+                            if lp_category == 'None':
                                 continue
-                        if i in target_category_ends:
-                            target = next(target for target in targets if target['category_2_end'] == i)
-                            if target['content_subtype_1'] != target['content_subtype_2']:
-                                if target['category_type_2'] == 'saveframe':
-                                    pass
-                                else:
-                                    ofh.write(lp_tags)
-                                    ofh.write(lp_vals.rstrip(' ') + '\n')
-                                    ofh.write('stop_\n')
-                            elif target['category_type_2'] == 'loop':
-                                ofh.write(lp_tags)
-                                ofh.write(lp_vals.rstrip(' ') + '\n')
-                                ofh.write('stop_\n')
 
-                        i += 1
+                            target = {'lp_category': lp_category}
 
-                    _srcPath = ofh.name
-                    tmpPaths.append(_srcPath)
+                            pass_loop = False
 
-        except StopIteration:
-            pass
+                            lp_loc = -1
+                            i = 0
 
-        msg_template = 'The Sf_framecode tag cannot be different from the saveframe name.'
+                            with open(_srcPath, 'r', encoding='utf-8') as ifh:
+                                for line in ifh:
+                                    if pass_loop:
+                                        if CATEGORY_PAT.match(line):
+                                            _lp_category = f'_{CATEGORY_PAT.search(line).groups()[0]}'
+                                            if lp_category == _lp_category:
+                                                target['loop_location'] = lp_loc
+                                                content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                        if v == target['lp_category']), None)
+                                                if content_subtype is not None:
+                                                    target['sf_category'] = SF_CATEGORIES[file_type][content_subtype]
+                                                    target['sf_tag_prefix'] = SF_TAG_PREFIXES[file_type][content_subtype]
+                                                    target['sf_framecode'] = f"{target['sf_category']}_1"
+                                            pass_loop = False
+                                    elif LOOP_PAT.match(line):
+                                        pass_loop = True
+                                        lp_loc = i
+                                    elif STOP_PAT.match(line):
+                                        if 'loop_location' in target and 'stop_location' not in target:
+                                            target['stop_location'] = i
+                                            break
 
-        try:
+                                    i += 1
 
-            msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = "Sf_framecode tag value should match with the saveframe name."
+                            targets.append(target)
 
-            self.__reg.report.warning.appendDescription('corrected_format_issue',
-                                                        {'file_name': file_name, 'description': warn})
+                    except AttributeError:
+                        pass
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+                if len(targets) > 0:
+                    target_loop_locations = [target['loop_location'] for target in targets]
+                    target_stop_locations = [target['stop_location'] for target in targets]
+                    ignored_loop_locations = []
+                    for target in targets:
+                        if 'sf_category' not in target:
+                            ignored_loop_locations.extend(list(range(target['loop_location'], target['stop_location'] + 1)))
 
-            if __pynmrstar_v3_3__:
-                msg_pattern = re.compile(r'^.*' + msg_template
-                                         + r" Error occurred in tag _\S+ with value ([\S ]+) "
-                                         r"which conflicts with the saveframe name (\S+)\. "
-                                         r"Error detected on line (\d+).*$")
-            else:
-                msg_pattern = re.compile(r'^.*' + msg_template
-                                         + r" Error occurred in tag _\S+ with value ([\S ]+) "
-                                         r"which conflicts with.* the saveframe name (\S+)\. "
-                                         r"Error detected on line (\d+).*$")
+                    i = 0
+
+                    with open(_srcPath, 'r', encoding='utf-8') as ifh, \
+                            open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                        ofh.write(f'data_{os.path.basename(srcPath)}\n\n')
+                        for line in ifh:
+                            if i in target_loop_locations:
+                                target = next(target for target in targets if target['loop_location'] == i)
+                                if 'sf_category' in target:
+                                    ofh.write(f"save_{target['sf_framecode']}\n")
+                                    ofh.write(f"{target['sf_tag_prefix']}."
+                                              f"{'sf_framecode' if file_type == 'nef' else 'Sf_framecode'}    "
+                                              f"{target['sf_framecode']}\n")
+                                    ofh.write(f"{target['sf_tag_prefix']}."
+                                              f"{'sf_category' if file_type == 'nef' else 'Sf_category'}    "
+                                              f"{target['sf_category']}\n")
+                                    ofh.write('#\n')
+                            if i not in ignored_loop_locations:
+                                ofh.write(line)
+                            if i in target_stop_locations:
+                                target = next(target for target in targets if target['stop_location'] == i)
+                                if 'sf_category' in target:
+                                    ofh.write('save_\n')
+
+                            i += 1
+
+                        _srcPath = ofh.name
+                        tmpPaths.append(_srcPath)
+
+            except StopIteration:
+                pass
+
+            msg_template = "One saveframe cannot have tags with different categories (or tags that don't match the set category)!"
 
             try:
 
-                g = msg_pattern.search(msg).groups()
+                msg = next(msg for msg in message['error'] if msg_template in msg)
+                warn = msg
 
-                sf_framecode = g[0]
-                saveframe_name = g[1]
-                line_num = int(g[2])
+                _msg_template = r"One saveframe cannot have tags with different categories "\
+                    r"\(or tags that don't match the set category\)!"
 
-                i = 0
+                msg_pattern = re.compile(r'^' + _msg_template + r" '(.*)' vs '(.*)'.$")
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
-                    for line in ifh:
-                        if i == line_num:
-                            if sf_framecode not in EMPTY_VALUE:
-                                ofh.write(re.sub(r'["\']?' + sf_framecode + r'["\']?\s*$', saveframe_name + r'\n', line))
+                targets = []
+
+                for msg in message['error']:
+
+                    if msg_template not in msg:
+                        continue
+
+                    try:
+
+                        target = {}
+
+                        g = msg_pattern.search(msg).groups()
+
+                        try:
+                            category_1 = str(g[0])
+                            category_2 = str(g[1])
+                        except IndexError:
+                            continue
+
+                        target = {'category_1': category_1, 'category_2': category_2}
+
+                        pass_sf_framecode = pass_category_1 = pass_category_2 = pass_sf_loop = False
+
+                        i = 0
+
+                        with open(_srcPath, 'r', encoding='utf-8') as ifh:
+                            for line in ifh:
+                                if pass_sf_framecode:
+                                    if SAVE_PAT.match(line):
+                                        if 'category_1_begin' in target and 'category_2_begin' in target:
+                                            targets.append(target)
+                                            break
+                                        pass_sf_framecode = pass_category_1 = pass_category_2 = pass_sf_loop = False
+                                    elif LOOP_PAT.match(line):
+                                        pass_sf_loop = True
+                                    elif not pass_sf_loop:
+                                        if CATEGORY_PAT.match(line):
+                                            category = f'_{CATEGORY_PAT.search(line).groups()[0]}'
+                                            if category == category_1:
+                                                if not pass_category_1:
+                                                    target['category_1_begin'] = i
+                                                    content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items()
+                                                                            if v == category), None)
+                                                    if content_subtype is not None:
+                                                        target['content_subtype_1'] = content_subtype
+                                                    content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                            if v == category), None)
+                                                    if content_subtype is not None:
+                                                        target['content_subtype_1'] = content_subtype
+                                                pass_category_1 = True
+                                                target['category_1_end'] = i
+                                            elif category == category_2 and pass_category_1:
+                                                if not pass_category_2:
+                                                    target['category_2_begin'] = i
+                                                    content_subtype = next((k for k, v in SF_TAG_PREFIXES[file_type].items()
+                                                                            if v == category), None)
+                                                    if content_subtype is not None:
+                                                        target['category_type_2'] = 'saveframe'
+                                                        target['content_subtype_2'] = content_subtype
+                                                        target['sf_tag_prefix_2'] = SF_TAG_PREFIXES[file_type][content_subtype]
+                                                        target['sf_category_2'] = SF_CATEGORIES[file_type][content_subtype]
+                                                        target['sf_framecode_2'] = f"{target['sf_category_2']}_1"
+                                                    content_subtype = next((k for k, v in LP_CATEGORIES[file_type].items()
+                                                                            if v == category), None)
+                                                    if content_subtype is not None:
+                                                        target['category_type_2'] = 'loop'
+                                                        target['content_subtype_2'] = content_subtype
+                                                        target['sf_tag_prefix_2'] = SF_TAG_PREFIXES[file_type][content_subtype]
+                                                        target['sf_category_2'] = SF_CATEGORIES[file_type][content_subtype]
+                                                        target['sf_framecode_2'] = f"{target['sf_category_2']}_1"
+                                                    if 'category_type_2' not in target:
+                                                        content_subtype = target['content_subtype_1']
+                                                        target['category_type_2'] = 'loop'
+                                                        target['content_subtype_2'] = content_subtype
+                                                pass_category_2 = True
+                                                target['category_2_end'] = i
+                                    elif LOOP_PAT.match(line):
+                                        pass_sf_loop = True
+                                elif SF_ANONYMOUS_PAT.match(line):
+                                    pass_sf_framecode = True
+                                    pass_category_1 = pass_category_2 = pass_sf_loop = False
+
+                                i += 1
+
+                    except AttributeError:
+                        pass
+
+                if len(targets) > 0:
+
+                    self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                                {'file_name': file_name, 'description': warn})
+
+                    if self.__reg.verbose:
+                        self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+
+                    target_category_begins = [target['category_2_begin'] for target in targets]
+                    target_category_ends = [target['category_2_end'] for target in targets]
+
+                    loop_category_locations = []
+                    for target in targets:
+                        _range = list(range(target['category_2_begin'], target['category_2_end'] + 1))
+                        if target['category_type_2'] == 'loop':
+                            loop_category_locations.extend(_range)
+
+                    i = 0
+
+                    with open(_srcPath, 'r', encoding='utf-8') as ifh, \
+                            open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                        for line in ifh:
+                            if i in target_category_begins:
+                                target = next(target for target in targets if target['category_2_begin'] == i)
+                                if target['content_subtype_1'] != target['content_subtype_2']:
+                                    ofh.write('save_\n')
+                                    ofh.write(f"save_{target['sf_framecode_2']}\n")
+                                    if target['category_type_2'] != 'saveframe':
+                                        ofh.write(f"{target['sf_tag_prefix_2']}."
+                                                  f"{'sf_framecode' if file_type == 'nef' else 'Sf_framecode'}    "
+                                                  f"{target['sf_framecode_2']}\n")
+                                        ofh.write(f"{target['sf_tag_prefix_2']}."
+                                                  f"{'sf_category' if file_type == 'nef' else 'Sf_category'}    "
+                                                  f"{target['category_2']}\n")
+                                        ofh.write('loop_\n')
+                                        lp_tags = lp_vals = ''
+                                elif target['category_type_2'] == 'loop':
+                                    ofh.write('loop_\n')
+                                    lp_tags = lp_vals = ''
+                            if i not in loop_category_locations:
+                                ofh.write(line)
                             else:
-                                ofh.write(re.sub(rf'\{sf_framecode}\s*$', saveframe_name + r'\n', line))
-                        else:
-                            ofh.write(line)
-                        i += 1
+                                g = TAGVALUE_PAT.search(line).groups()
+                                try:
+                                    lp_tags += f"_{g[0]}.{g[1]}\n"
+                                    lp_vals += f" {g[2].strip(' ')} "
+                                except IndexError:
+                                    continue
+                            if i in target_category_ends:
+                                target = next(target for target in targets if target['category_2_end'] == i)
+                                if target['content_subtype_1'] != target['content_subtype_2']:
+                                    if target['category_type_2'] == 'saveframe':
+                                        pass
+                                    else:
+                                        ofh.write(lp_tags)
+                                        ofh.write(f"{lp_vals.rstrip(' ')}\n")
+                                        ofh.write('stop_\n')
+                                elif target['category_type_2'] == 'loop':
+                                    ofh.write(lp_tags)
+                                    ofh.write(f"{lp_vals.rstrip(' ')}\n")
+                                    ofh.write('stop_\n')
 
-                    _srcPath = ofh.name
-                    tmpPaths.append(_srcPath)
+                            i += 1
 
-            except AttributeError:
+                        _srcPath = ofh.name
+                        tmpPaths.append(_srcPath)
+
+            except StopIteration:
                 pass
 
-        except StopIteration:
-            pass
+            msg_template = 'The Sf_framecode tag cannot be different from the saveframe name.'
+
+            try:
+
+                msg = next(msg for msg in message['error'] if msg_template in msg)
+                warn = "Sf_framecode tag value should match with the saveframe name."
+
+                self.__reg.report.warning.appendDescription('corrected_format_issue',
+                                                            {'file_name': file_name, 'description': warn})
+
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
+
+                if __pynmrstar_v3_3__:
+                    msg_pattern = re.compile(r'^.*' + msg_template
+                                             + r" Error occurred in tag _\S+ with value ([\S ]+) "
+                                             r"which conflicts with the saveframe name (\S+)\. "
+                                             r"Error detected on line (\d+).*$")
+                else:
+                    msg_pattern = re.compile(r'^.*' + msg_template
+                                             + r" Error occurred in tag _\S+ with value ([\S ]+) "
+                                             r"which conflicts with.* the saveframe name (\S+)\. "
+                                             r"Error detected on line (\d+).*$")
+
+                try:
+
+                    g = msg_pattern.search(msg).groups()
+
+                    sf_framecode = g[0]
+                    saveframe_name = g[1]
+                    line_num = int(g[2])
+
+                    i = 0
+
+                    with open(_srcPath, 'r', encoding='utf-8') as ifh, \
+                            open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                        for line in ifh:
+                            if i == line_num:
+                                if sf_framecode not in EMPTY_VALUE:
+                                    ofh.write(re.sub(r'["\']?' + sf_framecode + r'["\']?\s*$', saveframe_name + r'\n', line))
+                                else:
+                                    ofh.write(re.sub(rf'\{sf_framecode}\s*$', saveframe_name + r'\n', line))
+                            else:
+                                ofh.write(line)
+                            i += 1
+
+                        _srcPath = ofh.name
+                        tmpPaths.append(_srcPath)
+
+                except AttributeError:
+                    pass
+
+            except StopIteration:
+                pass
 
         if len(tmpPaths) > len_tmp_paths:
 
@@ -1017,11 +1025,11 @@ class NmrDpFirstAid:
                 if rescued:
                     if ONEDEP_ANY_UPLOAD_FILE_NAME_PAT.match(srcPath):
                         g = ONEDEP_ANY_UPLOAD_FILE_NAME_PAT.search(srcPath).groups()
-                        srcPath = g[0] + '-upload-convert_' + g[1] + '.V' + g[2]
+                        srcPath = f'{g[0]}-upload-convert_{g[1]}.V{g[2]}'
                     else:
                         if ONEDEP_ANY_FILE_NAME_PAT.match(srcPath):
                             g = ONEDEP_ANY_FILE_NAME_PAT.search(srcPath).groups()
-                            srcPath = g[0] + '.V' + str(int(g[1]) + 1)
+                            srcPath = f'{g[0]}.V{int(g[1]) + 1}'
 
                     self.__reg.star_data[file_list_id].write_to_file(srcPath,
                                                                      show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
@@ -1113,7 +1121,7 @@ class NmrDpFirstAid:
 
                     if self.getSaveframeByName(file_list_id, sf_framecode) is None:
 
-                        itName = '_' + sf_category + '.sf_framecode'
+                        itName = f'_{sf_category}.sf_framecode'
 
                         if self.__reg.resolve_conflict:
                             warn = f"{itName} {sf_framecode!r} should be matched "\
@@ -1171,7 +1179,8 @@ class NmrDpFirstAid:
 
             return True
 
-        self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
+        self.__reg.sf_category_list, self.__reg.lp_category_list =\
+            self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in NMR_CONTENT_SUBTYPES}
@@ -1252,7 +1261,7 @@ class NmrDpFirstAid:
 
                 if 'index' not in loop.tags:
 
-                    lp_tag = lp_category + '.index'
+                    lp_tag = f'{lp_category}.index'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1269,7 +1278,7 @@ class NmrDpFirstAid:
                         for idx, row in enumerate(loop, start=1):
                             row.append(idx)
 
-                        loop.add_tag(lp_category + '.index')
+                        loop.add_tag(f'{lp_category}.index')
 
                     except ValueError:
                         pass
@@ -1287,7 +1296,7 @@ class NmrDpFirstAid:
 
                 if 'element' not in loop.tags:
 
-                    lp_tag = lp_category + '.element'
+                    lp_tag = f'{lp_category}.element'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1309,7 +1318,7 @@ class NmrDpFirstAid:
                                 atom_type = 'H'
                             row.append(atom_type)
 
-                        loop.add_tag(lp_category + '.element')
+                        loop.add_tag(f'{lp_category}.element')
 
                     except ValueError:
                         pass
@@ -1328,7 +1337,7 @@ class NmrDpFirstAid:
 
                 if 'isotope_number' not in loop.tags:
 
-                    lp_tag = lp_category + '.isotope_number'
+                    lp_tag = f'{lp_category}.isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1350,7 +1359,7 @@ class NmrDpFirstAid:
                                 atom_type = 'H'
                             row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
-                        loop.add_tag(lp_category + '.isotope_number')
+                        loop.add_tag(f'{lp_category}.isotope_number')
 
                     except ValueError:
                         pass
@@ -1371,7 +1380,7 @@ class NmrDpFirstAid:
 
                 if 'name' not in loop.tags:
 
-                    lp_tag = lp_category + '.name'
+                    lp_tag = f'{lp_category}.name'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1385,7 +1394,7 @@ class NmrDpFirstAid:
 
                     try:
 
-                        loop.add_tag(lp_category + '.name', update_data=True)
+                        loop.add_tag(f'{lp_category}.name', update_data=True)
 
                     except ValueError:
                         pass
@@ -1395,7 +1404,7 @@ class NmrDpFirstAid:
                 try:
 
                     tag = next(tag for tag in sf.tags if tag[0] == 'tensor_residue_type')
-                    sf.add_tag(sf_category + '.tensor_residue_name', tag[1])
+                    sf.add_tag(f'{sf_category}.tensor_residue_name', tag[1])
                     sf.remove_tag('tensor_residue_type')
 
                 except StopIteration:
@@ -1429,11 +1438,11 @@ class NmrDpFirstAid:
 
             for j in range(1, max_dim):
 
-                _residue_type = 'residue_type_' + str(j)
+                _residue_type = f'residue_type_{j}'
 
                 try:
                     tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == _residue_type)
-                    loop.tags[tag_pos] = 'residue_name_' + str(j)
+                    loop.tags[tag_pos] = f'residue_name_{j}'
                 except StopIteration:
                     pass
 
@@ -1470,7 +1479,7 @@ class NmrDpFirstAid:
 
                     if self.getSaveframeByName(file_list_id, sf_framecode) is None:
 
-                        itName = '_' + sf_category + '.Sf_framecode'
+                        itName = f'_{sf_category}.Sf_framecode'
 
                         if self.__reg.resolve_conflict:
                             warn = f"{itName} {sf_framecode!r} should be matched "\
@@ -1503,7 +1512,8 @@ class NmrDpFirstAid:
         if not self.__reg.rescue_mode:
             return True
 
-        self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
+        self.__reg.sf_category_list, self.__reg.lp_category_list =\
+            self.__reg.nefT.get_inventory_list(self.__reg.star_data[file_list_id])
 
         # initialize loop counter
         lp_counts = {t: 0 for t in NMR_CONTENT_SUBTYPES}
@@ -1575,7 +1585,7 @@ class NmrDpFirstAid:
 
                 if 'Atom_type' not in loop.tags:
 
-                    lp_tag = lp_category + '.Atom_type'
+                    lp_tag = f'{lp_category}.Atom_type'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1597,7 +1607,7 @@ class NmrDpFirstAid:
                                 atom_type = 'H'
                             row.append(atom_type)
 
-                        loop.add_tag(lp_category + '.Atom_type')
+                        loop.add_tag(f'{lp_category}.Atom_type')
 
                     except ValueError:
                         pass
@@ -1616,7 +1626,7 @@ class NmrDpFirstAid:
 
                 if 'Atom_isotope_number' not in loop.tags:
 
-                    lp_tag = lp_category + '.Atom_isotope_number'
+                    lp_tag = f'{lp_category}.Atom_isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1638,7 +1648,7 @@ class NmrDpFirstAid:
                                 atom_type = 'H'
                             row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
-                        loop.add_tag(lp_category + '.Atom_isotope_number')
+                        loop.add_tag(f'{lp_category}.Atom_isotope_number')
 
                     except ValueError:
                         pass
@@ -1661,14 +1671,14 @@ class NmrDpFirstAid:
 
                 for i in range(1, 3):
                     for original_item in original_items:
-                        tag = original_item + '_' + str(i)
+                        tag = f'{original_item}_{i}'
                         if tag in loop.tags:
                             loop.remove_tag(tag)
 
-                    tag = 'Original_PDB_atom_name_' + str(i)
+                    tag = f'Original_PDB_atom_name_{i}'
                     if tag in loop.tags:
 
-                        _tag = 'Auth_atom_name_' + str(i)
+                        _tag = f'Auth_atom_name_{i}'
                         if _tag not in loop.tags:
                             _dat = loop.get_tag([tag])
 
@@ -1683,7 +1693,7 @@ class NmrDpFirstAid:
 
                 if 'Torsion_angle_name' not in loop.tags:
 
-                    lp_tag = lp_category + '.Torsion_angle_name'
+                    lp_tag = f'{lp_category}.Torsion_angle_name'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1697,7 +1707,7 @@ class NmrDpFirstAid:
 
                     try:
 
-                        loop.add_tag(lp_category + '.Torsion_angle_name', update_data=True)
+                        loop.add_tag(f'{lp_category}.Torsion_angle_name', update_data=True)
 
                     except ValueError:
                         pass
@@ -1706,7 +1716,7 @@ class NmrDpFirstAid:
 
                 if 'Atom_type' not in loop.tags:
 
-                    lp_tag = lp_category + '.Atom_type'
+                    lp_tag = f'{lp_category}.Atom_type'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1726,14 +1736,14 @@ class NmrDpFirstAid:
                             atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(atom_type)
 
-                        loop.add_tag(lp_category + '.Atom_type')
+                        loop.add_tag(f'{lp_category}.Atom_type')
 
                     except ValueError:
                         pass
 
                 if 'Atom_isotope_number' not in loop.tags:
 
-                    lp_tag = lp_category + '.Atom_isotope_number'
+                    lp_tag = f'{lp_category}.Atom_isotope_number'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1753,14 +1763,14 @@ class NmrDpFirstAid:
                             atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
                             row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
 
-                        loop.add_tag(lp_category + '.Atom_isotope_number')
+                        loop.add_tag(f'{lp_category}.Atom_isotope_number')
 
                     except ValueError:
                         pass
 
                 if 'Axis_code' not in loop.tags:
 
-                    lp_tag = lp_category + '.Axis_code'
+                    lp_tag = f'{lp_category}.Axis_code'
                     err = ERR_TEMPLATE_FOR_MISSING_MANDATORY_LP_TAG % (lp_tag, file_type.upper())
 
                     if self.__reg.check_mandatory_tag and self.__reg.nefT.is_mandatory_tag(lp_tag, file_type):
@@ -1782,7 +1792,7 @@ class NmrDpFirstAid:
                             iso_num = row[iso_num_name_col]
                             row.append(iso_num + atom_type)
 
-                        loop.add_tag(lp_category + '.Axis_code')
+                        loop.add_tag(f'{lp_category}.Axis_code')
 
                     except ValueError:
                         pass

@@ -99,7 +99,7 @@ class LexerErrorListener(ErrorListener):
         if 'error at' in _dict['message']:  # lexer error
             try:
                 p = _dict['message'].index('error at')
-                _dict['message'] = _dict['message'][0:p] + 'error at:'
+                _dict['message'] = f"{_dict['message'][0:p]}error at:"
             except ValueError:
                 pass
 

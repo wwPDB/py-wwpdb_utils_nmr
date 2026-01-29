@@ -256,7 +256,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
                 break
             if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                 hasSegCompId = True
-            if not hasSegCompId and compId not in STD_MON_DICT and self.mrAtomNameMapping is not None and atomName[0] in PROTON_BEGIN_CODE:
+            if not hasSegCompId and compId not in STD_MON_DICT and self.mrAtomNameMapping is not None\
+               and atomName[0] in PROTON_BEGIN_CODE:
                 _, compId, _atomName = retrieveAtomIdentFromMRMap(self.ccU, self.mrAtomNameMapping, _seqId, compId, atomName)
                 if _atomName != atomName:
                     atomName = _atomName
@@ -333,7 +334,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.amberAtomTypeStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#angle_equil_value_statement.
-    def enterAngle_equil_value_statement(self, ctx: AmberPTParser.Angle_equil_value_statementContext):  # pylint: disable=unused-argument
+    def enterAngle_equil_value_statement(self, ctx: AmberPTParser.Angle_equil_value_statementContext
+                                         ):  # pylint: disable=unused-argument
         self.angleEquilValueStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#angle_equil_value_statement.
@@ -416,7 +418,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.atomTypeIndexStatements += 1
 
     # Enter a parse tree produced by AmberPTParser#atoms_per_molecule_statement.
-    def enterAtoms_per_molecule_statement(self, ctx: AmberPTParser.Atoms_per_molecule_statementContext):  # pylint: disable=unused-argument
+    def enterAtoms_per_molecule_statement(self, ctx: AmberPTParser.Atoms_per_molecule_statementContext
+                                          ):  # pylint: disable=unused-argument
         self.atomsPerMoleculeStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#atoms_per_molecule_statement.
@@ -447,7 +450,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.bondForceConstantStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#bonds_inc_hydrogen_statement.
-    def enterBonds_inc_hydrogen_statement(self, ctx: AmberPTParser.Bonds_inc_hydrogen_statementContext):  # pylint: disable=unused-argument
+    def enterBonds_inc_hydrogen_statement(self, ctx: AmberPTParser.Bonds_inc_hydrogen_statementContext
+                                          ):  # pylint: disable=unused-argument
         self.bondsIncHydrogenStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#bonds_inc_hydrogen_statement.
@@ -788,7 +792,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
                 while ctx.Simple_name(i):
                     self.__residueLabel += chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len)
                     if self.noWaterMol and (self.__residueLabel[-1] in ('HOH', 'H2O', 'WAT')
-                                            or (len(self.__residueLabel[-1]) > 3 and self.__residueLabel[:3] in ('HOH', 'H2O', 'WAT'))):
+                                            or (len(self.__residueLabel[-1]) > 3
+                                                and self.__residueLabel[:3] in ('HOH', 'H2O', 'WAT'))):
                         break
                     # self.__residueLabel.extend(chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len))
                     i += 1
@@ -813,7 +818,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.residueLabelStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#scee_scale_factor_statement.
-    def enterScee_scale_factor_statement(self, ctx: AmberPTParser.Scee_scale_factor_statementContext):  # pylint: disable=unused-argument
+    def enterScee_scale_factor_statement(self, ctx: AmberPTParser.Scee_scale_factor_statementContext
+                                         ):  # pylint: disable=unused-argument
         self.sceeScaleFactorStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#scee_scale_factor_statement.
@@ -823,7 +829,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.sceeScaleFactorStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#scnb_scale_factor_statement.
-    def enterScnb_scale_factor_statement(self, ctx: AmberPTParser.Scnb_scale_factor_statementContext):  # pylint: disable=unused-argument
+    def enterScnb_scale_factor_statement(self, ctx: AmberPTParser.Scnb_scale_factor_statementContext
+                                         ):  # pylint: disable=unused-argument
         self.scnbScaleFactorStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#scnb_scale_factor_statement.

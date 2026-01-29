@@ -28,7 +28,8 @@ class TestNmrDpUtility(unittest.TestCase):
             'daother-7421': ['D_1292118884_cs-upload_P1.str.V1']
         }
         self.mr_file_path = {
-            'daother-7421': ['D_1292118884_mr-upload_P1.amber.V1', 'D_1292118884_mr-upload_P2.amber.V1', 'D_1292118884_mr-upload_P1.dat.V1']
+            'daother-7421': ['D_1292118884_mr-upload_P1.amber.V1', 'D_1292118884_mr-upload_P2.amber.V1',
+                             'D_1292118884_mr-upload_P1.dat.V1']
         }
         self.model_file_path = {
             'daother-7421': 'D_800450_model_P1.cif.V1'

@@ -308,13 +308,13 @@ class NmrStarToCif:
                 _auth_atom_id_tags = []
                 for i in range(1, 3):
                     for original_item in original_items:
-                        _original_items.append(original_item + '_' + str(i))
+                        _original_items.append(f'{original_item}_{i}')
                     for k, v in original_auth_map.items():
-                        _original_auth_map[k + '_' + str(i)] = v + '_' + str(i)
+                        _original_auth_map[f'{k}_{i}'] = f'{v}_{i}'
                     for atom_id_tag in atom_id_tags:
-                        _atom_id_tags.append(atom_id_tag + '_' + str(i))
+                        _atom_id_tags.append(f'{atom_id_tag}_{i}')
                     for auth_atom_id_tag in auth_atom_id_tags:
-                        _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
+                        _auth_atom_id_tags.append(f'{auth_atom_id_tag}_{i}')
 
                 for k, v in categories.items():
 
@@ -351,13 +351,13 @@ class NmrStarToCif:
                 _auth_atom_id_tags = []
                 for i in range(1, 5):
                     for original_item in original_items:
-                        _original_items.append(original_item + '_' + str(i))
+                        _original_items.append(f'{original_item}_{i}')
                     for k, v in original_auth_map.items():
-                        _original_auth_map[k + '_' + str(i)] = v + '_' + str(i)
+                        _original_auth_map[f'{k}_{i}'] = f'{v}_{i}'
                     for atom_id_tag in atom_id_tags:
-                        _atom_id_tags.append(atom_id_tag + '_' + str(i))
+                        _atom_id_tags.append(f'{atom_id_tag_{i}')
                     for auth_atom_id_tag in auth_atom_id_tags:
-                        _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
+                        _auth_atom_id_tags.append(f'{auth_atom_id_tag}_{i}')
 
                 for k, v in categories.items():
 
@@ -394,13 +394,13 @@ class NmrStarToCif:
                 _auth_atom_id_tags = []
                 for i in range(1, 3):
                     for original_item in original_items:
-                        _original_items.append(original_item + '_' + str(i))
+                        _original_items.append(f'{original_item}_{i}')
                     for k, v in original_auth_map.items():
-                        _original_auth_map[k + '_' + str(i)] = v + '_' + str(i)
+                        _original_auth_map[f'{k}_{i}'] = f'{v}_{i}'
                     for atom_id_tag in atom_id_tags:
-                        _atom_id_tags.append(atom_id_tag + '_' + str(i))
+                        _atom_id_tags.append(f'{atom_id_tag}_{i}')
                     for auth_atom_id_tag in auth_atom_id_tags:
-                        _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
+                        _auth_atom_id_tags.append(f'{auth_atom_id_tag}_{i}')
 
                 for k, v in categories.items():
 
@@ -436,7 +436,7 @@ class NmrStarToCif:
                 #         items = cifObj.getAttributeList(k, lp_category)
                 #         max_dim = 0
                 #         for i in range(1, 16):
-                #             if 'Atom_ID_' + str(i) not in items:
+                #             if f'Atom_ID_{i}' not in items:
                 #                 break
                 #             max_dim = i
 
@@ -447,13 +447,13 @@ class NmrStarToCif:
                 #             _auth_atom_id_tags = []
                 #             for i in range(1, max_dim):
                 #                 for original_item in original_items:
-                #                     _original_items.append(original_item + '_' + str(i))
+                #                     _original_items.append(f'{original_item}_{i}')
                 #                 for _k, _v in original_auth_map.items():
-                #                     _original_auth_map[_k + '_' + str(i)] = _v + '_' + str(i)
+                #                     _original_auth_map[f'{_k}_{i}'] = f'{_v}_{i}'
                 #                 for atom_id_tag in atom_id_tags:
-                #                     _atom_id_tags.append(atom_id_tag + '_' + str(i))
+                #                     _atom_id_tags.append(f'{atom_id_tag}_{i}')
                 #                 for auth_atom_id_tag in auth_atom_id_tags:
-                #                     _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
+                #                     _auth_atom_id_tags.append(f'{auth_atom_id_tag'}_{i}')
 
                 #             extended_items = [original_item for original_item in _original_items if original_item not in items]
 

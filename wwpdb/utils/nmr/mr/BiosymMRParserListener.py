@@ -590,7 +590,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         sf['id'] += 1
                         first_item = False
                     sf['index_id'] += 1
-                    if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.ccU):
+                    if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1'\
+                       and isLikePheOrTyr(atom2['comp_id'], self.ccU):
                         dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                           dstFunc)
                     row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
@@ -601,7 +602,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     sf['loop'].add_data(row)
                     if dstFunc2 is not None:
                         sf['index_id'] += 1
-                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.ccU):
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1'\
+                           and isLikePheOrTyr(atom2['comp_id'], self.ccU):
                             dstFunc2 = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                                dstFunc2)
                         row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
@@ -612,7 +614,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         sf['loop'].add_data(row)
                     if dstFunc3 is not None:
                         sf['index_id'] += 1
-                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.ccU):
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1'\
+                           and isLikePheOrTyr(atom2['comp_id'], self.ccU):
                             dstFunc3 = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                                dstFunc3)
                         row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
@@ -623,7 +626,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         sf['loop'].add_data(row)
                     if dstFunc4 is not None:
                         sf['index_id'] += 1
-                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.ccU):
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1'\
+                           and isLikePheOrTyr(atom2['comp_id'], self.ccU):
                             dstFunc4 = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                                dstFunc4)
                         row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
@@ -640,11 +644,13 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by BiosymMRParser#dihedral_angle_constraints.
-    def enterDihedral_angle_constraints(self, ctx: BiosymMRParser.Dihedral_angle_constraintsContext):  # pylint: disable=unused-argument
+    def enterDihedral_angle_constraints(self, ctx: BiosymMRParser.Dihedral_angle_constraintsContext
+                                        ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dihed'
 
     # Exit a parse tree produced by BiosymMRParser#dihedral_angle_constraints.
-    def exitDihedral_angle_constraints(self, ctx: BiosymMRParser.Dihedral_angle_constraintsContext):  # pylint: disable=unused-argument
+    def exitDihedral_angle_constraints(self, ctx: BiosymMRParser.Dihedral_angle_constraintsContext
+                                       ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by BiosymMRParser#dihedral_angle_constraint.
@@ -1026,8 +1032,10 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
             if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-               and ((chain_id_1 in self.reasons['model_chain_id_ext'] and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
-                    or (chain_id_2 in self.reasons['model_chain_id_ext'] and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+               and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                     and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                    or (chain_id_2 in self.reasons['model_chain_id_ext']
+                        and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
                 self.allowZeroUpperLimit = True
         self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 

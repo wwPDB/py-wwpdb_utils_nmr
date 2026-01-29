@@ -800,8 +800,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps1 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain scalar coupling constant; "
@@ -1429,8 +1431,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps1 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain scalar coupling constant; "
@@ -1590,7 +1594,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             """
             if lower_limit > upper_limit:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.")
+                              f"The angle's lower limit '{lower_limit}' must be less than or "
+                              f"equal to the upper limit '{upper_limit}'.")
                 if self.remediate:
                     self.dihed_lb_greater_than_ub = True
                 return
@@ -1621,10 +1626,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 lenAngleName = len(angleName)
                 try:
                     # For the case 'EPSIL' could be standard name 'EPSILON'
-                    angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
+                    angleName = next(name for name in KNOWN_ANGLE_NAMES
+                                     if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}, "
+                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
+                                  f"for the residue {_compId!r}, "
                                   "of which CYANA residue library should be uploaded.")
                     return
 
@@ -1714,7 +1721,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown for the residue {_compId!r}, "
+                                      f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
+                                      f"for the residue {_compId!r}, "
                                       "of which CYANA residue library should be uploaded.")
                         return
 
@@ -1925,7 +1933,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _angleName != fixedAngleName:
                                 continue
                             combinationId += 1
-                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.ccU):
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1'\
+                           and isLikePheOrTyr(atom2['comp_id'], self.ccU):
                             dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                               dstFunc)
                         if self.debug:
@@ -1978,7 +1987,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {self.genSimpleNameSelection[1]!r} did not match with residue {_compId!r}.")
+                                      f"The angle identifier {self.genSimpleNameSelection[1]!r} did not match with "
+                                      f"residue {_compId!r}.")
                         return
 
                     for atomId, offset in zip(atomNames, seqOffset):
@@ -2772,7 +2782,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
-    def enterFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext):  # pylint: disable=unused-argument
+    def enterFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext
+                                         ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixresw' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -2781,11 +2792,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_comment_inlined = True
 
     # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
-    def exitFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext):  # pylint: disable=unused-argument
+    def exitFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext
+                                        ):  # pylint: disable=unused-argument
         self.cur_comment_inlined = False
 
     # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
-    def enterFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext):  # pylint: disable=unused-argument
+    def enterFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext
+                                        ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -2794,7 +2807,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
-    def exitFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext):  # pylint: disable=unused-argument
+    def exitFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext
+                                       ):  # pylint: disable=unused-argument
 
         try:
 
@@ -3134,7 +3148,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
-    def enterFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext):  # pylint: disable=unused-argument
+    def enterFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixresw2' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -3143,11 +3158,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_comment_inlined = True
 
     # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
-    def exitFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext):  # pylint: disable=unused-argument
+    def exitFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext
+                                         ):  # pylint: disable=unused-argument
         self.cur_comment_inlined = False
 
     # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
-    def enterFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext):  # pylint: disable=unused-argument
+    def enterFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext
+                                         ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -3156,7 +3173,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
-    def exitFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext):  # pylint: disable=unused-argument
+    def exitFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext
+                                        ):  # pylint: disable=unused-argument
 
         try:
 
@@ -3686,7 +3704,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
-    def enterFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext):  # pylint: disable=unused-argument
+    def enterFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext
+                                         ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixatmw' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -3695,11 +3714,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_comment_inlined = True
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
-    def exitFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext):  # pylint: disable=unused-argument
+    def exitFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext
+                                        ):  # pylint: disable=unused-argument
         self.cur_comment_inlined = False
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
-    def enterFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext):  # pylint: disable=unused-argument
+    def enterFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext
+                                        ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -3708,7 +3729,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
-    def exitFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext):  # pylint: disable=unused-argument
+    def exitFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext
+                                       ):  # pylint: disable=unused-argument
 
         try:
 
@@ -4048,7 +4070,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
-    def enterFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext):  # pylint: disable=unused-argument
+    def enterFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixatmw2' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -4057,11 +4080,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_comment_inlined = True
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
-    def exitFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext):  # pylint: disable=unused-argument
+    def exitFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext
+                                         ):  # pylint: disable=unused-argument
         self.cur_comment_inlined = False
 
     # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
-    def enterFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext):  # pylint: disable=unused-argument
+    def enterFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext
+                                         ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -4070,7 +4095,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
-    def exitFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext):  # pylint: disable=unused-argument
+    def exitFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext
+                                        ):  # pylint: disable=unused-argument
 
         try:
 
@@ -4494,7 +4520,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
-    def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext):  # pylint: disable=unused-argument
+    def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext
+                                         ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
         if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
            or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
@@ -4503,11 +4530,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
 
     # Exit a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
-    def exitDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext):  # pylint: disable=unused-argument
+    def exitDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext
+                                        ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraint.
-    def enterDistance_w_chain_restraint(self, ctx: CyanaMRParser.Distance_w_chain_restraintContext):  # pylint: disable=unused-argument
+    def enterDistance_w_chain_restraint(self, ctx: CyanaMRParser.Distance_w_chain_restraintContext
+                                        ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         elif self.cur_subtype == 'jcoup':
@@ -4574,7 +4603,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         continue
                                 _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    _atomId, _, details =\
+                                        self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                                     if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                                         _atomId = [_atomId[int(atomId[-1]) - 1]]
 
@@ -4624,7 +4654,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         continue
                                 _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    _atomId, _, details =\
+                                        self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                                     if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                                         _atomId = [_atomId[int(atomId[-1]) - 1]]
 
@@ -4673,7 +4704,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         continue
                                 _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    _atomId, _, details =\
+                                        self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                                     if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                                         _atomId = [_atomId[int(atomId[-1]) - 1]]
 
@@ -4723,7 +4755,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                         continue
                                 _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    _atomId, _, details =\
+                                        self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                                     if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                                         _atomId = [_atomId[int(atomId[-1]) - 1]]
 
@@ -5313,8 +5346,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
                 if chain_id_1 != chain_id_2:
-                    ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                    ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                    ps1 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                    ps2 = next((ps for ps in self.polySeq
+                                if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                       "Found inter-chain scalar coupling constant; "
@@ -5408,7 +5443,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
-    def enterDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext):  # pylint: disable=unused-argument
+    def enterDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
         if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
            or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
@@ -5417,11 +5453,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
 
     # Exit a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
-    def exitDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext):  # pylint: disable=unused-argument
+    def exitDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraint.
-    def enterDistance_w_chain2_restraint(self, ctx: CyanaMRParser.Distance_w_chain2_restraintContext):  # pylint: disable=unused-argument
+    def enterDistance_w_chain2_restraint(self, ctx: CyanaMRParser.Distance_w_chain2_restraintContext
+                                         ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         elif self.cur_subtype == 'jcoup':
@@ -5436,7 +5474,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.exitDistance_w_chain_restraint(ctx)
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
-    def enterDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext):  # pylint: disable=unused-argument
+    def enterDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
         if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
            or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
@@ -5445,11 +5484,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
 
     # Exit a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
-    def exitDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext):  # pylint: disable=unused-argument
+    def exitDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraint.
-    def enterDistance_w_chain3_restraint(self, ctx: CyanaMRParser.Distance_w_chain3_restraintContext):  # pylint: disable=unused-argument
+    def enterDistance_w_chain3_restraint(self, ctx: CyanaMRParser.Distance_w_chain3_restraintContext
+                                         ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         elif self.cur_subtype == 'jcoup':
@@ -5524,7 +5565,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             """
             if lower_limit > upper_limit:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.")
+                              f"The angle's lower limit '{lower_limit}' must be less than or "
+                              f"equal to the upper limit '{upper_limit}'.")
                 if self.remediate:
                     self.dihed_lb_greater_than_ub = True
                 return
@@ -5555,10 +5597,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 lenAngleName = len(angleName)
                 try:
                     # For the case 'EPSIL' could be standard name 'EPSILON'
-                    angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
+                    angleName = next(name for name in KNOWN_ANGLE_NAMES
+                                     if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}, "
+                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
+                                  f"for the residue {_compId!r}, "
                                   "of which CYANA residue library should be uploaded.")
                     return
 
@@ -5645,7 +5689,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown for the residue {_compId!r}, "
+                                      f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
+                                      f"for the residue {_compId!r}, "
                                       "of which CYANA residue library should be uploaded.")
                         return
 
@@ -5856,7 +5901,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _angleName != fixedAngleName:
                                 continue
                             combinationId += 1
-                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.ccU):
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1'\
+                           and isLikePheOrTyr(atom2['comp_id'], self.ccU):
                             dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                               dstFunc)
                         if self.debug:
@@ -5909,7 +5955,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {self.genSimpleNameSelection[2]!r} did not match with residue {_compId!r}.")
+                                      f"The angle identifier {self.genSimpleNameSelection[2]!r} did not match with "
+                                      f"residue {_compId!r}.")
                         return
 
                     for atomId, offset in zip(atomNames, seqOffset):
@@ -6149,7 +6196,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain scalar coupling constant; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
@@ -6157,7 +6205,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-residue scalar coupling constant; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -6177,13 +6226,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 else:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-residue scalar coupling constant; "
-                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                               "Found zero scalar coupling constant; "
-                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if self.createSfDict:

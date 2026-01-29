@@ -509,11 +509,13 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         pass
 
     # Enter a parse tree produced by CharmmMRParser#fix_bond_or_angle_constraint.
-    def enterFix_bond_or_angle_constraint(self, ctx: CharmmMRParser.Fix_bond_or_angle_constraintContext):  # pylint: disable=unused-argument
+    def enterFix_bond_or_angle_constraint(self, ctx: CharmmMRParser.Fix_bond_or_angle_constraintContext
+                                          ):  # pylint: disable=unused-argument
         self.cur_subtype = 'geo'
 
     # Exit a parse tree produced by CharmmMRParser#fix_bond_or_angle_constraint.
-    def exitFix_bond_or_angle_constraint(self, ctx: CharmmMRParser.Fix_bond_or_angle_constraintContext):  # pylint: disable=unused-argument
+    def exitFix_bond_or_angle_constraint(self, ctx: CharmmMRParser.Fix_bond_or_angle_constraintContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CharmmMRParser#restrained_distance.
@@ -905,14 +907,16 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         pass
 
     # Enter a parse tree produced by CharmmMRParser#fix_bond_or_angle_statement.
-    def enterFix_bond_or_angle_statement(self, ctx: CharmmMRParser.Fix_bond_or_angle_statementContext):  # pylint: disable=unused-argument
+    def enterFix_bond_or_angle_statement(self, ctx: CharmmMRParser.Fix_bond_or_angle_statementContext
+                                         ):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#fix_bond_or_angle_statement.
-    def exitFix_bond_or_angle_statement(self, ctx: CharmmMRParser.Fix_bond_or_angle_statementContext):  # pylint: disable=unused-argument
+    def exitFix_bond_or_angle_statement(self, ctx: CharmmMRParser.Fix_bond_or_angle_statementContext
+                                        ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CharmmMRParser#shake_opt.
@@ -1531,7 +1535,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 or self.reasons['segment_id_mismatch'][chainId] is not None):
                             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                           "Couldn't specify segment name "
-                                          f"'{chainId}' the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
+                                          f"'{chainId}' the coordinates.")
+                            # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
@@ -1781,7 +1786,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     self.factor['atom_id'] = [None]
                     self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                   f"The attribute property {_attr_prop!r} "
-                                  "related to software specific parameters of each atom is not possessed in the static coordinate file.")
+                                  "related to software specific parameters of each atom is not possessed "
+                                  "in the static coordinate file.")
                     validProp = False
 
                 if validProp and len(self.factor['atom_selection']) == 0:
@@ -1831,8 +1837,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     if _atomId in coordAtomSite['atom_id']:
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
-                                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
-                                                                               or ('H' + _atomId[-1] in coordAtomSite['atom_id'])):
+                                    elif _atomId in ('HN1', 'HN2', 'HN3') and (f'{_atomId[-1]}HN' in coordAtomSite['atom_id']
+                                                                               or f'H{_atomId[-1]}' in coordAtomSite['atom_id']):
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
@@ -2207,7 +2213,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                        and 'alt_chain_id' in self.factor:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
                         for atom in self.factor['atom_selection']:
-                            atom['segment_id'] = 'not ' + atom['segment_id']
+                            atom['segment_id'] = f"not {atom['segment_id']}"
 
                     else:
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
@@ -2501,7 +2507,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             del __factor['atom_selection']
                         del _factor['atom_selection']
                         self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                      f"The 'residue' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                      f"The 'residue' clause has no effect for a conjunction of "
+                                      f"factor {self.getReadableFactor(__factor)} "
                                       f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.Resname():
@@ -2545,7 +2552,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             del __factor['atom_selection']
                         del _factor['atom_selection']
                         self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                      f"The 'resname' clause has no effect for a conjunction of factor {self.getReadableFactor(__factor)} "
+                                      f"The 'resname' clause has no effect for a conjunction of "
+                                      f"factor {self.getReadableFactor(__factor)} "
                                       f"and {self.getReadableFactor(_factor)}.")
 
             elif ctx.ISeg():

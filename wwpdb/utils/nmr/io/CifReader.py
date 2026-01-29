@@ -868,7 +868,8 @@ class CifReader:
             for row in rowList:
                 if row[altDict['auth_comp_id']] not in EMPTY_VALUE:
                     c = row[altDict['chain_id']]
-                    etype = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                    etype = next((e['type'] for e in entityPoly
+                                  if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
                     if etype is not None and 'polypeptide' not in etype:
                         if c not in mapAuthSeqIds:
                             mapAuthSeqIds[c] = []
@@ -1121,7 +1122,8 @@ class CifReader:
                                                                CARTN_DATA_ITEMS,
                                                                [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
-                                                                {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': BEG_ATOM},
+                                                                {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                                 'value': BEG_ATOM},
                                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
                                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
                                                                 ])
@@ -1131,12 +1133,14 @@ class CifReader:
                                                                CARTN_DATA_ITEMS,
                                                                [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
-                                                                {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': END_ATOM},
+                                                                {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                                 'value': END_ATOM},
                                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
                                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
                                                                 ])
 
-                                if len(_beg) == 1 and len(_end) == 1 and np.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
+                                if len(_beg) == 1 and len(_end) == 1\
+                                   and np.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
                                     for auth_seq_id_ in range(auth_seq_id_1 + 1, auth_seq_id_2):
                                         auth_seq_id_list = list(filter(None, authSeqDict[c]))
 
@@ -1305,7 +1309,8 @@ class CifReader:
                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                        {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                        {'name': 'label_asym_id', 'type': 'str',
+                                                                         'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                         {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
                                                                          'type': 'int', 'alt_name': 'model_id'},
@@ -1323,7 +1328,8 @@ class CifReader:
                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                        {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                        {'name': 'label_asym_id', 'type': 'str',
+                                                                         'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                         {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
                                                                          'type': 'int', 'alt_name': 'model_id'},
@@ -1341,7 +1347,8 @@ class CifReader:
                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                        {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                        {'name': 'label_asym_id', 'type': 'str',
+                                                                         'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                         {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
                                                                          'type': 'int', 'alt_name': 'model_id'},
@@ -1446,9 +1453,11 @@ class CifReader:
                                                  [{'name': 'conf_type_id', 'type': 'str'},
                                                   {'name': helix_id_name, 'type': 'str', 'alt_name': 'helix_id'},
                                                   {'name': 'beg_label_seq_id'
-                                                   if label_scheme else 'beg_auth_seq_id', 'type': 'int', 'alt_name': 'beg_seq_id'},
+                                                   if label_scheme else 'beg_auth_seq_id',
+                                                   'type': 'int', 'alt_name': 'beg_seq_id'},
                                                   {'name': 'end_label_seq_id'
-                                                   if label_scheme else 'end_auth_seq_id', 'type': 'int', 'alt_name': 'end_seq_id'}
+                                                   if label_scheme else 'end_auth_seq_id',
+                                                   'type': 'int', 'alt_name': 'end_seq_id'}
                                                   ],
                                                  [{'name': 'beg_label_asym_id', 'type': 'str', 'value': chain_id},
                                                   {'name': 'end_label_asym_id', 'type': 'str', 'value': chain_id}
@@ -1457,15 +1466,17 @@ class CifReader:
         for sc in struct_conf:
             for seq_id in range(sc['beg_seq_id'], sc['end_seq_id'] + 1):
                 if seq_id in seq_ids and sc['conf_type_id'] is not None and sc['helix_id'] is not None:
-                    ret[seq_ids.index(seq_id)] = sc['conf_type_id'] + ':' + sc['helix_id']
+                    ret[seq_ids.index(seq_id)] = f"{sc['conf_type_id']}:{sc['helix_id']}"
 
         struct_sheet_range = self.getDictListWithFilter('struct_sheet_range',
                                                         [{'name': 'sheet_id', 'type': 'str'},
                                                          {'name': 'id', 'type': 'str'},
                                                          {'name': 'beg_label_seq_id'
-                                                          if label_scheme else 'beg_auth_seq_id', 'type': 'int', 'alt_name': 'beg_seq_id'},
+                                                          if label_scheme else 'beg_auth_seq_id',
+                                                          'type': 'int', 'alt_name': 'beg_seq_id'},
                                                          {'name': 'end_label_seq_id'
-                                                          if label_scheme else 'end_auth_seq_id', 'type': 'int', 'alt_name': 'end_seq_id'}
+                                                          if label_scheme else 'end_auth_seq_id',
+                                                          'type': 'int', 'alt_name': 'end_seq_id'}
                                                          ],
                                                         [{'name': 'beg_label_asym_id', 'type': 'str', 'value': chain_id},
                                                          {'name': 'end_label_asym_id', 'type': 'str', 'value': chain_id}
@@ -1474,11 +1485,12 @@ class CifReader:
         for ssr in struct_sheet_range:
             for seq_id in range(ssr['beg_seq_id'], ssr['end_seq_id'] + 1):
                 if seq_id in seq_ids and ssr['sheet_id'] is not None and ssr['id'] is not None:
-                    ret[seq_ids.index(seq_id)] = 'STRN:' + ssr['sheet_id'] + ':' + ssr['id']
+                    ret[seq_ids.index(seq_id)] = f"STRN:{ssr['sheet_id']}:{ssr['id']}"
 
         return ret
 
-    def __calculateRmsd(self, chain_ids: List[str], lengths: List[int], total_models: int = 1, eff_model_ids: Optional[List[str]] = None,
+    def __calculateRmsd(self, chain_ids: List[str], lengths: List[int], total_models: int = 1,
+                        eff_model_ids: Optional[List[str]] = None,
                         atom_sites: Optional[List[dict]] = None, bb_atom_sites: Optional[List[dict]] = None,
                         randomM: Optional[List[list]] = None) -> Tuple[Optional[List[dict]], Optional[List[dict]]]:
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
@@ -1919,8 +1931,10 @@ class CifReader:
 
             _label = int(label)
 
-            dst_chain_ids = set(a['chain_id'] for a, l in zip(_atom_site_ref, list_labels) if l == label)  # noqa: E741
-            seq_keys = sorted(set((a['chain_id'], a['seq_id']) for a, l in zip(_atom_site_ref, list_labels) if l == label),  # noqa: E741
+            dst_chain_ids = set(a['chain_id'] for a, l in zip(_atom_site_ref, list_labels)  # noqa: E741
+                                if l == label)  # noqa: E741
+            seq_keys = sorted(set((a['chain_id'], a['seq_id']) for a, l in zip(_atom_site_ref, list_labels)  # noqa: E741
+                                  if l == label),  # noqa: E741
                               key=itemgetter(0, 1))
 
             for chain_id in dst_chain_ids:

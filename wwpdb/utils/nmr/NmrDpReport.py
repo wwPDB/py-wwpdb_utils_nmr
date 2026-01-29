@@ -51,7 +51,8 @@
 # 02-Jul-2021  M. Yokochi - add content types of NMR restraint file (DAOTHER-6830)
 # 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints (DAOTHER-7265)
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
-# 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak' (DAOTHER-7389, issue #3)
+# 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak'
+#                           (DAOTHER-7389, issue #3)
 # 28-Oct-2021  M. Yokochi - add 'corrected_saveframe_name' warning (DAOTHER-7389, issue #4)
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
@@ -68,7 +69,8 @@
 # 17-May-2022  M. Yokochi - add 'nm-res-bio' file type for BIOSYM restraint format (DAOTHER-7825, NMR restraint remediation)
 # 01-Jun-2022  M. Yokochi - add 'nm-res-gro' and 'nm-aux-gro' file types for GROMACS restraint format
 #                           (DAOTHER-7769, NMR restraint remediation)
-# 17-Jun-2022  M. Yokochi - add 'nm-res-dyn' file type for DYNAMO/PALES/TALOS restraint format (DAOTHER-7872, NMR restraint remediation)
+# 17-Jun-2022  M. Yokochi - add 'nm-res-dyn' file type for DYNAMO/PALES/TALOS restraint format
+#                           (DAOTHER-7872, NMR restraint remediation)
 # 29-Jun-2022  M. Yokochi - add 'insufficient_mr_data' warning type (NMR restraint remediation)
 # 06-Jul-2022  M. Yokochi - add 'nm-res-syb' file type for SYBYL restraint format (DAOTHER-7902, NMR restraint remediation)
 # 07-Jul-2022  M. Yokochi - add 'nmr-peaks' content type and 'nm-pea-any' file type (NMR restraint remediation)
@@ -81,7 +83,8 @@
 # 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
 # 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
-# 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
+# 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter)
+#                           (NMR restraint remediation)
 # 27-Feb-2023  M. Yokochi - add getLabelSeqSchemOf(), which convert author sequence scheme to label sequence scheme of the coordinates
 #                           (NMR restraint remediation)
 # 13-Dec-2023  M. Yokochi - add 'hydrogen_non_instantiated' warning (DAOTHER-8945)
@@ -103,7 +106,8 @@
 #                           (DAOTHER-8905, 9785, NMR data remediation, standalone NMR data conversion service)
 # 07-Feb-2025  M. Yokochi - add 'ignore_error' in NmrDpReportInputSource class (DAOTHER-8905)
 # 18-Feb-2025  M. Yokochi - add 'nm-pea-pon' file type for PONDEROSA spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
-# 26-Feb-2025  M. Yokochi - add 'nm-pea-ccp' file type for CCPN tabular spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
+# 26-Feb-2025  M. Yokochi - add 'nm-pea-ccp' file type for CCPN tabular spectral peak list file
+#                           (DAOTHER-8905, 9785, NMR data remediation)
 # 05-Mar-2025  M. Yokochi - add 'nm-pea-bar' file type for bare spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
 # 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file
@@ -128,7 +132,7 @@
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints
 #                           (DAOTHER-7829, 9785, NMR data remediation)
 # 07-Jan-2026  M. Yokochi - update status code when adding error/warning description
-# 27-Jan-2026  M. Yokochi - add hasSequenceMismatchError() (DAOTHER-10487)
+# 27-Jan-2026  M. Yokochi - add hasSequenceMismatchErrorInCsLoop() (DAOTHER-10487)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1069,7 +1073,8 @@ class NmrDpReport:
 
         return ret
 
-    def getNmrSeq1LetterCodeOf(self, nmr_chain_id: str, fullSequence: bool = True, unmappedSeqId: Optional[List] = None) -> Optional[str]:
+    def getNmrSeq1LetterCodeOf(self, nmr_chain_id: str, fullSequence: bool = True, unmappedSeqId: Optional[List] = None
+                               ) -> Optional[str]:
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
         """
 
@@ -1302,7 +1307,8 @@ class NmrDpReport:
                     content_subtype = input_source_dic['content_subtype']
 
                     if 'entity' in content_subtype:
-                        fullSequence = True  # trust full sequence of the entity if cs file is based on existing BMRB entry (DAOTHER-10222)
+                        # trust full sequence of the entity if cs file is based on existing BMRB entry (DAOTHER-10222)
+                        fullSequence = True
 
         for ca in chain_assigns:
 
@@ -2496,7 +2502,8 @@ class NmrDpReportError:
         except StopIteration:
             return None
 
-    def getCombinedDescriptions(self, file_name: str, sf_framecode: str, original_file_name: Optional[str] = None) -> Optional[List[str]]:
+    def getCombinedDescriptions(self, file_name: str, sf_framecode: str, original_file_name: Optional[str] = None
+                                ) -> Optional[List[str]]:
         """ Return combined error descriptions specified by file name and saveframe.
         """
 
@@ -2514,22 +2521,28 @@ class NmrDpReportError:
 
                 if (c['file_name'] == file_name or original_file_name not in EMPTY_VALUE)\
                    and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
-                    d.append(item + ': ' + c['description'])
+                    d.append(f"{item}: {c['description']}")
 
         if len(d) == 0:
             return None
 
         return d
 
-    def hasSequenceMismatchError(self) -> bool:
-        """ Return whether sequence mismatch error exists.
+    def hasSequenceMismatchErrorInCsLoop(self) -> bool:
+        """ Return whether sequence mismatch error exists in assigned chemical shifts.
         """
 
         if self.__contents is None:
             return False
 
-        return any(True for k, v in self.__contents.items()
-                   if k == 'sequence_mismatch' and v is not None and len(v) > 0)
+        for k, v in self.__contents.items():
+            if k != 'sequence_mismatch' or v is None or len(v) == 0:
+                continue
+            for c in v:
+                if 'category' in c and c['category'] in ('_nef_chemical_shift', '_Atom_chem_shift'):
+                    return True
+
+        return False
 
     def hasChemicalShiftError(self) -> bool:
         """ Return whether anomalous data error exists.
@@ -2874,7 +2887,8 @@ class NmrDpReportWarning:
         except StopIteration:
             return None
 
-    def getCombinedDescriptions(self, file_name: str, sf_framecode: str, original_file_name: Optional[str] = None) -> Optional[List[str]]:
+    def getCombinedDescriptions(self, file_name: str, sf_framecode: str, original_file_name: Optional[str] = None
+                                ) -> Optional[List[str]]:
         """ Return combined warning descriptions specified by file name and saveframe.
         """
 
@@ -2892,7 +2906,7 @@ class NmrDpReportWarning:
 
                 if (c['file_name'] == file_name or original_file_name not in EMPTY_VALUE)\
                    and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
-                    d.append(item + ': ' + c['description'])
+                    d.append(f"{item}: {c['description']}")
 
         if len(d) == 0:
             return None

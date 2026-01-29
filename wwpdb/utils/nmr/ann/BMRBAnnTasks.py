@@ -234,7 +234,7 @@ class BMRBAnnTasks:
                     #
                     # lp = pynmrstar.Loop.from_scratch(lp_category)
                     #
-                    # tags = [lp_category + '.' + item for item in items]
+                    # tags = [f'{lp_category}.{item}' for item in items]
                     #
                     # lp.add_tag(tags)
                     #
@@ -316,7 +316,7 @@ class BMRBAnnTasks:
                                     list_id = row[id_col]
                                     if isinstance(list_id, int):
                                         list_id = str(list_id)
-                                    for parent_sf in master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', list_id):
+                                    for parent_sf in master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', list_id):  # noqa: E501, pylint: disable=line-too-long
                                         sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode').replace(' ', '_')
                                         break
                                 if None not in (list_id, sf_framecode):
@@ -510,7 +510,7 @@ class BMRBAnnTasks:
 
                                     lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                                    tags = [lp_category + '.' + item for item in items]
+                                    tags = [f'{lp_category}.{item}' for item in items]
 
                                     lp.add_tag(tags)
 
@@ -697,7 +697,8 @@ class BMRBAnnTasks:
                                     ambig_code = row[2]
                                     ambig_set_id = row[3]
 
-                                    _ambig_code = 1 if self.__reg.sail_flag else self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                    _ambig_code = 1 if self.__reg.sail_flag\
+                                        else self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                                     checked = _ambig_code != 1
 
@@ -726,7 +727,8 @@ class BMRBAnnTasks:
                                     atom_id = row[1]
                                     ambig_code = row[2]
 
-                                    _ambig_code = 1 if self.__reg.sail_flag else self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                    _ambig_code = 1 if self.__reg.sail_flag\
+                                        else self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                                     checked = _ambig_code != 1
 
@@ -1069,7 +1071,8 @@ class BMRBAnnTasks:
                     elif 'saccharide' in polymer_type or 'carbohydrate' in polymer_type:
                         entity_dict[entity_id] = {'name': get_first_sf_tag(sf, 'Name'),
                                                   'sf_framecode': get_first_sf_tag(sf, 'Sf_framecode'),
-                                                  'sample_type': 'carbohydrate' if polymer_type.startswith('carbo') else 'polysaccharide',
+                                                  'sample_type':
+                                                  'carbohydrate' if polymer_type.startswith('carbo') else 'polysaccharide',
                                                   'assembly_id': assembly_id,
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
@@ -1186,7 +1189,8 @@ class BMRBAnnTasks:
                 if sf_framecode not in EMPTY_VALUE and ' ' in sf_framecode:
                     sf_framecode = f'NMR_spectrometer_{spectrometer_id}'
 
-                sf = next((sf for sf in master_entry.frame_list if sf.category == 'NMR_spectrometer' and sf.name == sf_framecode), None)
+                sf = next((sf for sf in master_entry.frame_list
+                           if sf.category == 'NMR_spectrometer' and sf.name == sf_framecode), None)
 
                 if sf is None:
                     sf = pynmrstar.Saveframe.from_scratch(sf_framecode, '_NMR_spectrometer')
@@ -1251,7 +1255,7 @@ class BMRBAnnTasks:
                         elif minus_code_count == 2 and row[1].startswith('-'):
                             try:
                                 _val = row[1][1:].split('-')
-                                _val_0 = float('-' + _val[0])
+                                _val_0 = float(f'-{_val[0]}')
                                 _val_1 = float(_val[1])
                                 _eff_digits_0 = eff_digits(_val[0])
                                 _eff_digits_1 = eff_digits(_val[1])
@@ -1770,7 +1774,8 @@ class BMRBAnnTasks:
                                             continue
                                         if isotope_number not in ALLOWED_ISOTOPE_NUMBERS:
                                             continue
-                                        type_symbol = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if isotope_number in v)
+                                        type_symbol = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items()
+                                                           if isotope_number in v)
                                         isotopic_labeling.append(f'U-{isotope_number}{type_symbol}')
                                     if len(isotopic_labeling) > 0:
                                         row[isotopic_labeling_col] = f"[{'; '.join(isotopic_labeling)}]"
@@ -1796,8 +1801,10 @@ class BMRBAnnTasks:
                             if _entity_id is not None:
                                 _row = next((_row for _row in lp.data
                                              if _row[entity_id_col] not in EMPTY_VALUE
-                                             and ((isinstance(_row[entity_id_col], str) and int(_row[entity_id_col]) == _entity_id)
-                                                  or (isinstance(_row[entity_id_col], int) and _row[entity_id_col] == _entity_id))), None)
+                                             and ((isinstance(_row[entity_id_col], str)
+                                                   and int(_row[entity_id_col]) == _entity_id)
+                                                  or (isinstance(_row[entity_id_col], int)
+                                                      and _row[entity_id_col] == _entity_id))), None)
                                 if _row is not None:
                                     row = copy.copy(_row)
                                     row[id_col] = cur_id
@@ -2377,11 +2384,13 @@ class BMRBAnnTasks:
                                     position[sp_dim_id - 1] = float(row_pk_char[2])
                                     if all(pos is not None for pos in position):
                                         volume = next((float(row_pk_gen_char[1]) for row_pk_gen_char in dat_pk_gen_char
-                                                       if row_pk_gen_char[0] == row_pk_char[0] and row_pk_gen_char[2] == 'volume'), None)
+                                                       if row_pk_gen_char[0] == row_pk_char[0]
+                                                       and row_pk_gen_char[2] == 'volume'), None)
                                         if volume is not None:
                                             has_volume = True
                                         height = next((float(row_pk_gen_char[1]) for row_pk_gen_char in dat_pk_gen_char
-                                                       if row_pk_gen_char[0] == row_pk_char[0] and row_pk_gen_char[2] == 'height'), None)
+                                                       if row_pk_gen_char[0] == row_pk_char[0]
+                                                       and row_pk_gen_char[2] == 'height'), None)
                                         if height is not None:
                                             has_height = True
                                         signature.append({'position': set(position),
@@ -2854,7 +2863,7 @@ class BMRBAnnTasks:
 
                         lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                        tags = [lp_category + '.' + item for item in items]
+                        tags = [f'{lp_category}.{item}' for item in items]
 
                         lp.add_tag(tags)
 
@@ -2944,7 +2953,7 @@ class BMRBAnnTasks:
 
                 lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                tags = [lp_category + '.' + item for item in items]
+                tags = [f'{lp_category}.{item}' for item in items]
 
                 lp.add_tag(tags)
 
@@ -2956,13 +2965,17 @@ class BMRBAnnTasks:
                         row[8], row[9], row[10] = 'ppm', '0.000', 'internal'
                         if n in (1, 2, 13, 15, 19, 31):
                             if n == 1:
-                                row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'direct', '1.0'
+                                row[2], row[3], row[11], row[12] =\
+                                    default_internal_reference, 'methyl protons', 'direct', '1.0'
                             elif n == 2:
-                                row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
+                                row[2], row[3], row[11], row[12] =\
+                                    default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
                             elif n == 13:
-                                row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
+                                row[2], row[3], row[11], row[12] =\
+                                    default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
                             elif n == 15:
-                                row[2], row[3], row[11], row[12] = default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
+                                row[2], row[3], row[11], row[12] =\
+                                    default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
                             elif n == 19:
                                 row[2], row[3], row[11], row[12] = 'CCl3F', 'fluorine', 'direct', '1.0'
                             else:
@@ -3120,8 +3133,9 @@ class BMRBAnnTasks:
                                         spec_freq = _row[spec_freq_col]
 
                                         if spec_freq in EMPTY_VALUE and isotope_num in cs_ref_ratio_map:
-                                            _lp.data[idx][spec_freq_col] = roundString(f'{field_strength * cs_ref_ratio_map[isotope_num]}',
-                                                                                       field_strength_max_didits)
+                                            _lp.data[idx][spec_freq_col] =\
+                                                roundString(f'{field_strength * cs_ref_ratio_map[isotope_num]}',
+                                                            field_strength_max_didits)
 
                                 except (KeyError, ValueError):
                                     continue
@@ -3228,8 +3242,9 @@ class BMRBAnnTasks:
                                         spec_freq = _row[spec_freq_col]
 
                                         if spec_freq in EMPTY_VALUE and isotope_num in cs_ref_ratio_map:
-                                            _lp.data[idx][spec_freq_col] = roundString(f'{field_strength * cs_ref_ratio_map[isotope_num]}',
-                                                                                       field_strength_max_didits)
+                                            _lp.data[idx][spec_freq_col] =\
+                                                roundString(f'{field_strength * cs_ref_ratio_map[isotope_num]}',
+                                                            field_strength_max_didits)
 
                                 except (KeyError, ValueError):
                                     continue
@@ -3451,7 +3466,8 @@ class BMRBAnnTasks:
 
                 sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                 thiol_state = get_first_sf_tag(sf, 'Thiol_state')
-                if thiol_state in EMPTY_VALUE or thiol_state in ('not available', 'not present', 'not reported', 'unknown', 'all free'):
+                if thiol_state in EMPTY_VALUE\
+                   or thiol_state in ('not available', 'not present', 'not reported', 'unknown', 'all free'):
                     continue
 
                 if sample_type in ('protein', 'peptide') and entity['total_cys'] > 0:

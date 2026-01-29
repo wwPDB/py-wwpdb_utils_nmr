@@ -286,7 +286,8 @@ class GromacsMRParserListener(ParseTreeListener):
         self.__hasBranched = self.__branched is not None and len(self.__branched) > 0
         self.__hasNonPolySeq = self.__hasNonPoly or self.__hasBranched
 
-        self.__gapInAuthSeq = self.__hasPolySeq and any(True for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+        self.__gapInAuthSeq = self.__hasPolySeq\
+            and any(True for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
         if atomNumberDict is not None:
             self.__atomNumberDict = atomNumberDict
@@ -461,7 +462,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
                                 f"The relative weight value of '{weight}' should be a positive value.")
 
-            dstFunc = self.validateDistanceRange(index, weight, lower_limit, upper_limit, upper_linear_limit, self.__omitDistLimitOutlier)
+            dstFunc = self.validateDistanceRange(index, weight, lower_limit, upper_limit, upper_linear_limit,
+                                                 self.__omitDistLimitOutlier)
 
             if dstFunc is None:
                 return
@@ -597,7 +599,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 else:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
-                                    f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                    f"The lower limit value='{lower_limit}' "
+                                    f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX:
@@ -611,7 +614,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 else:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
-                                    f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                    f"The upper limit value='{upper_limit}' "
+                                    f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX:
@@ -625,7 +629,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 else:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
-                                    f"The upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
+                                    f"The upper linear limit value='{upper_linear_limit}' "
+                                    f"must be within range {DIST_RESTRAINT_ERROR}.")
 
         if None not in (upper_limit, upper_linear_limit):
             if upper_limit > upper_linear_limit:
@@ -642,21 +647,24 @@ class GromacsMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
-                                f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
+                                f"The lower limit value='{lower_limit}' "
+                                f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
-                                f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
+                                f"The upper limit value='{upper_limit}' "
+                                f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
-                                f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
+                                f"The upper linear limit value='{upper_linear_limit}' "
+                                f"should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is None and upper_limit is None and upper_linear_limit is None:
             return None
@@ -902,7 +910,8 @@ class GromacsMRParserListener(ParseTreeListener):
             if target_value is None:
                 return dst_func
 
-            if angle_error(lower_bound, upper_bound, target_value, chi2) > angle_error(lower_bound, upper_bound, target_value, alt_chi2):
+            if angle_error(lower_bound, upper_bound, target_value, chi2) >\
+               angle_error(lower_bound, upper_bound, target_value, alt_chi2):
                 target_value = dst_func.get('target_value')
                 if target_value is not None:
                     target_value = float(target_value) + 180.0
@@ -1419,7 +1428,8 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
-                                f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
+                                f"The target value='{target_value}' "
+                                f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
@@ -1427,7 +1437,8 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
-                                f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                                f"The lower limit value='{lower_limit:.6f}' "
+                                f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
@@ -1435,7 +1446,8 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
-                                f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
+                                f"The upper limit value='{upper_limit:.6f}' "
+                                f"must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
@@ -1443,13 +1455,15 @@ class GromacsMRParserListener(ParseTreeListener):
                 if lower_limit > target_value:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
-                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
+                                    f"The lower limit value='{lower_limit:.6f}' "
+                                    f"must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
-                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
+                                    f"The upper limit value='{upper_limit:.6f}' "
+                                    f"must be greater than the target value '{target_value}'.")
 
         if not validRange:
             return None
@@ -1459,21 +1473,24 @@ class GromacsMRParserListener(ParseTreeListener):
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp, n=index)}"
-                                f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
+                                f"The target value='{target_value}' "
+                                f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp, n=index)}"
-                                f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                                f"The lower limit value='{lower_limit:.6f}' "
+                                f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp, n=index)}"
-                                f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+                                f"The upper limit value='{upper_limit:.6f}' "
+                                f"should be within range {RDC_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None:
             return None
@@ -1961,7 +1978,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         restraint_name = getRestraintName(self.__cur_subtype)
 
-        sf_framecode = 'GROMACS_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = f"GROMACS_{restraint_name.replace(' ', '_')}_{list_id}"
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
@@ -2018,7 +2035,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
         self.__cur_constraint_type = constraintType
 
-        _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
+        _key = next((_key for _key in self.sfDict
+                     if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
         self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
         return self.sfDict[key][-1]

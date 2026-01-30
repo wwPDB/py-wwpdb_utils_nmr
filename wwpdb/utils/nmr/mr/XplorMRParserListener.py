@@ -1632,12 +1632,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
-                if len(self.g) > 0:
-                    self.f.extend(self.g)
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
+            #     if len(self.g) > 0:
+            #         self.f.extend(self.g)
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
@@ -1978,13 +1978,13 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS,
-                                            allow_ambig=True, allow_ambig_warn_title='Anomalous RDC vector'):
-                if len(self.g) > 0:
-                    self.f.extend(self.g)
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS,
+            #                                 allow_ambig=True, allow_ambig_warn_title='Anomalous RDC vector'):
+            #     if len(self.g) > 0:
+            #         self.f.extend(self.g)
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
@@ -2360,12 +2360,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC (TENSO)'):
-                if len(self.g) > 0:
-                    self.f.extend(self.g)
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC (TENSO)'):
+            #     if len(self.g) > 0:
+            #         self.f.extend(self.g)
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']

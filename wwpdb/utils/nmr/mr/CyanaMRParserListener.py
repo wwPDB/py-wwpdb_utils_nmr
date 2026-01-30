@@ -1596,15 +1596,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if weight == 0.0:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                               f"The relative weight value of '{weight}' should be a positive value.")
-            """
-            if lower_limit > upper_limit:
-                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"The angle's lower limit '{lower_limit}' must be less than or "
-                              f"equal to the upper limit '{upper_limit}'.")
-                if self.remediate:
-                    self.dihed_lb_greater_than_ub = True
-                return
-            """
+            # """
+            # if lower_limit > upper_limit:
+            #     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+            #                   f"The angle's lower limit '{lower_limit}' must be less than or "
+            #                   f"equal to the upper limit '{upper_limit}'.")
+            #     if self.remediate:
+            #         self.dihed_lb_greater_than_ub = True
+            #     return
+            # """
             if self.remediate and upper_limit < 0.0:
                 self.dihed_ub_always_positive = False
 
@@ -2247,10 +2247,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC'):
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC'):
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -5588,15 +5588,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if weight == 0.0:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                               f"The relative weight value of '{weight}' should be a positive value.")
-            """
-            if lower_limit > upper_limit:
-                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                              f"The angle's lower limit '{lower_limit}' must be less than or "
-                              f"equal to the upper limit '{upper_limit}'.")
-                if self.remediate:
-                    self.dihed_lb_greater_than_ub = True
-                return
-            """
+            # """
+            # if lower_limit > upper_limit:
+            #     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+            #                   f"The angle's lower limit '{lower_limit}' must be less than or "
+            #                   f"equal to the upper limit '{upper_limit}'.")
+            #     if self.remediate:
+            #         self.dihed_lb_greater_than_ub = True
+            #     return
+            # """
             if self.remediate and upper_limit < 0.0:
                 self.dihed_ub_always_positive = False
 

@@ -363,10 +363,10 @@ class BaseTopologyParserListener():
                                                 del atomNum['atom_type']
                         else:
                             compIdList.append('.')
-                            """ deferred to assignNonPolymer()
-                            self.__f.append(f"[Unknown residue name] "
-                                            f"{authCompId!r} is unknown residue name.")
-                            """
+                            # """ deferred to assignNonPolymer()
+                            # self.__f.append(f"[Unknown residue name] "
+                            #                 f"{authCompId!r} is unknown residue name.")
+                            # """
 
                 ps['comp_id'] = compIdList
 

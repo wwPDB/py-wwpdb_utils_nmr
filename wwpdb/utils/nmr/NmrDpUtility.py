@@ -5524,7 +5524,7 @@ class NmrDpUtility:
 
                                 self.__reg.report.setOtherBond(True)
 
-                        except KeyError:  # as e:
+                        except KeyError:
                             # """
                             # self.__reg.report.error.appendDescription('multiple_data',
                             #                                           {'file_name': file_name, 'sf_framecode': sf_framecode,

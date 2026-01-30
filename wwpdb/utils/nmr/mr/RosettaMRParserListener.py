@@ -4463,30 +4463,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by RosettaMRParser#func_type_def.
     def exitFunc_type_def(self, ctx: RosettaMRParser.Func_type_defContext):
-        """
-        (CIRCULARHARMONIC | HARMONIC | SIGMOID | SQUARE_WELL) Float Float |
-        BOUNDED Float Float Float Float? Simple_name* |
-        PERIODICBOUNDED Float Float Float Float Float? Simple_name* |
-        OFFSETPERIODICBOUNDED Float Float Float Float Float Float? Simple_name* |
-        (AMBERPERIODIC | CHARMMPERIODIC | FLAT_HARMONIC | TOPOUT) Float Float Float |
-        (CIRCULARSIGMOIDAL | LINEAR_PENALTY) Float Float Float Float |
-        CIRCULARSPLINE Float+ |
-        GAUSSIANFUNC Float Float Simple_name (WEIGHT Float)? |
-        SOGFUNC Integer (Float Float Float)+ |
-        (MIXTUREFUNC | KARPLUS | SOEDINGFUNC) Float Float Float Float Float Float |
-        CONSTANTFUNC Float |
-        IDENTITY |
-        SCALARWEIGHTEDFUNC Float func_type_def |
-        SUMFUNC Integer func_type_def+ |
-        SPLINE Simple_name (Float Float Float | NONE Float Float Float (Simple_name Float*)+)
-          // histogram_file_path can not be evaluated
-        FADE Float Float Float Float Float? |
-        SQUARE_WELL2 Float Float Float DEGREES? |
-        ETABLE Float Float Float* |
-        USOG Integer (Float Float Float Float)+ |
-        SOG Integer (Float Float Float Float Float Float)+;
-        """
-
         fnum_offset = 0
         if len(self.stackFuncs) > 0 and self.stackFuncs[-1]['name'] == 'SCALARWEIGHTEDFUNC':
             fnum_offset = 1

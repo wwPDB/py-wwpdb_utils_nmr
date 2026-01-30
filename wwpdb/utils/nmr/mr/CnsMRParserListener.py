@@ -1371,12 +1371,12 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
-                if len(self.g) > 0:
-                    self.f.extend(self.g)
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
+            #     if len(self.g) > 0:
+            #         self.f.extend(self.g)
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[4][0]['seq_id']

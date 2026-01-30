@@ -1666,7 +1666,6 @@ class CifReader:
 
                         _atom_site_ref = _atom_site_dict[1]
                         _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
-
                         # """
                         # if label != -1:
                         #     for chain_id in chain_ids:
@@ -1678,7 +1677,6 @@ class CifReader:
                         #                 score = 0.0
                         #                 break
                         # """
-
                         for model_id in range(2, total_models + 1):
 
                             if model_id not in eff_model_ids:

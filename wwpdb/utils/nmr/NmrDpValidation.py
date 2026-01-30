@@ -2157,22 +2157,7 @@ class NmrDpValidation:
                         self.__reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
-        # """ DAOTHER-1728, 9846: no need to wipe category for chemical shift reference
-        # if not self.__reg.combined_mode and self.__reg.remediation_mode\
-        #    and not self.__reg.submission_mode and not self.__reg.annotation_mode and not self.__reg.release_mode\
-        #    and file_list_id == 0 and file_type == 'nmr-star':
-        #
-        #     content_subtype = 'chem_shift_ref'
-        #
-        #     # delete extra saveframes for chemical shift reference
-        #
-        #     if content_subtype in content_subtypes.keys():
-        #         while content_subtypes[content_subtype] > content_subtypes['chem_shift']:
-        #             sf_category = SF_CATEGORIES[file_type][content_subtype]
-        #             csr_sf = self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category)[-1]
-        #             del self.__reg.star_data[file_list_id][csr_sf]
-        #             content_subtypes[content_subtype] -= 1
-        # """
+
         input_source.setItemValue('content_subtype', content_subtypes)
 
     def getTypeOfDihedralRestraint(self, data_type: str,  # pylint: disable=no-self-use
@@ -2958,7 +2943,6 @@ class NmrDpValidation:
                 _neighbor = self.__reg.cR.getDictListWithFilter('atom_site',
                                                                 [{'name': 'auth_asym_id', 'type': 'str',
                                                                   'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
-                                                                 # non-polymer
                                                                  {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                  {'name': 'label_comp_id', 'type': 'starts-with-alnum',
                                                                   'alt_name': 'comp_id'},
@@ -3888,135 +3872,6 @@ class NmrDpValidation:
 
         return comp_id == ref_comp_id
 
-    def __fixAtomNomenclature(self, comp_id: str, atom_id_conv_dict: dict):
-        """ Fix atom nomenclature.
-        """
-
-        for fileListId in range(self.__reg.file_path_list_len):
-
-            input_source = self.__reg.report.input_sources[fileListId]
-            input_source_dic = input_source.get()
-
-            file_type = input_source_dic['file_type']
-
-            if input_source_dic['content_subtype'] is None:
-                continue
-
-            for content_subtype in input_source_dic['content_subtype']:
-
-                if content_subtype == ['entry_info', 'entity', 'chem_shift_ref']:
-                    continue
-
-                sf_category = SF_CATEGORIES[file_type][content_subtype]
-                lp_category = LP_CATEGORIES[file_type][content_subtype]
-
-                if content_subtype == 'poly_seq':
-                    lp_category = AUX_LP_CATEGORIES[file_type][content_subtype][0]
-
-                if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
-                    lp_category = '_Assigned_peak_chem_shift'
-
-                if self.__reg.star_data_type[fileListId] == 'Loop':
-                    sf = self.__reg.star_data[fileListId]
-
-                    self.__fixAtomNomenclature__(fileListId, file_type, content_subtype,
-                                                 sf, lp_category, comp_id, atom_id_conv_dict)
-
-                elif self.__reg.star_data_type[fileListId] == 'Saveframe':
-                    sf = self.__reg.star_data[fileListId]
-
-                    self.__fixAtomNomenclature__(fileListId, file_type, content_subtype,
-                                                 sf, lp_category, comp_id, atom_id_conv_dict)
-
-                else:
-
-                    for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
-
-                        if not any(True for loop in sf.loops if loop.category == lp_category):
-                            continue
-
-                        self.__fixAtomNomenclature__(fileListId, file_type, content_subtype,
-                                                     sf, lp_category, comp_id, atom_id_conv_dict)
-
-    def __fixAtomNomenclature__(self, file_list_id: int, file_type: str, content_subtype: str,
-                                sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                lp_category: str, comp_id: str, atom_id_conv_dict: dict):
-        """ Fix atom nomenclature.
-        """
-
-        comp_id_name = 'residue_name' if file_type == 'nef' else 'Comp_ID'
-        atom_id_name = 'atom_name' if file_type == 'nef' else 'Atom_ID'
-
-        max_dim = 2
-
-        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
-            max_dim = 3
-
-        elif content_subtype == 'dihed_restraint':
-            max_dim = 5
-
-        elif content_subtype == 'spectral_peak':
-
-            try:
-
-                _num_dim = get_first_sf_tag(sf, NUM_DIM_ITEMS[file_type])
-                num_dim = int(_num_dim)
-
-                if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                    raise ValueError()
-
-            except ValueError:  # raised error already at testIndexConsistency()
-                return
-
-            max_dim = num_dim + 1
-
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-
-        if max_dim == 2:
-
-            comp_id_col = loop.tags.index(comp_id_name) if comp_id_name in loop.tags else -1
-            atom_id_col = loop.tags.index(atom_id_name) if atom_id_name in loop.tags else -1
-
-            if -1 in (comp_id_col, atom_id_col):
-                return
-
-            for row in loop:
-
-                _comp_id = row[comp_id_col].upper()
-
-                if _comp_id != comp_id:
-                    continue
-
-                atom_id = row[atom_id_col]
-
-                if atom_id in atom_id_conv_dict:
-                    row[atom_id_col] = atom_id_conv_dict[atom_id]
-
-        else:
-
-            for j in range(1, max_dim):
-
-                _comp_id_name = f'{comp_id_name}_{j}'
-                _atom_id_name = f'{atom_id_name}_{j}'
-
-                comp_id_col = loop.tags.index(_comp_id_name) if _comp_id_name in loop.tags else -1
-                atom_id_col = loop.tags.index(_atom_id_name) if _atom_id_name in loop.tags else -1
-
-                if -1 in (comp_id_col, atom_id_col):
-                    continue
-
-                for row in loop:
-
-                    _comp_id = row[comp_id_col].upper()
-
-                    if _comp_id != comp_id:
-                        continue
-
-                    atom_id = row[atom_id_col]
-
-                    if atom_id in atom_id_conv_dict:
-                        row[atom_id_col] = atom_id_conv_dict[atom_id]
-
     def updateGenDistConstIdInMrStr(self, sf_item: dict) -> bool:
         """ Update _Gen_dist_constraint.ID in NMR-STAR restraint file.
         """
@@ -4561,7 +4416,7 @@ class NmrDpValidation:
 
     def validateAtomNomenclature(self, file_name: str, file_type: str, content_subtype: str,
                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                 sf_framecode: str, lp_category: str):  # , first_comp_ids):
+                                 sf_framecode: str, lp_category: str):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
@@ -4594,7 +4449,7 @@ class NmrDpValidation:
                             if len(_atom_id) == 0:
 
                                 if self.__reg.nonblk_bad_nterm and self.__reg.csStat.peptideLike(comp_id)\
-                                   and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
+                                   and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):
                                     continue
 
                                 if self.__reg.remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
@@ -4629,21 +4484,21 @@ class NmrDpValidation:
 
                         if self.__reg.csStat.peptideLike(comp_id):
                             if atom_id.upper() == 'HN':
-                                self.__fixAtomNomenclature(comp_id, {atom_id: 'H'})
+                                self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: 'H'})
                                 continue
                             if atom_id.upper() == 'CO':
-                                self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
+                                self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: 'C'})
                                 continue
 
                             _atom_id = self.__reg.nefT.get_star_atom(comp_id,
                                                                      translateToStdAtomName(atom_id, comp_id, ccU=self.__reg.ccU),
                                                                      leave_unmatched=False)[0]
                             if len(_atom_id) == 1 and atom_id != _atom_id[0]:
-                                self.__fixAtomNomenclature(comp_id, {atom_id: _atom_id[0]})
+                                self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: _atom_id[0]})
                                 continue
 
                         elif len(atom_id) > 2 and atom_id.endswith('"') and atom_id[-2].isdigit():  # 7zew, 7zex: H5" -> H5''
-                            self.__fixAtomNomenclature(comp_id, {atom_id: f"{atom_id[:-1]}''"})
+                            self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: f"{atom_id[:-1]}''"})
                             continue
 
                         atom_id_ = atom_id
@@ -4667,7 +4522,7 @@ class NmrDpValidation:
                                     self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
                                                          f"++ Warning  - {warn}\n")
 
-                                self.__fixAtomNomenclature(comp_id, {atom_id: atom_id_})
+                                self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: atom_id_})
 
                         if not self.__reg.nefT.validate_comp_atom(comp_id, atom_id_):
 
@@ -4693,10 +4548,10 @@ class NmrDpValidation:
                                                          f"++ Warning  - {warn}\n")
 
                                 # @see: https://bmrb.io/ref_info/atom_nom.tbl
-                                self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_3})
+                                self.__reg.dpR.fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_3})
 
                             elif self.__reg.nonblk_bad_nterm and self.__reg.csStat.peptideLike(comp_id)\
-                                    and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
+                                    and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):
                                 pass
 
                             elif self.__reg.remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
@@ -4817,14 +4672,14 @@ class NmrDpValidation:
 
                             if self.__reg.csStat.peptideLike(comp_id):
                                 if atom_id.upper() == 'HN':
-                                    self.__fixAtomNomenclature(comp_id, {atom_id: 'H'})
+                                    self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: 'H'})
                                     continue
                                 if atom_id.upper() == 'CO':
-                                    self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
+                                    self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: 'C'})
                                     continue
 
                             elif len(atom_id) > 2 and atom_id.endswith('"') and atom_id[-2].isdigit():  # 7zew, 7zex: H5" -> H5''
-                                self.__fixAtomNomenclature(comp_id, {atom_id: f"{atom_id[:-1]}''"})
+                                self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: f"{atom_id[:-1]}''"})
                                 continue
 
                             atom_id_ = atom_id
@@ -4848,7 +4703,7 @@ class NmrDpValidation:
                                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
                                                              f"++ Warning  - {warn}\n")
 
-                                    self.__fixAtomNomenclature(comp_id, {atom_id: atom_id_})
+                                    self.__reg.dpR.fixAtomNomenclature(comp_id, {atom_id: atom_id_})
 
                     else:
                         pass
@@ -4893,7 +4748,6 @@ class NmrDpValidation:
 
                                     if self.__reg.nonblk_bad_nterm and self.__reg.csStat.peptideLike(comp_id)\
                                        and _auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):
-                                        # and comp_id in first_comp_ids:
                                         continue
 
                                     if self.__reg.remediation_mode and _auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
@@ -4935,7 +4789,6 @@ class NmrDpValidation:
 
                                     if self.__reg.nonblk_bad_nterm and self.__reg.csStat.peptideLike(comp_id)\
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):
-                                        # and comp_id in first_comp_ids:
                                         continue
 
                                     if self.__reg.remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
@@ -5010,7 +4863,6 @@ class NmrDpValidation:
 
                                     if self.__reg.nonblk_bad_nterm and self.__reg.csStat.peptideLike(comp_id)\
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):
-                                        # and comp_id in first_comp_ids:
                                         continue
 
                                     if self.__reg.remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
@@ -11899,7 +11751,6 @@ class NmrDpValidation:
                                 elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                      and _atom_id in _coord_atom_site['alt_atom_id']\
                                      and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:  # noqa: E501, pylint: disable=line-too-long
-                                    # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                     cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                     and cca_row[6] == _seq_key[1]), None)
@@ -11921,8 +11772,6 @@ class NmrDpValidation:
                                         if 'alt_comp_id' in __coord_atom_site and 'alt_atom_id' in __coord_atom_site\
                                            and _atom_id in __coord_atom_site['alt_atom_id']:
                                             comp_id = _comp_id
-                                            # Entity_assembly_ID, Entity_ID, Comp_index_ID, # Seq_ID, Comp_ID,
-                                            # Auth_asym_ID, Auth_seq_ID
                                             cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                             and cca_row[6] == _seq_key[1]), None)
@@ -11932,8 +11781,6 @@ class NmrDpValidation:
                                             break
                                         if _atom_id in __coord_atom_site['atom_id']:
                                             comp_id = _comp_id
-                                            # Entity_assembly_ID, Entity_ID, Comp_index_ID, # Seq_ID, Comp_ID,
-                                            # Auth_asym_ID, Auth_seq_ID
                                             cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                             and cca_row[6] == _seq_key[1]), None)
@@ -12019,8 +11866,6 @@ class NmrDpValidation:
                                              and _atom_id in _coord_atom_site['alt_atom_id']\
                                              and comp_id == _coord_atom_site['alt_comp_id'][
                                                  _coord_atom_site['alt_atom_id'].index(_atom_id)]:
-                                            # Entity_assembly_ID, Entity_ID, Comp_index_ID, # Seq_ID, Comp_ID,
-                                            # Auth_asym_ID, Auth_seq_ID
                                             cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                             and cca_row[6] == _seq_key[1]), None)
@@ -12043,8 +11888,6 @@ class NmrDpValidation:
                                                 if 'alt_comp_id' in __coord_atom_site and 'alt_atom_id' in __coord_atom_site\
                                                    and _atom_id in __coord_atom_site['alt_atom_id']:
                                                     comp_id = _comp_id
-                                                    # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID,
-                                                    # Auth_asym_ID, Auth_seq_ID
                                                     cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                                     and cca_row[6] == _seq_key[1]), None)
@@ -12054,8 +11897,6 @@ class NmrDpValidation:
                                                     break
                                                 if _atom_id in __coord_atom_site['atom_id']:
                                                     comp_id = _comp_id
-                                                    # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID,
-                                                    # Auth_asym_ID, Auth_seq_ID
                                                     cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                                     and cca_row[6] == _seq_key[1]), None)
@@ -12156,7 +11997,6 @@ class NmrDpValidation:
                             elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                  and _atom_id in _coord_atom_site['alt_atom_id']\
                                  and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
-                                # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                 cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                 and cca_row[6] == _seq_key[1]), None)
@@ -12178,7 +12018,6 @@ class NmrDpValidation:
                                     if 'alt_comp_id' in __coord_atom_site and 'alt_atom_id' in __coord_atom_site\
                                        and _atom_id in __coord_atom_site['alt_atom_id']:
                                         comp_id = _comp_id
-                                        # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                         cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                         and cca_row[6] == _seq_key[1]), None)
@@ -12188,7 +12027,6 @@ class NmrDpValidation:
                                         break
                                     if _atom_id in __coord_atom_site['atom_id']:
                                         comp_id = _comp_id
-                                        # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                         cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                         and cca_row[6] == _seq_key[1]), None)
@@ -12265,7 +12103,6 @@ class NmrDpValidation:
                                     elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                          and _atom_id in _coord_atom_site['alt_atom_id']\
                                          and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:  # noqa: E501, pylint: disable=line-too-long
-                                        # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                         cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                         and cca_row[6] == _seq_key[1]), None)
@@ -12287,8 +12124,6 @@ class NmrDpValidation:
                                             if 'alt_comp_id' in __coord_atom_site and 'alt_atom_id' in __coord_atom_site\
                                                and _atom_id in __coord_atom_site['alt_atom_id']:
                                                 comp_id = _comp_id
-                                                # Entity_assembly_ID, Entity_ID, Comp_index_ID, # Seq_ID, Comp_ID,
-                                                # Auth_asym_ID, Auth_seq_ID
                                                 cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                                 and cca_row[6] == _seq_key[1]), None)
@@ -12298,8 +12133,6 @@ class NmrDpValidation:
                                                 break
                                             if _atom_id in __coord_atom_site['atom_id']:
                                                 comp_id = _comp_id
-                                                # Entity_assembly_ID, Entity_ID, Comp_index_ID, # Seq_ID, Comp_ID,
-                                                # Auth_asym_ID, Auth_seq_ID
                                                 cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                                 and cca_row[6] == _seq_key[1]), None)

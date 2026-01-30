@@ -1302,10 +1302,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC'):
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC'):
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -1497,10 +1497,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC'):
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC'):
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -1692,10 +1692,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC'):
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC'):
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -1896,10 +1896,10 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC'):
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC'):
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']

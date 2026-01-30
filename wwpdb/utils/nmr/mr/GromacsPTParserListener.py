@@ -702,16 +702,17 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
 
     # Exit a parse tree produced by GromacsPTParser#number.
     def exitNumber(self, ctx: GromacsPTParser.NumberContext):
-        """ not used the 'number' in the '[ atoms ]' statement so that pass through for performance
-        if ctx.Real():
-            self.numberSelection.append(float(str(ctx.Real())))
-
-        elif ctx.Integer():
-            self.numberSelection.append(float(str(ctx.Integer())))
-
-        else:
-            self.numberSelection.append(None)
-        """
+        # """ not used the 'number' in the '[ atoms ]' statement so that pass through for performance
+        # if ctx.Real():
+        #     self.numberSelection.append(float(str(ctx.Real())))
+        #
+        # elif ctx.Integer():
+        #     self.numberSelection.append(float(str(ctx.Integer())))
+        #
+        # else:
+        #     self.numberSelection.append(None)
+        # """
+        pass
 
     # Enter a parse tree produced by GromacsPTParser#position_restraints.
     def enterPosition_restraints(self, ctx: GromacsPTParser.Position_restraintsContext):  # pylint: disable=unused-argument

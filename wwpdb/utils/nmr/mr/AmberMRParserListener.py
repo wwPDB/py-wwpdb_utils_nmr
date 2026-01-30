@@ -9141,12 +9141,12 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.nme < 0 and len(self.optphi) > 0:  # pylint: disable=chained-comparison
             self.nme = max(self.optphi.keys())
-        """
-        if self.nme <= 0:
-            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                            "The number of paramagnetic centers 'nme' is the mandatory variable.")
-            return
-        """
+        # """
+        # if self.nme <= 0:
+        #     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+        #                     "The number of paramagnetic centers 'nme' is the mandatory variable.")
+        #     return
+        # """
         for n in range(1, self.nprot + 1):
 
             if n not in self.iprot:
@@ -10024,12 +10024,12 @@ class AmberMRParserListener(ParseTreeListener):
 
             if self.dataset > self.numDatasets:
                 self.numDatasets = self.dataset
-                """
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                f"The argument value of '{varName}={self.dataset}' must be in the range 1-{self.numDatasets}, "
-                                f"regulated by 'num_dataset={self.numDatasets}'.")
-                return
-                """
+                # """
+                # self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                #                 f"The argument value of '{varName}={self.dataset}' must be in the range 1-{self.numDatasets}, "
+                #                 f"regulated by 'num_dataset={self.numDatasets}'.")
+                # return
+                # """
         elif ctx.NUM_DATASETS():
             self.numDatasets = int(str(ctx.Integer()))
             if self.numDatasets <= 0:

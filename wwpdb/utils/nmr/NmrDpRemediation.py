@@ -828,6 +828,135 @@ class NmrDpRemediation:
                     if comp_id in comp_id_conv_dict:
                         row[comp_id_col] = comp_id_conv_dict[comp_id]
 
+    def fixAtomNomenclature(self, comp_id: str, atom_id_conv_dict: dict):
+        """ Fix atom nomenclature.
+        """
+
+        for fileListId in range(self.__reg.file_path_list_len):
+
+            input_source = self.__reg.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            for content_subtype in input_source_dic['content_subtype']:
+
+                if content_subtype == ['entry_info', 'entity', 'chem_shift_ref']:
+                    continue
+
+                sf_category = SF_CATEGORIES[file_type][content_subtype]
+                lp_category = LP_CATEGORIES[file_type][content_subtype]
+
+                if content_subtype == 'poly_seq':
+                    lp_category = AUX_LP_CATEGORIES[file_type][content_subtype][0]
+
+                if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+                    lp_category = '_Assigned_peak_chem_shift'
+
+                if self.__reg.star_data_type[fileListId] == 'Loop':
+                    sf = self.__reg.star_data[fileListId]
+
+                    self.__fixAtomNomenclature(fileListId, file_type, content_subtype,
+                                               sf, lp_category, comp_id, atom_id_conv_dict)
+
+                elif self.__reg.star_data_type[fileListId] == 'Saveframe':
+                    sf = self.__reg.star_data[fileListId]
+
+                    self.__fixAtomNomenclature(fileListId, file_type, content_subtype,
+                                               sf, lp_category, comp_id, atom_id_conv_dict)
+
+                else:
+
+                    for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        if not any(True for loop in sf.loops if loop.category == lp_category):
+                            continue
+
+                        self.__fixAtomNomenclature(fileListId, file_type, content_subtype,
+                                                   sf, lp_category, comp_id, atom_id_conv_dict)
+
+    def __fixAtomNomenclature(self, file_list_id: int, file_type: str, content_subtype: str,
+                              sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
+                              lp_category: str, comp_id: str, atom_id_conv_dict: dict):
+        """ Fix atom nomenclature.
+        """
+
+        comp_id_name = 'residue_name' if file_type == 'nef' else 'Comp_ID'
+        atom_id_name = 'atom_name' if file_type == 'nef' else 'Atom_ID'
+
+        max_dim = 2
+
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
+            max_dim = 3
+
+        elif content_subtype == 'dihed_restraint':
+            max_dim = 5
+
+        elif content_subtype == 'spectral_peak':
+
+            try:
+
+                _num_dim = get_first_sf_tag(sf, NUM_DIM_ITEMS[file_type])
+                num_dim = int(_num_dim)
+
+                if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+                    raise ValueError()
+
+            except ValueError:  # raised error already at testIndexConsistency()
+                return
+
+            max_dim = num_dim + 1
+
+        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+
+        if max_dim == 2:
+
+            comp_id_col = loop.tags.index(comp_id_name) if comp_id_name in loop.tags else -1
+            atom_id_col = loop.tags.index(atom_id_name) if atom_id_name in loop.tags else -1
+
+            if -1 in (comp_id_col, atom_id_col):
+                return
+
+            for row in loop:
+
+                _comp_id = row[comp_id_col].upper()
+
+                if _comp_id != comp_id:
+                    continue
+
+                atom_id = row[atom_id_col]
+
+                if atom_id in atom_id_conv_dict:
+                    row[atom_id_col] = atom_id_conv_dict[atom_id]
+
+        else:
+
+            for j in range(1, max_dim):
+
+                _comp_id_name = f'{comp_id_name}_{j}'
+                _atom_id_name = f'{atom_id_name}_{j}'
+
+                comp_id_col = loop.tags.index(_comp_id_name) if _comp_id_name in loop.tags else -1
+                atom_id_col = loop.tags.index(_atom_id_name) if _atom_id_name in loop.tags else -1
+
+                if -1 in (comp_id_col, atom_id_col):
+                    continue
+
+                for row in loop:
+
+                    _comp_id = row[comp_id_col].upper()
+
+                    if _comp_id != comp_id:
+                        continue
+
+                    atom_id = row[atom_id_col]
+
+                    if atom_id in atom_id_conv_dict:
+                        row[atom_id_col] = atom_id_conv_dict[atom_id]
+
     def fixEnumerationFailure(self, warnings) -> bool:
         """ Fix enumeration failures if possible.
         """
@@ -3367,64 +3496,7 @@ class NmrDpRemediation:
         for sf in reversed(ent_sfs):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             master_entry.remove_saveframe(sf_framecode)
-        # """
-        # sf_key_items = [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-        #                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-        #                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True},
-        #                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
-        #                 ]
-        # sf_items = [{'name': 'BMRB_code', 'type': 'str'},
-        #                  {'name': 'Name', 'type': 'str'},
-        #                  {'name': 'Type', 'type': 'enum',
-        #                   'enum': ('polymer', 'non-polymer', 'water', 'aggregate', 'solvent')},
-        #                  {'name': 'Polymer_common_type', 'type': 'enum',
-        #                   'enum': ('protein', 'DNA', 'RNA', 'DNA/RNA hybrid', 'polysaccharide')},
-        #                  {'name': 'Polymer_type', 'type': 'enum',
-        #                   'enum': ('cyclic-pseudo-peptide', 'polypeptide(L)', 'polydeoxyribonucleotide', 'polyribonucleotide',
-        #                            'polydeoxyribonucleotide/polyribonucleotide hybrid',
-        #                            'polypeptide(D)', 'polysaccharide(D)', 'polysaccharide(L)', 'other')},
-        #                  {'name': 'Polymer_type_details', 'type': 'str'},
-        #                  {'name': 'Polymer_strand_ID', 'type': 'str'},
-        #                  {'name': 'Polymer_seq_one_letter_code_can', 'type': 'str'},
-        #                  {'name': 'Polymer_seq_one_letter_code', 'type': 'str'},
-        #                  {'name': 'Target_identifier', 'type': 'str'},
-        #                  {'name': 'Polymer_author_defined_seq', 'type': 'str'},
-        #                  {'name': 'Polymer_author_seq_details', 'type': 'str'},
-        #                  {'name': 'Ambiguous_conformational_states', 'type': 'enum',
-        #                   'enum': ('yes', 'no')},
-        #                  {'name': 'Ambiguous_chem_comp_sites', 'type': 'enum',
-        #                   'enum': ('yes', 'no')},
-        #                  {'name': 'Nstd_monomer', 'type': 'enum',
-        #                   'enum': ('yes', 'no')},
-        #                  {'name': 'Nstd_chirality', 'type': 'enum',
-        #                   'enum': ('yes', 'no')},
-        #                  {'name': 'Nstd_linkage', 'type': 'enum',
-        #                   'enum': ('yes', 'no')},
-        #                  {'name': 'Nonpolymer_comp_ID', 'type': 'str'},
-        #                  {'name': 'Nonpolymer_comp_label', 'type': 'str'},
-        #                  {'name': 'Number_of_monomers', 'type': 'int'},
-        #                  {'name': 'Number_of_nonpolymer_components', 'type': 'int'},
-        #                  {'name': 'Paramagnetic', 'type': 'enum',
-        #                   'enum': ('yes', 'no')},
-        #                  {'name': 'Thiol_state', 'type': 'enum',
-        #                   'enum': ('all disulfide bound', 'all other bound', 'all free', 'not present',
-        #                            'not available', 'unknown', 'not reported',
-        #                            'free and disulfide bound', 'free and other bound',
-        #                            'free disulfide and other bound', 'disulfide and other bound')},
-        #                  {'name': 'Src_method', 'type': 'str'},
-        #                  {'name': 'Parent_entity_ID}, 'type': 'int'},
-        #                  {'name': 'Fragment', 'type': 'str'},
-        #                  {'name': 'Mutation', 'type': 'str'},
-        #                  {'name': 'EC_number', 'type': 'str'},
-        #                  {'name': 'Calc_isoelectric_point', 'type': 'float'},
-        #                  {'name': 'Formula_weight', 'type': 'float'},
-        #                  {'name': 'Formula_weight_exptl', 'type': 'float'},
-        #                  {'name': 'Formula_weight_exptl_meth', 'type': 'str'},
-        #                  {'name': 'Details', 'type': 'str'},
-        #                  {'name': 'DB_query_date', 'type': 'str'},
-        #                  {'name': 'DB_query_revised_last_date', 'type': 'str'}
-        #                  ]
-        # """
+
         entity_ids = []
 
         for item in entity_assembly:
@@ -13585,15 +13657,7 @@ class NmrDpRemediation:
             file_name = input_source_dic['file_name']
 
             original_file_name = os.path.basename(file_path)
-            # """
-            # if 'original_file_name' in input_source_dic:
-            #     if input_source_dic['original_file_name'] is not None:
-            #         original_file_name = os.path.basename(input_source_dic['original_file_name'])
-            #     if file_name != original_file_name and original_file_name is not None:
-            #         file_name = f"{original_file_name} ({file_name})"
-            # if original_file_name in EMPTY_VALUE:
-            #     original_file_name = file_name
-            # """
+
             if file_type == 'nm-pea-any':
 
                 warn = f"We could not identify peak list file format of {file_name!r}. "\
@@ -16526,20 +16590,7 @@ class NmrDpRemediation:
         self.__reg.c2S.set_entry_id(master_entry, self.__reg.entry_id)
 
         self.__reg.c2S.normalize_str(master_entry)
-        # """
-        # if self.__reg.remediation_mode and self.__reg.internal_mode:
-        #
-        #     if isinstance(self.__reg.inputParamDict[CS_FILE_PATH_LIST][0], str):
-        #         dir_path = os.path.dirname(self.__reg.inputParamDict[CS_FILE_PATH_LIST][0])
-        #     else:
-        #         dir_path = os.path.dirname(self.__reg.inputParamDict[CS_FILE_PATH_LIST][0]['file_name'])
-        #
-        #     dst_cs_path = os.path.join(dir_path, input_source_dic['file_name'])
-        #
-        #     master_entry.write_to_file(dst_cs_path,
-        #                                show_comments=(self.__reg.bmrb_only and self.__reg.internal_mode),
-        #                                skip_empty_loops=True, skip_empty_tags=False)
-        # """
+
         if self.__reg.bmrb_only and self.__reg.internal_mode and self.__reg.bmrb_id is not None:
             master_entry.entry_id = self.__reg.bmrb_id
         else:

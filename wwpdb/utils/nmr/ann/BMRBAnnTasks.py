@@ -1173,7 +1173,8 @@ class BMRBAnnTasks:
                             continue
                         spectrometer_label = row[1][1:] if row[1][0] == '$' else row[1]
                         if row[0] in EMPTY_VALUE:
-                            spectrometer_id = next((k for k, v in spectrometer_dict.items() if v['label'] == spectrometer_label), None)
+                            spectrometer_id = next((k for k, v in spectrometer_dict.items()
+                                                    if v['label'] == spectrometer_label), None)
                             if spectrometer_id is not None:
                                 spectrometer_id_col = lp.tags.index('NMR_spectrometer_ID')
                                 lp.data[idx][spectrometer_id_col] = str(spectrometer_id)
@@ -1570,7 +1571,8 @@ class BMRBAnnTasks:
                                 if h[1] == h[2]:
                                     row[1] = lp.data[idx][mol_common_name_col] = h[1]
                             key = row[1].lower()
-                            if key not in ('nacl', 'kcl', 'cacl2', 'zncl2', 'mgcl2', 'ca+2', 'zn+2', 'mg+2', 'ca2+', 'zn2+', 'mg2+')\
+                            if key not in ('nacl', 'kcl', 'cacl2', 'zncl2', 'mgcl2',
+                                           'ca+2', 'zn+2', 'mg+2', 'ca2+', 'zn2+', 'mg2+')\
                                and 'chloride' not in key:
                                 entity_id = next((k for k, v in entity_dict.items()
                                                   if v['sf_framecode'] == row[1] or v['name'] == row[1]
@@ -1796,8 +1798,9 @@ class BMRBAnnTasks:
                         if entity_id in touched_entity_id:
                             continue
                         if entity['sample_type'] in ('DNA', 'RNA', 'DNA/RNA hybrid'):
-                            _entity_id = next((_entity_id for _entity_id in touched_entity_id
-                                               if entity_dict[_entity_id]['sample_type'] in ('DNA', 'RNA', 'DNA/RNA hybrid')), None)
+                            _entity_id =\
+                                next((_entity_id for _entity_id in touched_entity_id
+                                      if entity_dict[_entity_id]['sample_type'] in ('DNA', 'RNA', 'DNA/RNA hybrid')), None)
                             if _entity_id is not None:
                                 _row = next((_row for _row in lp.data
                                              if _row[entity_id_col] not in EMPTY_VALUE
@@ -1966,8 +1969,9 @@ class BMRBAnnTasks:
 
                     for idx, row in enumerate(data):
                         if row[0] in EMPTY_VALUE and row[1] in EMPTY_VALUE:
-                            entity_id = next((_row[0] for _row in data
-                                              if len([term in _row[2] for term in row[2].split()]) > 2 and row[3] != _row[3]), None)
+                            entity_id =\
+                                next((_row[0] for _row in data
+                                      if len([term in _row[2] for term in row[2].split()]) > 2 and row[3] != _row[3]), None)
                             if entity_id is None:
                                 continue
                             if isinstance(entity_id, str):
@@ -3472,7 +3476,8 @@ class BMRBAnnTasks:
 
                 if sample_type in ('protein', 'peptide') and entity['total_cys'] > 0:
                     target_entity_sf_framecodes.append(f'save_{sf_framecode}')
-                    detailed_target_entity_sf_framecodes.append(f'_Entity.Thiol_state is {thiol_state} of save_{sf_framecode} frame')
+                    detailed_target_entity_sf_framecodes.append(
+                        f'_Entity.Thiol_state is {thiol_state} of save_{sf_framecode} frame')
 
             if len(target_entity_sf_framecodes) > 0:
 

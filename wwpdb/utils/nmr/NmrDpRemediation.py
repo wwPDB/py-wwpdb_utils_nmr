@@ -716,13 +716,15 @@ class NmrDpRemediation:
             sf = self.__reg.star_data[file_list_id]
 
             if sf_framecode == '':
-                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
+                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype,
+                                       sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
         elif self.__reg.star_data_type[file_list_id] == 'Saveframe':
             sf = self.__reg.star_data[file_list_id]
 
             if get_first_sf_tag(sf, 'sf_framecode') == sf_framecode:
-                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
+                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype,
+                                       sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
         else:
 
@@ -734,7 +736,8 @@ class NmrDpRemediation:
                 if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
-                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
+                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype,
+                                       sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
     def __fixCompIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
                           sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
@@ -887,7 +890,8 @@ class NmrDpRemediation:
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - " + err)
+                                                                  f"+{self.__class_name__}.fixEnumerationFailure() "
+                                                                  "++ Error  - " + err)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
@@ -955,7 +959,7 @@ class NmrDpRemediation:
                                                         self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
                                                                                    None, None, None,
                                                                                    enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                                                   excl_missing_data=self.__reg.excl_missing_data)[0]
+                                                                                   excl_missing_data=self.__reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
 
                                                     self.__reg.lp_data[content_subtype].append({'file_name': file_name,
                                                                                                 'sf_framecode': w['sf_framecode'],
@@ -969,7 +973,8 @@ class NmrDpRemediation:
                                                 if content_subtype == 'dist_restraint':
 
                                                     if mandatory_tag:
-                                                        sf.tags[itCol][1] = 'undefined' if file_type == 'nef' else 'general distance'
+                                                        sf.tags[itCol][1] = 'undefined' if file_type == 'nef'\
+                                                            else 'general distance'
 
                                                     # 'NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond',
                                                     # 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'
@@ -985,7 +990,8 @@ class NmrDpRemediation:
                                                         sf.tags[itCol][1] = 'symmetry'
 
                                                     else:
-                                                        sf.tags[itCol][1] = 'undefined' if file_type == 'nef' else 'general distance'
+                                                        sf.tags[itCol][1] = 'undefined' if file_type == 'nef'\
+                                                            else 'general distance'
 
                                                 elif content_subtype == 'dihed_restraint':
 
@@ -1030,7 +1036,7 @@ class NmrDpRemediation:
                                                         self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
                                                                                    None, None, None,
                                                                                    enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                                                   excl_missing_data=self.__reg.excl_missing_data)[0]
+                                                                                   excl_missing_data=self.__reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
 
                                                     self.__reg.lp_data[content_subtype].append({'file_name': file_name,
                                                                                                 'sf_framecode': w['sf_framecode'],
@@ -1077,7 +1083,8 @@ class NmrDpRemediation:
                                                                                   "++ Error  - " + err)
 
                                         if self.__reg.verbose:
-                                            self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
+                                            self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() "
+                                                                 f"++ Error  - {err}\n")
 
                     else:
 
@@ -1727,7 +1734,8 @@ class NmrDpRemediation:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testRestraintPotentialSWPL() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - {str(e)}\n")
@@ -1859,7 +1867,8 @@ class NmrDpRemediation:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testRestraintPotentialUBPL() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - {str(e)}\n")
@@ -1903,7 +1912,8 @@ class NmrDpRemediation:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testRestraintPotentialLBPL() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - {str(e)}\n")
@@ -1951,7 +1961,8 @@ class NmrDpRemediation:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testRestraintPotentialLHorP() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - {str(e)}\n")
@@ -2855,7 +2866,8 @@ class NmrDpRemediation:
                         del d['touch']
 
             self.__reg.chem_comp_asm_dat =\
-                loop.get_tag(['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
+                loop.get_tag(['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID',
+                              'Auth_asym_ID', 'Auth_seq_ID'])
 
             # refresh _Bond loop
 
@@ -3623,7 +3635,8 @@ class NmrDpRemediation:
             ent_sf.add_tag('Mutation', None if entity_type != 'polymer' else item['entity_mutation'])
             ent_sf.add_tag('EC_number', None if entity_type != 'polymer' else item['entity_ec'])
             ent_sf.add_tag('Calc_isoelectric_point', None)
-            ent_sf.add_tag('Formula_weight', item['entity_fw'] if nmr_ext_monomers == 0 else round(item['entity_fw'] + nmr_ext_fw, 3))
+            ent_sf.add_tag('Formula_weight',
+                           item['entity_fw'] if nmr_ext_monomers == 0 else round(item['entity_fw'] + nmr_ext_fw, 3))
             ent_sf.add_tag('Formula_weight_exptl', None)
             ent_sf.add_tag('Formula_weight_exptl_meth', None)
             ent_sf.add_tag('Details', item['entity_details'])
@@ -3784,7 +3797,8 @@ class NmrDpRemediation:
                             continue
                         auth_seq_id = seq_id
 
-                    if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
+                    if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None\
+                       and len(self.__reg.nmr_ext_poly_seq) > 0\
                        and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                                and d['auth_seq_id'] < min_auth_seq_id):
                         for d in self.__reg.nmr_ext_poly_seq:
@@ -3914,7 +3928,8 @@ class NmrDpRemediation:
                         if comp_id not in EMPTY_VALUE:
                             eps_loop.add_data(row)
 
-                    if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
+                    if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None\
+                       and len(self.__reg.nmr_ext_poly_seq) > 0\
                        and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                                and d['auth_seq_id'] > max_auth_seq_id):
                         _offset = max_seq_id - max_auth_seq_id
@@ -4437,19 +4452,25 @@ class NmrDpRemediation:
                 list_id = _poly_seq_in_lp['list_id']
                 poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                seq_align, _ = alignPolymerSequence(self.__reg.pA, self.__reg.caC['polymer_sequence'], poly_seq, conservative=False)
-                chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['polymer_sequence'],
-                                                        poly_seq, seq_align)
+                seq_align, _ =\
+                    alignPolymerSequence(self.__reg.pA, self.__reg.caC['polymer_sequence'], poly_seq, conservative=False)
+                chain_assign, _ =\
+                    assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['polymer_sequence'],
+                                          poly_seq, seq_align)
 
                 if self.__reg.caC['branched'] is not None:
-                    br_seq_align, _ = alignPolymerSequence(self.__reg.pA, self.__reg.caC['branched'], poly_seq, conservative=False)
-                    br_chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['branched'],
-                                                               poly_seq, br_seq_align)
+                    br_seq_align, _ =\
+                        alignPolymerSequence(self.__reg.pA, self.__reg.caC['branched'], poly_seq, conservative=False)
+                    br_chain_assign, _ =\
+                        assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['branched'],
+                                              poly_seq, br_seq_align)
 
                 if self.__reg.caC['non_polymer'] is not None:
-                    np_seq_align, _ = alignPolymerSequence(self.__reg.pA, self.__reg.caC['non_polymer'], poly_seq, conservative=False)
-                    np_chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['non_polymer'],
-                                                               poly_seq, np_seq_align)
+                    np_seq_align, _ =\
+                        alignPolymerSequence(self.__reg.pA, self.__reg.caC['non_polymer'], poly_seq, conservative=False)
+                    np_chain_assign, _ =\
+                        assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['non_polymer'],
+                                              poly_seq, np_seq_align)
 
         @functools.lru_cache()
         def get_auth_seq_scheme(chain_id, seq_id):
@@ -4465,7 +4486,8 @@ class NmrDpRemediation:
                                    and seq_id in sa['test_seq_id'] and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
                         if sa is not None:
                             _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id
+                                                in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                 if test_seq_id == seq_id), None)
 
                 if None in (auth_asym_id, auth_seq_id) and br_seq_align is not None:
@@ -4476,7 +4498,8 @@ class NmrDpRemediation:
                                    and seq_id in sa['test_seq_id'] and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
                         if sa is not None:
                             _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id
+                                                in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                 if test_seq_id == seq_id), None)
 
                 if None in (auth_asym_id, auth_seq_id) and np_seq_align is not None:
@@ -4487,7 +4510,8 @@ class NmrDpRemediation:
                                    and seq_id in sa['test_seq_id'] and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
                         if sa is not None:
                             _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
-                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                            auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id
+                                                in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                 if test_seq_id == seq_id), None)
 
             return auth_asym_id, auth_seq_id
@@ -4608,7 +4632,8 @@ class NmrDpRemediation:
 
             if not all(tag in loop.tags for tag in mandatory_items):
 
-                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
+                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. "\
+                    "Please fix problems reported."
 
                 self.__reg.report.error.appendDescription('missing_mandatory_content',
                                                           {'file_name': file_name, 'description': err})
@@ -4701,7 +4726,8 @@ class NmrDpRemediation:
                     if len(set(str(lp.data[_id_]) for _id_ in _id_set)) == 1:
                         continue
 
-                    msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
+                    msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '')
+                                       for _id_ in _id_set])
 
                     warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
 
@@ -4737,7 +4763,8 @@ class NmrDpRemediation:
 
             if not all(tag in loop.tags for tag in mandatory_items):
 
-                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
+                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. "\
+                    "Please fix problems reported."
 
                 self.__reg.report.error.appendDescription('missing_mandatory_content',
                                                           {'file_name': file_name, 'description': err})
@@ -5066,7 +5093,8 @@ class NmrDpRemediation:
                         if (valid and atom_id in _atom_site_atom_id)\
                            or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
-                            if self.__reg.annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:  # DAOTHER-9286
+                            # DAOTHER-9286
+                            if self.__reg.annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:
                                 atom_ids =\
                                     self.__reg.dpV.getAtomIdListInXplorForLigandRemap(comp_id,
                                                                                       _row[23] if fill_orig_atom_id else atom_id,
@@ -5182,7 +5210,8 @@ class NmrDpRemediation:
                                                 if not (row[chain_id_col] == str(_row[1])
                                                         or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
-                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                                _seq_id =\
+                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id in (_row[3], _row[17]):
                                                     ambig_code_4_test = True
                                                     if row[atom_id_col] not in atom_ids_in_group_src:
@@ -5197,7 +5226,8 @@ class NmrDpRemediation:
                                                 if not (row[chain_id_col] == str(_row[1])
                                                         or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
-                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                                _seq_id =\
+                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id in (_row[3], _row[17]):
                                                     ambig_code_4_test = True
                                                     if row[atom_id_col] not in atom_ids_in_group_src:
@@ -5282,7 +5312,8 @@ class NmrDpRemediation:
                                                 if not (row[chain_id_col] == str(_row[1])
                                                         or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
-                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                                _seq_id =\
+                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id in (_row[3], _row[17]):
                                                     break
                                                 _row[12] = ambig_code = 5
@@ -5297,7 +5328,8 @@ class NmrDpRemediation:
                                                 if not (row[chain_id_col] == str(_row[1])
                                                         or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
-                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                                _seq_id =\
+                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id in (_row[3], _row[17]):
                                                     break
                                                 _row[12] = ambig_code = 5
@@ -5562,7 +5594,8 @@ class NmrDpRemediation:
                                                 if not (row[chain_id_col] == str(_row[1])
                                                         or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
-                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                                _seq_id =\
+                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id in (_row[3], _row[17]):
                                                     break
                                                 _row[12] = ambig_code = 5
@@ -5577,7 +5610,8 @@ class NmrDpRemediation:
                                                 if not (row[chain_id_col] == str(_row[1])
                                                         or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                     break
-                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                                _seq_id =\
+                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                                 if _seq_id in (_row[3], _row[17]):
                                                     break
                                                 _row[12] = ambig_code = 5
@@ -5642,7 +5676,8 @@ class NmrDpRemediation:
                                             if not (row[chain_id_col] == str(_row[1])
                                                     or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
                                                 break
-                                            _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                            _seq_id =\
+                                                row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id in (_row[3], _row[17]):
                                                 break
                                             _row[12] = ambig_code = 5
@@ -6093,7 +6128,8 @@ class NmrDpRemediation:
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                                 and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
-                                                    _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                                    _row[1], _row[2], _row[3], _row[4] =\
+                                                        cca_row[0], cca_row[1], cca_row[2], cca_row[3]
                                                 row[19] = atom_id =\
                                                     __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
                                                 _seq_key = __seq_key
@@ -6107,7 +6143,8 @@ class NmrDpRemediation:
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                                 and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
-                                                    _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                                    _row[1], _row[2], _row[3], _row[4] =\
+                                                        cca_row[0], cca_row[1], cca_row[2], cca_row[3]
                                                 _seq_key = __seq_key
                                                 break
 
@@ -6251,7 +6288,8 @@ class NmrDpRemediation:
 
                                     else:
                                         seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                        if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                                        if v[0] == entity_assembly_id and v[1] == seq_id
+                                                        and v[2] == entity_id), None)
                                         if seq_key is not None:
                                             _seq_key = (seq_key[0], seq_key[1])
                                             _row[16], _row[17], _row[18], _row[19] =\
@@ -6298,8 +6336,9 @@ class NmrDpRemediation:
                                         _row[19] = atom_id
                         except KeyError:
                             if self.__reg.annotation_mode or self.__reg.native_combined:
-                                auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                     if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
+                                auth_asym_id =\
+                                    next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                          if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
                                 seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                 if seq_key in auth_to_star_seq:
                                     _row[16] = row[auth_asym_id_col] = auth_asym_id
@@ -6321,8 +6360,9 @@ class NmrDpRemediation:
                                         _seq_key = (seq_key[0], seq_key[1])
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             if seq_key not in auth_to_star_seq:
-                                auth_comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                     if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
+                                auth_comp_id =\
+                                    next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                          if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
                                 comp_id = _row[18] = auth_comp_id
                                 seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                 if seq_key in auth_to_star_seq:
@@ -6350,11 +6390,12 @@ class NmrDpRemediation:
                                             _row[19] = atom_id = auth_atom_name_to_id[comp_id][orig_atom_id]
                                 if 'alt_atom_id' in _coord_atom_site and _atom_id in _coord_atom_site['alt_atom_id']\
                                    and comp_id == _coord_atom_site['comp_id']:
-                                    _row[19] = atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                    _row[19] = atom_id =\
+                                        _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                 # DAOTHER-8751, 8817 (D_1300043061)
                                 elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                      and _atom_id in _coord_atom_site['alt_atom_id']\
-                                     and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
+                                     and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:  # noqa: E501, pylint: disable=line-too-long
                                     _row[18] = comp_id
                                     # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                     cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
@@ -6380,7 +6421,8 @@ class NmrDpRemediation:
                                            and _atom_id in __coord_atom_site['alt_atom_id']:
                                             comp_id = _comp_id
                                             _row[18] = comp_id
-                                            # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
+                                            # Entity_assembly_ID, Entity_ID, Comp_index_ID,
+                                            # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                             cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                             and cca_row[6] == _seq_key[1]), None)
@@ -6393,7 +6435,8 @@ class NmrDpRemediation:
                                         if _atom_id in __coord_atom_site['atom_id']:
                                             comp_id = _comp_id
                                             _row[18] = comp_id
-                                            # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
+                                            # Entity_assembly_ID, Entity_ID, Comp_index_ID,
+                                            # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
                                             cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                             and cca_row[6] == _seq_key[1]), None)
@@ -6657,7 +6700,8 @@ class NmrDpRemediation:
                                         _row[3] = _row[4] = seq_id
 
                                         seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                        if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                                        if v[0] == entity_assembly_id and v[1] == seq_id
+                                                        and v[2] == entity_id), None)
                                         if seq_key is not None:
 
                                             if comp_id != seq_key[2] and comp_id in STD_MON_DICT and seq_key[2] in STD_MON_DICT:
@@ -6738,7 +6782,8 @@ class NmrDpRemediation:
                                                     cif_ps['comp_id'][_idx_] = cif_ps['auth_comp_id'][_idx_] = _orig_comp_id
                                                     if self.__reg.asmChkCachePath is not None:
                                                         write_as_pickle(self.__reg.caC, self.__reg.asmChkCachePath)
-                                        comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), _orig_comp_id)
+                                        comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items()
+                                                        if _k == seq_key), _orig_comp_id)
                                         self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
                                         _row[1], _row[2] = entity_assembly_id, entity_id
                                         _row[3] = _row[4] = seq_id
@@ -6825,7 +6870,8 @@ class NmrDpRemediation:
 
                                     else:
 
-                                        item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
+                                        item = next((item for item in entity_assembly
+                                                     if item['auth_asym_id'] == auth_asym_id), None)
 
                                         if item is not None and poly_seq is not None\
                                            and any(True for _ps in poly_seq
@@ -7074,7 +7120,8 @@ class NmrDpRemediation:
                                                             ligands += len(np['seq_id'])
                                                     if ligands == 1:  # DAOTHER-9063, 2nd case
                                                         __seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                                          if v[0] == _entity_assembly_id and v[2] == _entity_id), None)
+                                                                          if v[0] == _entity_assembly_id
+                                                                          and v[2] == _entity_id), None)
                                                         if __seq_key is not None:
                                                             seq_id = auth_to_star_seq[__seq_key][1]
                                                             found = True
@@ -7139,7 +7186,8 @@ class NmrDpRemediation:
                                     if None not in (auth_asym_id, auth_seq_id):
                                         _resolved = True
 
-                                        item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
+                                        item = next((item for item in entity_assembly
+                                                     if item['auth_asym_id'] == auth_asym_id), None)
 
                                         if item is not None and poly_seq is not None and any(True for _ps in poly_seq_common
                                                                                              if _ps['chain_id'] == chain_id
@@ -8048,7 +8096,8 @@ class NmrDpRemediation:
             cif_poly_seq = self.__reg.caC['polymer_sequence']
 
             seq_align, _ = alignPolymerSequence(self.__reg.pA, cif_poly_seq, nmr_poly_seq)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star', cif_poly_seq, nmr_poly_seq, seq_align)
+            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star',
+                                                    cif_poly_seq, nmr_poly_seq, seq_align)
 
             if chain_assign is not None:
 
@@ -9240,7 +9289,8 @@ class NmrDpRemediation:
             file_type = 'nm-pea-any'
 
             seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                                                    poly_seq_model, poly_seq_rst, seq_align)
 
             if chain_assign is not None:
 
@@ -9782,7 +9832,8 @@ class NmrDpRemediation:
                                 _err += f"{description['input']}\n"
                             _err += f"{description['marker']}\n"
                             if is_not_ascii:
-                                _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+                                _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} "\
+                                    "and must be 'ascii'.\n"
 
             if parser_err_listener is not None and len(_err) == 0:
                 messageList = parser_err_listener.getMessageList()
@@ -9903,7 +9954,8 @@ class NmrDpRemediation:
 
                     elif not ignore_error:
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyCs() ++ KeyError  - " + warn)
+                                                                  f"+{self.__class_name__}.validateLegacyCs() "
+                                                                  "++ KeyError  - " + warn)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ KeyError  - {warn}\n")
@@ -10044,7 +10096,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file (ARIA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10106,7 +10159,8 @@ class NmrDpRemediation:
                                 f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10167,7 +10221,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file (GARRET) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10228,7 +10283,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10289,7 +10345,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10350,7 +10407,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file (PIPP) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10411,7 +10469,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10472,7 +10531,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10533,7 +10593,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file (XEASY) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyCs() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -10999,7 +11060,8 @@ class NmrDpRemediation:
         derived_from_public_mr = False
 
         hint_for_noe_dist = ['noe', 'roe', 'dist']
-        hint_for_any_dist = ['bond', 'disul', 'not', 'seen', 'pre', 'paramag', 'cidnp', 'csp', 'perturb', 'mutat', 'protect', 'symm']
+        hint_for_any_dist = ['bond', 'disul', 'not', 'seen', 'pre', 'paramag', 'cidnp',
+                             'csp', 'perturb', 'mutat', 'protect', 'symm']
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
@@ -11076,7 +11138,8 @@ class NmrDpRemediation:
             cif_poly_seq = self.__reg.caC['polymer_sequence']
 
             seq_align, _ = alignPolymerSequence(self.__reg.pA, cif_poly_seq, nmr_poly_seq)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star', cif_poly_seq, nmr_poly_seq, seq_align)
+            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star',
+                                                    cif_poly_seq, nmr_poly_seq, seq_align)
 
             if chain_assign is not None:
 
@@ -11359,7 +11422,8 @@ class NmrDpRemediation:
 
                     elif not ignore_error:
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyMr() ++ KeyError  - " + warn)
+                                                                  f"+{self.__class_name__}.validateLegacyMr() "
+                                                                  "++ KeyError  - " + warn)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ KeyError  - {warn}\n")
@@ -11466,7 +11530,8 @@ class NmrDpRemediation:
 
             if file_type == 'nm-res-cha' and charmmAtomNumberDict is None and not has_aux_cha:
 
-                err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded to verify CHARMM restraint file {file_name!r}."
+                err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded "\
+                    f"to verify CHARMM restraint file {file_name!r}."
 
                 if self.__reg.internal_mode:
 
@@ -11600,7 +11665,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (AMBER) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -11670,7 +11736,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -11740,7 +11807,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -11810,7 +11878,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (Bare WSV/TSV/CSV) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -11880,7 +11949,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (BIOSYM) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -11988,7 +12058,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (CHARMM) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12093,7 +12164,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (CNS) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12210,7 +12282,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (CYANA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12280,7 +12353,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12350,7 +12424,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (ISD) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12396,7 +12471,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (GROMACS) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12492,7 +12568,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (CYANA NOA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12588,7 +12665,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (ROSETTA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12687,7 +12765,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (SCHRODINGER/ASL) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12757,7 +12836,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (SYBYL) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12868,7 +12948,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate the restraint file (XPLOR-NIH) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyMr() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -12902,7 +12983,8 @@ class NmrDpRemediation:
             file_type = 'nm-res-mr'
 
             seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                                                    poly_seq_model, poly_seq_rst, seq_align)
 
             if chain_assign is not None:
 
@@ -13044,7 +13126,8 @@ class NmrDpRemediation:
                                 _err += f"{description['input']}\n"
                             _err += f"{description['marker']}\n"
                             if is_not_ascii:
-                                _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+                                _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} "\
+                                    "and must be 'ascii'.\n"
 
             if parser_err_listener is not None and len(_err) == 0:
                 messageList = parser_err_listener.getMessageList()
@@ -13068,7 +13151,8 @@ class NmrDpRemediation:
                             _type = 'no_brace'
                         else:
                             _err += f"[Syntax error as {a_pk_format_name} file] "\
-                                    f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    f"line {description['line_number']}:{description['column_position']} "\
+                                    f"{description['message']}\n"
                             if 'input' in description:
                                 _err += f"{description['input']}\n"
                                 _err += f"{description['marker']}\n"
@@ -13121,7 +13205,8 @@ class NmrDpRemediation:
 
                     else:
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - " + warn)
+                                                                  f"+{self.__class_name__}.validateLegacyPk() "
+                                                                  "++ KeyError  - " + warn)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - {warn}\n")
@@ -13208,7 +13293,8 @@ class NmrDpRemediation:
             cif_poly_seq = self.__reg.caC['polymer_sequence']
 
             seq_align, _ = alignPolymerSequence(self.__reg.pA, cif_poly_seq, nmr_poly_seq)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star', cif_poly_seq, nmr_poly_seq, seq_align)
+            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star',
+                                                    cif_poly_seq, nmr_poly_seq, seq_align)
 
             if chain_assign is not None:
 
@@ -13421,7 +13507,8 @@ class NmrDpRemediation:
 
                     elif not ignore_error:
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - " + warn)
+                                                                  f"+{self.__class_name__}.validateLegacyPk() "
+                                                                  "++ KeyError  - " + warn)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - {warn}\n")
@@ -13603,7 +13690,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (ARIA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -13682,7 +13770,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -13764,7 +13853,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (CCPN) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -13846,7 +13936,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (OLIVIA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -13928,7 +14019,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (NMRPIPE) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14010,7 +14102,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (PONDEROSA) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14054,7 +14147,8 @@ class NmrDpRemediation:
                 if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    skip, spa_type = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
+                    skip, spa_type = deal_lexer_or_parser_error(a_pk_format_name, file_name,
+                                                                lexer_err_listener, parser_err_listener)
                     if skip and spa_type == 'default':
                         continue
 
@@ -14189,7 +14283,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14271,7 +14366,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14347,7 +14443,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (TOPSPIN) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14391,7 +14488,8 @@ class NmrDpRemediation:
                 if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    skip, vie_type = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
+                    skip, vie_type = deal_lexer_or_parser_error(a_pk_format_name, file_name,
+                                                                lexer_err_listener, parser_err_listener)
                     if skip and vie_type == 'default':
                         continue
 
@@ -14474,7 +14572,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (NMRVIEW) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14556,7 +14655,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (VNMR) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14640,7 +14740,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (XEASY) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14720,7 +14821,8 @@ class NmrDpRemediation:
                             err = f"Failed to validate spectral peak list file (XWINNMR) {file_name!r}."
 
                             self.__reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() ++ Error  - " + err)
+                                                                      f"+{self.__class_name__}.validateLegacyPk() "
+                                                                      "++ Error  - " + err)
 
                             if self.__reg.verbose:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -14959,7 +15061,8 @@ class NmrDpRemediation:
                                 self.__reg.mr_sf_dict_holder[content_subtype].append(sf_item)
                                 lp_count += 1
 
-                            self.__reg.list_id_counter = incListIdCounter(content_subtype, self.__reg.list_id_counter, reduced=False)
+                            self.__reg.list_id_counter =\
+                                incListIdCounter(content_subtype, self.__reg.list_id_counter, reduced=False)
 
                             list_id = self.__reg.list_id_counter[content_subtype]
 
@@ -15237,12 +15340,14 @@ class NmrDpRemediation:
                                     if _id != prev_id:
                                         _atom1 = {'chain_id': row[auth_asym_id_1_col],
                                                   'seq_id':
-                                                  int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
+                                                  int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE
+                                                  else None,
                                                   'comp_id': row[comp_id_1_col],
                                                   'atom_id': row[atom_id_1_col]}
                                         _atom2 = {'chain_id': row[auth_asym_id_2_col],
                                                   'seq_id':
-                                                  int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
+                                                  int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE
+                                                  else None,
                                                   'comp_id': row[comp_id_2_col],
                                                   'atom_id': row[atom_id_2_col]}
                                         prev_id = _id
@@ -16306,7 +16411,8 @@ class NmrDpRemediation:
                                 for idx, row in enumerate(dat):
                                     if row[2] == 'distance' and row[3] == dist_subtype and row[4] == 'simple'\
                                        and (row[1] if isinstance(row[1], str) else str(row[1])) == block_id:
-                                        cf_loop.data[idx][cf_loop.tags.index('Constraint_subtype')] = f'{dist_subtype} (upper bound)'
+                                        cf_loop.data[idx][cf_loop.tags.index('Constraint_subtype')] =\
+                                            f'{dist_subtype} (upper bound)'
 
         # update _Data_set/Datum loop
 
@@ -17928,7 +18034,8 @@ class NmrDpRemediation:
                                "and will be converted during future data remediation if the data matches a known restraint format."
 
                         self.__reg.report.warning.appendDescription('unsupported_mr_data',
-                                                                    {'file_name': file_name, 'description': warn, 'inheritable': True})
+                                                                    {'file_name': file_name, 'description': warn,
+                                                                     'inheritable': True})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Warning  - {warn}\n")
@@ -18369,7 +18476,8 @@ class NmrDpRemediation:
 
     def performBMRBjAnnTasks(self, enforce: bool = False) -> bool:
         """ Perform a series of BMRBj specific annotation tasks.
-            @note: this method requires additional software packages, network access to PubMed, NCBI Taxonomy, BMRB-API, BMRB ETS, etc
+            @note: this method requires additional software packages,
+                   network access to PubMed, NCBI Taxonomy, BMRB-API, BMRB ETS, etc
         """
 
         if self.__reg.combined_mode or not self.__reg.remediation_mode or (self.__reg.dstPath is None and not enforce):

@@ -314,7 +314,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
             self.__time = str(ctx.Date_time(1))
 
     # Enter a parse tree produced by AmberPTParser#amber_atom_type_statement.
-    def enterAmber_atom_type_statement(self, ctx: AmberPTParser.Amber_atom_type_statementContext):  # pylint: disable=unused-argument
+    def enterAmber_atom_type_statement(self, ctx: AmberPTParser.Amber_atom_type_statementContext
+                                       ):  # pylint: disable=unused-argument
         self.amberAtomTypeStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#amber_atom_type_statement.
@@ -408,7 +409,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.atomNameStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#atom_type_index_statement.
-    def enterAtom_type_index_statement(self, ctx: AmberPTParser.Atom_type_index_statementContext):  # pylint: disable=unused-argument
+    def enterAtom_type_index_statement(self, ctx: AmberPTParser.Atom_type_index_statementContext
+                                       ):  # pylint: disable=unused-argument
         self.atomTypeIndexStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#atom_type_index_statement.
@@ -429,7 +431,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.atomsPerMoleculeStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#bond_equil_value_statement.
-    def enterBond_equil_value_statement(self, ctx: AmberPTParser.Bond_equil_value_statementContext):  # pylint: disable=unused-argument
+    def enterBond_equil_value_statement(self, ctx: AmberPTParser.Bond_equil_value_statementContext
+                                        ):  # pylint: disable=unused-argument
         self.bondEquilValueStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#bond_equil_value_statement.
@@ -522,7 +525,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.cmapCountStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#cmap_resolution_statement.
-    def enterCmap_resolution_statement(self, ctx: AmberPTParser.Cmap_resolution_statementContext):  # pylint: disable=unused-argument
+    def enterCmap_resolution_statement(self, ctx: AmberPTParser.Cmap_resolution_statementContext
+                                       ):  # pylint: disable=unused-argument
         self.cmapResolutionStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#cmap_resolution_statement.
@@ -801,7 +805,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.residueLabelStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#residue_pointer_statement.
-    def enterResidue_pointer_statement(self, ctx: AmberPTParser.Residue_pointer_statementContext):  # pylint: disable=unused-argument
+    def enterResidue_pointer_statement(self, ctx: AmberPTParser.Residue_pointer_statementContext
+                                       ):  # pylint: disable=unused-argument
         self.residuePointerStatements += 1
 
         self.__residuePointer = []
@@ -860,7 +865,8 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.soltyStatements -= 1
 
     # Enter a parse tree produced by AmberPTParser#solvent_pointers_statement.
-    def enterSolvent_pointers_statement(self, ctx: AmberPTParser.Solvent_pointers_statementContext):  # pylint: disable=unused-argument
+    def enterSolvent_pointers_statement(self, ctx: AmberPTParser.Solvent_pointers_statementContext
+                                        ):  # pylint: disable=unused-argument
         self.solventPointersStatements += 1
 
     # Exit a parse tree produced by AmberPTParser#solvent_pointers_statement.

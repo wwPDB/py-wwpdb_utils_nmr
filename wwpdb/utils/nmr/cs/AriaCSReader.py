@@ -59,7 +59,8 @@ class AriaCSReader:
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
+                 nefT: Optional[NEFTranslator] = None,
                  reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
@@ -152,7 +153,8 @@ class AriaCSReader:
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(csFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
+            parser_error_listener =\
+                ParserErrorListener(csFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
             parser.addErrorListener(parser_error_listener)
             tree = parser.document()
 
@@ -223,6 +225,7 @@ if __name__ == "__main__":
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6f24/bmr34202/work/data/D_1200007358_nmr-peaks-upload_P1.dat.V1')
     print(reader_listener.getReasonsForReparsing())
-    reader = AriaCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly, reasons=reader_listener.getReasonsForReparsing())
+    reader = AriaCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly,
+                          reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6f24/bmr34202/work/data/D_1200007358_nmr-peaks-upload_P1.dat.V1')

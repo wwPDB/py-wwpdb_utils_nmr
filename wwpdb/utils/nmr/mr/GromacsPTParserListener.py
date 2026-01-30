@@ -333,7 +333,8 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         pass
 
     # Enter a parse tree produced by GromacsPTParser#constrainttypes_statement.
-    def enterConstrainttypes_statement(self, ctx: GromacsPTParser.Constrainttypes_statementContext):  # pylint: disable=unused-argument
+    def enterConstrainttypes_statement(self, ctx: GromacsPTParser.Constrainttypes_statementContext
+                                       ):  # pylint: disable=unused-argument
         self.constrainttypesStatements += 1
 
     # Exit a parse tree produced by GromacsPTParser#constrainttypes_statement.
@@ -562,7 +563,8 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         pass
 
     # Enter a parse tree produced by GromacsPTParser#virtual_sites1_statement.
-    def enterVirtual_sites1_statement(self, ctx: GromacsPTParser.Virtual_sites1_statementContext):  # pylint: disable=unused-argument
+    def enterVirtual_sites1_statement(self, ctx: GromacsPTParser.Virtual_sites1_statementContext
+                                      ):  # pylint: disable=unused-argument
         self.virtual_sites1Statements += 1
 
     # Exit a parse tree produced by GromacsPTParser#virtual_sites1_statement.
@@ -580,7 +582,8 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         pass
 
     # Enter a parse tree produced by GromacsPTParser#virtual_sites2_statement.
-    def enterVirtual_sites2_statement(self, ctx: GromacsPTParser.Virtual_sites2_statementContext):  # pylint: disable=unused-argument
+    def enterVirtual_sites2_statement(self, ctx: GromacsPTParser.Virtual_sites2_statementContext
+                                      ):  # pylint: disable=unused-argument
         self.virtual_sites2Statements += 1
 
     # Exit a parse tree produced by GromacsPTParser#virtual_sites2_statement.
@@ -598,7 +601,8 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         pass
 
     # Enter a parse tree produced by GromacsPTParser#virtual_sites3_statement.
-    def enterVirtual_sites3_statement(self, ctx: GromacsPTParser.Virtual_sites3_statementContext):  # pylint: disable=unused-argument
+    def enterVirtual_sites3_statement(self, ctx: GromacsPTParser.Virtual_sites3_statementContext
+                                      ):  # pylint: disable=unused-argument
         self.virtual_sites3Statements += 1
 
     # Exit a parse tree produced by GromacsPTParser#virtual_sites3_statement.
@@ -616,7 +620,8 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         pass
 
     # Enter a parse tree produced by GromacsPTParser#virtual_sites4_statement.
-    def enterVirtual_sites4_statement(self, ctx: GromacsPTParser.Virtual_sites4_statementContext):  # pylint: disable=unused-argument
+    def enterVirtual_sites4_statement(self, ctx: GromacsPTParser.Virtual_sites4_statementContext
+                                      ):  # pylint: disable=unused-argument
         self.virtual_sites4Statements += 1
 
     # Exit a parse tree produced by GromacsPTParser#virtual_sites4_statement.
@@ -634,7 +639,8 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         pass
 
     # Enter a parse tree produced by GromacsPTParser#virtual_sitesn_statement.
-    def enterVirtual_sitesn_statement(self, ctx: GromacsPTParser.Virtual_sitesn_statementContext):  # pylint: disable=unused-argument
+    def enterVirtual_sitesn_statement(self, ctx: GromacsPTParser.Virtual_sitesn_statementContext
+                                      ):  # pylint: disable=unused-argument
         self.virtual_sitesnStatements += 1
 
     # Exit a parse tree produced by GromacsPTParser#virtual_sitesn_statement.

@@ -61,8 +61,8 @@
 # 22 Feb-2022  M. Yokochi - add 'complemented_chemical_shift' warning type (DAOTHER-7681, issue #1)
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraints (DAOTHER-7690, NMR restraint remediation)
 # 22-Mar-2022  M. Yokochi - add 'nm-res-ros' file type for ROSETTA restraint format (DAOTHER-7690)
-# 23-Mar-2022  M. Yokochi - add 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data' warning types
-#                           (DAOTHER-7690)
+# 23-Mar-2022  M. Yokochi - add 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data'
+#                           warning types (DAOTHER-7690)
 # 13-Apr-2022  M. Yokochi - add 'label_scheme' option to select label_*_id or auth_*_id scheme of the coordinate file
 #                           (NMR restraint remediation)
 # 14 Apr-2022  M. Yokochi - add 'nm-res-mr' file type for NMR restraint remediation and V5.13
@@ -85,8 +85,8 @@
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter)
 #                           (NMR restraint remediation)
-# 27-Feb-2023  M. Yokochi - add getLabelSeqSchemOf(), which convert author sequence scheme to label sequence scheme of the coordinates
-#                           (NMR restraint remediation)
+# 27-Feb-2023  M. Yokochi - add getLabelSeqSchemOf(), which convert author sequence scheme to label sequence scheme
+#                           of the coordinates (NMR restraint remediation)
 # 13-Dec-2023  M. Yokochi - add 'hydrogen_non_instantiated' warning (DAOTHER-8945)
 # 12-Jan-2024  M. Yokochi - getNmrSeq1LetterCodeOf() returns '.' for missing residue, instead of whitespace (DAOTHER-9065)
 # 16-Jan-2024  M. Yokochi - add 'nm-res-ari' file type for ARIA restraint format (DAOTHER-9079, NMR restraint remediation)
@@ -99,13 +99,15 @@
 #                           and 'nm-pea-xwi' file types for NMR spectral peak remediation
 # 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
-# 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file (DAOTHER-7829, 9785, NMR data remediation)
+# 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file
+#                           (DAOTHER-7829, 9785, NMR data remediation)
 # 05-Dec-2024  M. Yokochi - add 'nm-aux-xea' file type for XEASY PROT (Assignment) file (NMR restraint remediation)
 # 16-Dec-2024  M. Yokochi - add 'nm-pea-vnm' file types for VNMR spectral peak list file (NMR restraint remediation)
 # 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warning
 #                           (DAOTHER-8905, 9785, NMR data remediation, standalone NMR data conversion service)
 # 07-Feb-2025  M. Yokochi - add 'ignore_error' in NmrDpReportInputSource class (DAOTHER-8905)
-# 18-Feb-2025  M. Yokochi - add 'nm-pea-pon' file type for PONDEROSA spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
+# 18-Feb-2025  M. Yokochi - add 'nm-pea-pon' file type for PONDEROSA spectral peak list file
+#                           (DAOTHER-8905, 9785, NMR data remediation)
 # 26-Feb-2025  M. Yokochi - add 'nm-pea-ccp' file type for CCPN tabular spectral peak list file
 #                           (DAOTHER-8905, 9785, NMR data remediation)
 # 05-Mar-2025  M. Yokochi - add 'nm-pea-bar' file type for bare spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
@@ -120,13 +122,15 @@
 #                           in standalone NMR data conversion service (DAOTHER-9785)
 # 28-May-2025  M. Yokochi - add 'conflicted_peak_list' and 'inconsistent_peak_list' warning types (DAOTHER-10010)
 # 29-May-2025  M. Yokochi - add 'unsupported_peak_list' warning type (DAOTHER-10099)
-# 06-Aug-2025  M. Yokochi - add 'nm-res-sch' file type for SCHRODINGER/ASL restraint format (DAOTHER-7902, 10172, NMR data remediation)
+# 06-Aug-2025  M. Yokochi - add 'nm-res-sch' file type for SCHRODINGER/ASL restraint format
+#                           (DAOTHER-7902, 10172, NMR data remediation)
 # 22-Aug-2025  M. Yokochi - add 'nm-pea-oli' file type for OLIVIA spectral peak list file (DAOTHER-8905, 9785)
 # 22-Aug-2025  M. Yokochi - add 'nm-shi-oli' file type for OLIVIA spectral peak list file (DAOTHER-9785)
 # 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for Bare PDB file acting as AMBER/CHARMM/GROMACS topology definition
 #                           (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add 'nm-res-arx' file type for ARIA NOE restraint (XML) file (DAOTHER-7829, 9785, NMR data remediation)
-# 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file (DAOTHER-7829, 9785, NMR data remediation)
+# 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file
+#                           (DAOTHER-7829, 9785, NMR data remediation)
 # 20-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in ROSETTA restraints
 #                           (DAOTHER-7829, 9785, NMR data remediation)
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints
@@ -1156,7 +1160,8 @@ class NmrDpReport:
         for ca in chain_assigns:
 
             if (ca['ref_chain_id'] == cif_chain_id and label_scheme) or\
-               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
+               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca
+                 else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
                 return self.getNmrPolymerSequenceOf(ca['test_chain_id'])
 
         return None
@@ -1211,7 +1216,8 @@ class NmrDpReport:
         for ca in chain_assigns:
 
             if (ca['ref_chain_id'] == cif_chain_id and label_scheme) or\
-               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
+               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca
+                 else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
 
                 if ca['conflict'] > 0:
                     return None
@@ -1313,7 +1319,8 @@ class NmrDpReport:
         for ca in chain_assigns:
 
             if (ca['ref_chain_id'] == cif_chain_id and label_scheme) or\
-               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
+               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca
+                 else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
                 return self.getNmrSeq1LetterCodeOf(ca['test_chain_id'], fullSequence=fullSequence, unmappedSeqId=unmappedSeqId)
 
         return None
@@ -1553,7 +1560,8 @@ class NmrDpReport:
         else:
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.setDiamagnetic() "
-                                 "++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n")
+                                 "++ Warning  - No effects on NMR data processing report "
+                                 "because input variable is not boolean type\n")
             raise UserWarning(f"+{self.__class_name__}.setDiamagnetic() "
                               "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
@@ -1567,7 +1575,8 @@ class NmrDpReport:
         else:
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.setDisulfideBond() "
-                                 "++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n")
+                                 "++ Warning  - No effects on NMR data processing report "
+                                 "because input variable is not boolean type\n")
             raise UserWarning(f"+{self.__class_name__}.setDisulfideBond() "
                               "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
@@ -1581,7 +1590,8 @@ class NmrDpReport:
         else:
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.setOtherBond() "
-                                 "++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n")
+                                 "++ Warning  - No effects on NMR data processing report "
+                                 "because input variable is not boolean type\n")
             raise UserWarning(f"+{self.__class_name__}.setOtherBond() "
                               "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
@@ -1595,7 +1605,8 @@ class NmrDpReport:
         else:
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.setCyclicPolymer() "
-                                 "++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n")
+                                 "++ Warning  - No effects on NMR data processing report "
+                                 "because input variable is not boolean type\n")
             raise UserWarning(f"+{self.__class_name__}.setCyclicPolymer() "
                               "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
@@ -1610,7 +1621,8 @@ class NmrDpReport:
         else:
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.setOutputStatistics() "
-                                 "++ Warning  - No effects on NMR data processing report because input variable is not target type\n")
+                                 "++ Warning  - No effects on NMR data processing report "
+                                 "because input variable is not target type\n")
             raise UserWarning(f"+{self.__class_name__}.setOutputStatistics() "
                               "++ Warning  - No effects on NMR data processing report because input variable is not target_type")
 
@@ -2320,7 +2332,8 @@ class NmrDpReportError:
 
             if not any(True for v in self.__contents[item] if v == value):
 
-                if item in self.group_items and 'file_name' in value and 'row_location' not in value and 'row_locations' not in value:
+                if item in self.group_items and 'file_name' in value and 'row_location' not in value\
+                   and 'row_locations' not in value:
 
                     if 'sf_framecode' in value:
                         v = next((v for v in self.__contents[item]
@@ -2705,7 +2718,8 @@ class NmrDpReportWarning:
 
             if not any(True for v in self.__contents[item] if v == value):
 
-                if item in self.group_items and 'file_name' in value and 'row_location' not in value and 'row_locations' not in value:
+                if item in self.group_items and 'file_name' in value and 'row_location' not in value\
+                   and 'row_locations' not in value:
 
                     if 'sf_framecode' in value:
                         v = next((v for v in self.__contents[item]

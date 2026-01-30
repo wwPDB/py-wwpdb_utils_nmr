@@ -991,7 +991,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
         if self.cur_subtype != 'dist':
             self.distStatements += 1
-        self.cur_subtype = 'dist' if self.cur_subtype not in ('pre', 'rdc') else self.cur_subtype  # set 'pre', 'rdc' for error message
+        # set 'pre', 'rdc' for error message
+        self.cur_subtype = 'dist' if self.cur_subtype not in ('pre', 'rdc') else self.cur_subtype
 
         if self.cur_subtype_altered and not self.preferAuthSeq and self.cur_subtype != 'dist':
             self.preferAuthSeq = True
@@ -1405,7 +1406,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     lower_linear_limit = target - delta
                     upper_linear_limit = target + delta
 
-            dstFunc = self.validateAngleRange(self.scale if exponent > 0 else 0.0, {'energy_const': energyConst, 'exponent': exponent},
+            dstFunc = self.validateAngleRange(self.scale if exponent > 0 else 0.0,
+                                              {'energy_const': energyConst, 'exponent': exponent},
                                               target_value, lower_limit, upper_limit,
                                               lower_linear_limit, upper_linear_limit)
 
@@ -1667,7 +1669,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             chain_id_set = None
             if self.exptlMethod == 'SOLID-STATE NMR':
-                ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps = next((ps for ps in self.polySeq
+                           if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 if ps is not None:
                     chain_id_set = [chain_id_1]
                     chain_id_set.extend(ps['identical_auth_chain_id'])
@@ -1735,7 +1738,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 ps1 = next((ps for ps in self.polySeq
                             if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
+                    warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2)\
+                        else 'Anomalous RDC vector'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
                                   f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
@@ -1752,7 +1756,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     pass
 
                 else:
-                    warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
+                    warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2)\
+                        else 'Anomalous RDC vector'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
                                   f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
@@ -2008,8 +2013,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 f'{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_2[0]][0]}{atom_id_2[0]}'
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   f"Found inter-chain {spin_system} dipolar coupling vector; "
@@ -2232,7 +2239,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if not self.ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
-                        if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        if self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                           and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                           "Found an RDC vector over multiple covalent bonds in the 'VEANgle' statement; "
                                           f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
@@ -2292,7 +2300,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.potential = 'square'
                 self.f.append("[Enum mismatch ignorable] "
-                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for 'TENSOr' statements. "
+                              f"The potential type {str(ctx.Potential_types())!r} is unknown potential type "
+                              "for 'TENSOr' statements. "
                               f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
@@ -2381,8 +2390,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain RDC vector; "
@@ -2622,7 +2633,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if not self.ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
-                        if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        if self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                           and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
                                           "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "
                                           f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
@@ -3500,7 +3512,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     pass
                 else:
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.")
+                                  f"The 2nd observed chemical shift value '{obs_value_2}' "
+                                  f"must be within range {CS_RESTRAINT_ERROR}.")
                     return
 
             if obs_value_2 is None:
@@ -3761,7 +3774,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     continue
                 if self.debug:
                     print(f"subtype={self.cur_subtype} (PROTON/RING) id={self.procsRestraints} "
-                          f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} atom6={atom6}")
+                          f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} "
+                          f"atom4={atom4} atom5={atom5} atom6={atom6}")
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def enterProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext
@@ -3985,7 +3999,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                      "Found an dihedral angle vector over multiple covalent bonds in the 'RAMAchandran' statement; "
+                                      "Found an dihedral angle vector over multiple covalent bonds "
+                                      "in the 'RAMAchandran' statement; "
                                       f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                       f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -4692,9 +4707,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
-                ps3 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps3 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None and ps3 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain CSA vector; "
@@ -4778,7 +4796,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if not self.ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
-                        if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        if self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                           and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                           "Found an CSA vector over multiple covalent bonds; "
                                           f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
@@ -4790,7 +4809,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if not self.ccU.hasBond(comp_id_1, atom_id_3, atom_id_1):
 
-                        if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_3, atom_id_3):
+                        if self.nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                           and self.nefT.validate_comp_atom(comp_id_3, atom_id_3):
                             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                           "Found an CSA vector over multiple covalent bonds; "
                                           f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
@@ -5452,8 +5472,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain orientation vector; "
@@ -7391,7 +7413,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                                             'value': _seqId},
                                                                                            {'name': self.authAtomId, 'type': 'str',
                                                                                             'value': _atomId},
-                                                                                           {'name': self.modelNumName, 'type': 'int',
+                                                                                           {'name': self.modelNumName, 'type': 'int',  # noqa: E501, pylint: disable=line-too-long
                                                                                             'value': self.representativeModelId},
                                                                                            {'name': 'label_alt_id', 'type': 'enum',
                                                                                             'enum': (self.representativeAltId,)}
@@ -7502,9 +7524,12 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         _neighbor =\
                                             self.cR.getDictListWithFilter('atom_site',
                                                                           CARTN_DATA_ITEMS,
-                                                                          [{'name': self.authAsymId, 'type': 'str', 'value': chainId},
-                                                                           {'name': self.authSeqId, 'type': 'int', 'value': seqId},
-                                                                           {'name': self.authAtomId, 'type': 'str', 'value': _atomId},
+                                                                          [{'name': self.authAsymId, 'type': 'str',
+                                                                            'value': chainId},
+                                                                           {'name': self.authSeqId, 'type': 'int',
+                                                                            'value': seqId},
+                                                                           {'name': self.authAtomId, 'type': 'str',
+                                                                            'value': _atomId},
                                                                            {'name': self.modelNumName, 'type': 'int',
                                                                             'value': self.representativeModelId},
                                                                            {'name': 'label_alt_id', 'type': 'enum',
@@ -8303,7 +8328,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
                                         self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
                                         self.reasonsForReParsing['segment_id_match_stats'][chainId] = {}
-                                        self.reasonsForReParsing['segment_id_poly_type_stats'][chainId] = {'polymer': 0, 'non-poly': 0}
+                                        self.reasonsForReParsing['segment_id_poly_type_stats'][chainId] =\
+                                            {'polymer': 0, 'non-poly': 0}
                                     self.factor['alt_chain_id'] = chainId
                                 else:
                                     self.factor['atom_id'] = [None]

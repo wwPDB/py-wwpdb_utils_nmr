@@ -157,16 +157,20 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 compId1 = atom_pair[0]['comp_id']
                 atomId1 = atom_pair[0]['atom_id']
 
-                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])\
-                    if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                 atomId1.split('|', 1)[0])\
+                    if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1,
+                                                                                 atomId1.split('|', 1)[0])
 
                 chainId2 = atom_pair[1]['chain_id'] if 'chain_id' in atom_pair[1] else None
                 seqId2 = atom_pair[1]['seq_id']
                 compId2 = atom_pair[1]['comp_id']
                 atomId2 = atom_pair[1]['atom_id']
 
-                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])\
-                    if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                 atomId2.split('|', 1)[0])\
+                    if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2,
+                                                                                 atomId2.split('|', 1)[0])
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     continue
@@ -399,16 +403,20 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 compId1 = atom_pair[0]['comp_id']
                 atomId1 = atom_pair[0]['atom_id']
 
-                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])\
-                    if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                 atomId1.split('|', 1)[0])\
+                    if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1,
+                                                                                 atomId1.split('|', 1)[0])
 
                 chainId2 = atom_pair[1]['chain_id'] if 'chain_id' in atom_pair[1] else None
                 seqId2 = atom_pair[1]['seq_id']
                 compId2 = atom_pair[1]['comp_id']
                 atomId2 = atom_pair[1]['atom_id']
 
-                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])\
-                    if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                 atomId2.split('|', 1)[0])\
+                    if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2,
+                                                                                 atomId2.split('|', 1)[0])
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     continue

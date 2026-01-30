@@ -26,7 +26,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def __test_nmr_nef_consistency(self, entry_id):
         self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '-disulfide-bond.nef')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
+        self.utility.addInput(name='coordinate_file_path',
+                              value=self.data_dir_path + entry_id + '/' + entry_id + '.cif',
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
@@ -59,7 +61,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.__test_nmr_nef_consistency(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '-disulfide-bond.nef')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
+        self.utility.addInput(name='coordinate_file_path',
+                              value=self.data_dir_path + entry_id + '/' + entry_id + '.cif',
+                              type='file')
         self.utility.addInput(name='report_file_path',
                               value=self.data_dir_path + entry_id + '-disulfide-bond-nef-consistency-log.json',
                               type='file')
@@ -91,7 +95,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.__test_nmr_nef2str_deposit(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
+        self.utility.addInput(name='coordinate_file_path',
+                              value=self.data_dir_path + entry_id + '/' + entry_id + '.cif',
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
@@ -121,7 +127,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.__test_nmr_str_consistency(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
+        self.utility.addInput(name='coordinate_file_path',
+                              value=self.data_dir_path + entry_id + '/' + entry_id + '.cif',
+                              type='file')
         self.utility.addInput(name='report_file_path',
                               value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef-consistency-log.json',
                               type='file')
@@ -131,7 +139,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + entry_id + '-disulfide-bond-str2nef-release-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-disulfide-bond-str2nef-next.str')
-        self.utility.addOutput(name='nef_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef.nef', type='file')
+        self.utility.addOutput(name='nef_file_path',
+                               value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef.nef',
+                               type='file')
         self.utility.addOutput(name='report_file_path',
                                value=self.data_dir_path + entry_id + '-disulfide-bond-str2nef-nef-release-log.json',
                                type='file')

@@ -1141,7 +1141,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 if _length > 0:
                     __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(_myAlign)
 
-                    if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
+                    # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
+                    if __matched > _matched and _conflict == 0:
                         not_decided_ps2_comp_id = False
                         polySeqRst[i2]['comp_id'] = ps2['auth_comp_id']
                         myAlign = deepcopy(_myAlign)
@@ -1161,7 +1162,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 if _length > 0:
                     __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(_myAlign)
 
-                    if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
+                    # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
+                    if __matched > _matched and _conflict == 0:
                         if any(True for comp_id in ps2['comp_id'] if comp_id in EMPTY_VALUE):
                             valid_comp_ids = set()  # 2mze: ensure that comp_id_mapping has no side effect
                             comp_id_mapping = {}
@@ -1170,9 +1172,10 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                     valid_comp_ids.add(alt_comp_id)
                                     continue
                                 comp_id_mapping[alt_comp_id] = comp_id
-                            polySeqRst[i2]['comp_id'] = [comp_id_mapping[comp_id]
-                                                         if comp_id in comp_id_mapping and comp_id not in valid_comp_ids else comp_id
-                                                         for comp_id in ps2['comp_id']]
+                            polySeqRst[i2]['comp_id'] =\
+                                [comp_id_mapping[comp_id] if comp_id in comp_id_mapping and comp_id not in valid_comp_ids
+                                 else comp_id
+                                 for comp_id in ps2['comp_id']]
                         elif len(polySeqRst[i2]['comp_id']) == len(ps1['comp_id']):
                             polySeqRst[i2]['comp_id'] = ps1['comp_id']
                         else:
@@ -2073,7 +2076,8 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
                 elif mr_comp_id != cif_comp_id and aligned[i]:
                     _conflicts += 1
 
-            if fileType.startswith('nm-aux') and _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
+            if fileType.startswith('nm-aux') and _conflicts > ca['unmapped']\
+               and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                 continue
 
             if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
@@ -2286,7 +2290,8 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return seqId, compId, atomId
 
-                authAtomId = f"{item['auth_atom_id'][:-1]}%" if item['auth_atom_id'][0].isalpha() else f"%{item['auth_atom_id'][1:]}"
+                authAtomId = f"{item['auth_atom_id'][:-1]}%" if item['auth_atom_id'][0].isalpha()\
+                    else f"%{item['auth_atom_id'][1:]}"
 
                 if not authAtomId.startswith('%'):
                     methyl = ccU.getMethylAtoms(item['auth_comp_id'])
@@ -2623,7 +2628,8 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return atomId
 
-                authAtomId = f"{item['auth_atom_id'][:-1]}%" if item['auth_atom_id'][0].isalpha() else f"%{item['auth_atom_id'][1:]}"
+                authAtomId = f"{item['auth_atom_id'][:-1]}%" if item['auth_atom_id'][0].isalpha()\
+                    else f"%{item['auth_atom_id'][1:]}"
 
                 if not authAtomId.startswith('%'):
                     methyl = ccU.getMethylAtoms(item['auth_comp_id'])
@@ -3485,8 +3491,8 @@ def retrieveRemappedNonPoly(nonPolyRemap: dict, nonPoly: Optional[dict], chainId
     return None, None
 
 
-def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List[dict], polySeqRst: List[dict], chainAssign: List[dict]
-                               ) -> Tuple[Optional[List[dict]], Optional[dict]]:
+def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List[dict], polySeqRst: List[dict],
+                               chainAssign: List[dict]) -> Tuple[Optional[List[dict]], Optional[dict]]:
     """ Split polymer sequence of the current MR file for branched polymer.
     """
 
@@ -4057,7 +4063,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                                                     ])
 
         for c in coord:
-            c_prev = next((c_prev for c_prev in coord_prev if c['comp_id'] == c_prev['comp_id'] and c['atom_id'] == c_prev['atom_id']
+            c_prev = next((c_prev for c_prev in coord_prev
+                           if c['comp_id'] == c_prev['comp_id'] and c['atom_id'] == c_prev['atom_id']
                            and c['atom_id'] != c_prev['alt_atom_id'] and 'done' not in c_prev), None)
 
             if c_prev is None or c_prev['alt_atom_id'] is None:

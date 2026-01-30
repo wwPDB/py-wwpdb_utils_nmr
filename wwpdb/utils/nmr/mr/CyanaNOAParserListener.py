@@ -194,7 +194,8 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             star_atom2 = getStarAtom(self.authToStarSeq, self.authToOrigSeq, self.offsetHolder, copy.copy(atom2))
                             if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.nefT):
                                 continue
-                        if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
+                        if has_intra_chain and (atom1['chain_id'] != atom2['chain_id']
+                                                or atom1['chain_id'] not in rep_chain_id_set):
                             continue
                         if self.createSfDict and memberLogicCode == '.':
                             altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.csStat)

@@ -1156,7 +1156,8 @@ class CifReader:
                                                 break
 
                                         authSeqDict[c].insert(pos, auth_seq_id_)
-                                        compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromolecules page
+                                        # DAOTHER-9644: comp_id must be specified at Macromolecules page
+                                        compDict[c].insert(pos, '.')
                                         if ins_code_col != -1:
                                             insCodeDict[c].insert(pos, '.')
 
@@ -1311,10 +1312,12 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str',
                                                                          'alt_name': 'chain_id'},
-                                                                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                        {'name': 'auth_seq_id', 'type': 'int',
+                                                                         'alt_name': 'seq_id'},
                                                                         {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
                                                                          'type': 'int', 'alt_name': 'model_id'},
-                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                        {'name': 'type_symbol', 'type': 'str',
+                                                                         'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
                                                                          'enum': polyPeptideChains},
@@ -1330,10 +1333,12 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str',
                                                                          'alt_name': 'chain_id'},
-                                                                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                        {'name': 'auth_seq_id', 'type': 'int',
+                                                                         'alt_name': 'seq_id'},
                                                                         {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
                                                                          'type': 'int', 'alt_name': 'model_id'},
-                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                        {'name': 'type_symbol', 'type': 'str',
+                                                                         'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
                                                                          'enum': polyPeptideChains},
@@ -1349,10 +1354,12 @@ class CifReader:
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str',
                                                                          'alt_name': 'chain_id'},
-                                                                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                        {'name': 'auth_seq_id', 'type': 'int',
+                                                                         'alt_name': 'seq_id'},
                                                                         {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
                                                                          'type': 'int', 'alt_name': 'model_id'},
-                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                        {'name': 'type_symbol', 'type': 'str',
+                                                                         'alt_name': 'element'}
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
                                                                          'enum': polyPeptideChains},
@@ -1380,7 +1387,8 @@ class CifReader:
                                                                   [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                   {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                   {'name': 'label_asym_id', 'type': 'str',
+                                                                    'alt_name': 'chain_id'},
                                                                    {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                    {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
                                                                     'type': 'int', 'alt_name': 'model_id'},
@@ -1397,7 +1405,8 @@ class CifReader:
                                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                    {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                    {'name': 'label_asym_id', 'type': 'str',
+                                                                     'alt_name': 'chain_id'},
                                                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                     {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
                                                                      'type': 'int', 'alt_name': 'model_id'},
@@ -1750,7 +1759,8 @@ class CifReader:
                     eff_domain_id[_label] = domain_id
                     domain_id += 1
                 if self.__verbose and self.__debug:
-                    self.__log.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: {eff_domain_id[_label]} label: {_label}\n")
+                    self.__log.write(f"chain_id: {chain_id}, seq_id: {seq_id}, "
+                                     f"domain_id: {eff_domain_id[_label]} label: {_label}\n")
 
         rlist = []
         for chain_id in chain_ids:

@@ -390,13 +390,15 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.trimSfWoLp()
 
     # Enter a parse tree produced by CnsMRParser#one_bond_coupling_restraint.
-    def enterOne_bond_coupling_restraint(self, ctx: CnsMRParser.One_bond_coupling_restraintContext):  # pylint: disable=unused-argument
+    def enterOne_bond_coupling_restraint(self, ctx: CnsMRParser.One_bond_coupling_restraintContext
+                                         ):  # pylint: disable=unused-argument
         """
         @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
         """
 
     # Exit a parse tree produced by CnsMRParser#one_bond_coupling_restraint.
-    def exitOne_bond_coupling_restraint(self, ctx: CnsMRParser.One_bond_coupling_restraintContext):  # pylint: disable=unused-argument
+    def exitOne_bond_coupling_restraint(self, ctx: CnsMRParser.One_bond_coupling_restraintContext
+                                        ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CnsMRParser#angle_db_restraint.
@@ -1021,7 +1023,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     lower_linear_limit = target - delta
                     upper_linear_limit = target + delta
 
-            dstFunc = self.validateAngleRange(self.scale if exponent > 0 else 0.0, {'energy_const': energyConst, 'exponent': exponent},
+            dstFunc = self.validateAngleRange(self.scale if exponent > 0 else 0.0,
+                                              {'energy_const': energyConst, 'exponent': exponent},
                                               target_value, lower_limit, upper_limit,
                                               lower_linear_limit, upper_linear_limit)
 
@@ -1392,7 +1395,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             chain_id_set = None
             if self.exptlMethod == 'SOLID-STATE NMR':
-                ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps = next((ps for ps in self.polySeq
+                           if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 if ps is not None:
                     chain_id_set = [chain_id_1]
                     chain_id_set.extend(ps['identical_auth_chain_id'])
@@ -1460,7 +1464,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 ps1 = next((ps for ps in self.polySeq
                             if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
+                    warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2)\
+                        else 'Anomalous RDC vector'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
                                   f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
@@ -1477,7 +1482,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     pass
 
                 else:
-                    warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
+                    warn_title = 'Anomalous data' if self.preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2)\
+                        else 'Anomalous RDC vector'
                     self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                   "Found inter-residue RDC vector; "
                                   f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
@@ -2102,7 +2108,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     pass
                 else:
                     self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.")
+                                  f"The 2nd observed chemical shift value '{obs_value_2}' "
+                                  f"must be within range {CS_RESTRAINT_ERROR}.")
                     return
 
             if obs_value_2 is None:
@@ -2363,7 +2370,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     continue
                 if self.debug:
                     print(f"subtype={self.cur_subtype} (PROTON/RING) id={self.procsRestraints} "
-                          f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} atom6={atom6}")
+                          f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} "
+                          f"atom4={atom4} atom5={atom5} atom6={atom6}")
 
     # Enter a parse tree produced by CnsMRParser#proton_shift_alphas_and_amides.
     def enterProton_shift_alphas_and_amides(self, ctx: CnsMRParser.Proton_shift_alphas_and_amidesContext
@@ -2506,8 +2514,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain dihedral angle vector; "
@@ -2553,7 +2563,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                      "Found an dihedral angle vector over multiple covalent bonds in the 'CONFormation' statement; "
+                                      "Found an dihedral angle vector over multiple covalent bonds "
+                                      "in the 'CONFormation' statement; "
                                       f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                       f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -2698,8 +2709,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain diffusion anisotropy vector; "
@@ -2789,11 +2802,13 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.numberSelection.clear()
 
     # Enter a parse tree produced by CnsMRParser#one_bond_coupling_statement.
-    def enterOne_bond_coupling_statement(self, ctx: CnsMRParser.One_bond_coupling_statementContext):  # pylint: disable=unused-argument
+    def enterOne_bond_coupling_statement(self, ctx: CnsMRParser.One_bond_coupling_statementContext
+                                         ):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by CnsMRParser#one_bond_coupling_statement.
-    def exitOne_bond_coupling_statement(self, ctx: CnsMRParser.One_bond_coupling_statementContext):  # pylint: disable=unused-argument
+    def exitOne_bond_coupling_statement(self, ctx: CnsMRParser.One_bond_coupling_statementContext
+                                        ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CnsMRParser#one_bond_assign.
@@ -4008,7 +4023,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                                             'value': _seqId},
                                                                                            {'name': self.authAtomId, 'type': 'str',
                                                                                             'value': _atomId},
-                                                                                           {'name': self.modelNumName, 'type': 'int',
+                                                                                           {'name': self.modelNumName, 'type': 'int',  # noqa: E501, pylint: disable=line-too-long
                                                                                             'value': self.representativeModelId},
                                                                                            {'name': 'label_alt_id', 'type': 'enum',
                                                                                             'enum': (self.representativeAltId,)}
@@ -4119,9 +4134,12 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         _neighbor =\
                                             self.cR.getDictListWithFilter('atom_site',
                                                                           CARTN_DATA_ITEMS,
-                                                                          [{'name': self.authAsymId, 'type': 'str', 'value': chainId},
-                                                                           {'name': self.authSeqId, 'type': 'int', 'value': seqId},
-                                                                           {'name': self.authAtomId, 'type': 'str', 'value': _atomId},
+                                                                          [{'name': self.authAsymId, 'type': 'str',
+                                                                            'value': chainId},
+                                                                           {'name': self.authSeqId, 'type': 'int',
+                                                                            'value': seqId},
+                                                                           {'name': self.authAtomId, 'type': 'str',
+                                                                            'value': _atomId},
                                                                            {'name': self.modelNumName, 'type': 'int',
                                                                             'value': self.representativeModelId},
                                                                            {'name': 'label_alt_id', 'type': 'enum',
@@ -5007,7 +5025,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
                                         self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
                                         self.reasonsForReParsing['segment_id_match_stats'][chainId] = {}
-                                        self.reasonsForReParsing['segment_id_poly_type_stats'][chainId] = {'polymer': 0, 'non-poly': 0}
+                                        self.reasonsForReParsing['segment_id_poly_type_stats'][chainId] =\
+                                            {'polymer': 0, 'non-poly': 0}
                                     self.factor['alt_chain_id'] = chainId
                                 else:
                                     self.factor['atom_id'] = [None]

@@ -48,7 +48,8 @@ except ImportError:
                                    CCD_ID_PAT)
     from nmr.io.ChemCompReader import (ChemCompReader,
                                        is_reserved_lig_code)
-    CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
+    # need to setup 'ligand_dict' CCD resource for NMR restraint processing
+    CC_CVS_PATH = os.path.join(os.path.dirname(__file__), 'ligand_dict')
 
 
 class ChemCompUtil:
@@ -66,7 +67,7 @@ class ChemCompUtil:
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr):
         # pickle file name of cached dictionary for standard residues
-        self.__cacheFile = os.path.dirname(__file__) + '/chem_comp_util/std_chem_comp.pkl'
+        self.__cacheFile = os.path.join(os.path.dirname(__file__), 'chem_comp_util', 'std_chem_comp.pkl')
 
         self.__ccR = ChemCompReader(verbose, log)
         self.__ccR.setCachePath(CC_CVS_PATH)

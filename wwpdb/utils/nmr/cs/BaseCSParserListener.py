@@ -440,7 +440,8 @@ class BaseCSParserListener():
                                     try:
                                         seq_id_mapping[test_seq_id] =\
                                             next(auth_seq_id for auth_seq_id, seq_id
-                                                 in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id'],
+                                                 in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model
+                                                                       else 'seq_id'],
                                                         poly_seq_model['seq_id'])
                                                  if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                         if offset is None:
@@ -452,7 +453,8 @@ class BaseCSParserListener():
                                     if poly_seq_rst['comp_id'][idx] == '.' and poly_seq_rst['auth_comp_id'][idx] not in EMPTY_VALUE:
                                         seq_id_mapping[test_seq_id] =\
                                             next(auth_seq_id for auth_seq_id, seq_id
-                                                 in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id'],
+                                                 in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model
+                                                                       else 'seq_id'],
                                                         poly_seq_model['seq_id'])
                                                  if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
 
@@ -526,7 +528,8 @@ class BaseCSParserListener():
                                              if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'] == ref_chain_id)
 
                                     seq_id_mapping = {}
-                                    for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                    for ref_seq_id, mid_code, test_seq_id\
+                                            in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                         if test_seq_id is None:
                                             continue
                                         if mid_code == '|':
@@ -702,7 +705,8 @@ class BaseCSParserListener():
         if self.reasons is not None or self.polySeq is None:
             return
 
-        if chain_id is not None and any(True for ps in self.polySeq if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id']):
+        if chain_id is not None\
+           and any(True for ps in self.polySeq if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id']):
 
             if chain_id in self.offset:
                 return
@@ -785,7 +789,8 @@ class BaseCSParserListener():
 
                     if hasChainId and hasCompId:
                         chainAssign, _ =\
-                            self.assignCoordPolymerSequenceWithChainId(a['chain_id'], a['seq_id'], a['comp_id'], a['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainId(a['chain_id'], a['seq_id'], a['comp_id'], a['atom_id'],
+                                                                       index)
 
                     elif hasChainId:
                         chainAssign =\
@@ -1033,7 +1038,8 @@ class BaseCSParserListener():
                                     _compId = _str[_idx][resNameSpan[_idx][0]:resNameSpan[_idx][1]]
                                     if len(_compId) == 1 and hasOneLetterCodeSet:
                                         _compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == _compId)
-                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
+                                        _, _, details =\
+                                            self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
                                         if details is None:
                                             atomNameLike[idx] = atomNameLike_[_idx] = useOneLetterCodeSet = True
                                             atomNameSpan[idx] = (_index, len(term))
@@ -1653,10 +1659,10 @@ class BaseCSParserListener():
                                 break
 
             if self.__verbose_debug:
-                print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '
+                print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
                       f'resid:{resIdLike[idx]} {term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else ""}, '
                       f'resname:{resNameLike[idx]} {term[resNameSpan[idx][0]:resNameSpan[idx][1]] if resNameLike[idx] else ""}, '
-                      f'atomname:{atomNameLike[idx]} {term[atomNameSpan[idx][0]:atomNameSpan[idx][1]] if atomNameLike[idx] else ""}, '
+                      f'atomname:{atomNameLike[idx]} {term[atomNameSpan[idx][0]:atomNameSpan[idx][1]] if atomNameLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
                       f'_atomname:{_atomNameLike[idx]} {term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]] if _atomNameLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
                       f'__atomname:{__atomNameLike[idx]} {term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]] if __atomNameLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
                       f'___atomname:{___atomNameLike[idx]} {term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]] if ___atomNameLike[idx] else ""}')  # noqa: E501, pylint: disable=line-too-long
@@ -1703,7 +1709,8 @@ class BaseCSParserListener():
                     elif resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
                         term = _str[idx]
                         if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
-                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] ==\
+                           term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]\
                            and any(True for _idx in range(idx + 1, lenStr)
                                    if __atomNameLike[_idx] or _atomNameLike[_idx] or atomNameLike[_idx]):
                             ___atomNameLike[idx] = False
@@ -1738,7 +1745,8 @@ class BaseCSParserListener():
 
             elif _atomNameLike[idx]:
                 if resNameLike[idx]:
-                    if not hasResName and resNameSpan[idx][0] < _atomNameSpan[idx][0] and resNameSpan[idx][1] >= _atomNameSpan[idx][1]:
+                    if not hasResName and resNameSpan[idx][0] < _atomNameSpan[idx][0]\
+                       and resNameSpan[idx][1] >= _atomNameSpan[idx][1]:
                         _atomNameLike[idx] = False
                     elif resNameSpan[idx][1] > _atomNameSpan[idx][0]:
                         term = _str[idx]
@@ -1757,7 +1765,8 @@ class BaseCSParserListener():
 
             elif atomNameLike[idx]:
                 if resNameLike[idx]:
-                    if not hasResName and resNameSpan[idx][0] < atomNameSpan[idx][0] and resNameSpan[idx][1] >= atomNameSpan[idx][1]:
+                    if not hasResName and resNameSpan[idx][0] < atomNameSpan[idx][0]\
+                       and resNameSpan[idx][1] >= atomNameSpan[idx][1]:
                         atomNameLike[idx] = False
                     elif resNameSpan[idx][1] > atomNameSpan[idx][0]:
                         term = _str[idx]
@@ -2584,8 +2593,8 @@ class BaseCSParserListener():
                     if cifCompId is not None:
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_)
                                     in enumerate(zip(ps['auth_seq_id'if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id']))
-                                    if _seqId_ == seqId
-                                    and _cifCompId_ == cifCompId), ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId),
+                                   ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId))
                     else:
                         idx = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
@@ -2648,7 +2657,8 @@ class BaseCSParserListener():
                                 if comp_id_unmatched_with(ps, cifCompId):
                                     continue
                                 if cifCompId != compId:
-                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id'])
+                                               if _seqId == seqId]
                                     if compId in compIds:
                                         cifCompId = compId
                                         origCompId = next(origCompId for _seqId, _compId, origCompId
@@ -2657,13 +2667,15 @@ class BaseCSParserListener():
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                        if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
+                                        if refChainId is not None and refChainId != chainId\
+                                           and refChainId not in self.chainNumberDict:
                                             self.chainNumberDict[refChainId] = chainId
                                 else:
                                     _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
                                     if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                        if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
+                                        if refChainId is not None and refChainId != chainId\
+                                           and refChainId not in self.chainNumberDict:
                                             self.chainNumberDict[refChainId] = chainId
                             except IndexError:
                                 pass
@@ -2747,7 +2759,8 @@ class BaseCSParserListener():
                                          if _seqId == seqId and _compId == compId)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, cifCompId, True))
+                                chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
+                                                 seqId, cifCompId, True))
                                 if compId in (cifCompId, origCompId):
                                     self.__authSeqId = 'label_seq_id'
                                     self.__setLocalSeqScheme()
@@ -2756,7 +2769,8 @@ class BaseCSParserListener():
                         else:
                             _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
                             if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
-                                chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, cifCompId, True))
+                                chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
+                                                 seqId, cifCompId, True))
                                 self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
@@ -2958,8 +2972,8 @@ class BaseCSParserListener():
                     if cifCompId is not None:
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_)
                                     in enumerate(zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id']))
-                                    if _seqId_ == seqId
-                                    and _cifCompId_ == cifCompId), ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId),
+                                   ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId))
                     else:
                         idx = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
@@ -3022,7 +3036,8 @@ class BaseCSParserListener():
                                 if comp_id_unmatched_with(ps, cifCompId):
                                     continue
                                 if cifCompId != compId:
-                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id'])
+                                               if _seqId == seqId]
                                     if compId in compIds:
                                         cifCompId = compId
                                         origCompId = next(origCompId for _seqId, _compId, origCompId
@@ -3117,7 +3132,8 @@ class BaseCSParserListener():
                                          if _seqId == seqId and _compId == compId)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, cifCompId, True))
+                                chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
+                                                 seqId, cifCompId, True))
                                 if compId in (cifCompId, origCompId):
                                     self.__authSeqId = 'label_seq_id'
                                     self.__setLocalSeqScheme()
@@ -3126,7 +3142,8 @@ class BaseCSParserListener():
                         else:
                             _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
                             if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
-                                chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, cifCompId, True))
+                                chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
+                                                 seqId, cifCompId, True))
                                 self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
@@ -3274,8 +3291,8 @@ class BaseCSParserListener():
                     if cifCompId is not None:
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_)
                                     in enumerate(zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id']))
-                                    if _seqId_ == seqId
-                                    and _cifCompId_ == cifCompId), ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId),
+                                   ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId))
                     else:
                         idx = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
@@ -3440,8 +3457,8 @@ class BaseCSParserListener():
                     if cifCompId is not None:
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_)
                                     in enumerate(zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id']))
-                                    if _seqId_ == seqId
-                                    and _cifCompId_ == cifCompId), ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId),
+                                   ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId))
                     else:
                         idx = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
@@ -3629,7 +3646,8 @@ class BaseCSParserListener():
                 if len(chainAssign) > 0:
                     chainIds = [ca[0] for ca in chainAssign]
                     multiChain = len(collections.Counter(chainIds).most_common()) > 1
-                ps = next((ps for ps in self.polySeq if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'] == chainId), None)
+                ps = next((ps for ps in self.polySeq
+                           if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'] == chainId), None)
                 if ps is not None:
                     compIds = [_compId for _seqId, _compId
                                in zip(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'], ps['comp_id'])
@@ -3899,8 +3917,8 @@ class BaseCSParserListener():
                                    and cca['n_terminal_atom_flag'] == 'N'
                                    and cca['c_terminal_atom_flag'] == 'N'):
                                 self.f.append(f"[Hydrogen not instantiated] {self.getCurrentAssignment(n=index)}"
-                                              f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
-                                              "Please re-upload the model file.")
+                                              f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated "
+                                              "in the coordinates. Please re-upload the model file.")
                                 return atomId, asis
                         if bondedTo[0][0] == 'O':
                             return 'Ignorable hydroxyl group', asis

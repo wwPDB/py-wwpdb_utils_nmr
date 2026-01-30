@@ -164,11 +164,13 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('ARG', excl_minor_atom=True),
                          ['CB', 'CD', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE', 'HG2', 'HG3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('LYS'),
-                         ['CB', 'CD', 'CE', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'NZ', 'HZ1', 'HZ2', 'HZ3'])
+                         ['CB', 'CD', 'CE', 'CG',
+                          'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'NZ', 'HZ1', 'HZ2', 'HZ3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('LYS', excl_minor_atom=True),
                          ['CB', 'CD', 'CE', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PTR', polypeptide_like=True),
-                         ['CB', 'CD1', 'CD2', 'CE1', 'CE2', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2', 'CG', 'CZ', 'P', 'HO2P', 'HO3P'])
+                         ['CB', 'CD1', 'CD2', 'CE1', 'CE2',
+                          'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2', 'CG', 'CZ', 'P', 'HO2P', 'HO3P'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PTR', excl_minor_atom=True, polypeptide_like=True),
                          ['CB', 'CD1', 'CD2', 'CE1', 'CE2', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('DA'),

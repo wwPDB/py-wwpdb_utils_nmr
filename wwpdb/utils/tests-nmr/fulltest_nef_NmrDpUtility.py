@@ -45,7 +45,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(self.data_dir_path + entry_id + '.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '.cif', type='file')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='report_file_path',
+                              value=self.data_dir_path + entry_id + '-nef-consistency-log.json',
+                              type='file')
         self.utility.setLog(self.data_dir_path + entry_id + '-nef2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + entry_id + '-nef2str.str', type='file')

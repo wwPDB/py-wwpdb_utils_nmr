@@ -501,11 +501,13 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         pass
 
     # Enter a parse tree produced by CharmmMRParser#center_of_mass_constraint.
-    def enterCenter_of_mass_constraint(self, ctx: CharmmMRParser.Center_of_mass_constraintContext):  # pylint: disable=unused-argument
+    def enterCenter_of_mass_constraint(self, ctx: CharmmMRParser.Center_of_mass_constraintContext
+                                       ):  # pylint: disable=unused-argument
         self.cur_subtype = 'geo'
 
     # Exit a parse tree produced by CharmmMRParser#center_of_mass_constraint.
-    def exitCenter_of_mass_constraint(self, ctx: CharmmMRParser.Center_of_mass_constraintContext):  # pylint: disable=unused-argument
+    def exitCenter_of_mass_constraint(self, ctx: CharmmMRParser.Center_of_mass_constraintContext
+                                      ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CharmmMRParser#fix_bond_or_angle_constraint.
@@ -551,11 +553,13 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         pass
 
     # Enter a parse tree produced by CharmmMRParser#distance_matrix_restraint.
-    def enterDistance_matrix_restraint(self, ctx: CharmmMRParser.Distance_matrix_restraintContext):  # pylint: disable=unused-argument
+    def enterDistance_matrix_restraint(self, ctx: CharmmMRParser.Distance_matrix_restraintContext
+                                       ):  # pylint: disable=unused-argument
         self.cur_subtype = 'geo'
 
     # Exit a parse tree produced by CharmmMRParser#distance_matrix_restraint.
-    def exitDistance_matrix_restraint(self, ctx: CharmmMRParser.Distance_matrix_restraintContext):  # pylint: disable=unused-argument
+    def exitDistance_matrix_restraint(self, ctx: CharmmMRParser.Distance_matrix_restraintContext
+                                      ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CharmmMRParser#noe_statement.
@@ -1006,14 +1010,16 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         pass
 
     # Enter a parse tree produced by CharmmMRParser#distance_matrix_statement.
-    def enterDistance_matrix_statement(self, ctx: CharmmMRParser.Distance_matrix_statementContext):  # pylint: disable=unused-argument
+    def enterDistance_matrix_statement(self, ctx: CharmmMRParser.Distance_matrix_statementContext
+                                       ):  # pylint: disable=unused-argument
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#distance_matrix_statement.
-    def exitDistance_matrix_statement(self, ctx: CharmmMRParser.Distance_matrix_statementContext):  # pylint: disable=unused-argument
+    def exitDistance_matrix_statement(self, ctx: CharmmMRParser.Distance_matrix_statementContext
+                                      ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CharmmMRParser#selection.
@@ -1908,7 +1914,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                                             'value': _seqId},
                                                                                            {'name': self.authAtomId, 'type': 'str',
                                                                                             'value': _atomId},
-                                                                                           {'name': self.modelNumName, 'type': 'int',
+                                                                                           {'name': self.modelNumName, 'type': 'int',  # noqa: E501, pylint: disable=line-too-long
                                                                                             'value': self.representativeModelId},
                                                                                            {'name': 'label_alt_id', 'type': 'enum',
                                                                                             'enum': (self.representativeAltId,)}
@@ -2019,9 +2025,12 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         _neighbor =\
                                             self.cR.getDictListWithFilter('atom_site',
                                                                           CARTN_DATA_ITEMS,
-                                                                          [{'name': self.authAsymId, 'type': 'str', 'value': chainId},
-                                                                           {'name': self.authSeqId, 'type': 'int', 'value': seqId},
-                                                                           {'name': self.authAtomId, 'type': 'str', 'value': _atomId},
+                                                                          [{'name': self.authAsymId, 'type': 'str',
+                                                                            'value': chainId},
+                                                                           {'name': self.authSeqId, 'type': 'int',
+                                                                            'value': seqId},
+                                                                           {'name': self.authAtomId, 'type': 'str',
+                                                                            'value': _atomId},
                                                                            {'name': self.modelNumName, 'type': 'int',
                                                                             'value': self.representativeModelId},
                                                                            {'name': 'label_alt_id', 'type': 'enum',

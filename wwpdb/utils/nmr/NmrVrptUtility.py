@@ -325,8 +325,10 @@ def angle_target_values(target_value: Optional[float], target_value_uncertainty:
         upper_bound = upper_linear_limit
 
     if target_value is None:  # target values are not always filled (e.g. AMBER/CYANA dihedral angle restraints)
-        has_valid_lower_linear_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
-        has_valid_upper_linear_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
+        has_valid_lower_linear_limit =\
+            lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
+        has_valid_upper_linear_limit =\
+            upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
 
         try:
 
@@ -350,7 +352,8 @@ def angle_target_values(target_value: Optional[float], target_value_uncertainty:
                     elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
                         target_value_vote_clock += 1
 
-                if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
+                if target_value_vote_aclock + target_value_vote_clock == 0\
+                   or target_value_vote_aclock * target_value_vote_clock != 0:
                     if angle_diff(upper_bound, target_value_aclock) > angle_diff(upper_bound, target_value_clock)\
                        and angle_diff(lower_bound, target_value_aclock) > angle_diff(lower_bound, target_value_clock):
                         return target_value_aclock, lower_bound, upper_bound
@@ -909,7 +912,8 @@ class NmrVrptUtility:
 
                     try:
 
-                        model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                        model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num')\
+                            else 'ndb_model'
 
                         model_ids = self.__cR.getDictListWithFilter('atom_site',
                                                                     [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
@@ -1480,7 +1484,8 @@ class NmrVrptUtility:
                 if has_target_val:
                     data_items.append({'name': 'Target_val', 'type': 'float', 'alt_name': 'target_value'})
                 if has_target_val_uncertainty:
-                    data_items.append({'name': 'Target_val_uncertainty', 'type': 'abs-float', 'alt_name': 'target_value_uncertainty'})
+                    data_items.append({'name': 'Target_val_uncertainty', 'type': 'abs-float',
+                                       'alt_name': 'target_value_uncertainty'})
                 if has_lower_linear_limit:
                     data_items.append({'name': 'Lower_linear_limit', 'type': 'float', 'alt_name': 'lower_linear_limit'})
                 if has_upper_linear_limit:
@@ -1866,7 +1871,8 @@ class NmrVrptUtility:
                 list_id = int(sf_tag[0]['ID'])
 
                 try:
-                    # e.g. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1, RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
+                    # e.g. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1,
+                    # RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
                     rdc_type = sf_tag[0]['Details']
                     if rdc_type in (None, '', '.', '?', 'null'):
                         rdc_type = 'UNNAMED'
@@ -2960,7 +2966,8 @@ class NmrVrptUtility:
                 self.__log.write("Dihedral angle analysis failed due to data error in the dihedral angle restraints. "
                                  f"{self.__dihedRestDict.values()}\n")
                 self.__results['error_message_angle'] =\
-                    'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
+                    'Dihedral angle analysis failed due to data error in the dihedral angle restraints, '\
+                    'possibly missing target value'
                 self.__results['angle'] = False
                 return True
 

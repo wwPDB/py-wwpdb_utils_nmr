@@ -415,11 +415,13 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             return None, None, None, None
 
     # Enter a parse tree produced by BiosymMRParser#dihedral_angle_restraints.
-    def enterDihedral_angle_restraints(self, ctx: BiosymMRParser.Dihedral_angle_restraintsContext):  # pylint: disable=unused-argument
+    def enterDihedral_angle_restraints(self, ctx: BiosymMRParser.Dihedral_angle_restraintsContext
+                                       ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dihed'
 
     # Exit a parse tree produced by BiosymMRParser#dihedral_angle_restraints.
-    def exitDihedral_angle_restraints(self, ctx: BiosymMRParser.Dihedral_angle_restraintsContext):  # pylint: disable=unused-argument
+    def exitDihedral_angle_restraints(self, ctx: BiosymMRParser.Dihedral_angle_restraintsContext
+                                      ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by BiosymMRParser#dihedral_angle_restraint.
@@ -654,13 +656,15 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         pass
 
     # Enter a parse tree produced by BiosymMRParser#dihedral_angle_constraint.
-    def enterDihedral_angle_constraint(self, ctx: BiosymMRParser.Dihedral_angle_constraintContext):  # pylint: disable=unused-argument
+    def enterDihedral_angle_constraint(self, ctx: BiosymMRParser.Dihedral_angle_constraintContext
+                                       ):  # pylint: disable=unused-argument
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by BiosymMRParser#dihedral_angle_constraint.
-    def exitDihedral_angle_constraint(self, ctx: BiosymMRParser.Dihedral_angle_constraintContext):  # pylint: disable=unused-argument
+    def exitDihedral_angle_constraint(self, ctx: BiosymMRParser.Dihedral_angle_constraintContext
+                                      ):  # pylint: disable=unused-argument
 
         try:
 

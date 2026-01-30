@@ -1501,7 +1501,8 @@ class BaseStackedMRParserListener():
 
                         if len(chain_id_mapping) == self.__lenPolySeq:
 
-                            if not any('identical_chain_id' in ps for ps in self.polySeq if ps['auth_chain_id'] in chain_id_mapping):
+                            if not any('identical_chain_id' in ps for ps in self.polySeq
+                                       if ps['auth_chain_id'] in chain_id_mapping):
                                 for ps in self.__polySeqRst:
                                     if ps['chain_id'] in chain_id_mapping:
                                         ps['chain_id'] = chain_id_mapping[ps['chain_id']]
@@ -1687,7 +1688,8 @@ class BaseStackedMRParserListener():
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, self.__polySeqRstFailed)
 
                             # extend restraint polymer sequence from single match (2joa)
-                            if len(seqAlignFailed) == 0 and len(self.__polySeqRstFailed) > 0 and len(self.__polySeqRstFailedAmbig) > 0:
+                            if len(seqAlignFailed) == 0 and len(self.__polySeqRstFailed) > 0\
+                               and len(self.__polySeqRstFailedAmbig) > 0:
                                 for ps in self.__polySeqRstFailed:
                                     chainId = ps['chain_id']
                                     _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
@@ -1899,7 +1901,8 @@ class BaseStackedMRParserListener():
                                     for seqId, atoms in zip(item['seq_id'], item['atom_id']):
                                         compId = ps['comp_id'][ps['seq_id'].index(seqId)]
                                         for atom in atoms:
-                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atom, leave_unmatched=True)
+                                            _, _, details =\
+                                                self.nefT.get_valid_star_atom_in_xplor(compId, atom, leave_unmatched=True)
                                             if details is not None:
                                                 valid = False
                                                 break
@@ -2045,9 +2048,10 @@ class BaseStackedMRParserListener():
                                     offset = None
                                     for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
                                         if seq_id is not None and seq_id not in seq_id_mapping:
-                                            _seq_id = next((_seq_id for _seq_id, _comp_id
-                                                            in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
-                                                            if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
+                                            _seq_id =\
+                                                next((_seq_id for _seq_id, _comp_id
+                                                      in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
+                                                      if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
                                             if _seq_id is not None:
                                                 offset = seq_id - _seq_id
                                                 break
@@ -2110,7 +2114,8 @@ class BaseStackedMRParserListener():
                                     if 'branched_remap' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['branched_remap'] = branchedMapping
 
-            insuff_dist_atom_sel_warnings = [f for f in self.f if '[Insufficient atom selection]' in f and 'distance restraints' in f]
+            insuff_dist_atom_sel_warnings = [f for f in self.f
+                                             if '[Insufficient atom selection]' in f and 'distance restraints' in f]
 
             if 'alt_global_sequence_offset' in self.reasonsForReParsing:
                 if len(insuff_dist_atom_sel_warnings) < 20\
@@ -2590,7 +2595,8 @@ class BaseStackedMRParserListener():
                                                   if failed_ps['chain_id'] == ps['auth_chain_id']), None)
                                 if failed_ps is None:
                                     continue
-                                if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
+                                if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id']
+                                       for seq_id in failed_ps['seq_id']):
                                     seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'],
                                                                    'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                         elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
@@ -2897,7 +2903,8 @@ class BaseStackedMRParserListener():
 
     def validateAngleRange(self, weight: float, misc_dict: dict, target_value: Optional[float],
                            lower_limit: Optional[float], upper_limit: Optional[float],
-                           lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
+                           lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
+                           ) -> Optional[dict]:
         """ Validate angle value range (SCHRODINGER specific).
         """
 
@@ -4402,7 +4409,7 @@ class BaseStackedMRParserListener():
 
         self.factor = self.doIntersectionFactor_expressions(self.factor, atomSelection)
 
-    def doIntersectionFactor_expressions(self, _factor: dict, atomSelection: Optional[List[dict]] = None  # pylint: disable=no-self-use
+    def doIntersectionFactor_expressions(self, _factor: dict, atomSelection: Optional[List[dict]] = None  # noqa: E501, pylint: disable=no-self-use,line-too-long
                                          ) -> dict:
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
@@ -4849,7 +4856,8 @@ class BaseStackedMRParserListener():
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(ps['comp_id'][idx])
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU)
+                                               for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                                 if set(_factor['comp_id']) != set(_compIdList):
@@ -4903,7 +4911,8 @@ class BaseStackedMRParserListener():
                         for cca in self.ccU.lastAtomDictList:
                             realTypeSymbol = cca['type_symbol']
                             if (lenTypeSymbols == 1 and re.match(typeSymBols_ex, realTypeSymbol))\
-                               or (lenTypeSymbols == 2 and _factor['type_symbols'][0] <= realTypeSymbol <= _factor['type_symbols'][1]):
+                               or (lenTypeSymbols == 2
+                                   and _factor['type_symbols'][0] <= realTypeSymbol <= _factor['type_symbols'][1]):
                                 _typeSymbolSelect.add(realTypeSymbol)
                 _factor['type_symbol'] = list(_typeSymbolSelect)
                 if len(_factor['type_symbol']) == 0:
@@ -5070,7 +5079,8 @@ class BaseStackedMRParserListener():
                                 continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU)
+                                               for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                                 if set(_factor['comp_id']) != set(_compIdList):
@@ -5134,7 +5144,8 @@ class BaseStackedMRParserListener():
                         if details is not None:
                             atomIds, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                         if details is not None and atomId[-1] in ('%', '*', '#'):
-                            _atomIds, _, _details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                            _atomIds, _, _details =\
+                                self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                             if _details is None and len(_atomIds) > 0:  # 5z4f: GLU:HG1# -> GLU:HG3
                                 if nucleotide and atomId[0] in PROTON_BEGIN_CODE and len(atomId) > 1 and len(_atomIds[0]) > 1\
                                    and atomId[1].isdigit() and _atomIds[0][1].isdigit() and atomId[1] != _atomIds[0][0]:
@@ -5155,7 +5166,8 @@ class BaseStackedMRParserListener():
                         tmpAtomId_ex = toNefEx(toRegEx(tmpAtomId))
                     elif lenAtomIds == 2:
                         atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
-                        atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
+                        atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList,
+                                                         ccU=self.ccU, unambig=unambig)
                     _atomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList if cca['leaving_atom_flag'] != 'Y']
                     if lenAtomIds == 1 and nucleotide:
                         _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(atomId_ex, _atomId_)]
@@ -5267,7 +5279,8 @@ class BaseStackedMRParserListener():
                                             continue
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                     atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
-                                                                     realSeqId, realCompId, tmpAtomId, coordAtomSite, ignoreSeqId=True)
+                                                                     realSeqId, realCompId, tmpAtomId, coordAtomSite,
+                                                                     ignoreSeqId=True)
                                     atomIds, _, details = self.nefT.get_valid_star_atom(realCompId, atomId, leave_unmatched=True)
                                     if details is None:
                                         _atomIdSelect |= set(atomIds)
@@ -5304,7 +5317,8 @@ class BaseStackedMRParserListener():
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU)
+                                               for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                                 if set(_factor['comp_id']) != set(_compIdList):
@@ -5356,7 +5370,8 @@ class BaseStackedMRParserListener():
                         refAtomIdList = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
                         tmpAtomId = _factor['atom_ids'][0].upper()
                         if lenAtomIds == 1:
-                            atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.ccU, unambig=unambig)
+                            atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList,
+                                                                      ccU=self.ccU, unambig=unambig)
                             if atomId[-1] in ('%', '*', '#'):
                                 if atomId[0] == 'H' and len(atomId) > 2:
                                     if atomId[1] != 'M':
@@ -5458,7 +5473,8 @@ class BaseStackedMRParserListener():
                             realCompId = self.getRealCompId(np['comp_id'][idx])
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU)
+                                               for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                                 if set(_factor['comp_id']) != set(_compIdList):
@@ -5497,7 +5513,8 @@ class BaseStackedMRParserListener():
                 else:
                     for np in self.nonPolySeq:
                         if nonPolyCompId['seq_id'] == np['auth_seq_id'][0]:
-                            _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                            _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], np['seq_id'][0],
+                                                                       cifCheck=cifCheck)
                             if coordAtomSite is not None:
                                 if coordAtomSite['comp_id'] == nonPolyCompId['comp_id']:
                                     for realAtomId in coordAtomSite['atom_id']:
@@ -5541,7 +5558,8 @@ class BaseStackedMRParserListener():
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.ccU)
+                                               for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                                 if set(_factor['comp_id']) != set(_compIdList):
@@ -5604,7 +5622,8 @@ class BaseStackedMRParserListener():
                                 _atomIdSelect |= set(coordAtomSite['atom_id'])  # D_1300057999
 
                 for nonPolyCompId in _nonPolyCompIdSelect:
-                    _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck=cifCheck)
+                    _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'],
+                                                               cifCheck=cifCheck)
                     if coordAtomSite is not None:
                         if coordAtomSite['comp_id'] == nonPolyCompId['comp_id']:
                             for realAtomId in coordAtomSite['atom_id']:
@@ -6409,7 +6428,8 @@ class BaseStackedMRParserListener():
                                     elif self.preferAuthSeq and atomSpecified:
                                         may_exist = False
                                         if self.ccU.updateChemCompDict(compId):
-                                            cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId), None)
+                                            cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                        if cca['atom_id'] == _atomId), None)
                                             if cca is not None and cca['leaving_atom_flag'] != 'Y':
                                                 may_exist = True
                                         _seqKey, _coordAtomSite =\
@@ -6422,7 +6442,8 @@ class BaseStackedMRParserListener():
                                             if _atomId in _coordAtomSite['atom_id']\
                                                or (has_nx_local and not has_nx_anchor):
                                                 if (self.cur_subtype != 'dist' and not self.in_noe)\
-                                                   or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
+                                                   or (has_nx_local and not has_nx_anchor
+                                                       and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
                                                         pass
                                                     else:
@@ -6443,7 +6464,8 @@ class BaseStackedMRParserListener():
                                                 _atomId = f'{_atomId[-1]}HN' if f'{_atomId[-1]}HN' in _coordAtomSite['atom_id']\
                                                     else f'H{_atomId[-1]}'
                                                 if (self.cur_subtype != 'dist' and not self.in_noe)\
-                                                   or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
+                                                   or (has_nx_local and not has_nx_anchor
+                                                       and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
                                                         pass
                                                     else:
@@ -6460,7 +6482,8 @@ class BaseStackedMRParserListener():
                                                             update_label_seq_scheme()
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 if (self.cur_subtype != 'dist' and not self.in_noe)\
-                                                   or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
+                                                   or (has_nx_local and not has_nx_anchor
+                                                       and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
                                                         pass
                                                     else:
@@ -6529,7 +6552,8 @@ class BaseStackedMRParserListener():
                                     if self.__lenAtomSelectionSet == 0:
                                         may_exist = False
                                         if self.ccU.updateChemCompDict(compId):
-                                            cca = next((cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == _atomId), None)
+                                            cca = next((cca for cca in self.ccU.lastAtomDictList
+                                                        if cca['atom_id'] == _atomId), None)
                                             if cca is not None and cca['leaving_atom_flag'] != 'Y':
                                                 may_exist = True
                                         _seqKey, _coordAtomSite =\
@@ -7300,7 +7324,8 @@ class BaseStackedMRParserListener():
                                         if len(compIds) == 1:
                                             updatePolySeqRst(self.__polySeqRstFailed, chainId, _factor['seq_id'][0], compIds[0])
                                         else:
-                                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, _factor['seq_id'][0], compIds)
+                                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig,
+                                                                  chainId, _factor['seq_id'][0], compIds)
                                         if has_identical_chain_id(chainId):
                                             break
                                 for chainId in _factor['chain_id']:
@@ -7309,7 +7334,8 @@ class BaseStackedMRParserListener():
                                         break
 
                         if ligands == 0 and not self.has_nx and not self.has_gd and not self.has_la\
-                           and (self.monoPolymer or all('identical_chain_id' in ps for ps in self.polySeq) or not chain_not_specified):
+                           and (self.monoPolymer or all('identical_chain_id' in ps for ps in self.polySeq)
+                                or not chain_not_specified):
                             if _atomId is not None and _atomId.startswith('X')\
                                and _atomId not in ELEMENT_SYMBOLS:
                                 pass  # 8bxj
@@ -7375,8 +7401,9 @@ class BaseStackedMRParserListener():
                                                              else 'test_chain_id'] == _chainId), None)
                                         if item is not None and item['conflict'] == 0\
                                            and item['unmapped'] > 0 and 'unmapped_sequence' in item:
-                                            refCompId = next((u['ref_comp_id'] for u in item['unmapped_sequence']
-                                                              if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId + nmr_offset), None)
+                                            refCompId =\
+                                                next((u['ref_comp_id'] for u in item['unmapped_sequence']
+                                                      if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId + nmr_offset), None)
                                             if refCompId is not None:
                                                 hint = f" The residue '{_seqId}:{refCompId}' is not present in polymer sequence "\
                                                     f"of chain {_chainId} of the coordinates. "\
@@ -7476,7 +7503,8 @@ class BaseStackedMRParserListener():
                                         hint += "Alternatively, try to upload the genuine coordinate file "\
                                             "generated by structure determination software without editing."
                                 self.f.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
-                                              f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.{hint}")
+                                              f"The {clauseName} has no effect for a factor "
+                                              f"{self.getReadableFactor(__factor)}.{hint}")
             else:
                 self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
                               f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}. "
@@ -7754,7 +7782,8 @@ class BaseStackedMRParserListener():
         elif _score < 0:
             __chainId = min(stats, key=lambda key: stats[key])[0]
             __score = stats[__chainId]
-            if _score == __score and _chainId != __chainId and altChainId in self.reasonsForReParsing['segment_id_mismatch']:  # 2la5
+            # 2la5
+            if _score == __score and _chainId != __chainId and altChainId in self.reasonsForReParsing['segment_id_mismatch']:
                 del self.reasonsForReParsing['segment_id_mismatch'][altChainId]  # 2lzs
 
     @functools.lru_cache(maxsize=2048)

@@ -1032,7 +1032,9 @@ class NmrDpFirstAid:
                             srcPath = f'{g[0]}.V{int(g[1]) + 1}'
 
                     self.__reg.star_data[file_list_id].write_to_file(srcPath,
-                                                                     show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+                                                                     show_comments=False,
+                                                                     skip_empty_loops=True,
+                                                                     skip_empty_tags=False)
 
         else:
 
@@ -1821,7 +1823,8 @@ class NmrDpFirstAid:
             if file_list_id < len(self.__reg.sf_name_corrections) and sf_framecode in self.__reg.sf_name_corrections[file_list_id]:
 
                 try:
-                    return self.__reg.star_data[file_list_id].get_saveframe_by_name(self.__reg.sf_name_corrections[file_list_id][sf_framecode])  # noqa: E501, pylint:disable=line-too-long
+                    return self.__reg.star_data[file_list_id].get_saveframe_by_name(
+                        self.__reg.sf_name_corrections[file_list_id][sf_framecode])
                 except KeyError:
                     return None
 

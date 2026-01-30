@@ -218,7 +218,9 @@ class TestNmrDpUtility(unittest.TestCase):
     @unittest.skipIf(skipsome is True, "Skip some tests")
     def test_nmr_nef_consistency_check_daother_5650(self):
         self.utility.setSource(os.path.join(self.data_dir_path, os.pardir, "NMR-VTF", "PDBStat_it2", "2k2e/2k2e.nef"))
-        self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "2k2e.cif-only2models"), type="file")
+        self.utility.addInput(name="coordinate_file_path",
+                              value=os.path.join(self.data_dir_path, "2k2e.cif-only2models"),
+                              type="file")
         self.utility.addInput(name="resolve_conflict", value=True, type="param")
         self.utility.addInput(name="check_mandatory_tag", value=True, type="param")
         self.utility.setLog(os.path.join(TESTOUTPUT, "2k2e.nef-only2models-consistency-log.json"))
@@ -250,7 +252,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name="report_file_path", value=consistJsonPath, type="file")
         self.utility.setLog(os.path.join(TESTOUTPUT, "2l9r-nef2str-str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "2l9r-nef2str-str.str"))
-        self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "2l9r-nef2str-str-nef2str.str"), type="file")
+        self.utility.addOutput(name="nmr-star_file_path",
+                               value=os.path.join(TESTOUTPUT, "2l9r-nef2str-str-nef2str.str"),
+                               type="file")
         self.utility.addOutput(name="report_file_path",
                                value=os.path.join(TESTOUTPUT, "2l9r-nef2str-str-str-deposit-log.json"),
                                type="file")
@@ -394,7 +398,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name="report_file_path", value=jsonLogPath, type="file")
         self.utility.setLog(os.path.join(TESTOUTPUT, "2l9rnonstandard-nef2str-deposit-log.json"))
         self.utility.setDestination(os.path.join(TESTOUTPUT, "2l9rnonstandard-next.nef"))
-        self.utility.addOutput(name="nmr-star_file_path", value=os.path.join(TESTOUTPUT, "2l9rnonstandard-nef2str.str"), type="file")
+        self.utility.addOutput(name="nmr-star_file_path",
+                               value=os.path.join(TESTOUTPUT, "2l9rnonstandard-nef2str.str"),
+                               type="file")
         self.utility.addOutput(name="report_file_path",
                                value=os.path.join(TESTOUTPUT, "2l9rnonstandard-nef2str-str-deposit-log.json"),
                                type="file")

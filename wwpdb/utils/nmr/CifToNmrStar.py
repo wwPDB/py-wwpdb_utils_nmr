@@ -169,8 +169,9 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
                 return get_first_sf_tag(parent_sf, 'Sf_framecode')
             except IndexError:
                 try:
-                    parent_sf = strData.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
-                                                                        if isinstance(parent_list_id, str) else str(parent_list_id))[0]
+                    parent_sf =\
+                        strData.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
+                                                                if isinstance(parent_list_id, str) else str(parent_list_id))[0]
                     return get_first_sf_tag(parent_sf, 'Sf_framecode')
                 except IndexError:
                     pass
@@ -232,7 +233,7 @@ class CifToNmrStar:
         self.__log = log
 
         # directory
-        self.schema_dir = os.path.dirname(__file__) + '/nmr-star_schema/'
+        self.schema_dir = os.path.join(os.path.dirname(__file__), 'nmr-star_schema')
 
         def load_schema_from_pickle(file_name):
             """ Load NMR-STAR schema from pickle file.
@@ -246,13 +247,13 @@ class CifToNmrStar:
             return None
 
         # NMR-STAR schema
-        self.schema = load_schema_from_pickle(self.schema_dir + 'schema.pkl')
+        self.schema = load_schema_from_pickle(os.path.join(self.schema_dir, 'schema.pkl'))
 
         # NMR-STAR schema order
-        # self.schema_order = load_schema_from_pickle(self.schema_dir + 'schema_order.pkl')
+        # self.schema_order = load_schema_from_pickle(os.path.join(self.schema_dir, 'schema_order.pkl'))
 
         # NMR-STAR category order
-        self.category_order = load_schema_from_pickle(self.schema_dir + 'category_order.pkl')
+        self.category_order = load_schema_from_pickle(os.path.join(self.schema_dir, 'category_order.pkl'))
 
         if self.schema is None:
             schema = pynmrstar.Schema()  # network latency occurs if pickle resource files are not available
@@ -283,28 +284,28 @@ class CifToNmrStar:
         schema = pynmrstar.Schema()  # retrieve the latest schema via internet access
 
         # print(schema.headers)
-        with open(self.schema_dir + 'headers.txt', 'w') as ofh:
+        with open(os.path.join(self.schema_dir, 'headers.txt'), 'w') as ofh:
             for header in schema.headers:
                 ofh.write(header + '\n')
         self.__log.write('headers.txt: Done.\n')
 
         # print(schema.schema)
-        write_schema_as_pickle(schema.schema, self.schema_dir + 'schema.pkl')
+        write_schema_as_pickle(schema.schema, os.path.join(self.schema_dir, 'schema.pkl'))
         self.__log.write('schema.pkl: Done.\n')
 
         # print(schema.schema_order)
-        write_schema_as_pickle(schema.schema_order, self.schema_dir + 'schema_order.pkl')
+        write_schema_as_pickle(schema.schema_order, os.path.join(self.schema_dir, 'schema_order.pkl'))
         self.__log.write('schema_order.pkl: Done.\n')
 
         # print(schema.category_order)
-        write_schema_as_pickle(schema.category_order, self.schema_dir + 'category_order.pkl')
+        write_schema_as_pickle(schema.category_order, os.path.join(self.schema_dir, 'category_order.pkl'))
         self.__log.write('category_order.pkl: Done.\n')
 
         # print(schema.data_types)
-        write_schema_as_pickle(schema.data_types, self.schema_dir + 'data_types.pkl')
+        write_schema_as_pickle(schema.data_types, os.path.join(self.schema_dir, 'data_types.pkl'))
         self.__log.write('data_types.pkl: Done.\n')
 
-        with open(self.schema_dir + 'version.txt', 'w') as ofh:
+        with open(os.path.join(self.schema_dir, 'version.txt'), 'w') as ofh:
             ofh.write(schema.version)
         self.__log.write(f"version: {schema.version}\n")
 
@@ -653,7 +654,8 @@ class CifToNmrStar:
             if sf is not None:
                 strData.add_saveframe(sf)
 
-            if len(strData.frame_list) == 0:  # prevent to generate empty file due to unsupported NEF saveframe/loops (DAOTHER-10399)
+            # prevent to generate empty file due to unsupported NEF saveframe/loops (DAOTHER-10399)
+            if len(strData.frame_list) == 0:
                 return False
 
             retrieve_symbolic_labels(strData)
@@ -994,7 +996,8 @@ class CifToNmrStar:
                 if sf.category is None:
                     category_order = float('infinity')
                 else:
-                    category_order = len(self.category_order_nef) + abs(int(hashlib.sha1(str(sf.category).encode()).hexdigest(), 16))
+                    category_order = len(self.category_order_nef)\
+                        + abs(int(hashlib.sha1(str(sf.category).encode()).hexdigest(), 16))
 
             return category_order
 

@@ -203,7 +203,8 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.chemShifts += 1
 
     # Enter a parse tree produced by NmrPipeCSParser#chemical_shifts_sw_segid.
-    def enterChemical_shifts_sw_segid(self, ctx: NmrPipeCSParser.Chemical_shifts_sw_segidContext):  # pylint: disable=unused-argument
+    def enterChemical_shifts_sw_segid(self, ctx: NmrPipeCSParser.Chemical_shifts_sw_segidContext
+                                      ):  # pylint: disable=unused-argument
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -279,7 +280,8 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.chemShifts += 1
 
     # Enter a parse tree produced by NmrPipeCSParser#chemical_shifts_ew_segid.
-    def enterChemical_shifts_ew_segid(self, ctx: NmrPipeCSParser.Chemical_shifts_ew_segidContext):  # pylint: disable=unused-argument
+    def enterChemical_shifts_ew_segid(self, ctx: NmrPipeCSParser.Chemical_shifts_ew_segidContext
+                                      ):  # pylint: disable=unused-argument
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 

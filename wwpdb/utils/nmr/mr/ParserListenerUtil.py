@@ -314,7 +314,8 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
             elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
                     and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 fir segment identifier via DT:H5
                 return f'H2{atomId[-1]}'
-            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
+                    and atomId[-1] in ('1', '2'):
                 return f'H4{atomId[-1]}'
             elif refCompId == 'U' and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
                 return 'H3'
@@ -997,7 +998,8 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
             elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
                     and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 fir segment identifier via DT:H5
                 return f'H2{atomId[-1]}'
-            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
+                    and atomId[-1] in ('1', '2'):
                 return f'H4{atomId[-1]}'
             elif refCompId == 'U' and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
                 return 'H3'
@@ -2409,7 +2411,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id',
                                    'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
+                                  {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id',
+                                   'default-from': 'mon_id'}
                                   ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id',
                                    'default': REPRESENTATIVE_ASYM_ID},
@@ -2418,20 +2421,23 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id',
                                    'default': REPRESENTATIVE_ASYM_ID},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
+                                  {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id',
+                                   'default-from': 'mon_id'}
                                   ],
                      'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
+                                  {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id',
+                                   'default-from': 'mon_id'}
                                   ],
                      'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id',
                                      'default': REPRESENTATIVE_ASYM_ID},
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                    {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
+                                    {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id',
+                                     'default-from': 'auth_seq_id'},
                                     {'name': 'auth_comp_id', 'type': 'int', 'alt_name': 'auth_comp_id'},
                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}
                                     ],
@@ -2446,7 +2452,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                       'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                     {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
+                                     {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id',
+                                      'default-from': 'auth_seq_id'},
                                      {'name': 'parent_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
                                      {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}]
                      }
@@ -3094,7 +3101,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                             if seqKey not in splitLigand:
                                                 splitLigand[seqKey] =\
                                                     [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
-                                            splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
+                                            splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId,
+                                                                        'atom_ids': []})
             if branched is not None and len(branched) > 0:
                 for br in branched:
                     if 'alt_comp_id' in br and 'alt_auth_seq_id' in br:
@@ -3109,7 +3117,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                             if seqKey not in splitLigand:
                                                 splitLigand[seqKey] =\
                                                     [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
-                                            splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
+                                            splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId,
+                                                                        'atom_ids': []})
 
         contentSubtype = 'mod_residue'
 
@@ -3719,10 +3728,12 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                      {'name': 'auth_asym_id', 'type': 'str', 'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'auth_seq_id', 'type': 'int'},
-                                     {'name': 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id',
+                                     {'name':
+                                      'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id',
                                       'type': 'int', 'alt_name': 'alt_seq_id'},
                                      {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                                     {'name': 'pdbx_auth_comp_id' if cR.hasItem('atom_site', 'pdbx_auth_comp_id') else 'auth_comp_id',
+                                     {'name':
+                                      'pdbx_auth_comp_id' if cR.hasItem('atom_site', 'pdbx_auth_comp_id') else 'auth_comp_id',
                                       'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'label_comp_id'},
                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'alt_comp_id',
                                       'default-from': 'label_comp_id'},
@@ -5858,7 +5869,8 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
                 close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
                                                          [{'name': 'dist', 'type': 'float'}
                                                           ],
-                                                         [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                         [{'name': 'PDB_model_num', 'type': 'int',
+                                                           'value': representativeModelId},
                                                           {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId1},
                                                           {'name': 'auth_seq_id_1', 'type': 'int', 'value': authSeqId1},
                                                           {'name': 'auth_atom_id_1', 'type': 'str', 'value': authAtomId1},
@@ -5871,7 +5883,8 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
                     close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
                                                              [{'name': 'dist', 'type': 'float'}
                                                               ],
-                                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                             [{'name': 'PDB_model_num', 'type': 'int',
+                                                               'value': representativeModelId},
                                                               {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId2},
                                                               {'name': 'auth_seq_id_1', 'type': 'int', 'value': authSeqId2},
                                                               {'name': 'auth_atom_id_1', 'type': 'str', 'value': authAtomId2},
@@ -6697,7 +6710,8 @@ def getRow(mrSubtype: str, id: int, indexId: int,
     has_ins_code = authToInsCode is not None and contentSubtype in NMR_STAR_LP_DATA_ITEMS_INS_CODE
 
     key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
-    data_size = len(NMR_STAR_LP_DATA_ITEMS_INS_CODE[contentSubtype]) if has_ins_code else len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS_INS_CODE[contentSubtype]) if has_ins_code\
+        else len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
 
     float_row_idx = []
 
@@ -7307,7 +7321,8 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         if atom3 is not None:
             if star_atom3 is not None:
                 row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
-                    star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
+                    star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], \
+                    star_atom3['comp_id'], star_atom3['atom_id']
             row[_key_size + 12], row[_key_size + 13], row[_key_size + 14], row[_key_size + 15] =\
                 atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
             if ambig_code3 is not None:
@@ -7327,7 +7342,8 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         if atom4 is not None:
             if star_atom4 is not None:
                 row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
-                    star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
+                    star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], \
+                    star_atom4['comp_id'], star_atom4['atom_id']
             row[_key_size + 12], row[_key_size + 13], row[_key_size + 14], row[_key_size + 15] =\
                 atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
             if ambig_code4 is not None:
@@ -7785,7 +7801,8 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
     has_ins_code = authToInsCode is not None and contentSubtype in NMR_STAR_LP_DATA_ITEMS_INS_CODE
 
     key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
-    data_size = len(NMR_STAR_LP_DATA_ITEMS_INS_CODE[contentSubtype]) if has_ins_code else len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS_INS_CODE[contentSubtype]) if has_ins_code\
+        else len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
 
     float_row_idx = []
 
@@ -9390,7 +9407,8 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                 if atomId[0] in PROTON_BEGIN_CODE:
                     bondedTo = ccU.getBondedAtoms(compId, atomId)
                     if len(bondedTo) > 0:
-                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca['leaving_atom_flag'] != 'Y':
+                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']\
+                           and cca['leaving_atom_flag'] != 'Y':
                             return f"[Hydrogen not instantiated] "\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file."

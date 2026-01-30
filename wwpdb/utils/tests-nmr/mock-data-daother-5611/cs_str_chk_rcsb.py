@@ -66,7 +66,9 @@ class TestNmrDpUtility(unittest.TestCase):
         if entry_id not in self.alt_model_file:
             self.nmr_dp_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.model_file[entry_id], type='file')
         else:
-            self.nmr_dp_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.alt_model_file[entry_id], type='file')
+            self.nmr_dp_util.addInput(name='coordinate_file_path',
+                                      value=entry_dir_path + self.alt_model_file[entry_id],
+                                      type='file')
         self.nmr_dp_util.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.nmr_dp_util.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.nmr_dp_util.addInput(name='resolve_conflict', value=True, type='param')

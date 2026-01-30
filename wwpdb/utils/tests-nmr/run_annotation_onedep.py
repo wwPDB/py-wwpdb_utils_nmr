@@ -111,7 +111,8 @@ def has_cs_loop(file_path: str) -> bool:
 
 def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
     """ Return whether input file is combined NMR data file.
-        @return: Whether input file is combined NMR data file, dictionary of list of associated constraint file names for each format
+        @return: Whether input file is combined NMR data file,
+                 dictionary of list of associated constraint file names for each format
     """
 
     try:
@@ -992,7 +993,8 @@ class gen_auth_view_onedep:
         if len(self.__ar_file_path) > 0:
             ar_path_list = []
             for ar_file_path, ar_file_type in zip(self.__ar_file_path, self.__ar_file_type):
-                if original_file_name is not None and ar_file_type in original_file_name and len(original_file_name[ar_file_type]) > 0:
+                if original_file_name is not None and ar_file_type in original_file_name\
+                   and len(original_file_name[ar_file_type]) > 0:
                     ar_path_list.append({'file_name': ar_file_path, 'file_type': ar_file_type,
                                          'original_file_name': original_file_name[ar_file_type].pop(0)})
                 else:

@@ -1081,7 +1081,9 @@ class GromacsMRParserListener(ParseTreeListener):
                                                        atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
-                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                       self.__representativeModelId,
+                                                       self.__representativeAltId,
+                                                       self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
                     angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
@@ -1372,7 +1374,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
-                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                       and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                         "Found an RDC vector over multiple covalent bonds; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "

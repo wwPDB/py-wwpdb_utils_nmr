@@ -276,7 +276,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     valid = False
                                     break
                             if valid:
-                                self.__cur_contrib[contrib_id][spin_system_id][0]['atom_id'] = self.extractCommonAtomName(spin_system)
+                                self.__cur_contrib[contrib_id][spin_system_id][0]['atom_id'] =\
+                                    self.extractCommonAtomName(spin_system)
 
                     if not valid or len(contrib) != 2:
                         del_contrib_id.append(contrib_id)
@@ -379,9 +380,10 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 continue
                             if mid_code == '|':
                                 try:
-                                    seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                       in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                       if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                    seq_id_mapping[test_seq_id] =\
+                                        next(auth_seq_id for auth_seq_id, seq_id
+                                             in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                             if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                     if offset is None:
                                         offset = seq_id_mapping[test_seq_id] - test_seq_id
                                 except StopIteration:
@@ -389,9 +391,10 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             elif mid_code == ' ' and test_seq_id in poly_seq_rst['seq_id']:
                                 idx = poly_seq_rst['seq_id'].index(test_seq_id)
                                 if poly_seq_rst['comp_id'][idx] == '.' and poly_seq_rst['auth_comp_id'][idx] not in EMPTY_VALUE:
-                                    seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                       in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                       if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                    seq_id_mapping[test_seq_id] =\
+                                        next(auth_seq_id for auth_seq_id, seq_id
+                                             in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                             if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
 
                         if offset is not None and all(v - k == offset for k, v in seq_id_mapping.items()):
                             poly_seq_rst['auth_seq_id'] = [seq_id + offset for seq_id in poly_seq_rst['seq_id']]
@@ -618,11 +621,15 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             seqId1 = ps['auth_seq_id'][ps['seq_id'].index(seqId1)]
 
                 if compId1 is not None:
-                    chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])\
-                        if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
+                    chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                 atomId1.split('|', 1)[0])\
+                        if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1,
+                                                                                     atomId1.split('|', 1)[0])
                 else:
-                    chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])\
-                        if chainId1 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1.split('|', 1)[0])
+                    chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1,
+                                                                                           atomId1.split('|', 1)[0])\
+                        if chainId1 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId1,
+                                                                                                  atomId1.split('|', 1)[0])
 
                 chainId2 = atom_pair[1][0]['chain_id'] if 'chain_id' in atom_pair[1][0] else None
                 seqId2 = atom_pair[1][0]['seq_id']
@@ -639,11 +646,15 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             seqId2 = ps['auth_seq_id'][ps['seq_id'].index(seqId2)]
 
                 if compId2 is not None:
-                    chainAssign2, _ = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])\
-                        if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+                    chainAssign2, _ = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                 atomId2.split('|', 1)[0])\
+                        if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2,
+                                                                                     atomId2.split('|', 1)[0])
                 else:
-                    chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])\
-                        if chainId2 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2.split('|', 1)[0])
+                    chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2,
+                                                                                           atomId2.split('|', 1)[0])\
+                        if chainId2 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId2,
+                                                                                                  atomId2.split('|', 1)[0])
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     continue
@@ -688,7 +699,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if self.__restraint_key is not None and 'inter' in self.__restraint_key:
                 if self.exptlMethod == 'SOLID-STATE NMR':
-                    ps = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chainId1 and 'identical_auth_chain_id' in ps), None)
+                    ps = next((ps for ps in self.polySeq
+                               if ps['auth_chain_id'] == chainId1 and 'identical_auth_chain_id' in ps), None)
                     if ps is not None:
                         chain_id_set = [chainId1]
                         chain_id_set.extend(ps['identical_auth_chain_id'])
@@ -703,9 +715,12 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 _head =\
                                     self.cR.getDictListWithFilter('atom_site',
                                                                   CARTN_DATA_ITEMS,
-                                                                  [{'name': self.authAsymId, 'type': 'str', 'value': chain_id_set[0]},
-                                                                   {'name': self.authSeqId, 'type': 'int', 'value': seq_id_1},
-                                                                   {'name': self.authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                                  [{'name': self.authAsymId, 'type': 'str',
+                                                                    'value': chain_id_set[0]},
+                                                                   {'name': self.authSeqId, 'type': 'int',
+                                                                    'value': seq_id_1},
+                                                                   {'name': self.authAtomId, 'type': 'str',
+                                                                    'value': atom_id_1},
                                                                    {'name': self.modelNumName, 'type': 'int',
                                                                     'value': self.representativeModelId},
                                                                    {'name': 'label_alt_id', 'type': 'enum',
@@ -715,9 +730,12 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 _tail =\
                                     self.cR.getDictListWithFilter('atom_site',
                                                                   CARTN_DATA_ITEMS,
-                                                                  [{'name': self.authAsymId, 'type': 'str', 'value': chain_id_set[-1]},
-                                                                   {'name': self.authSeqId, 'type': 'int', 'value': seq_id_1},
-                                                                   {'name': self.authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                                  [{'name': self.authAsymId, 'type': 'str',
+                                                                    'value': chain_id_set[-1]},
+                                                                   {'name': self.authSeqId, 'type': 'int',
+                                                                    'value': seq_id_1},
+                                                                   {'name': self.authAtomId, 'type': 'str',
+                                                                    'value': atom_id_1},
                                                                    {'name': self.modelNumName, 'type': 'int',
                                                                     'value': self.representativeModelId},
                                                                    {'name': 'label_alt_id', 'type': 'enum',
@@ -1016,7 +1034,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 _cifSeqId = ps['auth_seq_id'][idx + offset]
                                 _cifCompId = ps['comp_id'][idx + offset]
 
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
+                                seqKey, coordAtomSite =\
+                                    self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                             except IndexError:
                                 pass
 
@@ -1102,7 +1121,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         prevCifAtomId = cifAtomId
                         prevOffset = offset
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
+                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
                         self.testCoordAtomIdConsistency(chainId, _cifSeqId, _cifCompId, cifAtomId, seqKey, coordAtomSite, True)
 
@@ -1285,7 +1305,8 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "is not present in the coordinates.")
                                 return
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
+                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)

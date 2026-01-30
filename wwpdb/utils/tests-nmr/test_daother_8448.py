@@ -140,7 +140,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='coordinate_file_path', value=cif_file, type='file')
 
         self.utility.setSource(self.data_dir_path + entry_id + '_cs_mr_merged.str')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-str-consistency-log.json', type='file')
+        self.utility.addInput(name='report_file_path',
+                              value=self.data_dir_path + entry_id + '-str-consistency-log.json',
+                              type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=False, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')

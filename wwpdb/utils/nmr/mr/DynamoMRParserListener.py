@@ -2672,7 +2672,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.")
                                 return
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
+                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)
@@ -2928,7 +2929,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.")
                                 return
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
+                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)

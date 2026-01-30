@@ -197,7 +197,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
     # Enter a parse tree produced by CyanaMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
-        if (self.file_ext is not None and self.file_ext in ('upv', 'lov')) or (self.reasons is not None and 'noepk' in self.reasons):
+        if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
+           or (self.reasons is not None and 'noepk' in self.reasons):
             self.cur_subtype = 'noepk'
 
         self.cur_subtype_altered = False
@@ -484,8 +485,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 self.retrieveLocalSeqScheme()
 
-                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                 atomId1.split('|', 1)[0])
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                 atomId2.split('|', 1)[0])
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
@@ -585,7 +588,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 lower_limit = target_value - error
                                 upper_limit = target_value + error
 
-                            dstFunc = self.validateRdcRange(weight, self.cur_rdc_orientation, target_value, lower_limit, upper_limit)
+                            dstFunc = self.validateRdcRange(weight, self.cur_rdc_orientation,
+                                                            target_value, lower_limit, upper_limit)
 
                             if dstFunc is None:
                                 return
@@ -1216,7 +1220,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 lower_limit = target_value - error
                                 upper_limit = target_value + error
 
-                            dstFunc = self.validateRdcRange(weight, self.cur_rdc_orientation, target_value, lower_limit, upper_limit)
+                            dstFunc = self.validateRdcRange(weight, self.cur_rdc_orientation,
+                                                            target_value, lower_limit, upper_limit)
 
                             if dstFunc is None:
                                 return
@@ -1771,7 +1776,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 _cifSeqId = ps['auth_seq_id'][idx + offset]
                                 _cifCompId = ps['comp_id'][idx + offset]
 
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
+                                seqKey, coordAtomSite =\
+                                    self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                             except IndexError:
                                 pass
 
@@ -1858,7 +1864,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         prevCifAtomId = cifAtomId
                         prevOffset = offset
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
+                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
                         self.testCoordAtomIdConsistency(chainId, _cifSeqId, _cifCompId, cifAtomId, seqKey, coordAtomSite, True)
 
@@ -2043,7 +2050,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "is not present in the coordinates.")
                                 return
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
+                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)
@@ -2498,7 +2506,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
-    def enterFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
+    def enterFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext
+                                        ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixres' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -2507,11 +2516,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_comment_inlined = True
 
     # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraints.
-    def exitFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext):  # pylint: disable=unused-argument
+    def exitFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext
+                                       ):  # pylint: disable=unused-argument
         self.cur_comment_inlined = False
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraint.
-    def enterFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):  # pylint: disable=unused-argument
+    def enterFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext
+                                       ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -3420,7 +3431,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
-    def enterFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
+    def enterFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext
+                                        ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixatm' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -3429,11 +3441,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_comment_inlined = True
 
     # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
-    def exitFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext):  # pylint: disable=unused-argument
+    def exitFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext
+                                       ):  # pylint: disable=unused-argument
         self.cur_comment_inlined = False
 
     # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
-    def enterFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):  # pylint: disable=unused-argument
+    def enterFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext
+                                       ):  # pylint: disable=unused-argument
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -4342,15 +4356,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
-    def enterQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext):  # pylint: disable=unused-argument
+    def enterQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext
+                                        ):  # pylint: disable=unused-argument
         self.cur_subtype = 'dist'
 
     # Exit a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
-    def exitQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext):  # pylint: disable=unused-argument
+    def exitQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext
+                                       ):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraint.
-    def enterQconvr_distance_restraint(self, ctx: CyanaMRParser.Qconvr_distance_restraintContext):  # pylint: disable=unused-argument
+    def enterQconvr_distance_restraint(self, ctx: CyanaMRParser.Qconvr_distance_restraintContext
+                                       ):  # pylint: disable=unused-argument
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -4586,7 +4603,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     continue
                                 if self.hasPolySeq and len(atomId) < len(chainId)\
                                    and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
-                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    _atomId, _, details =\
+                                        self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details =\
                                             self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4637,7 +4655,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     continue
                                 if self.hasPolySeq and len(atomId) < len(chainId)\
                                    and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
-                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    _atomId, _, details =\
+                                        self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details =\
                                             self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4687,7 +4706,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     continue
                                 if self.hasPolySeq and len(atomId) < len(chainId)\
                                    and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
-                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    _atomId, _, details =\
+                                        self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details =\
                                             self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -4738,7 +4758,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     continue
                                 if self.hasPolySeq and len(atomId) < len(chainId)\
                                    and any(True for ps in self.polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
-                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    _atomId, _, details =\
+                                        self.nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                         _atomId, _, details =\
                                             self.nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -5015,8 +5036,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 self.retrieveLocalSeqScheme()
 
-                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                 atomId1.split('|', 1)[0])
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                 atomId2.split('|', 1)[0])
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
@@ -5116,7 +5139,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 lower_limit = target_value - error
                                 upper_limit = target_value + error
 
-                            dstFunc = self.validateRdcRange(weight, self.cur_rdc_orientation, target_value, lower_limit, upper_limit)
+                            dstFunc = self.validateRdcRange(weight, self.cur_rdc_orientation,
+                                                            target_value, lower_limit, upper_limit)
 
                             if dstFunc is None:
                                 return
@@ -5185,8 +5209,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 self.retrieveLocalSeqScheme()
 
-                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+                chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                 atomId1.split('|', 1)[0])
+                chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                 atomId2.split('|', 1)[0])
 
                 if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
@@ -5739,7 +5765,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 _cifSeqId = ps['auth_seq_id'][idx + offset]
                                 _cifCompId = ps['comp_id'][idx + offset]
 
-                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
+                                seqKey, coordAtomSite =\
+                                    self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.hasCoord)
                             except IndexError:
                                 pass
 
@@ -5826,7 +5853,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         prevCifAtomId = cifAtomId
                         prevOffset = offset
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
+                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
                         self.testCoordAtomIdConsistency(chainId, _cifSeqId, _cifCompId, cifAtomId, seqKey, coordAtomSite, True)
 
@@ -6011,7 +6039,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   "is not present in the coordinates.")
                                 return
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
+                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)
@@ -6191,8 +6220,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 return
 
             if chain_id_1 != chain_id_2:
-                ps1 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
-                ps2 = next((ps for ps in self.polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                   "Found inter-chain scalar coupling constant; "
@@ -6955,7 +6986,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         pass
 
     # Enter a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
-    def enterUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+    def enterUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext
+                                       ):  # pylint: disable=unused-argument
         if len(self.genSimpleNameSelection) == 0:
             return
 

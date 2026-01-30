@@ -600,7 +600,8 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
                 if file_type in ('CCPN', 'nm-pea-ccp') and idx < 20 and header is not None\
                    and ('Position F1' in header or 'Shift F1' in header) and ('Position F2' in header or 'Shift F2' in header)\
-                   and 'Assign F1' in header and 'Assign F2' in header:  # and ('Height' in header or 'Volume' in header):
+                   and 'Assign F1' in header and 'Assign F2' in header:
+                    # and ('Height' in header or 'Volume' in header):
 
                     header = header.replace('#', '')
 
@@ -611,8 +612,10 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                             ofh.write(header)
                             for _line in ifh:
 
-                                if ('Position F1' in _line or 'Shift F1' in _line) and ('Position F2' in _line or 'Shift F2' in _line)\
-                                   and 'Assign F1' in _line and 'Assign F2' in _line:  # and ('Height' in _line or 'Volume' in _line):
+                                if ('Position F1' in _line or 'Shift F1' in _line)\
+                                   and ('Position F2' in _line or 'Shift F2' in _line)\
+                                   and 'Assign F1' in _line and 'Assign F2' in _line:
+                                    # and ('Height' in _line or 'Volume' in _line):
                                     continue
 
                                 if not _line.startswith('#'):
@@ -2282,7 +2285,8 @@ class NmrDpMrSplitter:
                                 err += f"{description['input']}\n"
                                 err += f"{description['marker']}\n"
                                 if not div_test and has_content and self.__reg.remediation_mode:
-                                    corrected |= self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                    corrected |=\
+                                        self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
                                     div_test = True
                             elif not div_test and has_content and self.__reg.remediation_mode:
                                 corrected |= self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
@@ -2403,8 +2407,9 @@ class NmrDpMrSplitter:
 
                 has_chem_shift = False
 
-            elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint\
-                    and not has_rdc_restraint and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint:
+            elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint\
+                    and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint\
+                    and not has_hbond_restraint and not has_ssbond_restraint:
 
                 if has_rdc_origins:
 
@@ -2625,7 +2630,8 @@ class NmrDpMrSplitter:
 
                 fileListId += 1
 
-                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-bar', 'nm-res-oth', 'nm-res-sax') or file_type.startswith('nm-pea'):
+                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-bar', 'nm-res-oth', 'nm-res-sax')\
+                   or file_type.startswith('nm-pea'):
                     continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype)\
@@ -2672,7 +2678,8 @@ class NmrDpMrSplitter:
                                                                                 {'file_name': file_name, 'description': warn}})
 
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Warning  - {warn}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
+                                                     f"++ Warning  - {warn}\n")
 
                         else:
 
@@ -4763,7 +4770,8 @@ class NmrDpMrSplitter:
                                             if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
                                                    if mr_content_subtype in content_subtype):
                                                 mr_part_paths.append({'nmr-star': mrPath,
-                                                                      'original_file_name': None if dst_file.endswith('-noname.mr')
+                                                                      'original_file_name':
+                                                                      None if dst_file.endswith('-noname.mr')
                                                                       else os.path.basename(dst_file)})
 
                             else:
@@ -4905,7 +4913,8 @@ class NmrDpMrSplitter:
                                             if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
                                                    if mr_content_subtype in content_subtype):
                                                 mr_part_paths.append({'nmr-star': mrPath,
-                                                                      'original_file_name': None if dst_file.endswith('-noname.mr')
+                                                                      'original_file_name':
+                                                                      None if dst_file.endswith('-noname.mr')
                                                                       else os.path.basename(dst_file)})
 
                             else:
@@ -4925,7 +4934,8 @@ class NmrDpMrSplitter:
 
                     file_name = os.path.basename(dst_file)
 
-                    dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(file_name)]
+                    dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names
+                                     if div_name.startswith(file_name)]
 
                     if len(dst_file_list) == 0:
                         dst_file_list.append(dst_file)
@@ -4958,7 +4968,8 @@ class NmrDpMrSplitter:
                             peak_file_list.append(_ar)
 
                             pk_list_paths.append({'nmr-peaks': _dst_file,
-                                                  'original_file_name': None if file_name.endswith('-noname.mr') else file_name})
+                                                  'original_file_name':
+                                                  None if file_name.endswith('-noname.mr') else file_name})
 
                             remediated = True
 
@@ -4982,7 +4993,8 @@ class NmrDpMrSplitter:
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_file_type: _dst_file,
-                                                      'original_file_name': None if file_name.endswith('-noname.mr') else file_name})
+                                                      'original_file_name':
+                                                      None if file_name.endswith('-noname.mr') else file_name})
 
                                 designated = True
 
@@ -5003,7 +5015,8 @@ class NmrDpMrSplitter:
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                  'original_file_name': None if file_name.endswith('-noname.mr') else file_name})
+                                                  'original_file_name':
+                                                  None if file_name.endswith('-noname.mr') else file_name})
 
                             continue
 
@@ -5062,7 +5075,8 @@ class NmrDpMrSplitter:
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+                                                      'original_file_name':
+                                                      None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                                 _ar['file_name'] = _dst_file
@@ -5074,7 +5088,8 @@ class NmrDpMrSplitter:
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+                                                      'original_file_name':
+                                                      None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
@@ -5086,7 +5101,8 @@ class NmrDpMrSplitter:
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+                                                      'original_file_name':
+                                                      None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 2\
                                     and set(valid_types) == {'nm-res-cya', 'nm-res-ros'}:
@@ -5099,7 +5115,8 @@ class NmrDpMrSplitter:
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+                                                      'original_file_name':
+                                                      None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 3\
                                     and set(valid_types) in ({'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'},
@@ -5113,7 +5130,8 @@ class NmrDpMrSplitter:
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+                                                      'original_file_name':
+                                                      None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 3\
                                     and set(valid_types) == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
@@ -5126,7 +5144,8 @@ class NmrDpMrSplitter:
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+                                                      'original_file_name':
+                                                      None if _dst_file.endswith('-noname.mr') else file_name})
 
                             elif len_valid_types == 3\
                                     and set(valid_types) == {'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'}:
@@ -5139,7 +5158,8 @@ class NmrDpMrSplitter:
                                 split_file_list.append(_ar)
 
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
-                                                      'original_file_name': None if _dst_file.endswith('-noname.mr') else file_name})
+                                                      'original_file_name':
+                                                      None if _dst_file.endswith('-noname.mr') else file_name})
 
                             else:
                                 _ar['file_name'] = _dst_file
@@ -5152,7 +5172,7 @@ class NmrDpMrSplitter:
                                     "@todo: It needs to be split properly."
 
                                 self.__reg.report.error.appendDescription('internal_error',
-                                                                          f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
+                                                                          f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "  # noqa: E501, pylint: disable=line-too-long
                                                                           "++ Error  - " + err)
 
                                 if self.__reg.verbose:
@@ -5861,7 +5881,7 @@ class NmrDpMrSplitter:
         offset += err_line_number - 1
 
         xplor_missing_end_before = (xplor_file_type and err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
-                                    and not bool(XPLOR_EXPECTNIG_SYMBOL_PAT.search(err_message))  # exclude syntax errors in a factor
+                                    and not bool(XPLOR_EXPECTNIG_SYMBOL_PAT.search(err_message))  # excl. syntax errors in a factor
                                     and prev_input is not None and bool(XPLOR_ASSI_PAT.search(prev_input)))
 
         xplor_no_syntax_err_in_fac_or_ann = not bool(XPLOR_EXPECTING_EQU_OP_PAT.search(err_message))\
@@ -6339,7 +6359,8 @@ class NmrDpMrSplitter:
 
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
-                if not has_lexer_error and (prev_input is None or not (prev_input.isspace() or bool(COMMENT_PAT.match(prev_input)))):
+                if not has_lexer_error and (prev_input is None
+                                            or not (prev_input.isspace() or bool(COMMENT_PAT.match(prev_input)))):
 
                     if err_column_position == 0 and file_type not in LINEAR_MR_FILE_TYPES:
 
@@ -7078,7 +7099,7 @@ class NmrDpMrSplitter:
         offset += err_line_number - 1
 
         xplor_missing_end_before = (xplor_file_type and err_message.startswith(MISMATCHED_INPUT_ERR_MSG)
-                                    and not bool(XPLOR_EXPECTNIG_SYMBOL_PAT.search(err_message))  # exclude syntax errors in a factor
+                                    and not bool(XPLOR_EXPECTNIG_SYMBOL_PAT.search(err_message))  # excl. syntax errors in a factor
                                     and prev_input is not None and bool(XPLOR_ASSI_PAT.search(prev_input)))
 
         xplor_no_syntax_err_in_fac_or_ann = not bool(XPLOR_EXPECTING_EQU_OP_PAT.search(err_message))\
@@ -7578,7 +7599,8 @@ class NmrDpMrSplitter:
         except ValueError as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - {str(e)}\n")
@@ -7596,8 +7618,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-xpl':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-xpl',
-                                                                    agreed_w_cns=agreed_w_cns)
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-xpl', agreed_w_cns=agreed_w_cns)
 
             is_valid |= _is_valid
             agreed_w_cns |= _is_valid
@@ -7612,8 +7634,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-cns':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cns',
-                                                                    agreed_w_cns=agreed_w_cns)
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-cns', agreed_w_cns=agreed_w_cns)
 
             is_valid |= _is_valid
             agreed_w_cns |= _is_valid
@@ -7625,8 +7647,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or 'Syntax error' in err) and file_type != 'nm-res-cha':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha',
-                                                                    agreed_w_cns=agreed_w_cns)
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-cha', agreed_w_cns=agreed_w_cns)
 
             is_valid |= _is_valid
             err += _err
@@ -7640,7 +7662,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-amb')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-amb')
 
             is_valid |= _is_valid
             err += _err
@@ -7652,7 +7675,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-amb')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-aux-amb')
 
             is_valid |= _is_valid
             err += _err
@@ -7664,7 +7688,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-ari':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ari')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-ari')
 
             is_valid |= _is_valid
             err += _err
@@ -7676,7 +7701,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-arx':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-arx')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-arx')
 
             is_valid |= _is_valid
             err += _err
@@ -7688,7 +7714,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-bio':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-bio')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-bio')
 
             is_valid |= _is_valid
             err += _err
@@ -7699,7 +7726,8 @@ class NmrDpMrSplitter:
         # """ conflict with nm-res-cya (2kcp)
         # if (not is_valid or multiple_check) and file_type != 'nm-aux-cha':
         #     _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-        #         self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-cha')
+        #         self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+        #                                                             'nm-aux-cha')
         #
         #     is_valid |= _is_valid
         #     err += _err
@@ -7710,7 +7738,8 @@ class NmrDpMrSplitter:
         # """
         if (not is_valid or multiple_check) and file_type != 'nm-res-dyn':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-dyn')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-dyn')
 
             is_valid |= _is_valid
             err += _err
@@ -7722,7 +7751,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-gro':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-gro')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-gro')
 
             is_valid |= _is_valid
             err += _err
@@ -7734,7 +7764,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-aux-gro':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-gro')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-aux-gro')
 
             is_valid |= _is_valid
             err += _err
@@ -7746,7 +7777,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-isd':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-isd')
 
             is_valid |= _is_valid
             err += _err
@@ -7758,7 +7790,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-aux-pdb':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-pdb')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-aux-pdb')
 
             is_valid |= _is_valid
             err += _err
@@ -7770,7 +7803,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-ros')
 
             is_valid |= _is_valid
             err += _err
@@ -7781,7 +7815,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-sch':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-sch',
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-sch',
                                                                     agreed_w_cns=agreed_w_cns)
 
             is_valid |= _is_valid
@@ -7793,7 +7828,8 @@ class NmrDpMrSplitter:
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-syb':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-syb')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-syb')
 
             is_valid |= _is_valid
             err += _err
@@ -7804,7 +7840,8 @@ class NmrDpMrSplitter:
 
         if not is_valid and file_type != 'nm-res-noa':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-noa')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-noa')
 
             is_valid |= _is_valid
             err += _err
@@ -7817,7 +7854,8 @@ class NmrDpMrSplitter:
         # prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
         if (not is_valid or multiple_check) and file_type not in ('nm-res-cya', 'nm-pea-any'):
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-res-cya')
 
             is_valid |= _is_valid
             err += _err
@@ -7830,7 +7868,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-ari' and file_type != 'nm-pea-ari':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-ari')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-ari')
 
             is_valid |= _is_valid
             err += _err
@@ -7841,7 +7880,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-ccp' and file_type != 'nm-pea-ccp':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-ccp')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-ccp')
 
             is_valid |= _is_valid
             err += _err
@@ -7852,7 +7892,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-oli' and file_type != 'nm-pea-oli':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-oli')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-oli')
 
             is_valid |= _is_valid
             err += _err
@@ -7863,7 +7904,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-pip' and file_type != 'nm-pea-pip':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-pip')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-pip')
 
             is_valid |= _is_valid
             err += _err
@@ -7874,7 +7916,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-pon' and file_type != 'nm-pea-pon':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-pon')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-pon')
 
             is_valid |= _is_valid
             err += _err
@@ -7885,7 +7928,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-spa' and file_type != 'nm-pea-spa':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-spa')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-spa')
 
             is_valid |= _is_valid
             err += _err
@@ -7896,7 +7940,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-sps' and file_type != 'nm-pea-sps':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-sps')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-sps')
 
             is_valid |= _is_valid
             err += _err
@@ -7907,7 +7952,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-top' and file_type != 'nm-pea-top':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-top')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-top')
 
             is_valid |= _is_valid
             err += _err
@@ -7918,7 +7964,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-vie' and file_type != 'nm-pea-vie':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-vie')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-vie')
 
             is_valid |= _is_valid
             err += _err
@@ -7929,7 +7976,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-vnm' and file_type != 'nm-pea-vnm':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-vnm')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-vnm')
 
             is_valid |= _is_valid
             err += _err
@@ -7940,7 +7988,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-xea' and file_type != 'nm-pea-xea':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-xea')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-xea')
 
             is_valid |= _is_valid
             err += _err
@@ -7951,7 +8000,8 @@ class NmrDpMrSplitter:
 
         if _file_type == 'nm-pea-xwi' and file_type != 'nm-pea-xwi':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-xwi')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-xwi')
 
             is_valid |= _is_valid
             err += _err
@@ -7962,7 +8012,8 @@ class NmrDpMrSplitter:
 
         if not is_valid and _file_type is None and file_type != 'nm-aux-xea':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-xea')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-aux-xea')
 
             is_valid |= _is_valid
             err += _err
@@ -7973,7 +8024,8 @@ class NmrDpMrSplitter:
 
         if not is_valid and _file_type is None and file_type != 'nm-pea-bar':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-bar')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
+                                                                    'nm-pea-bar')
 
             is_valid |= _is_valid
             err += _err

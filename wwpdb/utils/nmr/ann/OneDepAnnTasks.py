@@ -308,7 +308,9 @@ class OneDepAnnTasks:
 
         lpCatList = [c[1:] for c in lpCatList]
         # """
-        # self.tagMap = self.load_csv_data('./lib/tagmap.csv', transpose=False)
+        # lib_dir = os.path.join(os.path.dirname(__file__), 'lib')
+        #
+        # self.tagMap = self.load_csv_data(os.path.join(lib_dir, 'tagmap.csv'), transpose=False)
         #
         # self.__sfTagMap = []
         # for tag_map in self.tagMap:
@@ -540,7 +542,8 @@ class OneDepAnnTasks:
                             '_Chem_shift_experiment', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'entry_id', '_Chem_shift_experiment', 'Entry_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_ID', 1, None),
-                           ('pdbx_nmr_chem_shift_experiment', 'experiment_name', '_Chem_shift_experiment', 'Experiment_name', 1, None),
+                           ('pdbx_nmr_chem_shift_experiment', 'experiment_name',
+                            '_Chem_shift_experiment', 'Experiment_name', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'sample_state', '_Chem_shift_experiment', 'Sample_state', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'solution_id', '_Chem_shift_experiment', 'Sample_ID', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'atom_group', '_Chem_shift_ref', 'Atom_group', 1, None),
@@ -584,9 +587,12 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_exptl_sample', 'component', '_Sample_component', 'Mol_common_name', 1, None),
                            ('pdbx_nmr_exptl_sample', 'concentration', '_Sample_component', 'Concentration_val', 1, None),
                            ('pdbx_nmr_exptl_sample', 'concentration_err', '_Sample_component', 'Concentration_val_err', 1, None),
-                           ('pdbx_nmr_exptl_sample', 'concentration_range', '_Sample_component', 'Concentration_val_max', -22, None),
-                           ('pdbx_nmr_exptl_sample', 'concentration_range', '_Sample_component', 'Concentration_val_min', -22, None),
-                           ('pdbx_nmr_exptl_sample', 'concentration_units', '_Sample_component', 'Concentration_val_units', 1, None),
+                           ('pdbx_nmr_exptl_sample', 'concentration_range',
+                            '_Sample_component', 'Concentration_val_max', -22, None),
+                           ('pdbx_nmr_exptl_sample', 'concentration_range',
+                            '_Sample_component', 'Concentration_val_min', -22, None),
+                           ('pdbx_nmr_exptl_sample', 'concentration_units',
+                            '_Sample_component', 'Concentration_val_units', 1, None),
                            ('pdbx_nmr_exptl_sample', 'isotopic_labeling', '_Sample_component', 'Isotopic_labeling', 1, None),
                            ('pdbx_nmr_exptl_sample', 'solution_id', '_Sample_component', 'Sample_ID', 1, None),
                            # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id',
@@ -615,7 +621,8 @@ class OneDepAnnTasks:
                             'pressure_units', '_Sample_condition_variable', 'Val_units', -22, None),
                            ('pdbx_nmr_exptl_sample_conditions', 'temperature', '_Sample_condition_variable', 'Type', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'temperature', '_Sample_condition_variable', 'Val', -22, 0),
-                           ('pdbx_nmr_exptl_sample_conditions', 'temperature_err', '_Sample_condition_variable', 'Val_err', -22, None),
+                           ('pdbx_nmr_exptl_sample_conditions', 'temperature_err',
+                            '_Sample_condition_variable', 'Val_err', -22, None),
                            ('pdbx_nmr_exptl_sample_conditions',
                             'temperature_units', '_Sample_condition_variable', 'Val_units', -22, None),
                            ('pdbx_nmr_refine', 'details', '_Conformer_family_refinement', 'Refine_details', 1, None),
@@ -636,13 +643,15 @@ class OneDepAnnTasks:
                            #
                            ('pdbx_nmr_spectral_dim', 'atom_isotope_number', '_Spectral_dim', 'Atom_isotope_number', 1, None),
                            ('pdbx_nmr_spectral_dim', 'atom_type', '_Spectral_dim', 'Atom_type', 1, None),
-                           ('pdbx_nmr_spectral_dim', 'center_frequency_offset', '_Spectral_dim', 'Center_frequency_offset', 1, None),
+                           ('pdbx_nmr_spectral_dim', 'center_frequency_offset',
+                            '_Spectral_dim', 'Center_frequency_offset', 1, None),
                            ('pdbx_nmr_spectral_dim', 'encoded_source_dimension_id',
                             '_Spectral_dim', 'Encoded_reduced_dimension_ID', 1, None),
                            ('pdbx_nmr_spectral_dim', 'encoding_code', '_Spectral_dim', 'Encoding_code', 1, None),
                            ('pdbx_nmr_spectral_dim', 'entry_id', '_Spectral_dim', 'Entry_ID', 1, None),
                            ('pdbx_nmr_spectral_dim', 'id', '_Spectral_dim', 'ID', 1, None),
-                           ('pdbx_nmr_spectral_dim', 'magnetization_linkage_id', '_Spectral_dim', 'Magnetization_linkage_ID', 1, None),
+                           ('pdbx_nmr_spectral_dim', 'magnetization_linkage_id',
+                            '_Spectral_dim', 'Magnetization_linkage_ID', 1, None),
                            ('pdbx_nmr_spectral_dim', 'spectral_peak_list_id', '_Spectral_dim', 'Spectral_peak_list_ID', 1, None),
                            ('pdbx_nmr_spectral_dim', 'spectral_region', '_Spectral_dim', 'Spectral_region', 1, None),
                            ('pdbx_nmr_spectral_dim', 'sweep_width', '_Spectral_dim', 'Sweep_width', 1, None),
@@ -664,10 +673,12 @@ class OneDepAnnTasks:
                             '_Systematic_chem_shift_offset', 'Atom_isotope_number', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset',
                             'atom_type', '_Systematic_chem_shift_offset', 'Atom_type', 1, None),
-                           ('pdbx_nmr_systematic_chem_shift_offset', 'entry_id', '_Systematic_chem_shift_offset', 'Entry_ID', 1, None),
+                           ('pdbx_nmr_systematic_chem_shift_offset', 'entry_id',
+                            '_Systematic_chem_shift_offset', 'Entry_ID', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'type', '_Systematic_chem_shift_offset', 'Type', 1, None),
                            ('pdbx_nmr_systematic_chem_shift_offset', 'val', '_Systematic_chem_shift_offset', 'Val', 1, None),
-                           ('pdbx_nmr_systematic_chem_shift_offset', 'val_err', '_Systematic_chem_shift_offset', 'Val_err', 1, None)
+                           ('pdbx_nmr_systematic_chem_shift_offset', 'val_err',
+                            '_Systematic_chem_shift_offset', 'Val_err', 1, None)
                            ]
 
         self.__uniqLpCatMap = {}
@@ -694,7 +705,7 @@ class OneDepAnnTasks:
         # """
         # self.__defSfTag = []
         # self.__defLpTag = []
-        # self.__sfItem = self.load_csv_data('./lib/adit_item_tbl_o.csv')
+        # self.__sfItem = self.load_csv_data(os.path.join(lib_dir, adit_item_tbl_o.csv'))
         # title = self.__sfItem[0]
         # originalTagCol = title.index('originalTag')
         # aditExistsCol = title.index('aditExists')
@@ -1635,7 +1646,8 @@ class OneDepAnnTasks:
                     if reset and has_uniq_sf_tag:
                         master_entry.add_saveframe(sf)
 
-                    for lp_category, new_flag in zip(NMRIF_LP_CATEGORIES[page][sf_tag_prefix], NMRIF_LP_NEW_FLAG[page][sf_tag_prefix]):
+                    for lp_category, new_flag in zip(NMRIF_LP_CATEGORIES[page][sf_tag_prefix],
+                                                     NMRIF_LP_NEW_FLAG[page][sf_tag_prefix]):
                         reset = new_flag
                         lp = None
 
@@ -1766,7 +1778,7 @@ class OneDepAnnTasks:
                                                            and get_first_sf_tag(sf, 'Name').lower() in software_vendor:
                                                             _row[col] = software_vendor[get_first_sf_tag(sf, 'Name').lower()]
                                                         has_uniq_lp_row = True
-                                                    # @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    # noqa: E501, @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239 pylint:disable=line-too-long
                                                     else:
                                                         if cif_tag.endswith('range'):
                                                             if row[cif_tag] not in EMPTY_VALUE:
@@ -1810,7 +1822,7 @@ class OneDepAnnTasks:
                                                     col = lp.tags.index(tag)
                                                     if map_code != -22:
                                                         _row[col] = row[cif_tag]
-                                                    # @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                    # noqa: E501, @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239 pylint:disable=line-too-long
                                                     else:
                                                         if cif_tag.endswith('range'):
                                                             if row[cif_tag] not in EMPTY_VALUE:
@@ -2107,7 +2119,7 @@ class OneDepAnnTasks:
                                                         found = True
                                                         break
                                                     if not found and isinstance(dst_val, int):
-                                                        for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                        for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):  # noqa: E501, pylint: disable=line-too-long
                                                             row[col] = _sf.get_tag(lp_aux_tags[col])[0]
                                                             found = True
                                                     if found:
@@ -2151,7 +2163,7 @@ class OneDepAnnTasks:
                                                         found = True
                                                         break
                                                     if not found and isinstance(dst_val, int):
-                                                        for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                        for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):  # noqa: E501, pylint: disable=line-too-long
                                                             row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
                                                             found = True
                                                     if found:
@@ -2230,8 +2242,10 @@ class OneDepAnnTasks:
                                                     if tag_map[3] in _lp_tags:
                                                         _row[idx] = row[_lp_tags.index(tag_map[3])]
                                                 elif cif_item.endswith('range'):
-                                                    max_lp_item = next((lp_tag for lp_tag in _lp_tags if lp_tag.endswith('max')), None)
-                                                    min_lp_item = next((lp_tag for lp_tag in _lp_tags if lp_tag.endswith('min')), None)
+                                                    max_lp_item = next((lp_tag for lp_tag in _lp_tags
+                                                                        if lp_tag.endswith('max')), None)
+                                                    min_lp_item = next((lp_tag for lp_tag in _lp_tags
+                                                                        if lp_tag.endswith('min')), None)
                                                     if None not in (max_lp_item, min_lp_item)\
                                                        and row[_lp_tags.index(max_lp_item)] not in EMPTY_VALUE\
                                                        and row[_lp_tags.index(max_lp_item)] not in EMPTY_VALUE:
@@ -2384,7 +2398,8 @@ class OneDepAnnTasks:
                                                     for idx, lp_item in enumerate(_lp_tags):
                                                         tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx]
                                                                        if tag_map[3] == lp_item)
-                                                        row[lp_items.index(lp_item)] = list_id if lp_item == list_id_tag else _row[idx]
+                                                        row[lp_items.index(lp_item)] =\
+                                                            list_id if lp_item == list_id_tag else _row[idx]
                                                         if tag_map[4] == 33:
                                                             _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx]
                                                                              if tag_map[3] == lp_item and tag_map[4] == -33), None)
@@ -2423,7 +2438,8 @@ class OneDepAnnTasks:
                                                     for idx, lp_item in enumerate(_lp_tags):
                                                         tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx]
                                                                        if tag_map[3] == lp_item)
-                                                        row[lp_items.index(lp_item)] = list_id if lp_item == list_id_tag else _row[idx]
+                                                        row[lp_items.index(lp_item)] =\
+                                                            list_id if lp_item == list_id_tag else _row[idx]
                                                         if tag_map[4] == 33:
                                                             _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx]
                                                                              if tag_map[3] == lp_item and tag_map[4] == -33), None)

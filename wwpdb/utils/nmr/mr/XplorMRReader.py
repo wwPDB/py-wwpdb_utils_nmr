@@ -208,7 +208,8 @@ class XplorMRReader:
             if not isFilePath or self.__sll_pred:
                 parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(mrFilePath, inputString=mrString, maxErrorReport=self.__maxParserErrorReport)
+            parser_error_listener =\
+                ParserErrorListener(mrFilePath, inputString=mrString, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
             tree = parser.xplor_nih_mr()
 
@@ -226,7 +227,8 @@ class XplorMRReader:
             listener.nmrVsModel = self.__nmrVsModel
             listener.createSfDict = createSfDict
             if createSfDict:
-                listener.originalFileName = originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
+                listener.originalFileName =\
+                    originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath)
                 if listIdCounter is not None:
                     listener.listIdCounter = listIdCounter
                 if entryId is not None:

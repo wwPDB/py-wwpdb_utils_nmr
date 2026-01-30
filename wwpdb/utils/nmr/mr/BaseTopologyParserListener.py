@@ -211,7 +211,8 @@ class BaseTopologyParserListener():
                                         atomId = atomNum['auth_atom_id']
 
                                     if atomId.endswith('*'):
-                                        _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
+                                        _, nucleotide, _ =\
+                                            self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
                                         atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
                                     atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds,
@@ -277,7 +278,8 @@ class BaseTopologyParserListener():
                                             atomId = atomNum['auth_atom_id']
 
                                         if atomId.endswith('*'):
-                                            _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
+                                            _, nucleotide, _ =\
+                                                self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
                                             atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
                                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds,
@@ -448,7 +450,8 @@ class BaseTopologyParserListener():
 
             if len(self.__seqAlign) == 0:
                 for c in range(1, MAX_CONFLICT_ATTEMPT):
-                    self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.polySeqPrmTop, c)
+                    self.__seqAlign, compIdMapping =\
+                        alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.polySeqPrmTop, c)
                     if len(self.__seqAlign) > 0:
                         break
 
@@ -550,7 +553,8 @@ class BaseTopologyParserListener():
                                         atomId = atomNum['auth_atom_id']
 
                                     if atomId.endswith('*'):
-                                        _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
+                                        _, nucleotide, _ =\
+                                            self.csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.ccU))
                                         atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
                                     atomNum['atom_id'] = translateToStdAtomName(atomId, authCompId, chemCompAtomIds,
@@ -596,7 +600,8 @@ class BaseTopologyParserListener():
                                     if atomId in self.__chemCompAtom[atomNum['cif_comp_id']]:
                                         atomNum['atom_id'] = atomId
                                         continue
-                            if atomId == "HO5'" and atomNum['seq_id'] == 1 and self.csStat.getTypeOfCompId(atomNum['auth_comp_id'])[1]:
+                            if atomId == "HO5'" and atomNum['seq_id'] == 1\
+                               and self.csStat.getTypeOfCompId(atomNum['auth_comp_id'])[1]:
                                 continue
                             self.__f.append(f"[Unknown atom name] "
                                             f"{atomNum['auth_atom_id']!r} is not recognized "
@@ -679,7 +684,8 @@ class BaseTopologyParserListener():
 
                 hint = ''
                 if abs(len(ref_code) - len(test_code)) < 20 and len(ref_code) > 40:
-                    hint = f"For example, coordinates ({self.polySeqModel[0]['auth_chain_id']}): {ref_code} vs topology: {test_code}. "
+                    hint = f"For example, coordinates ({self.polySeqModel[0]['auth_chain_id']}): "\
+                        f"{ref_code} vs topology: {test_code}. "
 
                 self.__f.append(f"[Sequence mismatch] Polymer sequence between the coordinate "
                                 f"and {_a_mr_format_name} data does not match. {hint}"
@@ -968,7 +974,8 @@ class BaseTopologyParserListener():
                                         chemCompAtomIds = [cca['atom_id'] for cca in self.ccU.lastAtomDictList]
 
                                         if atomId.endswith('*'):
-                                            _, nucleotide, _ = self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
+                                            _, nucleotide, _ =\
+                                                self.csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.ccU))
                                             atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
                                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds,

@@ -578,7 +578,8 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                         if _isotope2 == 13\
                            and not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
-                                       and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
+                                       and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'],
+                                                                    _transfer['spectral_dim_id_2']}):
                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -663,7 +664,8 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                         if _isotope2 == 13\
                            and not any(True for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
-                                       and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
+                                       and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'],
+                                                                    _transfer['spectral_dim_id_2']}):
                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -1468,7 +1470,8 @@ class BasePKParserListener():
                                 offsets = collections.Counter(offsets).most_common()
                                 if len(offsets) == 1:
                                     offset = offsets[0][0]
-                                    seq_id_mapping = {ref_seq_id - offset: ref_seq_id for ref_seq_id in poly_seq_model['auth_seq_id']}
+                                    seq_id_mapping = {ref_seq_id - offset: ref_seq_id
+                                                      for ref_seq_id in poly_seq_model['auth_seq_id']}
                                 item = {'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping}
                                 if item not in seqIdRemap:
                                     seqIdRemap.append(item)
@@ -1556,7 +1559,8 @@ class BasePKParserListener():
                                                           if ps['auth_chain_id'] == ref_chain_id)
 
                                     seq_id_mapping = {}
-                                    for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                    for ref_seq_id, mid_code, test_seq_id\
+                                            in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                         if test_seq_id is None:
                                             continue
                                         if mid_code == '|':
@@ -1647,7 +1651,8 @@ class BasePKParserListener():
                                                     comp_id_mapping[seq_id] = comp_id
                                             if any(True for k, v in seq_id_mapping.items() if k != v)\
                                                or ('label_seq_scheme' not in self.reasonsForReParsing
-                                                   and all(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values())):
+                                                   and all(v not in poly_seq_model['auth_seq_id']
+                                                           for v in seq_id_mapping.values())):
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
                                                                          'comp_id_dict': comp_id_mapping})
 
@@ -2558,7 +2563,8 @@ class BasePKParserListener():
                                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type':
-                                                        'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',
+                                                        'through-space' if 'long_range' in cur_spectral_dim[1]
+                                                        else 'through-space?',
                                                         'indirect': 'yes'}
                                             if transfer in cur_spectral_dim_transfer:
                                                 continue
@@ -2667,7 +2673,8 @@ class BasePKParserListener():
                     if self.__debug:
                         print(f'experiment class: {exp_class}')
 
-                    if self.software_name == 'PIPP' and any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
+                    if self.software_name == 'PIPP'\
+                       and any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
                         if d == 2:
                             transfer = next(transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond')
                             pro_axis = hvy_axis = -1
@@ -2773,7 +2780,8 @@ class BasePKParserListener():
                                     break
 
                         else:
-                            lp = next((alt_lp for alt_lp in sf['alt_loops'] if alt_lp.category == '_Assigned_peak_chem_shift'), None)
+                            lp = next((alt_lp for alt_lp in sf['alt_loops']
+                                       if alt_lp.category == '_Assigned_peak_chem_shift'), None)
                             if lp is not None and len(lp) > 0:
                                 for row in lp.get_tag('Auth_entity_ID'):
                                     if row not in EMPTY_VALUE:
@@ -2822,7 +2830,8 @@ class BasePKParserListener():
                                             self.jcoupling_idx_history[d][_id] = jcoupling_idx
                                             break
 
-                            self.__remediatePeakAssignmentForJcouplingTransfer(d, jcoupling_dim_transfers, sf['peak_row_format'], lp)
+                            self.__remediatePeakAssignmentForJcouplingTransfer(d, jcoupling_dim_transfers, sf['peak_row_format'],
+                                                                               lp)
 
                         if any(transfer['type'] == 'relayed' for transfer in cur_spectral_dim_transfer)\
                            and self.__csLoops is not None and len(self.__csLoops) > 0:
@@ -5382,7 +5391,8 @@ class BasePKParserListener():
         return dstFunc
 
     def validatePeak4D(self, index: int, pos_1: float, pos_2: float, pos_3: float, pos_4: float,
-                       pos_unc_1: Optional[float], pos_unc_2: Optional[float], pos_unc_3: Optional[float], pos_unc_4: Optional[float],
+                       pos_unc_1: Optional[float], pos_unc_2: Optional[float],
+                       pos_unc_3: Optional[float], pos_unc_4: Optional[float],
                        lw_1: Optional[float], lw_2: Optional[float], lw_3: Optional[float], lw_4: Optional[float],
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float],  # pylint: disable=unused-argument
                        pos_hz_3: Optional[float], pos_hz_4: Optional[float],  # pylint: disable=unused-argument
@@ -5597,7 +5607,8 @@ class BasePKParserListener():
 
                     elif hasChainId:
                         chainAssign1 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'],
+                                                                                    index)
 
                     elif hasCompId:
                         chainAssign1, _ =\
@@ -5669,9 +5680,11 @@ class BasePKParserListener():
 
                     elif hasChainId:
                         chainAssign1 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'],
+                                                                                    index)
                         chainAssign2 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'],
+                                                                                    index)
 
                     elif hasCompId:
                         chainAssign1, asis1 =\
@@ -5820,11 +5833,14 @@ class BasePKParserListener():
 
                     elif hasChainId:
                         chainAssign1 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'],
+                                                                                    index)
                         chainAssign2 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'],
+                                                                                    index)
                         chainAssign3 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'],
+                                                                                    index)
 
                     elif hasCompId:
                         chainAssign1, asis1 =\
@@ -5983,13 +5999,17 @@ class BasePKParserListener():
 
                     elif hasChainId:
                         chainAssign1 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'],
+                                                                                    index)
                         chainAssign2 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'],
+                                                                                    index)
                         chainAssign3 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'],
+                                                                                    index)
                         chainAssign4 =\
-                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a4['chain_id'], a4['seq_id'], a4['atom_id'], index)
+                            self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a4['chain_id'], a4['seq_id'], a4['atom_id'],
+                                                                                    index)
 
                     elif hasCompId:
                         chainAssign1, asis1 =\
@@ -6412,7 +6432,8 @@ class BasePKParserListener():
                                             hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
                                             hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
                                             if None not in (hvy_grp_atoms, hvy_gem_atoms):
-                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE else hvy_gem_atoms
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE\
+                                                    else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atom:
@@ -6445,10 +6466,12 @@ class BasePKParserListener():
                             atom_set2.extend(atomSelectionSet[1])
                         common_atoms = []
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set1 if isinstance(a, dict))]
+                                                                                           for a in atom_set1
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set1) > 1 else atom_set1))
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set2 if isinstance(a, dict))]
+                                                                                           for a in atom_set2
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set2) > 1 else atom_set2))
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
@@ -6482,7 +6505,8 @@ class BasePKParserListener():
                                             hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
                                             hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
                                             if None not in (hvy_grp_atoms, hvy_gem_atoms):
-                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE else hvy_gem_atoms
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE\
+                                                    else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atoms[idx]:
@@ -6689,7 +6713,8 @@ class BasePKParserListener():
                                             hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
                                             hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
                                             if None not in (hvy_grp_atoms, hvy_gem_atoms):
-                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE else hvy_gem_atoms
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE\
+                                                    else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atom:
@@ -6723,13 +6748,16 @@ class BasePKParserListener():
                             atom_set3.extend(atomSelectionSet[2])
                         common_atoms = []
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set1 if isinstance(a, dict))]
+                                                                                           for a in atom_set1
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set1) > 1 else atom_set1))
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set2 if isinstance(a, dict))]
+                                                                                           for a in atom_set2
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set2) > 1 else atom_set2))
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set3 if isinstance(a, dict))]
+                                                                                           for a in atom_set3
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set3) > 1 else atom_set3))
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
@@ -6763,7 +6791,8 @@ class BasePKParserListener():
                                             hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
                                             hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
                                             if None not in (hvy_grp_atoms, hvy_gem_atoms):
-                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE else hvy_gem_atoms
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE\
+                                                    else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atoms[idx]:
@@ -7010,7 +7039,8 @@ class BasePKParserListener():
                                             hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
                                             hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
                                             if None not in (hvy_grp_atoms, hvy_gem_atoms):
-                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE else hvy_gem_atoms
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE\
+                                                    else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atom:
@@ -7051,16 +7081,20 @@ class BasePKParserListener():
                             atom_set4.extend(atomSelectionSet[3])
                         common_atoms = []
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set1 if isinstance(a, dict))]
+                                                                                           for a in atom_set1
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set1) > 1 else atom_set1))
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set2 if isinstance(a, dict))]
+                                                                                           for a in atom_set2
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set2) > 1 else atom_set2))
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set3 if isinstance(a, dict))]
+                                                                                           for a in atom_set3
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set3) > 1 else atom_set3))
                         common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items())
-                                                                                           for a in atom_set4 if isinstance(a, dict))]
+                                                                                           for a in atom_set4
+                                                                                           if isinstance(a, dict))]
                                                                      if len(atom_set4) > 1 else atom_set4))
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
@@ -7100,7 +7134,8 @@ class BasePKParserListener():
                                             hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
                                             hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
                                             if None not in (hvy_grp_atoms, hvy_gem_atoms):
-                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE else hvy_gem_atoms
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in PROTON_BEGIN_CODE\
+                                                    else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
                                     if 'ambig_code' in common_atoms[idx]:
@@ -7306,7 +7341,8 @@ class BasePKParserListener():
                                     _compId = _str[_idx][resNameSpan[_idx][0]:resNameSpan[_idx][1]]
                                     if len(_compId) == 1 and hasOneLetterCodeSet:
                                         _compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == _compId)
-                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
+                                        _, _, details =\
+                                            self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
                                         if details is None:
                                             atomNameLike[idx] = atomNameLike_[_idx] = useOneLetterCodeSet = True
                                             atomNameSpan[idx] = (_index, len(term))
@@ -8063,10 +8099,10 @@ class BasePKParserListener():
                     return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
 
             if self.__verbose_debug:
-                print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '
+                print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
                       f'resid:{resIdLike[idx]} {term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else ""}, '
                       f'resname:{resNameLike[idx]} {term[resNameSpan[idx][0]:resNameSpan[idx][1]] if resNameLike[idx] else ""}, '
-                      f'atomname:{atomNameLike[idx]} {term[atomNameSpan[idx][0]:atomNameSpan[idx][1]] if atomNameLike[idx] else ""}, '
+                      f'atomname:{atomNameLike[idx]} {term[atomNameSpan[idx][0]:atomNameSpan[idx][1]] if atomNameLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
                       f'_atomname:{_atomNameLike[idx]} {term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]] if _atomNameLike[idx] else ""},  '  # noqa: E501, pylint: disable=line-too-long
                       f'__atomname:{__atomNameLike[idx]} {term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]] if __atomNameLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
                       f'___atomname:{___atomNameLike[idx]} {term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]] if ___atomNameLike[idx] else ""}')  # noqa: E501, pylint: disable=line-too-long
@@ -8113,7 +8149,8 @@ class BasePKParserListener():
                     elif resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
                         term = _str[idx]
                         if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
-                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] ==\
+                           term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]\
                            and any(True for _idx in range(idx + 1, lenStr)
                                    if __atomNameLike[_idx] or _atomNameLike[_idx] or atomNameLike[_idx]):
                             ___atomNameLike[idx] = False
@@ -8148,7 +8185,8 @@ class BasePKParserListener():
 
             elif _atomNameLike[idx]:
                 if resNameLike[idx]:
-                    if not hasResName and resNameSpan[idx][0] < _atomNameSpan[idx][0] and resNameSpan[idx][1] >= _atomNameSpan[idx][1]:
+                    if not hasResName and resNameSpan[idx][0] < _atomNameSpan[idx][0]\
+                       and resNameSpan[idx][1] >= _atomNameSpan[idx][1]:
                         _atomNameLike[idx] = False
                     elif resNameSpan[idx][1] > _atomNameSpan[idx][0]:
                         term = _str[idx]
@@ -8167,7 +8205,8 @@ class BasePKParserListener():
 
             elif atomNameLike[idx]:
                 if resNameLike[idx]:
-                    if not hasResName and resNameSpan[idx][0] < atomNameSpan[idx][0] and resNameSpan[idx][1] >= atomNameSpan[idx][1]:
+                    if not hasResName and resNameSpan[idx][0] < atomNameSpan[idx][0]\
+                       and resNameSpan[idx][1] >= atomNameSpan[idx][1]:
                         atomNameLike[idx] = False
                     elif resNameSpan[idx][1] > atomNameSpan[idx][0]:
                         term = _str[idx]
@@ -8980,7 +9019,8 @@ class BasePKParserListener():
                             if details is None:
                                 _, _coordAtomSite =\
                                     self.getCoordAtomSiteOf(ps['auth_chain_id'], seqId, psCompId, cifCheck=self.__hasCoord)
-                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                if _coordAtomSite is not None\
+                                   and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
                                     compId = _compId = psCompId
                                     resolved = True
                                     break
@@ -8991,7 +9031,8 @@ class BasePKParserListener():
                                                                  npSeqId, npCompId, atomId, _coordAtomSite)
                             _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(npCompId, atomId, leave_unmatched=True)
                             if details is None:
-                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                if _coordAtomSite is not None\
+                                   and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
                                     compId = _compId = npCompId
                                     seqId = _seqId = npSeqId
                                     preferNonPoly = resolved = True
@@ -9136,7 +9177,8 @@ class BasePKParserListener():
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        updatePolySeqRst(self.polySeqRst, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
+        updatePolySeqRst(self.polySeqRst,
+                         self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
 
         types = self.csStat.getTypeOfCompId(compId)
         if all(not t for t in types) or compId in ('MTS', 'ORI'):
@@ -9257,7 +9299,8 @@ class BasePKParserListener():
                                 if comp_id_unmatched_with(ps, cifCompId):
                                     continue
                                 if cifCompId != compId:
-                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id'])
+                                               if _seqId == seqId]
                                     if compId in compIds:
                                         cifCompId = compId
                                         origCompId = next(origCompId for _seqId, _compId, origCompId
@@ -9270,13 +9313,15 @@ class BasePKParserListener():
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                        if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
+                                        if refChainId is not None and refChainId != chainId\
+                                           and refChainId not in self.chainNumberDict:
                                             self.chainNumberDict[refChainId] = chainId
                                 else:
                                     _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
                                     if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                        if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
+                                        if refChainId is not None and refChainId != chainId\
+                                           and refChainId not in self.chainNumberDict:
                                             self.chainNumberDict[refChainId] = chainId
                             except IndexError:
                                 pass
@@ -9409,7 +9454,8 @@ class BasePKParserListener():
                                 cifCompId = compId
                                 origCompId =\
                                     next(origCompId
-                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         for _seqId, _compId, origCompId
+                                         in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                          if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
@@ -9510,7 +9556,8 @@ class BasePKParserListener():
                                 cifCompId = compId
                                 origCompId =\
                                     next(origCompId
-                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         for _seqId, _compId, origCompId
+                                         in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                          if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
@@ -9664,7 +9711,8 @@ class BasePKParserListener():
                             if details is None:
                                 _, _coordAtomSite =\
                                     self.getCoordAtomSiteOf(ps['auth_chain_id'], seqId, psCompId, cifCheck=self.__hasCoord)
-                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                if _coordAtomSite is not None\
+                                   and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
                                     compId = _compId = psCompId
                                     resolved = True
                                     break
@@ -9675,7 +9723,8 @@ class BasePKParserListener():
                                                                  npSeqId, npCompId, atomId, _coordAtomSite)
                             _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(npCompId, atomId, leave_unmatched=True)
                             if details is None:
-                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                if _coordAtomSite is not None\
+                                   and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
                                     compId = _compId = npCompId
                                     seqId = _seqId = npSeqId
                                     preferNonPoly = resolved = True
@@ -9947,7 +9996,8 @@ class BasePKParserListener():
                                 if comp_id_unmatched_with(ps, cifCompId):
                                     continue
                                 if cifCompId != compId:
-                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id'])
+                                               if _seqId == seqId]
                                     if compId in compIds:
                                         cifCompId = compId
                                         origCompId = next(origCompId for _seqId, _compId, origCompId
@@ -10095,7 +10145,8 @@ class BasePKParserListener():
                                 cifCompId = compId
                                 origCompId =\
                                     next(origCompId
-                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         for _seqId, _compId, origCompId
+                                         in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                          if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
@@ -10201,7 +10252,8 @@ class BasePKParserListener():
                                 cifCompId = compId
                                 origCompId =\
                                     next(origCompId
-                                         for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                         for _seqId, _compId, origCompId
+                                         in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                          if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in STD_MON_DICT:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)

@@ -72,8 +72,8 @@
 # 01-May-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
 # 02-May-2020  M. Yokochi - additional support for format issue correction while STAR to NEF conversion (DAOTHER-5577)
 # 02-May-2020  M. Yokochi - re-implement basic mathematical functions using Numpy library
-# 07-May-2020  M. Yokochi - revise warning type (from 'insufficient_data' to 'encouragement') if total number of models is less than 8
-#                           (DAOTHER-5650)
+# 07-May-2020  M. Yokochi - revise warning type (from 'insufficient_data' to 'encouragement')
+#                           if total number of models is less than 8 (DAOTHER-5650)
 # 07-May-2020  M. Yokochi - add preventive code for infinite loop while format issue correction
 # 08-May-2020  M. Yokochi - sync update with wwpdb.utils.nmr.CifReader (DAOTHER-5654)
 # 09-May-2020  M. Yokochi - add support for submitted coordinate file (allow missing of pdbx_poly_seq_scheme) (DAOTHER-5654)
@@ -98,8 +98,8 @@
 # 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note
 #                           in processed NMR-STAR file,
 #                           set False for OneDep environment (DAOTHER-6030)
-# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature
-#                           in combined NMR-STAR file (DAOTHER-6128)
+# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom
+#                           nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
 # 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignment for residue variant,
@@ -110,11 +110,12 @@
 #                           and sequence in data loop (DAOTHER-6128)
 # 11-Nov-2020  M. Yokochi - set NEF v1.1 as the default specification
 # 12-Nov-2020  M. Yokochi - improve NMR warning messages (DAOTHER-6109, 6167)
-# 18-Nov-2020  M. Yokochi - fix calculation of CS completeness, fix empty polymer_sequence_in_loop due to atom_site.pdbx_PDB_ins_code
-#                           (DAOTHER-6128)
+# 18-Nov-2020  M. Yokochi - fix calculation of CS completeness, fix empty polymer_sequence_in_loop
+#                           due to atom_site.pdbx_PDB_ins_code (DAOTHER-6128)
 # 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
 # 26-Nov-2020  M. Yokochi - detect the nearest ferromagnetic atom, in addition to paramagnetic atom (DAOTHER-6366)
-# 27-Nov-2020  M. Yokochi - add support for non-IUPAC atom names for standard amino acids, e.g. ARG:HB1/HB2 -> HB2/HB3 (DAOTHER-6373)
+# 27-Nov-2020  M. Yokochi - add support for non-IUPAC atom names for standard amino acids, e.g. ARG:HB1/HB2 -> HB2/HB3
+#                           (DAOTHER-6373)
 # 17-Dec-2020  M. Yokochi - support 'atom_not_found' error with message revision (DAOTHER-6345)
 # 25-Jan-2021  M. Yokochi - simplify code for Entity_assemble_ID and chain_code
 # 25-Jan-2021  M. Yokochi - add CS validation code about rotameric state of ILE/LEU/VAL residue
@@ -151,7 +152,8 @@
 # 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - detect content type of XPLOR-NIH hydrogen bond geometry restraints (DAOTHER-7478)
 # 18-Nov-2021  M. Yokochi - relax detection of distance restraints for nm-res-cya and nm-res-oth (DAOTHER-7491)
-# 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment (DAOTHER-7465, issue #2)
+# 13-Dec-2021  M. Yokochi - append sequence spacer between large gap to prevent failure of sequence alignment
+#                           (DAOTHER-7465, issue #2)
 # 14-Dec-2021  M. Yokochi - report detailed warning message against not superimposed models and exactly overlaid models
 #                           (DAOTHER-4060, 7544)
 # 15-Dec-2021  M. Yokochi - fix server crash while uploading NMR restraint file in NMR-STAR format (DAOTHER-7545)
@@ -177,11 +179,11 @@
 # 13-Sep-2022  M. Yokochi - add 'nm-res-isd' file type for IDS (inference structure determination) restraint format
 #                           (DAOTHER-8059, NMR restraint remediation)
 # 22-Sep-2022  M. Yokochi - add 'nm-res-cha' file type for CHARMM restraint format (DAOTHER-8058, NMR restraint remediation)
-# 20-Oct-2022  M. Yokochi - report recommendation message when there is no distance restraints for NMR deposition, instead of blocker
-#                           (DAOTHER-8088 1.b, 8108)
+# 20-Oct-2022  M. Yokochi - report recommendation message when there is no distance restraints for NMR deposition,
+#                           instead of blocker (DAOTHER-8088 1.b, 8108)
 # 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
-# 15-Dec-2022  M. Yokochi - merge CS and MR as a single NMR data file in CIF format with comprehensive molecular assembly information
-#                           (DAOTHER-7407, NMR restraint remediation)
+# 15-Dec-2022  M. Yokochi - merge CS and MR as a single NMR data file in CIF format with comprehensive molecular assembly
+#                           information (DAOTHER-7407, NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter)
 #                           (NMR restraint remediation)
@@ -197,7 +199,8 @@
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 # 29-Sep-2023  M. Yokochi - add 'nmr-str2cif-annotation' workflow operation (DAOTHER-8817, 8828)
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID of native combined NMR data (DAOTHER-8855)
-# 10-Nov-2023  M. Yokochi - raise a content mismatch error properly for spectral peak list when the file is irrelevant (DAOTHER-8949)
+# 10-Nov-2023  M. Yokochi - raise a content mismatch error properly for spectral peak list when the file is irrelevant
+#                           (DAOTHER-8949)
 # 13-Dec-2023  M. Yokochi - add 'hydrogen_non_instantiated' warning (DAOTHER-8945)
 # 11-Jan-2024  M. Yokochi - convert RTF to ASCII file if necessary (DAOTHER-9063)
 # 12-Jan-2024  M. Yokochi - preserve the original sequence offset of CS loop of UNMAPPED residue (DAOTHER-9065)
@@ -206,13 +209,13 @@
 # 17-Jan-2024  M. Yokochi - detect coordinate issue (DAOTHER-9084, type_symbol mismatches label_atom_id)
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
-# 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID
-#                           (DAOTHER-9158 vs D_1300043061)
+# 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch
+#                           due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 # 22-Mar-2024  M. Yokochi - test tautomeric states of histidine-like residue across models (DAOTHER-9252)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary
 #                           (NMR restraint remediation, 6fw4)
-# 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any' occasionally matches
-#                           with 'nm-res-cya' (DAOTHER-9425)
+# 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any'
+#                           occasionally matches with 'nm-res-cya' (DAOTHER-9425)
 # 11-Jun-2024  M. Yokcohi - add support for ligand remapping in annotation process (DAOTHER-9286)
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 # 28-Jun-2024  M. Yokochi - ignore extraneous input value for numeric tags and replace statistics of chemical shifts
@@ -247,8 +250,8 @@
 #                           (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 # 09-Apr-2025  M. Yokochi - enable to convert chemical shifts in any software-native format
 #                           in the standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
-# 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors to report out failed restraint conversions and detailed messages
-#                           (DAOTHER-9785)
+# 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors to report out failed restraint conversions
+#                           and detailed messages (DAOTHER-9785)
 # 29-May-2025  M. Yokochi - analyze spectral peak list files and provide warning/error messages to depositor
 #                           (DAOTHER-8905, 8949, 10096, 10097, 10098, 10099, 10100, 10101)
 # 11-Jun-2025  M. Yokochi - reconstruct atom name mapping from revision history and PDB Versioned Archive if possible
@@ -262,7 +265,8 @@
 #                           (DAOTHER-7829, 9785, NMR data remediation)
 # 02-Oct-2025  M. Yokochi - add support for ARIA NOE restraint (XML) file. file type: 'nm-res-arx'
 #                           (DAOTHER-7829, 9785, NMR data remediation)
-# 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file (DAOTHER-7829, 9785, NMR data remediation)
+# 02-Oct-2025  M. Yokochi - add 'nm-res-bar' file type for Bare WSV/TSV/CSV restraint file
+#                           (DAOTHER-7829, 9785, NMR data remediation)
 # 20-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in ROSETTA restraints
 #                           (DAOTHER-7829, 9785, NMR data remediation)
 # 21-Oct-2025  M. Yokochi - enable to parse concatenated notation of chain code and sequence code in CYANA restraints
@@ -271,8 +275,8 @@
 # 03-Dec-2025  M. Yokochi - split concatenation of auth_seq_id and ins_code in CS/MR loops (DAOTHER-10418, NMR data remediation)
 # 07-Jan-2026  M. Yokochi - code refactoring: NmrDpConstant, NmrDpRegistry, NmrDpMrSplitter, NmrDpFirstAid, NmrDpValidation,
 #                           and NmrDpRemediation classes, v5.0.0)
-# 27-Jan-2026  M. Yokochi - raise error when entity exists and sequence inconsistency between the entity and loops, instead of warning,
-#                           do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
+# 27-Jan-2026  M. Yokochi - raise error when entity exists and sequence inconsistency between the entity and loops,
+#                           instead of warning, do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -1121,7 +1125,8 @@ class NmrDpUtility:
 
         if 'cif' in op:
             if NMR_CIF_FILE_PATH_KEY not in self.__reg.outputParamDict:
-                raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Could not find {NMR_CIF_FILE_PATH_KEY!r} output parameter.")
+                raise KeyError(f"+{self.__class_name__}.op() "
+                               f"++ Error  - Could not find {NMR_CIF_FILE_PATH_KEY!r} output parameter.")
             if self.__reg.dstPath is None:
                 self.__reg.dstPath = self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY] + '.tmp'
                 self.__dstPath__ = copy.copy(self.__reg.dstPath)
@@ -1501,7 +1506,8 @@ class NmrDpUtility:
                     if self.__reg.dstPath == self.__reg.srcPath and self.__reg.release_mode:
                         pass
 
-                    elif not self.__reg.submission_mode and not self.__reg.annotation_mode or self.__reg.dstPath != self.__reg.srcPath:
+                    elif not self.__reg.submission_mode and not self.__reg.annotation_mode\
+                            or self.__reg.dstPath != self.__reg.srcPath:
 
                         if not self.__reg.op.endswith('consistency-check'):
                             self.__calculateOutputStats()
@@ -1887,11 +1893,13 @@ class NmrDpUtility:
                                                 seq_id = int(l_split[2])
                                                 comp_id = l_split[1]
                                                 atom_id = l_split[0]
-                                                if seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                                if seq_id > 0 and comp_id in three_letter_codes\
+                                                   and atom_id in atom_like_names_oth:
                                                     seq_id = int(l_split[6])
                                                     comp_id = l_split[5]
                                                     atom_id = l_split[4]
-                                                    if seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                                    if seq_id > 0 and comp_id in three_letter_codes\
+                                                       and atom_id in atom_like_names_oth:
                                                         atom_names += 1
                                         except ValueError:
                                             pass
@@ -2189,7 +2197,8 @@ class NmrDpUtility:
 
                                             if self.__reg.check_auth_seq:
                                                 warn = f"Auth_seq_ID {str(auth_seq_id)!r} "\
-                                                    f"(Auth_asym_ID {auth_asym_id}, Auth_comp_ID {auth_comp_id}) should be an integer."
+                                                    f"(Auth_asym_ID {auth_asym_id}, Auth_comp_ID {auth_comp_id}) "\
+                                                    "should be an integer."
 
                                                 self.__reg.report.warning.appendDescription('sequence_mismatch',
                                                                                             {'file_name': file_name,
@@ -2449,7 +2458,8 @@ class NmrDpUtility:
 
                             _seq_ids = aps['seq_id']
 
-                            auth_asym_ids, auth_seq_ids, auth_comp_ids = aps['auth_asym_id'], aps['auth_seq_id'], aps['auth_comp_id']
+                            auth_asym_ids, auth_seq_ids, auth_comp_ids =\
+                                aps['auth_asym_id'], aps['auth_seq_id'], aps['auth_comp_id']
 
                             auth_asym_id_set = sorted(set(auth_asym_ids))
 
@@ -2620,7 +2630,8 @@ class NmrDpUtility:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__extractPolymerSequenceInLoop() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() "
@@ -2765,7 +2776,8 @@ class NmrDpUtility:
                                                                                'description': err})
 
                                     if self.__reg.verbose:
-                                        self.__reg.log.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Error  - {err}\n")
+                                        self.__reg.log.write(f"+{self.__class_name__}.__testSequenceConsistency() "
+                                                             f"++ Error  - {err}\n")
 
                             else:
 
@@ -2897,7 +2909,8 @@ class NmrDpUtility:
                                                 if (self.__reg.tolerant_seq_align
                                                     and self.__reg.dpV.equalsToRepCompId(comp_id, _comp_id))\
                                                    or (self.__reg.remediation_mode
-                                                       and (self.__valid_seq or comp_id not in STD_MON_DICT or has_gap_in_auth_seq)):
+                                                       and (self.__valid_seq or comp_id not in STD_MON_DICT
+                                                            or has_gap_in_auth_seq)):
                                                     self.__reg.report.warning.appendDescription('sequence_mismatch',
                                                                                                 {'file_name': file_name,
                                                                                                  'sf_framecode': sf_framecode2,
@@ -3148,7 +3161,8 @@ class NmrDpUtility:
                     else:
                         comp_ids.append(next(comp_id for comp_id in _comp_ids if comp_id not in EMPTY_VALUE))
                         if cs_has_alt_comp_id:
-                            alt_comp_ids.append(next(alt_comp_id for alt_comp_id in _alt_comp_ids if alt_comp_id not in EMPTY_VALUE))
+                            alt_comp_ids.append(next(alt_comp_id for alt_comp_id in _alt_comp_ids
+                                                     if alt_comp_id not in EMPTY_VALUE))
 
                 if self.__reg.combined_mode and self.__reg.has_star_entity:
                     ent = self.__extractPolymerSequenceInEntityLoopOfChain__(fileListId, chain_id)
@@ -3331,7 +3345,8 @@ class NmrDpUtility:
 
                 try:
                     chain_id = str(c[0])
-                    entity_sf = c[1] if len(c) < 4 else (c[3][1:] if c[3][0] == '$' else c[3])  # Entity_assemble_name or Entity_label
+                    # Entity_assemble_name or Entity_label
+                    entity_sf = c[1] if len(c) < 4 else (c[3][1:] if c[3][0] == '$' else c[3])
                     entity_id = int(c[2])
 
                     if chain_id in chain_ids:
@@ -3638,7 +3653,8 @@ class NmrDpUtility:
 
         return True
 
-    def __extractNonStandardResidue__(self, file_name: str, sf_framecode: str, lp_category: str, input_source: NmrDpReportInputSource):
+    def __extractNonStandardResidue__(self, file_name: str, sf_framecode: str, lp_category: str,
+                                      input_source: NmrDpReportInputSource):
         """ Extract non-standard residue.
         """
 
@@ -3888,7 +3904,7 @@ class NmrDpUtility:
                             _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
                             _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                            if conflict > 0 and _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
+                            if conflict > 0 and _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:  # noqa: E501, pylint: disable=chained-comparison,line-too-long
                                 continue
 
                             if self.__reg.tolerant_seq_align:  # and not alt_chain:
@@ -4197,7 +4213,7 @@ class NmrDpUtility:
                             _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
                             _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                            if conflict > 0 and _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
+                            if conflict > 0 and _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:  # noqa: E501, pylint: disable=chained-comparison,line-too-long
                                 continue
 
                             if self.__reg.tolerant_seq_align:  # and not alt_chain:
@@ -4353,7 +4369,8 @@ class NmrDpUtility:
                                         for ps2 in poly_seq2:
                                             _ps2 = fillBlankCompIdWithOffset(ps2, 0)
 
-                                            if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
+                                            if len(_ps2['seq_id']) > len(ps2['seq_id'])\
+                                               and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                                 ps2 = _ps2
 
                                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
@@ -4481,9 +4498,9 @@ class NmrDpUtility:
                                                     if 'identical_chain_id' in ps2:
                                                         for chain_id2_ in ps2['identical_chain_id']:
                                                             if chain_id2_ not in proc_chain_ids[sf_framecode2]:
-                                                                self.__reg.dpR.fixSeqIdInLoop(fileListId, file_type, content_subtype,
-                                                                                              sf_framecode2, chain_id2_,
-                                                                                              seq_id_conv_dict)
+                                                                self.__reg.dpR.fixSeqIdInLoop(fileListId, file_type,
+                                                                                              content_subtype, sf_framecode2,
+                                                                                              chain_id2_, seq_id_conv_dict)
                                                                 proc_chain_ids[sf_framecode2].add(chain_id2_)
 
                                                 _ps2['seq_id'] = _ps1['seq_id']
@@ -4525,7 +4542,8 @@ class NmrDpUtility:
 
                                     seq_align = {'list_id': _poly_seq_in_lp['list_id'],
                                                  'sf_framecode': sf_framecode2, 'chain_id': chain_id,
-                                                 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
+                                                 'length': ref_length, 'matched': matched,
+                                                 'conflict': conflict, 'unmapped': unmapped,
                                                  'sequence_coverage':
                                                  float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
                                                  'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
@@ -4549,7 +4567,8 @@ class NmrDpUtility:
 
                                         break
 
-                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, k, f'{v}_')
+                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2,
+                                                                    k, f'{v}_')
 
                                 for v in mapping.values():
 
@@ -4562,7 +4581,8 @@ class NmrDpUtility:
 
                                         break
 
-                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, f'{v}_', v)
+                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2,
+                                                                    f'{v}_', v)
 
                             else:
                                 for k, v in mapping.items():
@@ -4576,7 +4596,8 @@ class NmrDpUtility:
 
                                         break
 
-                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, k, v)
+                                    self.__reg.dpR.fixChainIdInLoop(fileListId, file_type, content_subtype, sf_framecode2,
+                                                                    k, v)
 
         if update_poly_seq:
             self.__extractPolymerSequenceInLoop()
@@ -5163,8 +5184,9 @@ class NmrDpUtility:
                                     bond = self.__reg.dpV.getNmrBondLength(chain_id_1, seq_id_1, atom_id_1,
                                                                            chain_id_2, seq_id_2, atom_id_2)
                                     if bond is not None:
-                                        disulf['distance_value'] = next((b['distance'] for b in bond
-                                                                         if b['model_id'] == self.__reg.representative_model_id), None)
+                                        disulf['distance_value'] =\
+                                            next((b['distance'] for b in bond
+                                                  if b['model_id'] == self.__reg.representative_model_id), None)
                                     if disulf['distance_value'] is None and file_type == 'nmr-star':
                                         cif_chain_id_1 = row[auth_chain_id_1_name]
                                         cif_chain_id_2 = row[auth_chain_id_2_name]
@@ -5352,8 +5374,9 @@ class NmrDpUtility:
                                     bond = self.__reg.dpV.getNmrBondLength(chain_id_1, seq_id_1, atom_id_1,
                                                                            chain_id_2, seq_id_2, atom_id_2)
                                     if bond is not None:
-                                        other['distance_value'] = next((b['distance'] for b in bond
-                                                                        if b['model_id'] == self.__reg.representative_model_id), None)
+                                        other['distance_value'] =\
+                                            next((b['distance'] for b in bond
+                                                  if b['model_id'] == self.__reg.representative_model_id), None)
                                     if other['distance_value'] is None and file_type == 'nmr-star':
                                         cif_chain_id_1 = row[auth_chain_id_1_name]
                                         cif_chain_id_2 = row[auth_chain_id_2_name]
@@ -5597,7 +5620,8 @@ class NmrDpUtility:
 
                         except ValueError:
 
-                            err = f"{NUM_DIM_ITEMS[file_type]} {str(_num_dim)!r} must be in {set(range(1, MAX_DIM_NUM_OF_SPECTRA))}."
+                            err = f"{NUM_DIM_ITEMS[file_type]} {str(_num_dim)!r} "\
+                                f"must be in {set(range(1, MAX_DIM_NUM_OF_SPECTRA))}."
 
                             self.__reg.report.error.appendDescription('invalid_data',
                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -5653,7 +5677,8 @@ class NmrDpUtility:
 
                                 self.__reg.report.error.appendDescription('multiple_data',
                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                           'category': lp_category, 'description': str(e).strip("'")})
+                                                                           'category': lp_category,
+                                                                           'description': str(e).strip("'")})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() "
@@ -5665,7 +5690,8 @@ class NmrDpUtility:
 
                                 self.__reg.report.error.appendDescription(item,
                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                           'category': lp_category, 'description': str(e).strip("'")})
+                                                                           'category': lp_category,
+                                                                           'description': str(e).strip("'")})
 
                                 self.__reg.log.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() "
                                                      f"++ LookupError  - {file_name} {sf_framecode} {lp_category} {str(e)}\n")
@@ -5674,7 +5700,8 @@ class NmrDpUtility:
 
                                 self.__reg.report.error.appendDescription('invalid_data',
                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                           'category': lp_category, 'description': str(e).strip("'")})
+                                                                           'category': lp_category,
+                                                                           'description': str(e).strip("'")})
 
                                 if self.__reg.verbose:
                                     self.__reg.log.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() "
@@ -5744,7 +5771,8 @@ class NmrDpUtility:
                                             self.__reg.report.error.appendDescription(item,
                                                                                       {'file_name': file_name,
                                                                                        'sf_framecode': sf_framecode,
-                                                                                       'category': lp_category, 'description': warn})
+                                                                                       'category': lp_category,
+                                                                                       'description': warn})
 
                                             if self.__reg.verbose:
                                                 self.__reg.log.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() "
@@ -5794,11 +5822,13 @@ class NmrDpUtility:
                                                                           enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                           excl_missing_data=self.__reg.excl_missing_data)[0]
 
-                                    self.__reg.aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
+                                    self.__reg.aux_data[content_subtype].append({'file_name': file_name,
+                                                                                 'sf_framecode': sf_framecode,
                                                                                  'category': lp_category, 'data': aux_data})
 
                                     if content_subtype == 'spectral_peak':
-                                        self.__reg.dpV.testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode,
+                                        self.__reg.dpV.testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type,
+                                                                                                  sf_framecode,
                                                                                                   num_dim, lp_category, aux_data)
                                     if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
                                         self.__reg.dpV.testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type,
@@ -5812,7 +5842,7 @@ class NmrDpUtility:
                             except Exception as e:
 
                                 self.__reg.report.error.appendDescription('internal_error',
-                                                                          f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() "
+                                                                          f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                           "++ Error  - " + str(e))
 
                                 if self.__reg.verbose:
@@ -6033,7 +6063,8 @@ class NmrDpUtility:
                                 if zero or nega or rang or enum or remo or clea or self.__reg.resolve_conflict:
 
                                     self.__reg.report.warning.appendDescription(item,
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                {'file_name': file_name,
+                                                                                 'sf_framecode': sf_framecode,
                                                                                  'category': lp_category, 'description': warn})
 
                                     if self.__reg.verbose:
@@ -6053,7 +6084,7 @@ class NmrDpUtility:
                             else:
 
                                 self.__reg.report.error.appendDescription('internal_error',
-                                                                          f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() "
+                                                                          f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                           "++ Error  - " + warn)
 
                                 if self.__reg.verbose:
@@ -6309,7 +6340,8 @@ class NmrDpUtility:
                                                                        enforce_range=False, enforce_enum=False)
 
                             self.__reg.dpV.testParentChildRelation(file_name, file_type, content_subtype,
-                                                                   parent_keys, list_id, sf_framecode, sf_framecode_dict, sf_tag_data)
+                                                                   parent_keys, list_id, sf_framecode,
+                                                                   sf_framecode_dict, sf_tag_data)
 
                             self.__reg.sf_tag_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                             'data': sf_tag_data})
@@ -6393,7 +6425,8 @@ class NmrDpUtility:
         return self.__reg.report.getTotalErrors() == __errors
 
     def __extractToNmrIf__(self) -> bool:
-        """ Extract NMR metadata of NMR-STAR file (as primary source) and model file (as secondary source) to NMRIF file, if possible.
+        """ Extract NMR metadata of NMR-STAR file (as primary source) and model file (as secondary source)
+            to NMRIF file, if possible.
         """
 
         if NMRIF_FILE_PATH_KEY not in self.__reg.outputParamDict:
@@ -7269,7 +7302,8 @@ class NmrDpUtility:
                                         + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
 
                                     self.__reg.report.warning.appendDescription('insufficient_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                {'file_name': file_name,
+                                                                                 'sf_framecode': sf_framecode,
                                                                                  'category': lp_category, 'description': err})
 
                                     if self.__reg.verbose:
@@ -7319,7 +7353,8 @@ class NmrDpUtility:
                                                                                             atom_id_names[d], atom_id)\
                                                     + f") in {sf_framecode!r} saveframe is inconsistent "\
                                                     f"with the assigned chemical shift value {value} "\
-                                                    f"(difference {position - value:.3f}, tolerance {error}) in {cs_list!r} saveframe."
+                                                    f"(difference {position - value:.3f}, tolerance {error}) "\
+                                                    f"in {cs_list!r} saveframe."
 
                                                 if error >= CS_UNCERT_MAX and not self.__reg.remediation_mode:
 
@@ -7348,7 +7383,8 @@ class NmrDpUtility:
                                     axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
                                     if axis_codes[d] is not None and d < num_dim\
-                                       and axis_code not in (axis_codes[d], alt_axis_codes[d]) and cs[cs_atom_type] != axis_codes[d]:
+                                       and axis_code not in (axis_codes[d], alt_axis_codes[d])\
+                                       and cs[cs_atom_type] != axis_codes[d]:
 
                                         err = f"[Check row of {id_tag} {row[id_tag]}] Assignment of spectral peak "\
                                             + self.__reg.dpV.getReducedAtomNotation(chain_id_names[d], chain_id,
@@ -7419,7 +7455,7 @@ class NmrDpUtility:
                                                                                            'description': err})
 
                                                 if self.__reg.verbose:
-                                                    self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() "
+                                                    self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                          f"++ ValueError  - {err}\n")
 
                                 if True in jcoupling[d]:
@@ -7436,7 +7472,8 @@ class NmrDpUtility:
                                                or (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id
                                                                or comp_id2 != comp_id)):
 
-                                                err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is jcoupling. "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] "\
+                                                    "Coherence transfer type is jcoupling. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
                                                     + self.__reg.dpV.getReducedAtomNotation(chain_id_names[d], chain_id,
                                                                                             seq_id_names[d], seq_id,
@@ -7456,7 +7493,7 @@ class NmrDpUtility:
                                                                                            'description': err})
 
                                                 if self.__reg.verbose:
-                                                    self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() "
+                                                    self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                          f"++ ValueError  - {err}\n")
 
                                 if True in relayed[d]:
@@ -7492,7 +7529,7 @@ class NmrDpUtility:
                                                                                            'description': err})
 
                                                 if self.__reg.verbose:
-                                                    self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() "
+                                                    self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                          f"++ ValueError  - {err}\n")
 
                 except Exception as e:
@@ -7655,7 +7692,8 @@ class NmrDpUtility:
                                 alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
                             else:
                                 alt_axis_codes.append(sp_dim['Axis_code'])
-                            abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
+                            abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim
+                                              else sp_dim['Absolute_peak_positions'])
                             sp_width = None if 'Sweep_width_units' not in sp_dim else sp_dim.get('Sweep_width')
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
                                and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
@@ -7828,7 +7866,8 @@ class NmrDpUtility:
                                 if value in EMPTY_VALUE:
                                     continue
 
-                                if error is None or error < 1.0e-3 or error * self.__reg.cs_diff_error_scaled_by_sigma > CS_UNCERT_MAX:
+                                if error is None or error < 1.0e-3\
+                                   or error * self.__reg.cs_diff_error_scaled_by_sigma > CS_UNCERT_MAX:
                                     error = CS_UNCERT_MAX
                                 else:
                                     error *= self.__reg.cs_diff_error_scaled_by_sigma
@@ -7918,8 +7957,10 @@ class NmrDpUtility:
 
                                         if atom_id2 is not None:
                                             diff = len(atom_id) != len(atom_id2)
-                                            _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
-                                            _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
+                                            _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff
+                                                              else atom_id[1:])
+                                            _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff
+                                                               else atom_id2[1:])
 
                                         if chain_id2 in EMPTY_VALUE or seq_id2 in EMPTY_VALUE\
                                            or comp_id2 in EMPTY_VALUE or atom_id2 in EMPTY_VALUE\
@@ -7959,7 +8000,7 @@ class NmrDpUtility:
                                                                                        'category': lp_category, 'description': err})
 
                                             if self.__reg.verbose:
-                                                self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() "
+                                                self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                      f"++ ValueError  - {err}\n")
 
                             if d < num_dim and True in jcoupling[d]:
@@ -8004,7 +8045,7 @@ class NmrDpUtility:
                                                                                        'category': lp_category, 'description': err})
 
                                             if self.__reg.verbose:
-                                                self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() "
+                                                self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                      f"++ ValueError  - {err}\n")
 
                             if d < num_dim and True in relayed[d]:
@@ -8049,7 +8090,7 @@ class NmrDpUtility:
                                                                                        'category': lp_category, 'description': err})
 
                                             if self.__reg.verbose:
-                                                self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() "
+                                                self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                      f"++ ValueError  - {err}\n")
 
                 except Exception as e:
@@ -8783,7 +8824,8 @@ class NmrDpUtility:
 
             data_file_name = ''
 
-            if not self.__reg.native_combined or self.__reg.internal_mode:  # natively combined nmr_data file needs to be investigated
+            # natively combined nmr_data file needs to be investigated
+            if not self.__reg.native_combined or self.__reg.internal_mode:
 
                 if file_type == 'nmr-star':
                     exp_class = get_first_sf_tag(sf, 'Experiment_class')
@@ -9051,7 +9093,8 @@ class NmrDpUtility:
                     except Exception as e:
 
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
+                                                                  f"+{self.__class_name__}.__parseCoordinate() "
+                                                                  "++ Error  - " + str(e))
 
             if self.__reg.trust_pdbx_nmr_ens and len(ensemble) > 0 and 'representative_conformer' in ensemble[0]:
 
@@ -9069,7 +9112,8 @@ class NmrDpUtility:
 
                 try:
 
-                    model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags else 'ndb_model'
+                    model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags\
+                        else 'ndb_model'
 
                     model_ids = self.__reg.cR.getDictListWithFilter('atom_site',
                                                                     [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
@@ -9149,7 +9193,7 @@ class NmrDpUtility:
             maxitpath = os.getenv('MAXITPATH')
             if maxitpath is None:
                 package_dir = os.getenv('PACKAGE_DIR')
-                maxitpath = os.path.join(package_dir, 'maxit/bin/maxit') if package_dir is not None else 'maxit'
+                maxitpath = os.path.join(package_dir, 'maxit', 'bin', 'maxit') if package_dir is not None else 'maxit'
 
             def has_coordinates(file_name):
                 with open(file_name, 'r', encoding='utf-8', errors='ignore') as ifh:
@@ -9197,7 +9241,8 @@ class NmrDpUtility:
                         revision_history[major_revision] = minor_revision
 
                 if extended_pdb_id is not None and self.__reg.cR.hasCategory('chem_comp')\
-                   and any(d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT for d in self.__reg.cR.getDictList('chem_comp')):
+                   and any(d['id'] not in EMPTY_VALUE and d['id'] not in STD_MON_DICT
+                           for d in self.__reg.cR.getDictList('chem_comp')):
 
                     if len(revision_history) > 1:
                         self.__reg.versioned_atom_name_mapping =\
@@ -9225,13 +9270,14 @@ class NmrDpUtility:
 
                             database_2 = self.__reg.cR.getDictListWithFilter('database_2',
                                                                              [{'name': 'database_code', 'type': 'str'}],
-                                                                             [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+                                                                             [{'name': 'database_id', 'type': 'str',
+                                                                               'value': 'BMRB'}])
                             if len(database_2) > 0:
 
                                 bmrb_id = database_2[0]['database_code']
                                 if bmrb_id is not None and bmrb_id.isdigit():
                                     ret_code = -1
-                                    intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}/work/upload')
+                                    intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}', 'work', 'upload')
                                     if os.path.isdir(intnl_upload_dir):
                                         for file_name in os.listdir(intnl_upload_dir):
                                             file_path = os.path.join(intnl_upload_dir, file_name)
@@ -9262,7 +9308,7 @@ class NmrDpUtility:
                                                     max_ver += 1
                                                     # break
                                     if ret_code != 0:
-                                        intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}/work')
+                                        intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}', 'work')
                                         if os.path.isdir(intnl_upload_dir):
                                             for file_name in os.listdir(intnl_upload_dir):
                                                 file_path = os.path.join(intnl_upload_dir, file_name)
@@ -9287,7 +9333,7 @@ class NmrDpUtility:
                                                     if ret_code == 0:
                                                         break
                                     if ret_code != 0:
-                                        intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}/work/data')
+                                        intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}', 'work', 'data')
                                         if os.path.isdir(intnl_upload_dir):
                                             for file_name in os.listdir(intnl_upload_dir):
                                                 if file_name.endswith('model-upload_P1.pdb.V1'):
@@ -9302,7 +9348,7 @@ class NmrDpUtility:
                                                 for file_name in os.listdir(intnl_upload_dir):
                                                     if file_name.endswith('model-upload_P1.cif.V1'):
                                                         file_path = os.path.join(intnl_upload_dir, file_name)
-                                                        com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '8']
+                                                        com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '8']  # noqa: E501, pylint: disable=line-too-long
                                                         result = subprocess.run(com, check=False)
                                                         ret_code = result.returncode
                                                         # print(f'{" ".join(com)}\n -> {ret_code}')
@@ -9320,13 +9366,14 @@ class NmrDpUtility:
 
                             database_2 = self.__reg.cR.getDictListWithFilter('database_2',
                                                                              [{'name': 'database_code', 'type': 'str'}],
-                                                                             [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+                                                                             [{'name': 'database_id', 'type': 'str',
+                                                                               'value': 'BMRB'}])
                             if len(database_2) > 0:
 
                                 bmrb_id = database_2[0]['database_code']
                                 if bmrb_id is not None and bmrb_id.isdigit():
                                     ret_code = -1
-                                    intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}/work/upload')
+                                    intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}', 'work', 'upload')
                                     if os.path.isdir(intnl_upload_dir):
                                         for file_name in os.listdir(intnl_upload_dir):
                                             file_path = os.path.join(intnl_upload_dir, file_name)
@@ -9340,7 +9387,7 @@ class NmrDpUtility:
                                                     ret_code = 0
                                                     break
                                     if ret_code != 0:
-                                        intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}/work')
+                                        intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}', 'work')
                                         if os.path.isdir(intnl_upload_dir):
                                             for file_name in os.listdir(intnl_upload_dir):
                                                 file_path = os.path.join(intnl_upload_dir, file_name)
@@ -9353,7 +9400,7 @@ class NmrDpUtility:
                                                     if os.path.exists(ret_path):
                                                         ret_code = 0
                                     if ret_code != 0:
-                                        intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}/work/data')
+                                        intnl_upload_dir = os.path.join(self.__reg.cR.getDirPath(), f'bmr{bmrb_id}', 'work', 'data')
                                         if os.path.isdir(intnl_upload_dir):
                                             for file_name in os.listdir(intnl_upload_dir):
                                                 if file_name.endswith('model-upload_P1.cif.V1'):
@@ -9399,7 +9446,8 @@ class NmrDpUtility:
 
                             database_2 = self.__reg.cR.getDictListWithFilter('database_2',
                                                                              [{'name': 'database_code', 'type': 'str'}],
-                                                                             [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+                                                                             [{'name': 'database_id', 'type': 'str',
+                                                                               'value': 'BMRB'}])
                             if len(database_2) > 0:
 
                                 bmrb_id = database_2[0]['database_code']
@@ -9443,7 +9491,7 @@ class NmrDpUtility:
                                                             ret_code = 0
                                                             break
                                                 if ret_code != 0:
-                                                    other_intnl_upload_dir = os.path.join(dir_path, 'work/upload')
+                                                    other_intnl_upload_dir = os.path.join(dir_path, 'work', 'upload')
                                                     if os.path.isdir(other_intnl_upload_dir):
                                                         for file_name in os.listdir(other_intnl_upload_dir):
                                                             file_path = os.path.join(other_intnl_upload_dir, file_name)
@@ -9469,7 +9517,8 @@ class NmrDpUtility:
                                                                     if file_name.endswith('.cif'):
                                                                         if not has_cif_coordinates(file_path):
                                                                             continue
-                                                                        cif_path_list.append((file_path, os.path.getsize(file_path)))
+                                                                        cif_path_list.append((file_path,
+                                                                                              os.path.getsize(file_path)))
                                                                 if len(cif_path_list) > 0:
                                                                     cif_path_list = sorted(cif_path_list, key=lambda item: item[1])
                                                                     file_path = cif_path_list[0][0]
@@ -9544,7 +9593,8 @@ class NmrDpUtility:
 
                         if os.path.exists(internal_cif_file):
                             self.__reg.internal_atom_name_mapping[1] =\
-                                retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath, {0: 0}, internal_cif_file,
+                                retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath, {0: 0},
+                                                                    internal_cif_file,
                                                                     self.__reg.representative_model_id,
                                                                     self.__reg.representative_alt_id,
                                                                     self.__reg.csStat)
@@ -9603,7 +9653,8 @@ class NmrDpUtility:
                     except Exception as e:
 
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
+                                                                  f"+{self.__class_name__}.__parseCoordinate() "
+                                                                  "++ Error  - " + str(e))
 
                         return False
 
@@ -9668,7 +9719,8 @@ class NmrDpUtility:
                 if self.__reg.dirPath is None:
                     self.__reg.dirPath = os.path.dirname(fPath)
 
-                # if self.__sub_dir_name_for_cache != 'nmr_dp_util' and os.path.isdir(os.path.join(self.__reg.dirPath, 'nmr_dp_util')):
+                # if self.__sub_dir_name_for_cache != 'nmr_dp_util'\
+                #    and os.path.isdir(os.path.join(self.__reg.dirPath, 'nmr_dp_util')):
                 #     os.rename(os.path.join(self.__reg.dirPath, 'nmr_dp_util'),
                 #               os.path.join(self.__reg.dirPath, self.__sub_dir_name_for_cache))
 
@@ -9869,12 +9921,14 @@ class NmrDpUtility:
 
                     if self.__reg.cR.hasItem(lp_category, 'pdb_mon_id'):
                         _key_items = copy.copy(key_items)
-                        _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
+                        _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id',
+                                           'default-from': 'mon_id'})
                         key_items = _key_items
 
                     if self.__reg.cR.hasItem(lp_category, 'auth_mon_id'):
                         _key_items = copy.copy(key_items)
-                        _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+                        _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id',
+                                           'default-from': 'mon_id'})
                         key_items = _key_items
 
                     try:
@@ -9898,12 +9952,14 @@ class NmrDpUtility:
 
                     if self.__reg.cR.hasItem(lp_category, 'pdb_mon_id'):
                         _key_items = copy.copy(key_items)
-                        _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
+                        _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id',
+                                           'default-from': 'mon_id'})
                         key_items = _key_items
 
                     if self.__reg.cR.hasItem(lp_category, 'auth_mon_id'):
                         _key_items = copy.copy(key_items)
-                        _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+                        _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id',
+                                           'default-from': 'mon_id'})
                         key_items = _key_items
 
                     try:
@@ -10130,7 +10186,8 @@ class NmrDpUtility:
         except Exception as e:
 
             self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ Error  - " + str(e))
+                                                      f"+{self.__class_name__}.__extractCoordPolymerSequence() "
+                                                      "++ Error  - " + str(e))
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ Error  - {str(e)}\n")
@@ -10469,7 +10526,8 @@ class NmrDpUtility:
                             _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
                             _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                            seq_align = self.__getSeqAlignCodeWithBlankFill__(length, len(ps1['seq_id']), _matched, conflict, unmapped,
+                            seq_align = self.__getSeqAlignCodeWithBlankFill__(length, len(ps1['seq_id']), _matched,
+                                                                              conflict, unmapped,
                                                                               offset_1, offset_2, _ps1, _ps2, myAlign)
                             seq_align['list_id'] = _poly_seq_in_lp['list_id']
                             seq_align['chain_id'] = chain_id
@@ -10505,7 +10563,8 @@ class NmrDpUtility:
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
-                self.__reg.pA.setReferenceSequence(ps1['auth_comp_id'] if 'auth_comp_id' in ps1 else ps2['comp_id'], f'REF{chain_id}')
+                self.__reg.pA.setReferenceSequence(ps1['auth_comp_id'] if 'auth_comp_id' in ps1 else ps2['comp_id'],
+                                                   f'REF{chain_id}')
                 self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                 self.__reg.pA.doAlign()
 
@@ -10976,7 +11035,7 @@ class NmrDpUtility:
 
                     if result['matched'] == 0\
                        or (result['conflict'] > 0
-                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):  # noqa: E501, pylint: disable=line-too-long
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -11139,7 +11198,8 @@ class NmrDpUtility:
                             if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:
                                 if not low_evid_chain_mapping:  # DAOTHER-8751
                                     continue
 
@@ -11237,7 +11297,7 @@ class NmrDpUtility:
 
                     if result['matched'] == 0\
                        or (result['conflict'] > 0
-                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):  # noqa: E501, pylint: disable=line-too-long
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -11438,7 +11498,8 @@ class NmrDpUtility:
                             if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:
                                 if not low_evid_chain_mapping:  # DAOTHER-8751
                                     continue
 
@@ -11519,7 +11580,8 @@ class NmrDpUtility:
 
                                 if cif_comp_id != '.':
                                     if chain_id2 != auth_chain_id2 or auth_seq_id != label_seq_id:
-                                        cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
+                                        cif_seq_code += f", or {auth_chain_id2}:{auth_seq_id}:{cif_comp_id} "\
+                                            "in author sequence scheme"
 
                                 err = f"Sequence alignment error between the NMR data ({nmr_seq_code}) "\
                                     f"and the coordinate ({cif_seq_code}). "\
@@ -11527,7 +11589,8 @@ class NmrDpUtility:
 
                                 if self.__reg.tolerant_seq_align and self.__reg.dpV.equalsToRepCompId(cif_comp_id, nmr_comp_id):
                                     self.__reg.suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
-                                                                                        {'ca_idx': ca_idx, 'file_name': nmr_file_name,
+                                                                                        {'ca_idx': ca_idx,
+                                                                                         'file_name': nmr_file_name,
                                                                                          'description': err}})
 
                                     if self.__reg.verbose:
@@ -11536,7 +11599,8 @@ class NmrDpUtility:
 
                                 elif not self.__reg.annotation_mode:
                                     self.__reg.suspended_errors_for_lazy_eval.append({'sequence_mismatch':
-                                                                                      {'ca_idx': ca_idx, 'file_name': nmr_file_name,
+                                                                                      {'ca_idx': ca_idx,
+                                                                                       'file_name': nmr_file_name,
                                                                                        'description': err}})
 
                                     if self.__reg.verbose:
@@ -11785,7 +11849,7 @@ class NmrDpUtility:
 
                     if result['matched'] == 0\
                        or (result['conflict'] > 0
-                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):  # noqa: E501, pylint: disable=line-too-long
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -11976,7 +12040,8 @@ class NmrDpUtility:
                             if _conflicts > ca['unmapped'] and ca['sequence_coverage'] < MIN_SEQ_COVERAGE_W_CONFLICT:
                                 continue
 
-                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
+                            # DAOTHER-7825 (2lyw)
+                            if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:
                                 if not low_evid_chain_mapping:  # DAOTHER-8751
                                     continue
 
@@ -12007,7 +12072,8 @@ class NmrDpUtility:
                                     warn = f"{cif_seq_code} is not present in the NMR data (chain_id {chain_id2})."
 
                                     self.__reg.suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
-                                                                                        {'ca_idx': ca_idx, 'file_name': cif_file_name,
+                                                                                        {'ca_idx': ca_idx,
+                                                                                         'file_name': cif_file_name,
                                                                                          'description': warn}})
 
                                     if self.__reg.verbose:
@@ -12059,7 +12125,8 @@ class NmrDpUtility:
                                     nmr_seq_code += ', insertion error'
                                 if cif_comp_id != '.':
                                     if chain_id != auth_chain_id or label_seq_id != auth_seq_id:
-                                        cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} in author sequence scheme"
+                                        cif_seq_code += f", or {auth_chain_id}:{auth_seq_id}:{cif_comp_id} "\
+                                            "in author sequence scheme"
 
                                 err = f"Sequence alignment error between the coordinate ({cif_seq_code}) "\
                                     f"and the NMR data ({nmr_seq_code}). "\
@@ -12067,7 +12134,8 @@ class NmrDpUtility:
 
                                 if self.__reg.tolerant_seq_align and self.__reg.dpV.equalsToRepCompId(nmr_comp_id, cif_comp_id):
                                     self.__reg.suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
-                                                                                        {'ca_idx': ca_idx, 'file_name': cif_file_name,
+                                                                                        {'ca_idx': ca_idx,
+                                                                                         'file_name': cif_file_name,
                                                                                          'description': err}})
 
                                     if self.__reg.verbose:
@@ -12076,7 +12144,8 @@ class NmrDpUtility:
 
                                 elif not self.__reg.annotation_mode:
                                     self.__reg.suspended_errors_for_lazy_eval.append({'sequence_mismatch':
-                                                                                      {'ca_idx': ca_idx, 'file_name': cif_file_name,
+                                                                                      {'ca_idx': ca_idx,
+                                                                                       'file_name': cif_file_name,
                                                                                        'description': err}})
 
                                     if self.__reg.verbose:
@@ -12320,7 +12389,8 @@ class NmrDpUtility:
                 err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
                 self.__reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - " + err)
+                                                          f"+{self.__class_name__}.__testCoordAtomIdConsistency() "
+                                                          "++ Error  - " + err)
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
@@ -12451,10 +12521,12 @@ class NmrDpUtility:
         fPath = self.__reg.inputParamDict[REPORT_FILE_PATH_KEY]
 
         if not os.access(fPath, os.F_OK):
-            raise IOError(f"+{self.__class_name__}.__retrieveDpReport() ++ Error  - Could not access to file path {fPath}.")
+            raise IOError(f"+{self.__class_name__}.__retrieveDpReport() "
+                          f"++ Error  - Could not access to file path {fPath}.")
 
         if os.path.getsize(fPath) == 0:
-            raise IOError(f"+{self.__class_name__}.__retrieveDpReport() ++ Error  - Could not find any content in file path {fPath}.")
+            raise IOError(f"+{self.__class_name__}.__retrieveDpReport() "
+                          f"++ Error  - Could not find any content in file path {fPath}.")
 
         self.__reg.report = NmrDpReport(self.__reg.verbose, self.__reg.log)
         self.__reg.report.loadFile(fPath)
@@ -12847,7 +12919,8 @@ class NmrDpUtility:
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - " + err)
+                                                                  f"+{self.__class_name__}.__deleteSkippedLoop() "
+                                                                  "++ Error  - " + err)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - {err}\n")
@@ -12859,7 +12932,8 @@ class NmrDpUtility:
                         err = "Could not specify 'category' in NMR data processing report."
 
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - " + err)
+                                                                  f"+{self.__class_name__}.__deleteSkippedLoop() "
+                                                                  "++ Error  - " + err)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - {err}\n")
@@ -13081,7 +13155,8 @@ class NmrDpUtility:
 
                 elif self.__reg.star_data_type[fileListId] == 'Saveframe':
                     try:
-                        modified |= self.__reg.dpR.remediateRdcLoop(file_type, self.__reg.star_data[fileListId].get_loop(lp_category))
+                        modified |= self.__reg.dpR.remediateRdcLoop(file_type,
+                                                                    self.__reg.star_data[fileListId].get_loop(lp_category))
                     except KeyError:
                         continue
 
@@ -13514,7 +13589,8 @@ class NmrDpUtility:
                                                                      'description': err})
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Warning  - {err}\n")
+                            self.__reg.log.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() "
+                                                 f"++ Warning  - {err}\n")
 
                     else:
 
@@ -13652,7 +13728,8 @@ class NmrDpUtility:
                                                                        'description': err})
 
                             if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+                                self.__reg.log.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() "
+                                                     f"++ Error  - {err}\n")
 
         if self.__reg.coordPropCachePath is not None:
             hash_value = hash(str(self.__reg.cpC))
@@ -14167,7 +14244,8 @@ class NmrDpUtility:
 
                                 if self.__reg.rescue_mode:
                                     self.__reg.report.warning.appendDescription('missing_data',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                                {'file_name': file_name,
+                                                                                 'sf_framecode': sf_framecode,
                                                                                  'category': sf_category, 'description': warn})
 
                                     if self.__reg.verbose:
@@ -14375,7 +14453,8 @@ class NmrDpUtility:
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - " + err)
+                                                                  f"+{self.__class_name__}.__fixDisorderedIndex() "
+                                                                  "++ Error  - " + err)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - {err}\n")
@@ -14387,7 +14466,8 @@ class NmrDpUtility:
                         err = "Could not specify 'category' in NMR data processing report."
 
                         self.__reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - " + err)
+                                                                  f"+{self.__class_name__}.__fixDisorderedIndex() "
+                                                                  "++ Error  - " + err)
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - {err}\n")
@@ -14399,7 +14479,8 @@ class NmrDpUtility:
                             category = w['category'] if w['category'].startswith('_') else f"_{w['category']}"  # pynmrstar v2.6.5.1
 
                             content_subtype = next(c for c in input_source_dic['content_subtype']
-                                                   if LP_CATEGORIES[file_type][c] == category and INDEX_TAGS[file_type][c] is not None)
+                                                   if LP_CATEGORIES[file_type][c] == category
+                                                   and INDEX_TAGS[file_type][c] is not None)
 
                             loop = sf.get_loop(w['category'])
 
@@ -15292,7 +15373,8 @@ class NmrDpUtility:
             except OSError:
                 pass
 
-        if 'nef' not in self.__reg.op and ('deposit' in self.__reg.op or 'annotate' in self.__reg.op or 'replace-cs' in self.__reg.op)\
+        if 'nef' not in self.__reg.op and ('deposit' in self.__reg.op or 'annotate' in self.__reg.op
+                                           or 'replace-cs' in self.__reg.op)\
            and NMR_CIF_FILE_PATH_KEY in self.__reg.outputParamDict:
 
             if self.__reg.cifPath is None or self.__reg.submission_mode:
@@ -15892,11 +15974,13 @@ class NmrDpUtility:
                                     prev_id = _id
                                     continue
                                 atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                         'seq_id': int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
+                                         'seq_id':
+                                         int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                          'comp_id': row[comp_id_1_col],
                                          'atom_id': row[atom_id_1_col]}
                                 atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                         'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
+                                         'seq_id':
+                                         int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                          'comp_id': row[comp_id_2_col],
                                          'atom_id': row[atom_id_2_col]}
                                 if not isAmbigAtomSelection([_atom1, atom1], self.__reg.csStat)\
@@ -16002,11 +16086,13 @@ class NmrDpUtility:
                     if containerList is not None and len(containerList) > 1:
 
                         if self.__reg.verbose:
-                            self.__reg.log.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+                            self.__reg.log.write("Input container list is "
+                                                 f"{[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                         eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__reg.internal_mode else 0
                         abandon_symbolic_labels(containerList)
-                        myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], containerList=containerList[eff_block_id:])
+                        myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY],
+                                       containerList=containerList[eff_block_id:])
 
                 except Exception as e:
                     self.__reg.log.write(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - {str(e)}\n")

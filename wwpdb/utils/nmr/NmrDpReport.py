@@ -2090,12 +2090,12 @@ class NmrDpReportInputSource:
             #     raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() "
             #                    f"++ Error  - Unknown seq_id {seq_id}")
 
-        except StopIteration:
+        except StopIteration as e:
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() "
                                  f"++ Error  - Unknown chain_id {chain_id}")
             raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() "
-                           f"++ Error  - Unknown chain_id {chain_id}")  # pylint: disable=raise-missing-from
+                           f"++ Error  - Unknown chain_id {chain_id}") from e
 
 
 class NmrDpReportSequenceAlignment:

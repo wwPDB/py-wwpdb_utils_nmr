@@ -10410,7 +10410,7 @@ class NmrDpValidation:
                                 seq_key = (chain_id, seq_id, comp_id)
 
                                 entity_assembly_id, comp_index_id, _, _ =\
-                                    auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+                                    auth_to_star_seq[seq_key]
 
                                 if self.__reg.annotation_mode or self.__reg.native_combined:
                                     _auth_asym_id, _auth_seq_id =\

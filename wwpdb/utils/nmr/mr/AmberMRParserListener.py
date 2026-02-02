@@ -8615,7 +8615,7 @@ class AmberMRParserListener(ParseTreeListener):
     def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
         try:
 
-            if self.nprot < 0 and len(self.iprot) > 0:  # pylint: disable=chained-comparison
+            if self.nprot < 0 < len(self.iprot) > 0:
                 self.nprot = max(self.iprot.keys())
 
             if self.nprot <= 0:
@@ -9132,7 +9132,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#pcshf_statement.
     def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
-        if self.nprot < 0 and len(self.iprot) > 0:  # pylint: disable=chained-comparison
+        if self.nprot < 0 < len(self.iprot):
             self.nprot = max(self.iprot.keys())
 
         if self.nprot <= 0:
@@ -9140,7 +9140,7 @@ class AmberMRParserListener(ParseTreeListener):
                             "The number of observed PCS values 'nprot' is the mandatory variable.")
             return
 
-        if self.nme < 0 and len(self.optphi) > 0:  # pylint: disable=chained-comparison
+        if self.nme < 0 < len(self.optphi):
             self.nme = max(self.optphi.keys())
         # """
         # if self.nme <= 0:
@@ -9529,7 +9529,7 @@ class AmberMRParserListener(ParseTreeListener):
     def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
         try:
 
-            if self.ndip < 0 and len(self.id) > 0:  # pylint: disable=chained-comparison
+            if self.ndip < 0 < len(self.id):
                 self.ndip = max(self.id.keys())
 
             if self.ndip <= 0:
@@ -10168,7 +10168,7 @@ class AmberMRParserListener(ParseTreeListener):
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         try:
 
-            if self.ncsa < 0 and len(self.icsa) > 0:  # pylint: disable=chained-comparison
+            if self.ncsa < 0 < len(self.icsa):
                 self.ncsa = max(self.icsa.keys())
 
             if self.ncsa <= 0:

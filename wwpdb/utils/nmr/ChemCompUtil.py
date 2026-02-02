@@ -27,7 +27,7 @@ import pickle
 import functools
 
 from typing import IO, List, Tuple, Optional
-from rmsd.calculate_rmsd import NAMES_ELEMENT, ELEMENT_WEIGHTS  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,unused-import,line-too-long
+from rmsd.calculate_rmsd import NAMES_ELEMENT, ELEMENT_WEIGHTS  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,line-too-long
 
 
 try:

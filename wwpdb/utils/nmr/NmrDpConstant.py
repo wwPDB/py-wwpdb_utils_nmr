@@ -16,7 +16,7 @@ __version__ = "5.0.0"
 import re
 import copy
 
-from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error
+from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module,import-error
 
 # supported parameter keys as input/output file path(s) for NmrDpUtility class
 MODEL_FILE_PATH_KEY = 'coordinate_file_path'

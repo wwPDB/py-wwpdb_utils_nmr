@@ -16,12 +16,13 @@ import sys
 import re
 import copy
 import collections
-import numpy
 import itertools
-import pynmrstar
 import functools
 
 from typing import IO, List, Tuple, Union, Optional
+
+import numpy
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
@@ -2653,9 +2654,10 @@ class BasePKParserListener():
                                 if v_1['acquisition'] != v_2['acquisition'] and v_1['acquisition'] == 'no':
                                     onebond_1, onebond_2 = onebond_2, onebond_1
                                     v_1, v_2 = v_2, v_1
+                                # pylint: disable=line-too-long
                                 exp_class = f'{onebond_codes[onebonds.index(onebond_1)] if onebond_1 is not None else v_1["atom_type"]}_'\
                                     f'{onebond_codes[onebonds.index(onebond_2)] if onebond_2 is not None else v_2["atom_type"]}.'\
-                                    f'{primary_dim_transfer}'  # noqa: E501, pylint: disable=line-too-long
+                                    f'{primary_dim_transfer}'  # noqa: E501
                                 break
 
                     else:

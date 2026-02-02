@@ -15,10 +15,11 @@ __version__ = "1.1.1"
 import sys
 import copy
 import itertools
-import numpy
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
+from antlr4 import ParseTreeListener
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

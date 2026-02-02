@@ -20,12 +20,13 @@ import collections
 import re
 import shutil
 import math
-import pynmrstar
-import numpy
 import functools
 
 from operator import itemgetter
 from typing import List, Union, Set, Tuple, Optional
+
+import pynmrstar
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,

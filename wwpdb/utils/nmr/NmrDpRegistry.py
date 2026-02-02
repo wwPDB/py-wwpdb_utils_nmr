@@ -15,11 +15,11 @@ __version__ = "5.0.0"
 
 import sys
 import copy
-import pynmrstar
-
-from dataclasses import dataclass, field
 
 from typing import IO, List, Union
+from dataclasses import dataclass, field
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (INITIAL_ENTRY_ID,

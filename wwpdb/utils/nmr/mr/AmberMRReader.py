@@ -15,8 +15,8 @@ import sys
 import os
 import copy
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 from typing import IO, List, Tuple, Optional
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -195,7 +195,7 @@ class AmberMRReader:
 
                 if isFilePath:
                     ifh = open(mrFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                    input = InputStream(ifh.read())
+                    input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
                 else:
                     input = InputStream(mrString)
 

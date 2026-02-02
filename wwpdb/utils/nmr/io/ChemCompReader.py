@@ -20,10 +20,10 @@ __version__ = "1.0.6"
 import sys
 import os
 
+from typing import IO, List, Optional
+
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
-
-from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

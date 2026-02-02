@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from typing import IO, List, Tuple, Optional
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
@@ -120,7 +120,7 @@ class AriaCSReader:
                     return None, None, None
 
                 ifh = open(csFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())
+                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
 
             else:
                 csFilePath, csString = None, csFilePath

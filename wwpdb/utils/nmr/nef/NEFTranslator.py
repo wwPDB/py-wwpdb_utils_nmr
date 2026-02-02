@@ -141,16 +141,17 @@ import ntpath
 import logging
 import re
 import io
-# import csv
 import itertools
 import copy
-import pynmrstar
 import collections
 import functools
 
-from packaging import version
 from operator import itemgetter
 from typing import IO, List, Tuple, Union, Optional
+from packaging import version
+
+# import csv
+import pynmrstar
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 

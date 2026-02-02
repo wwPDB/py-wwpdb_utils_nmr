@@ -14,11 +14,12 @@ __version__ = "1.1.1"
 
 import re
 import copy
-import pynmrstar
 import itertools
 
 from operator import itemgetter
 from typing import Optional
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

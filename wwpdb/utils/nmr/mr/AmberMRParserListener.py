@@ -17,12 +17,13 @@ import copy
 import collections
 import re
 import itertools
-import numpy
 import functools
 
-from antlr4 import ParseTreeListener
 from operator import itemgetter
 from typing import IO, List, Tuple, Optional
+from antlr4 import ParseTreeListener
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
@@ -10022,14 +10023,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 f"The argument value of '{varName}={self.dataset}' must be a positive integer.")
                 return
 
-            if self.dataset > self.numDatasets:
-                self.numDatasets = self.dataset
-                # """
-                # self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                #                 f"The argument value of '{varName}={self.dataset}' must be in the range 1-{self.numDatasets}, "
-                #                 f"regulated by 'num_dataset={self.numDatasets}'.")
-                # return
-                # """
+            self.numDatasets = max(self.numDatasets, self.dataset)
+
         elif ctx.NUM_DATASETS():
             self.numDatasets = int(str(ctx.Integer()))
             if self.numDatasets <= 0:
@@ -10974,7 +10969,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         unambigResidues = None
         if len(self.unambigAtomNameMapping) > 0:
-            unambigResidues = [translateToStdResName(residue, ccU=self.__ccU) for residue in self.unambigAtomNameMapping.keys()]
+            unambigResidues = [translateToStdResName(residue, ccU=self.__ccU) for residue in self.unambigAtomNameMapping]
 
         for ambigDict in self.ambigAtomNameMapping.values():
             for ambigList in ambigDict.values():

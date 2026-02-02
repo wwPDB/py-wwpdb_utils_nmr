@@ -15,12 +15,13 @@ __version__ = "1.1.1"
 import sys
 import re
 import itertools
-import numpy
 import copy
 import collections
 import functools
 
 from typing import IO, List, Tuple, Optional
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
@@ -6065,7 +6066,7 @@ class BaseLinearMRParserListener():
 
         unambigResidues = None
         if len(self.unambigAtomNameMapping) > 0:
-            unambigResidues = [translateToStdResName(residue, ccU=self.ccU) for residue in self.unambigAtomNameMapping.keys()]
+            unambigResidues = [translateToStdResName(residue, ccU=self.ccU) for residue in self.unambigAtomNameMapping]
 
         for ambigDict in self.ambigAtomNameMapping.values():
             for ambigList in ambigDict.values():

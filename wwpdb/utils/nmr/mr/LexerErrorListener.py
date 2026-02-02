@@ -12,8 +12,8 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.2"
 
-from antlr4.error.ErrorListener import ErrorListener
 from typing import List, Optional
+from antlr4.error.ErrorListener import ErrorListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,

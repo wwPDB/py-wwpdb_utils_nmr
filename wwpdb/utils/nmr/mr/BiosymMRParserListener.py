@@ -16,8 +16,8 @@ import sys
 import itertools
 import copy
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

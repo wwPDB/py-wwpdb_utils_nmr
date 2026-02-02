@@ -15,8 +15,8 @@ __version__ = "1.1.1"
 
 import sys
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator

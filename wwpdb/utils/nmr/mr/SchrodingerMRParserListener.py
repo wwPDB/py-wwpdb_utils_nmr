@@ -18,10 +18,10 @@ import itertools
 import copy
 import collections
 
-from antlr4 import ParseTreeListener
-from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 from operator import itemgetter
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
+from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

@@ -16,13 +16,14 @@ import os
 import re
 import codecs
 import shutil
-import chardet
 import hashlib
 import itertools
 
 from operator import itemgetter
-from striprtf.striprtf import rtf_to_text
 from typing import Any, List, Tuple, Optional
+from striprtf.striprtf import rtf_to_text
+
+import chardet
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,

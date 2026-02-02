@@ -296,13 +296,14 @@ import re
 import shutil
 import time
 import hashlib
-import pynmrstar
 
-from munkres import Munkres
 from operator import itemgetter
 from typing import Any, IO, List, Union, Optional
 from datetime import datetime
 
+import pynmrstar
+
+from munkres import Munkres
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 

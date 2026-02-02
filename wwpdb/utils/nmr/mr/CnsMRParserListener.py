@@ -16,12 +16,13 @@ import sys
 import re
 import itertools
 import copy
-import numpy
 
-from antlr4 import ParseTreeListener
-from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 from operator import itemgetter
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
+from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,

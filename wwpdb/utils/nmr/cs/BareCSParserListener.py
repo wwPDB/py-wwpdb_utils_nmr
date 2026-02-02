@@ -15,8 +15,8 @@ __version__ = "1.1.1"
 import sys
 import re
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,

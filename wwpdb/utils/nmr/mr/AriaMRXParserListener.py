@@ -16,8 +16,8 @@ import sys
 import itertools
 import copy
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
@@ -1011,7 +1011,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     prevCifAtomId = None
                     prevOffset = None
 
-                    for ord, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
+                    for col, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
 
                         atomSelection = []
 
@@ -1062,14 +1062,14 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
                                                   if cca['atom_id'] == atomId), None)
                                 if cifAtomId is None:
-                                    if ord == 0:
-                                        _cifSeqId += seqOffset[ord + 1] - offset
-                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[ord + 1])
+                                    if col == 0:
+                                        _cifSeqId += seqOffset[col + 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[col + 1])
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
-                                    elif ord == 3:
-                                        _cifSeqId += seqOffset[ord - 1] - offset
-                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[ord - 1])
+                                    elif col == 3:
+                                        _cifSeqId += seqOffset[col - 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[col - 1])
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
                             else:

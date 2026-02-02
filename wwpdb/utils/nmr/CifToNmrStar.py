@@ -25,16 +25,17 @@ __version__ = "1.0.2"
 
 import sys
 import os
-import pynmrstar
 import pickle
 import logging
 import hashlib
 import collections
 import json
 
-from packaging import version
 from operator import itemgetter
 from typing import Any, IO, Union, Optional
+from packaging import version
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

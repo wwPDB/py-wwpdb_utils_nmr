@@ -14,8 +14,8 @@ __version__ = "1.0.2"
 
 import re
 
-from antlr4.error.ErrorListener import ErrorListener
 from typing import List, Optional
+from antlr4.error.ErrorListener import ErrorListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,

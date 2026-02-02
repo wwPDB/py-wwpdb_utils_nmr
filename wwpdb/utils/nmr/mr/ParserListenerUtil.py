@@ -26,12 +26,13 @@ import re
 import copy
 import collections
 import itertools
-import numpy
-import pynmrstar
 import functools
 
 from operator import itemgetter
 from typing import Any, IO, List, Set, Tuple, Optional
+
+import numpy
+import pynmrstar
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -6689,7 +6690,7 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
     return None
 
 
-def getRow(mrSubtype: str, id: int, indexId: int,
+def getRow(mrSubtype: str, id: int, indexId: int,  # pylint: disable=redefined-builtin
            combinationId: Optional[int], memberId: Optional[int], code: Optional[str],
            listId: int, entryId: str, dstFunc: dict,
            authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict],
@@ -7198,7 +7199,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
     return row
 
 
-def getPkRow(pkSubtype: str, id: int, indexId: int,
+def getPkRow(pkSubtype: str, id: int, indexId: int,  # pylint: disable=redefined-builtin
              listId: int, entryId: str, dstFunc: dict,
              authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
              atom1: Optional[dict] = None, atom2: Optional[dict] = None,
@@ -7533,7 +7534,7 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
     return row
 
 
-def getSpectralDimRow(id: int, listId: int, entryId: str, meta: dict) -> List[Any]:
+def getSpectralDimRow(id: int, listId: int, entryId: str, meta: dict) -> List[Any]:  # pylint: disable=redefined-builtin
     """ Return row data for a _Spectral_dim loop.
         @return: data array
     """
@@ -7789,7 +7790,7 @@ def getDstFuncAsNoe() -> dict:
     return {'weight': '1.0', 'lower_limit': '2.0', 'upper_limit': str(DIST_AMBIG_MED)}
 
 
-def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optional[int], code: Optional[str],
+def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optional[int], code: Optional[str],  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
                    listId: int, entryId: str, originalTagNames: List[str], originalRow: List[Any],
                    authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict],
                    authToInsCode: Optional[dict], offsetHolder: dict,

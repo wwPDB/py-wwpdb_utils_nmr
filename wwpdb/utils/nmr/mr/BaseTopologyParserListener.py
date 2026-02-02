@@ -17,8 +17,8 @@ import collections
 import copy
 import functools
 
-from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 from typing import IO, List, Optional
+from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,

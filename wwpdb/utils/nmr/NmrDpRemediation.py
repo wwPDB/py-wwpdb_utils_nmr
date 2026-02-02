@@ -18,12 +18,13 @@ import re
 import itertools
 import copy
 import collections
-import pynmrstar
 import functools
 
 from operator import itemgetter
 from typing import List, Tuple, Union, Optional
 from datetime import (datetime, timedelta)
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,

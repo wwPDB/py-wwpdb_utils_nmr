@@ -9,14 +9,6 @@
 import unittest
 import sys
 
-if __package__ is None or __package__ == "":
-    from os import path
-
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
-else:
-    from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
-
 from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -25,9 +17,17 @@ from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 from wwpdb.utils.nmr.rci.RCI import RCI
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
+if __package__ is None or __package__ == "":
+    from os import path
+
+    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+    from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
+else:
+    from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
+
 
 class ImportTests(unittest.TestCase):
-    def testInstantiate(self):
+    def testInstantiate(self):  # pylint: disable=no-self-use
         _c = NEFTranslator()  # noqa: F841
         _npu = NmrDpUtility()  # noqa: F841
         _ndp = NmrDpReport()  # noqa: F841

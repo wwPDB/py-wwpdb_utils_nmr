@@ -15,13 +15,14 @@ __version__ = "1.1.1"
 import sys
 import re
 import itertools
-import numpy
 import copy
 import collections
 import functools
 import random
 
 from typing import IO, List, Tuple, Optional
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LEN_LARGE_ASYM_ID,
@@ -5781,10 +5782,10 @@ class BaseStackedMRParserListener():
         _atomId = _factor['atom_id'][0].upper() if _factor['atom_id'][0] is not None else None
 
         if len(_factor['atom_selection']) == 0:
-            exit, _factor = self.__handleNoAtomSelection(_factor, clauseName, cifCheck, trial,
-                                                         chain_not_specified, ambig_atom_sel,
-                                                         found_comp_id, atom_not_found_error, _atomId)
-            if exit:
+            escape, _factor = self.__handleNoAtomSelection(_factor, clauseName, cifCheck, trial,
+                                                           chain_not_specified, ambig_atom_sel,
+                                                           found_comp_id, atom_not_found_error, _atomId)
+            if escape:
                 return _factor
 
         elif len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1\

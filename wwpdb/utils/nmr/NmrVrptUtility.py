@@ -29,10 +29,11 @@ import tempfile
 import time
 import pickle
 import copy
-import numpy as np
 
 from operator import itemgetter
 from typing import Any, IO, List, Tuple, Optional
+
+import numpy as np
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 

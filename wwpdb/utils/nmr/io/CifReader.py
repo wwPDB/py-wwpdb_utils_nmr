@@ -57,10 +57,10 @@ import copy
 import inspect
 import pickle
 
-import numpy as np
-
 from operator import itemgetter
 from typing import IO, List, Tuple, Optional
+
+import numpy as np
 
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader

@@ -18,6 +18,10 @@ import unittest
 import os
 import sys
 
+from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
+# from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
+from testfixtures import LogCapture
+
 if __package__ is None or __package__ == "":
     from os import path
 
@@ -25,10 +29,6 @@ if __package__ is None or __package__ == "":
     from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
 else:
     from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
-
-from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-# from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
-from testfixtures import LogCapture
 
 
 skipsome = True

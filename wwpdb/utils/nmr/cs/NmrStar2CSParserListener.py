@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 
 import sys
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -81,13 +81,13 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
 
     # Exit a parse tree produced by NmrStar2CSParser#seq_data.
     def exitSeq_data(self, ctx: NmrStar2CSParser.Seq_dataContext):  # pylint: disable=unused-argument
-        for any in self.anySelection:
-            if any is None:
+        for _any in self.anySelection:
+            if _any is None:
                 continue
-            if isinstance(any, int):
-                self.__cur_seq_ids.append(any)
-            elif isinstance(any, str):
-                self.__cur_comp_ids.append(any)
+            if isinstance(_any, int):
+                self.__cur_seq_ids.append(_any)
+            elif isinstance(_any, str):
+                self.__cur_comp_ids.append(_any)
         self.anySelection.clear()
 
         if self.__first_seq_id is None and len(self.__cur_seq_ids) > 0:

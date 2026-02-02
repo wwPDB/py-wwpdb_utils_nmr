@@ -16,10 +16,10 @@ __version__ = "1.0.0"
 import os
 import shutil
 import logging
-import requests
 import datetime
 import gzip
 import argparse
+import requests
 
 from dateutil.parser import parse as parsedate
 from mmcif.io.PdbxReader import PdbxReader

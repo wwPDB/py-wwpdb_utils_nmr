@@ -14,9 +14,9 @@ __version__ = "1.1.1"
 
 import sys
 
+from typing import IO, List, Optional
 from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
-from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
@@ -399,7 +399,7 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
             seqId = int(str(ctx.Integer(1)))
             # cgnr = int(str(ctx.Integer(2)))
 
-            type = str(ctx.Simple_name(0))
+            type = str(ctx.Simple_name(0))  # pylint: disable=redefined-builtin
             compId = str(ctx.Simple_name(1))
             atomId = str(ctx.Simple_name(2))
 

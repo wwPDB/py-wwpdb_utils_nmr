@@ -126,6 +126,12 @@ class XplorMRReader:
 
         self.__debug = debug
 
+    def setRemediateMode(self, remediate: bool):
+        """ Set remediation mode.
+        """
+
+        self.__remediate = remediate
+
     def setInternalMode(self, internal: bool):
         """ Set internal mode.
         """

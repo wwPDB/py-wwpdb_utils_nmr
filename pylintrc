@@ -16,7 +16,7 @@ ignore-patterns=wwpdb/utils/nmr/mr/*Parser.py,
                 wwpdb/utils/nmr/pk/*Parser.py,
                 wwpdb/utils/nmr/pk/*Lexer.py,
                 wwpdb/utils/nmr/cs/*Parser.py,
-                wwpdb/utils/nmr/cs/*Lexer.py,
+                wwpdb/utils/nmr/cs/*Lexer.py
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().

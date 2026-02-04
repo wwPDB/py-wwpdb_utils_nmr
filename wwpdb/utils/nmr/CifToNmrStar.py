@@ -285,7 +285,7 @@ class CifToNmrStar:
         schema = pynmrstar.Schema()  # retrieve the latest schema via internet access
 
         # print(schema.headers)
-        with open(os.path.join(self.schema_dir, 'headers.txt'), 'w') as ofh:
+        with open(os.path.join(self.schema_dir, 'headers.txt'), 'w', encoding='utf-8') as ofh:
             for header in schema.headers:
                 ofh.write(header + '\n')
         self.__log.write('headers.txt: Done.\n')
@@ -306,7 +306,7 @@ class CifToNmrStar:
         write_schema_as_pickle(schema.data_types, os.path.join(self.schema_dir, 'data_types.pkl'))
         self.__log.write('data_types.pkl: Done.\n')
 
-        with open(os.path.join(self.schema_dir, 'version.txt'), 'w') as ofh:
+        with open(os.path.join(self.schema_dir, 'version.txt'), 'w', encoding='utf-8') as ofh:
             ofh.write(schema.version)
         self.__log.write(f"version: {schema.version}\n")
 
@@ -674,8 +674,8 @@ class CifToNmrStar:
 
             changed = False
 
-            with open(cifPath, 'r') as ifh, \
-                    open(_cifPath, 'w') as ofh:
+            with open(cifPath, 'r', encoding='utf-8') as ifh, \
+                    open(_cifPath, 'w', encoding='utf-8') as ofh:
                 for line in ifh:
                     if SF_ANONYMOUS_PAT.match(line) or SAVE_PAT.match(line):
                         ofh.write('#' + line)
@@ -695,7 +695,7 @@ class CifToNmrStar:
 
             return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"+{self.__class_name__}.convert() ++ Error  - {str(e)}\n")
 
             return False
@@ -968,7 +968,7 @@ class CifToNmrStar:
                 for lp in sf:
                     lp.sort_tags()
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"+{self.__class_name__}.normalize() ++ Error  - {str(e)}\n")
 
         for sf in strData.get_saveframes_by_tag_and_value('_Other_data_type_list.Text_data_format', 'json'):
@@ -1004,7 +1004,7 @@ class CifToNmrStar:
 
         try:
             strData.frame_list.sort(key=sf_key)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"+{self.__class_name__}.normalize_nef() ++ Error  - {str(e)}\n")
 
         return strData

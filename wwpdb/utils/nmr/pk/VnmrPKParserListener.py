@@ -41,8 +41,9 @@ except ImportError:
     from nmr.pk.BasePKParserListener import BasePKParserListener
 
 
-# This class defines a complete listener for a parse tree produced by VnmrPKParser.
 class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by VnmrPKParser.
+    """
     __slots__ = ()
 
     __spectrum_names = None
@@ -64,20 +65,26 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
         self.file_type = 'nm-pea-vnm'
         self.software_name = 'VNMR'
 
-    # Enter a parse tree produced by VnmrPKParser#vnmr_pk.
     def enterVnmr_pk(self, ctx: VnmrPKParser.Vnmr_pkContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by VnmrPKParser#vnmr_pk.
+        """
+
         self.__spectrum_names = {}
 
-    # Exit a parse tree produced by VnmrPKParser#vnmr_pk.
     def exitVnmr_pk(self, ctx: VnmrPKParser.Vnmr_pkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by VnmrPKParser#vnmr_pk.
+        """
+
         self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
-    # Enter a parse tree produced by VnmrPKParser#comment.
     def enterComment(self, ctx: VnmrPKParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by VnmrPKParser#comment.
+        """
 
-    # Exit a parse tree produced by VnmrPKParser#comment.
     def exitComment(self, ctx: VnmrPKParser.CommentContext):
+        """ Exit a parse tree produced by VnmrPKParser#comment.
+        """
+
         comment = []
         for col in range(20):
             if ctx.Any_name(col):
@@ -140,8 +147,10 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 self.cur_spectral_dim[_dim_id] = cur_spectral_dim
 
-    # Enter a parse tree produced by VnmrPKParser#format.
     def enterFormat(self, ctx: VnmrPKParser.FormatContext):
+        """ Enter a parse tree produced by VnmrPKParser#format.
+        """
+
         if ctx.A_ppm():
             self.num_of_dim = 4
             self.initSpectralDim()
@@ -163,19 +172,22 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_assign = bool(ctx.Label())
         self.__has_comment = bool(ctx.Comment())
 
-    # Exit a parse tree produced by VnmrPKParser#format.
     def exitFormat(self, ctx: VnmrPKParser.FormatContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by VnmrPKParser#format.
+        """
 
-    # Enter a parse tree produced by VnmrPKParser#peak_ll2d.
     def enterPeak_ll2d(self, ctx: VnmrPKParser.Peak_ll2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by VnmrPKParser#peak_ll2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by VnmrPKParser#peak_ll2d.
     def exitPeak_ll2d(self, ctx: VnmrPKParser.Peak_ll2dContext):
+        """ Exit a parse tree produced by VnmrPKParser#peak_ll2d.
+        """
 
         try:
 
@@ -286,15 +298,18 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by VnmrPKParser#peak_ll3d.
     def enterPeak_ll3d(self, ctx: VnmrPKParser.Peak_ll3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by VnmrPKParser#peak_ll3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by VnmrPKParser#peak_ll3d.
     def exitPeak_ll3d(self, ctx: VnmrPKParser.Peak_ll3dContext):
+        """ Exit a parse tree produced by VnmrPKParser#peak_ll3d.
+        """
 
         try:
 
@@ -405,15 +420,18 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by VnmrPKParser#peak_ll4d.
     def enterPeak_ll4d(self, ctx: VnmrPKParser.Peak_ll4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by VnmrPKParser#peak_ll4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by VnmrPKParser#peak_ll4d.
     def exitPeak_ll4d(self, ctx: VnmrPKParser.Peak_ll4dContext):
+        """ Exit a parse tree produced by VnmrPKParser#peak_ll4d.
+        """
 
         try:
 
@@ -530,8 +548,10 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by VnmrPKParser#data_label.
     def enterData_label(self, ctx: VnmrPKParser.Data_labelContext):
+        """ Enter a parse tree produced by VnmrPKParser#data_label.
+        """
+
         if ctx.Dim_1_ppm():
             self.num_of_dim = max(self.num_of_dim, 2)
         if ctx.Dim_2_ppm():
@@ -544,12 +564,14 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.initSpectralDim()
 
-    # Exit a parse tree produced by VnmrPKParser#data_label.
     def exitData_label(self, ctx: VnmrPKParser.Data_labelContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by VnmrPKParser#data_label.
+        """
 
-    # Enter a parse tree produced by VnmrPKParser#peak_2d.
     def enterPeak_2d(self, ctx: VnmrPKParser.Peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by VnmrPKParser#peak_2d.
+        """
+
         if self.cur_subtype != 'peak2d':
             self.num_of_dim = 2
             self.initSpectralDim()
@@ -560,8 +582,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by VnmrPKParser#peak_2d.
     def exitPeak_2d(self, ctx: VnmrPKParser.Peak_2dContext):
+        """ Exit a parse tree produced by VnmrPKParser#peak_2d.
+        """
 
         try:
 
@@ -656,8 +679,10 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by VnmrPKParser#peak_3d.
     def enterPeak_3d(self, ctx: VnmrPKParser.Peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by VnmrPKParser#peak_3d.
+        """
+
         if self.cur_subtype != 'peak3d':
             self.num_of_dim = 3
             self.initSpectralDim()
@@ -668,8 +693,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by VnmrPKParser#peak_3d.
     def exitPeak_3d(self, ctx: VnmrPKParser.Peak_3dContext):
+        """ Exit a parse tree produced by VnmrPKParser#peak_3d.
+        """
 
         try:
 
@@ -767,8 +793,10 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by VnmrPKParser#peak_4d.
     def enterPeak_4d(self, ctx: VnmrPKParser.Peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by VnmrPKParser#peak_4d.
+        """
+
         if self.cur_subtype != 'peak4d':
             self.num_of_dim = 4
             self.initSpectralDim()
@@ -779,8 +807,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by VnmrPKParser#peak_4d.
     def exitPeak_4d(self, ctx: VnmrPKParser.Peak_4dContext):
+        """ Exit a parse tree produced by VnmrPKParser#peak_4d.
+        """
 
         try:
 
@@ -881,8 +910,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by VnmrPKParser#number.
     def enterNumber(self, ctx: VnmrPKParser.NumberContext):
+        """ Enter a parse tree produced by VnmrPKParser#number.
+        """
 
         try:
 
@@ -905,9 +935,6 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Exit a parse tree produced by VnmrPKParser#number.
     def exitNumber(self, ctx: VnmrPKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del VnmrPKParser
+        """ Exit a parse tree produced by VnmrPKParser#number.
+        """

@@ -133,6 +133,8 @@ except ImportError:
 
 
 class BaseCSParserListener():
+    """ ParserLister base class for any chemical shift file.
+    """
     __slots__ = ('polySeq',
                  'entityAssembly',
                  'ccU',
@@ -308,6 +310,9 @@ class BaseCSParserListener():
 
     @property
     def debug(self):
+        """ Retrieve debug mode.
+        """
+
         return self.__debug
 
     @debug.setter
@@ -316,6 +321,9 @@ class BaseCSParserListener():
 
     @property
     def verbose_debug(self):
+        """ Retrieve vebose debug mode.
+        """
+
         return self.__verbose_debug
 
     @verbose_debug.setter
@@ -324,6 +332,9 @@ class BaseCSParserListener():
 
     @property
     def createSfDict(self):
+        """ Whether to create saveframe dictionary.
+        """
+
         return self.__createSfDict
 
     @createSfDict.setter
@@ -332,6 +343,9 @@ class BaseCSParserListener():
 
     @property
     def originalFileName(self):
+        """ Retrieve the original file name.
+        """
+
         return self.__originalFileName
 
     @originalFileName.setter
@@ -340,6 +354,9 @@ class BaseCSParserListener():
 
     @property
     def listIdCounter(self):
+        """ Retrieve list ID counter dictionary.
+        """
+
         return self.__listIdCounter
 
     @listIdCounter.setter
@@ -348,6 +365,9 @@ class BaseCSParserListener():
 
     @property
     def reservedListIds(self):
+        """ Retrieve reserved list IDs.
+        """
+
         return self.__reservedListIds
 
     @reservedListIds.setter
@@ -356,6 +376,9 @@ class BaseCSParserListener():
 
     @property
     def entryId(self):
+        """ Retrieve entry ID.
+        """
+
         return self.__entryId
 
     @entryId.setter
@@ -363,6 +386,8 @@ class BaseCSParserListener():
         self.__entryId = entryId
 
     def exit(self):
+        """ Common function to exit a parse tree.
+        """
 
         try:
 
@@ -654,6 +679,8 @@ class BaseCSParserListener():
     def validateCsValue(self, index: int, pos: float, pos_unc: Optional[float],
                         occupancy: Optional[float] = None,
                         figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
+        """ Validate range of assigned chemical shift.
+        """
 
         validRange = True
         dstFunc = {}
@@ -702,6 +729,9 @@ class BaseCSParserListener():
         return dstFunc
 
     def predictSequenceNumberOffsetByFirstResidue(self, chain_id: Optional[str], seq_id: int, comp_id: Optional[str]):
+        """ Find sequence offset by the given first residue.
+        """
+
         if self.reasons is not None or self.polySeq is None:
             return
 
@@ -770,6 +800,9 @@ class BaseCSParserListener():
             self.offset[None] = offset
 
     def checkAssignment(self, index: int, assignment: List[dict]) -> Tuple[bool, bool, Optional[bool]]:
+        """ Evaluate assigned chemical shift.
+        """
+
         has_assignments = has_multiple_assignments = False
 
         if assignment is not None:
@@ -821,6 +854,8 @@ class BaseCSParserListener():
 
     def addCsRow(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool, auth_seq_id_map: dict,
                  debug_label: Optional[str], details: Optional[str] = None, default_ambig_code: Optional[int] = None):
+        """ Add assigned chemical shift.
+        """
 
         if self.__debug:
             if not has_assignments:
@@ -2410,6 +2445,9 @@ class BaseCSParserListener():
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq: bool = True,
                           isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
+        """ Return a realistic sequence for a given polymer sequence, sequence code, and residue name.
+        """
+
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.ccU)
             if len(_compId) == 2 and _compId.startswith('D'):
@@ -2472,6 +2510,9 @@ class BaseCSParserListener():
 
     @functools.lru_cache(maxsize=256)
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
+        """ A wrapper function for ParserListenerUtil.translateToStdResName().
+        """
+
         _compId = compId
         refCompId = None
         for ps in self.polySeq:
@@ -3686,7 +3727,7 @@ class BaseCSParserListener():
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.f.append(f"[Invalid atom selection] {self.getCurrentAssignment(n=index)}"
-                              f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
+                              f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed.")
                 continue
 
             if __compId != cifCompId and __compId not in self.compIdMap:
@@ -3713,6 +3754,9 @@ class BaseCSParserListener():
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
                                    coordAtomSite: Optional[dict], index: int) -> Tuple[str, bool]:
+        """ Perform consistency test for each atom in reference to the coordinates.
+        """
+
         asis = False
         if not self.hasPolySeq:
             return atomId, asis
@@ -3950,6 +3994,9 @@ class BaseCSParserListener():
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        """ A wrapper function to retrieve sequence key and coordinates for given conditions.
+        """
+
         return self.__getCoordAtomSiteOf(chainId, seqId, compId, cifCheck, asis, self.__preferAuthSeq)
 
     @functools.lru_cache(maxsize=2048)
@@ -3991,18 +4038,27 @@ class BaseCSParserListener():
         return seqKey, None
 
     def getCurrentAssignment(self, n: int) -> str:
+        """ Retrieve indicator of the current chemical shift.
+        """
+
         if self.cur_subtype == 'chem_shift':
             return f"[Check the {self.chemShifts + 1}th row of assigned chemical shifts "\
                 f"(list_id={self.cur_list_id}, index={n}), {self.__def_err_sf_framecode}] "
         return ''
 
     def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        """ Retrieve reasons for re-parsing by name. create a dictionary if name does not exist.
+        """
+
         if name in self.reasonsForReParsing:
             return self.reasonsForReParsing[name]
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
     def __setLocalSeqScheme(self):
+        """ Set sequence scheme for each chemical shift.
+        """
+
         r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.cur_subtype == 'chem_shift':
@@ -4013,6 +4069,9 @@ class BaseCSParserListener():
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
     def retrieveLocalSeqScheme(self):
+        """ Retrieve sequence scheme for each chemical shift.
+        """
+
         if self.reasons is None\
            or ('label_seq_scheme' not in self.reasons
                and 'local_seq_scheme' not in self.reasons
@@ -4034,6 +4093,9 @@ class BaseCSParserListener():
             self.__preferAuthSeq = self.reasons['local_seq_scheme'][key]
 
     def __addSf(self):
+        """ Add saveframe for given conditions if not exists.
+        """
+
         content_subtype = contentSubtypeOf(self.cur_subtype)
 
         if content_subtype is None:
@@ -4068,6 +4130,9 @@ class BaseCSParserListener():
         self.sfDict[key].append(item)
 
     def getSf(self) -> dict:
+        """ Retrieve saveframe for given conditions.
+        """
+
         key = (self.cur_subtype, self.cur_list_id)
 
         if key not in self.sfDict:

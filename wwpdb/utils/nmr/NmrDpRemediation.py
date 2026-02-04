@@ -442,7 +442,7 @@ class NmrDpRemediation:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.removeUnusedPdbInsCode() ++ Error  - " + str(e))
@@ -1095,7 +1095,7 @@ class NmrDpRemediation:
                                                                                                 'sf_framecode': w['sf_framecode'],
                                                                                                 'data': lp_data})
 
-                                                except Exception:
+                                                except Exception:  # pylint: disable=broad-exception-caught
                                                     pass
 
                                             if lp_data is not None:
@@ -1172,7 +1172,7 @@ class NmrDpRemediation:
                                                                                                 'sf_framecode': w['sf_framecode'],
                                                                                                 'data': lp_data})
 
-                                                except Exception:
+                                                except Exception:  # pylint: disable=broad-exception-caught
                                                     pass
 
                                             if lp_data is not None:
@@ -1416,7 +1416,7 @@ class NmrDpRemediation:
                 else:
                     return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
@@ -1528,7 +1528,7 @@ class NmrDpRemediation:
                 else:
                     return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
@@ -1604,7 +1604,7 @@ class NmrDpRemediation:
                 if not has_symmetry:
                     return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
@@ -1745,7 +1745,7 @@ class NmrDpRemediation:
                         self.__reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                     'data': lp_data})
 
-                    except Exception:
+                    except Exception:  # pylint: disable=broad-exception-caught
                         pass
 
                 if lp_data is not None:
@@ -1771,7 +1771,7 @@ class NmrDpRemediation:
                 if len(cs_seq_ids[k] & v) < len(v) * 0.8:
                     return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
@@ -1817,7 +1817,7 @@ class NmrDpRemediation:
 
                 return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - " + str(e))
@@ -1861,7 +1861,7 @@ class NmrDpRemediation:
 
                 return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialSWPL() "
@@ -1906,7 +1906,7 @@ class NmrDpRemediation:
 
                 return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - " + str(e))
@@ -1950,7 +1950,7 @@ class NmrDpRemediation:
 
                 return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - " + str(e))
@@ -1994,7 +1994,7 @@ class NmrDpRemediation:
 
                 return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialUBPL() "
@@ -2039,7 +2039,7 @@ class NmrDpRemediation:
 
                 return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialLBPL() "
@@ -2088,7 +2088,7 @@ class NmrDpRemediation:
 
                 return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialLHorP() "
@@ -2158,7 +2158,7 @@ class NmrDpRemediation:
                                                               enforce_allowed_tags=(file_type == 'nmr-star'),
                                                               excl_missing_data=self.__reg.excl_missing_data)[0]
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
                     pass
 
             if orig_lp_data is not None and len(orig_lp_data) > 0:
@@ -4393,7 +4393,7 @@ class NmrDpRemediation:
                                                       enforce_allowed_tags=(file_type == 'nmr-star'),
                                                       excl_missing_data=self.__reg.excl_missing_data)[0]
 
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 continue
 
             atoms = []
@@ -15068,7 +15068,7 @@ class NmrDpRemediation:
 
             lp_count = 0
 
-            with open(file_path, 'r') as ifh:
+            with open(file_path, 'r', encoding='utf-8') as ifh:
                 for line in ifh:
 
                     line = ' '.join(line.split())
@@ -15268,7 +15268,7 @@ class NmrDpRemediation:
 
                     return True
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
                     for cst_sf in reversed(cst_sfs):
                         del master_entry[cst_sf]
 
@@ -18009,7 +18009,7 @@ class NmrDpRemediation:
 
                 unknown_mr_desc = os.path.join(dir_path, '.entry_with_unknown_mr')
                 if os.path.exists(unknown_mr_desc):
-                    with open(unknown_mr_desc, 'r') as ifh:
+                    with open(unknown_mr_desc, 'r', encoding='utf-8') as ifh:
                         details = ifh.read().splitlines()
                         data_format = details[0].split(' ')[0]
                         if not data_format.isupper():

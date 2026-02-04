@@ -122,18 +122,33 @@ class CyanaMRReader:
         self.__file_ext = file_ext
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def setRemediateMode(self, remediate: bool):
+        """ Set remediation mode.
+        """
+
         self.__remediate = remediate
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of parser error messages to save.
+        """
+
         self.__maxParserErrorReport = maxErrReport
 
     def setSllPredMode(self, sll_pred: bool):
+        """ Set ANTLR4 SLL prediction mode.
+        """
+
         self.__sll_pred = sll_pred
 
     def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,

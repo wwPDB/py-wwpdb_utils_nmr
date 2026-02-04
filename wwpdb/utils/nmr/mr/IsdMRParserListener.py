@@ -60,8 +60,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by IsdMRParser.
 class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by IsdMRParser.
+    """
     __slots__ = ()
 
     __atom_sel_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)([A-Z][0-9A-Z]*)')
@@ -82,16 +83,20 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.file_type = 'nm-res-isd'
         self.software_name = 'ISD'
 
-    # Enter a parse tree produced by IsdMRParser#biosym_mr.
     def enterIsd_mr(self, ctx: IsdMRParser.Isd_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by IsdMRParser#biosym_mr.
+        """
 
-    # Exit a parse tree produced by IsdMRParser#biosym_mr.
     def exitIsd_mr(self, ctx: IsdMRParser.Isd_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by IsdMRParser#biosym_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by IsdMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: IsdMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by IsdMRParser#distance_restraints.
+        """
+
         self.cur_subtype = 'dist'
 
         if ctx.Distance():
@@ -99,16 +104,20 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.cur_upper_limit = float(str(ctx.Distance()).split('=')[1])
 
-    # Exit a parse tree produced by IsdMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: IsdMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by IsdMRParser#distance_restraints.
+        """
 
-    # Enter a parse tree produced by IsdMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: IsdMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by IsdMRParser#distance_restraint.
+        """
+
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by IsdMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: IsdMRParser.Distance_restraintContext):
+        """ Exit a parse tree produced by IsdMRParser#distance_restraint.
+        """
+
         seqId1, compId1, atomId1 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
         seqId2, compId2, atomId2 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
@@ -250,5 +259,3 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         except (ValueError, AttributeError):
             return None, None, None
-
-# del IsdMRParser

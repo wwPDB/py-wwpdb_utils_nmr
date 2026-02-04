@@ -30,12 +30,15 @@ def uncompress_gzip_file(inPath: str, outPath: str):
     """ Uncompress a given gzip file.
     """
 
-    with gzip.open(inPath, mode='rt') as ifh, open(outPath, 'w') as ofh:
+    with gzip.open(inPath, mode='rt') as ifh, \
+         open(outPath, 'w', encoding='utf-8') as ofh:
         for line in ifh:
             ofh.write(line)
 
 
 class ChemCompUpdater:
+    """ Update chemical component dictionary (CCD) and locate them OneDep compatible directory trees.
+    """
 
     def __init__(self, force: bool = False):
         self.__components_cif = 'components.cif'
@@ -50,6 +53,8 @@ class ChemCompUpdater:
         self.update()
 
     def deploy(self):
+        """ Deploy chemical component dictionary (CCD) into OneDep compatible directory trees.
+        """
 
         try:
 
@@ -87,10 +92,12 @@ class ChemCompUpdater:
 
             print(f'{self.__work_dir!r} is up-to-date.')
 
-        except Exception as e:
+        except IOError as e:
             logging.error(str(e))
 
     def download(self):
+        """ Download Chemical Component Dictionary (CCD),
+        """
 
         try:
             print(f'Downloading {self.__url_for_components} ...')
@@ -99,10 +106,12 @@ class ChemCompUpdater:
             with open(os.path.join(self.__components_cif_gz_path), 'wb') as f:
                 f.write(r.content)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logging.error(str(e))
 
     def update(self):
+        """ Update Chemical Component Dictionary (CCD) with time-stamp check.
+        """
 
         try:
             print(f'HEAD {self.__url_for_components}')
@@ -112,7 +121,7 @@ class ChemCompUpdater:
             if r.status_code != 200:
                 raise RuntimeError(f'Request to {self.__url_for_components} returned status code {r.status_code}')
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logging.error(str(e))
             return
 

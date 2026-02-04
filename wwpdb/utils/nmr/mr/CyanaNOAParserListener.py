@@ -59,8 +59,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by CyanaNOAParser.
 class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by CyanaNOAParser.
+    """
     __slots__ = ('noeAssignments',
                  'asisList',
                  'weights',
@@ -89,44 +90,52 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
         # potential
         self.dstFunc = None
 
-    # Enter a parse tree produced by CyanaNOAParser#cyana_noa.
     def enterCyana_noa(self, ctx: CyanaNOAParser.Cyana_noaContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#cyana_noa.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#cyana_noa.
     def exitCyana_noa(self, ctx: CyanaNOAParser.Cyana_noaContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaNOAParser#cyana_noa.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by CyanaNOAParser#comment.
     def enterComment(self, ctx: CyanaNOAParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#comment.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#comment.
     def exitComment(self, ctx: CyanaNOAParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaNOAParser#comment.
+        """
 
-    # Enter a parse tree produced by CyanaNOAParser#noe_peaks.
     def enterNoe_peaks(self, ctx: CyanaNOAParser.Noe_peaksContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaNOAParser#noe_peaks.
+        """
+
         self.cur_subtype = 'dist'
 
-    # Exit a parse tree produced by CyanaNOAParser#noe_peaks.
     def exitNoe_peaks(self, ctx: CyanaNOAParser.Noe_peaksContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaNOAParser#noe_peaks.
+        """
 
-    # Enter a parse tree produced by CyanaNOAParser#peak_header.
     def enterPeak_header(self, ctx: CyanaNOAParser.Peak_headerContext):
+        """ Enter a parse tree produced by CyanaNOAParser#peak_header.
+        """
+
         if ctx.Angstrome(0):
             self.dstFunc = self.validateDistanceRange(1.0, None, None, float(str(ctx.Angstrome(0))[:-2]),
                                                       None, self.omitDistLimitOutlier)
         else:
             self.dstFunc = None
 
-    # Exit a parse tree produced by CyanaNOAParser#peak_header.
     def exitPeak_header(self, ctx: CyanaNOAParser.Peak_headerContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaNOAParser#peak_header.
+        """
 
-    # Enter a parse tree produced by CyanaNOAParser#peak_quality.
     def enterPeak_quality(self, ctx: CyanaNOAParser.Peak_qualityContext):
+        """ Enter a parse tree produced by CyanaNOAParser#peak_quality.
+        """
+
         if ctx.Float() and self.dstFunc is not None:
             quality = float(str(ctx.Float()))
 
@@ -141,16 +150,17 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.asisList.clear()
                 self.weights.clear()
 
-    # Exit a parse tree produced by CyanaNOAParser#peak_quality.
     def exitPeak_quality(self, ctx: CyanaNOAParser.Peak_qualityContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaNOAParser#peak_quality.
+        """
 
-    # Enter a parse tree produced by CyanaNOAParser#noe_assignments.
     def enterNoe_assignments(self, ctx: CyanaNOAParser.Noe_assignmentsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#noe_assignments.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#noe_assignments.
     def exitNoe_assignments(self, ctx: CyanaNOAParser.Noe_assignmentsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaNOAParser#noe_assignments.
+        """
 
         if len(self.noeAssignments) > 0 and self.dstFunc is not None:
 
@@ -246,12 +256,13 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.asisList.clear()
                 self.weights.clear()
 
-    # Enter a parse tree produced by CyanaNOAParser#noe_assignment.
     def enterNoe_assignment(self, ctx: CyanaNOAParser.Noe_assignmentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#noe_assignment.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#noe_assignment.
     def exitNoe_assignment(self, ctx: CyanaNOAParser.Noe_assignmentContext):
+        """ Exit a parse tree produced by CyanaNOAParser#noe_assignment.
+        """
 
         if ctx.Ok():
 
@@ -288,44 +299,42 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
             finally:
                 self.atomSelectionSet.clear()
 
-    # Enter a parse tree produced by CyanaNOAParser#numerical_report.
     def enterNumerical_report(self, ctx: CyanaNOAParser.Numerical_reportContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#numerical_report.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#numerical_report.
     def exitNumerical_report(self, ctx: CyanaNOAParser.Numerical_reportContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaNOAParser#numerical_report.
+        """
 
-    # Enter a parse tree produced by CyanaNOAParser#extended_report.
     def enterExtended_report(self, ctx: CyanaNOAParser.Extended_reportContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#extended_report.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#extended_report.
     def exitExtended_report(self, ctx: CyanaNOAParser.Extended_reportContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaNOAParser#extended_report.
+        """
 
-    # Enter a parse tree produced by CyanaNOAParser#noe_stat.
     def enterNoe_stat(self, ctx: CyanaNOAParser.Noe_statContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#noe_stat.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#noe_stat.
     def exitNoe_stat(self, ctx: CyanaNOAParser.Noe_statContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaNOAParser#noe_stat.
+        """
 
-    # Enter a parse tree produced by CyanaNOAParser#list_of_proton.
     def enterList_of_proton(self, ctx: CyanaNOAParser.List_of_protonContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#list_of_proton.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#list_of_proton.
     def exitList_of_proton(self, ctx: CyanaNOAParser.List_of_protonContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaNOAParser#list_of_proton.
+        """
 
-    # Enter a parse tree produced by CyanaNOAParser#peak_stat.
     def enterPeak_stat(self, ctx: CyanaNOAParser.Peak_statContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaNOAParser#peak_stat.
+        """
 
-    # Exit a parse tree produced by CyanaNOAParser#peak_stat.
     def exitPeak_stat(self, ctx: CyanaNOAParser.Peak_statContext):  # pylint: disable=unused-argument
-        pass
-
-# del CyanaNOAParser
+        """ Exit a parse tree produced by CyanaNOAParser#peak_stat.
+        """

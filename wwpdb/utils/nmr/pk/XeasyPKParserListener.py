@@ -41,8 +41,9 @@ except ImportError:
     from nmr.pk.BasePKParserListener import BasePKParserListener
 
 
-# This class defines a complete listener for a parse tree produced by XeasyPKParser.
 class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by XeasyPKParser.
+    """
     __slots__ = ('__atomNumberDict', )
 
     __spectrum_names = None
@@ -68,18 +69,24 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__atomNumberDict = atomNumberDict
 
-    # Enter a parse tree produced by XeasyPKParser#xeasy_pk.
     def enterXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#xeasy_pk.
+        """
+
         self.__spectrum_names = {}
 
         self.__g = []
 
-    # Exit a parse tree produced by XeasyPKParser#xeasy_pk.
     def exitXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XeasyPKParser#xeasy_pk.
+        """
+
         self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
-    # Enter a parse tree produced by XeasyPKParser#dimension.
     def enterDimension(self, ctx: XeasyPKParser.DimensionContext):
+        """ Enter a parse tree produced by XeasyPKParser#dimension.
+        """
+
         if ctx.Integer_ND():
             self.num_of_dim = int(str(ctx.Integer_ND()))
             self.acq_dim_id = 1
@@ -88,20 +95,22 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__labels = {}
         self.__axis_order = {}
 
-    # Exit a parse tree produced by XeasyPKParser#dimension.
     def exitDimension(self, ctx: XeasyPKParser.DimensionContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#dimension.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#peak.
     def enterPeak(self, ctx: XeasyPKParser.PeakContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XeasyPKParser#peak.
+        """
 
-    # Exit a parse tree produced by XeasyPKParser#peak.
     def exitPeak(self, ctx: XeasyPKParser.PeakContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#peak.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#format.
     def enterFormat(self, ctx: XeasyPKParser.FormatContext):
+        """ Enter a parse tree produced by XeasyPKParser#format.
+        """
+
         if ctx.Simple_name_FO():
             if self.num_of_dim == -1:
                 val = str(ctx.Simple_name_FO())
@@ -112,12 +121,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 if '4D' in val:
                     self.num_of_dim = 4
 
-    # Exit a parse tree produced by XeasyPKParser#format.
     def exitFormat(self, ctx: XeasyPKParser.FormatContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#format.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#iname.
     def enterIname(self, ctx: XeasyPKParser.InameContext):
+        """ Enter a parse tree produced by XeasyPKParser#iname.
+        """
+
         if ctx.Integer_IN():
             _dim_id = int(str(ctx.Integer_IN()))
             self.num_of_dim = max(self.num_of_dim, _dim_id)
@@ -126,12 +137,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             if _axis_code not in EMPTY_VALUE:
                 self.__labels[_dim_id] = _axis_code
 
-    # Exit a parse tree produced by XeasyPKParser#iname.
     def exitIname(self, ctx: XeasyPKParser.InameContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#iname.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#cyana_format.
     def enterCyana_format(self, ctx: XeasyPKParser.Cyana_formatContext):
+        """ Enter a parse tree produced by XeasyPKParser#cyana_format.
+        """
+
         if ctx.Simple_name_CY():
             _axis_codes = str(ctx.Simple_name_CY())
             if self.num_of_dim == -1:
@@ -145,13 +158,16 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                     if _axis_code not in EMPTY_VALUE:
                         self.__axis_order[_dim_id] = _axis_code
 
-    # Exit a parse tree produced by XeasyPKParser#cyana_format.
     def exitCyana_format(self, ctx: XeasyPKParser.Cyana_formatContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#cyana_format.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#spectrum.
     def enterSpectrum(self, ctx: XeasyPKParser.SpectrumContext):
+        """ Enter a parse tree produced by XeasyPKParser#spectrum.
+        """
+
         _dim_id = 0
+
         if ctx.Simple_name_SP(_dim_id):
             self.spectrum_name = str(ctx.Simple_name_SP(0))
             _dim_id += 1
@@ -163,20 +179,22 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                         self.__labels[_dim_id] = _axis_code
                 _dim_id += 1
 
-    # Exit a parse tree produced by XeasyPKParser#spectrum.
     def exitSpectrum(self, ctx: XeasyPKParser.SpectrumContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#spectrum.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#tolerance.
     def enterTolerance(self, ctx: XeasyPKParser.ToleranceContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XeasyPKParser#tolerance.
+        """
 
-    # Exit a parse tree produced by XeasyPKParser#tolerance.
     def exitTolerance(self, ctx: XeasyPKParser.ToleranceContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#tolerance.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: XeasyPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#peak_list_2d.
+        """
+
         self.num_of_dim = 2
         self.initSpectralDim()
         self.fillSpectralDimWithLabels()
@@ -186,12 +204,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
         self.assignmentSelection.clear()
 
-    # Exit a parse tree produced by XeasyPKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: XeasyPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#peak_list_2d.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#peak_2d.
     def enterPeak_2d(self, ctx: XeasyPKParser.Peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#peak_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
@@ -204,8 +224,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.no_extra_comment = True
 
-    # Exit a parse tree produced by XeasyPKParser#peak_2d.
     def exitPeak_2d(self, ctx: XeasyPKParser.Peak_2dContext):
+        """ Exit a parse tree produced by XeasyPKParser#peak_2d.
+        """
 
         try:
 
@@ -283,8 +304,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.originalNumberSelection.clear()
             self.assignmentSelection.clear()
 
-    # Enter a parse tree produced by XeasyPKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: XeasyPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#peak_list_3d.
+        """
+
         self.num_of_dim = 3
         self.initSpectralDim()
         self.fillSpectralDimWithLabels()
@@ -294,12 +317,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
         self.assignmentSelection.clear()
 
-    # Exit a parse tree produced by XeasyPKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: XeasyPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#peak_list_3d.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#peak_3d.
     def enterPeak_3d(self, ctx: XeasyPKParser.Peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#peak_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
@@ -312,8 +337,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.no_extra_comment = True
 
-    # Exit a parse tree produced by XeasyPKParser#peak_3d.
     def exitPeak_3d(self, ctx: XeasyPKParser.Peak_3dContext):
+        """ Exit a parse tree produced by XeasyPKParser#peak_3d.
+        """
 
         try:
 
@@ -393,8 +419,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.originalNumberSelection.clear()
             self.assignmentSelection.clear()
 
-    # Enter a parse tree produced by XeasyPKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: XeasyPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#peak_list_4d.
+        """
+
         self.num_of_dim = 4
         self.initSpectralDim()
         self.fillSpectralDimWithLabels()
@@ -404,12 +432,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
         self.assignmentSelection.clear()
 
-    # Exit a parse tree produced by XeasyPKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: XeasyPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#peak_list_4d.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#peak_4d.
     def enterPeak_4d(self, ctx: XeasyPKParser.Peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#peak_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
@@ -422,8 +452,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.no_extra_comment = True
 
-    # Exit a parse tree produced by XeasyPKParser#peak_4d.
     def exitPeak_4d(self, ctx: XeasyPKParser.Peak_4dContext):
+        """ Exit a parse tree produced by XeasyPKParser#peak_4d.
+        """
 
         try:
 
@@ -505,8 +536,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.originalNumberSelection.clear()
             self.assignmentSelection.clear()
 
-    # Enter a parse tree produced by XeasyPKParser#position.
     def enterPosition(self, ctx: XeasyPKParser.PositionContext):
+        """ Enter a parse tree produced by XeasyPKParser#position.
+        """
 
         try:
 
@@ -524,12 +556,13 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         except ValueError:
             self.positionSelection.append(None)
 
-    # Exit a parse tree produced by XeasyPKParser#position.
     def exitPosition(self, ctx: XeasyPKParser.PositionContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#position.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#number.
     def enterNumber(self, ctx: XeasyPKParser.NumberContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#number.
+        """
 
         try:
 
@@ -556,24 +589,26 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Exit a parse tree produced by XeasyPKParser#number.
     def exitNumber(self, ctx: XeasyPKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#number.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#type_code.
     def enterType_code(self, ctx: XeasyPKParser.Type_codeContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XeasyPKParser#type_code.
+        """
 
-    # Exit a parse tree produced by XeasyPKParser#type_code.
     def exitType_code(self, ctx: XeasyPKParser.Type_codeContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPKParser#type_code.
+        """
 
-    # Enter a parse tree produced by XeasyPKParser#assign.
     def enterAssign(self, ctx: XeasyPKParser.AssignContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XeasyPKParser#assign.
+        """
 
-    # Exit a parse tree produced by XeasyPKParser#assign.
     def exitAssign(self, ctx: XeasyPKParser.AssignContext):
+        """ Exit a parse tree produced by XeasyPKParser#assign.
+        """
+
         index = self.__index
         if ctx.Simple_name() and ctx.Integer():
             self.assignmentSelection.append(f'{str(ctx.Integer())} {str(ctx.Simple_name())}')
@@ -606,12 +641,16 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                     del _factor['auth_atom_id']
                     self.assignmentSelection.append(_factor)
 
-    # Enter a parse tree produced by XeasyPKParser#comment.
     def enterComment(self, ctx: XeasyPKParser.CommentContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPKParser#comment.
+        """
+
         self.no_extra_comment = False
 
-    # Exit a parse tree produced by XeasyPKParser#comment.
     def exitComment(self, ctx: XeasyPKParser.CommentContext):
+        """ Exit a parse tree produced by XeasyPKParser#comment.
+        """
+
         comment = []
         for col in range(20):
             if ctx.Any_name(col):
@@ -701,6 +740,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__g.clear()
 
     def fillSpectralDimWithLabels(self):
+        """ Fill spectral_dim.
+        """
+
         if self.__labels is None or len(self.__labels) == 0:
             return
 
@@ -750,6 +792,3 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 continue
 
             cur_spectral_dim['axis_order'] = _axis_order
-
-
-# del XeasyPKParser

@@ -114,18 +114,33 @@ class SparkyRPKReader:
         self.__reasons = reasons
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def enforcePeakRowFormat(self, enforcePeakRowFormat: bool):
+        """ Whether to enforce peak row format or not.
+        """
+
         self.__enforcePeakRowFormat = enforcePeakRowFormat
 
     def setInternalMode(self, internal: bool):
+        """ Set internal mode.
+        """
+
         self.__internal = internal
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of parser error messages to save.
+        """
+
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, pkFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,

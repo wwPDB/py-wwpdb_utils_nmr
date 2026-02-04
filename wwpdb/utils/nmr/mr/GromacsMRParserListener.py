@@ -153,8 +153,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by GromacsMRParser.
 class GromacsMRParserListener(ParseTreeListener):
+    """ This class defines a complete listener for a parse tree produced by GromacsMRParser.
+    """
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
@@ -312,6 +313,9 @@ class GromacsMRParserListener(ParseTreeListener):
 
     @property
     def debug(self):
+        """ Retrieve debug mode.
+        """
+
         return self.__debug
 
     @debug.setter
@@ -320,6 +324,9 @@ class GromacsMRParserListener(ParseTreeListener):
 
     @property
     def createSfDict(self):
+        """ Retrieve whether to create saveframe dictionary.
+        """
+
         return self.__createSfDict
 
     @createSfDict.setter
@@ -328,6 +335,9 @@ class GromacsMRParserListener(ParseTreeListener):
 
     @property
     def originalFileName(self):
+        """ Retrieve the original file name.
+        """
+
         return self.__originalFileName
 
     @originalFileName.setter
@@ -336,6 +346,9 @@ class GromacsMRParserListener(ParseTreeListener):
 
     @property
     def listIdCounter(self):
+        """ Retrieve list ID counter dictionary.
+        """
+
         return self.__listIdCounter
 
     @listIdCounter.setter
@@ -344,18 +357,22 @@ class GromacsMRParserListener(ParseTreeListener):
 
     @property
     def entryId(self):
+        """ Retrieve entry ID.
+        """
+
         return self.__entryId
 
     @entryId.setter
     def entryId(self, entryId: str):
         self.__entryId = entryId
 
-    # Enter a parse tree produced by GromacsMRParser#gromacs_mr.
     def enterGromacs_mr(self, ctx: GromacsMRParser.Gromacs_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsMRParser#gromacs_mr.
+        """
 
-    # Exit a parse tree produced by GromacsMRParser#gromacs_mr.
     def exitGromacs_mr(self, ctx: GromacsMRParser.Gromacs_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by GromacsMRParser#gromacs_mr.
+        """
 
         try:
 
@@ -397,22 +414,27 @@ class GromacsMRParserListener(ParseTreeListener):
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
-    # Enter a parse tree produced by GromacsMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: GromacsMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#distance_restraints.
+        """
+
         self.__cur_subtype = 'dist'
 
-    # Exit a parse tree produced by GromacsMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: GromacsMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsMRParser#distance_restraints.
+        """
 
-    # Enter a parse tree produced by GromacsMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: GromacsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#distance_restraint.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by GromacsMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: GromacsMRParser.Distance_restraintContext):
+        """ Exit a parse tree produced by GromacsMRParser#distance_restraint.
+        """
 
         def get_eff_digits(val):
             eff_digits = 0
@@ -777,7 +799,7 @@ class GromacsMRParserListener(ParseTreeListener):
                         atom2['auth_atom_id'] = atom2['atom_id']
                     atom2['atom_id'] = alt_atom_id2
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
@@ -948,28 +970,33 @@ class GromacsMRParserListener(ParseTreeListener):
                 if upper_linear_limit is not None:
                     dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 
-    # Enter a parse tree produced by GromacsMRParser#dihedral_restraints.
     def enterDihedral_restraints(self, ctx: GromacsMRParser.Dihedral_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#dihedral_restraints.
+        """
+
         self.__cur_subtype = 'dihed'
 
-    # Exit a parse tree produced by GromacsMRParser#dihedral_restraints.
     def exitDihedral_restraints(self, ctx: GromacsMRParser.Dihedral_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsMRParser#dihedral_restraints.
+        """
 
-    # Enter a parse tree produced by GromacsMRParser#dihedral_restraint.
     def enterDihedral_restraint(self, ctx: GromacsMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#dihedral_restraint.
+        """
+
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by GromacsMRParser#dihedral_restraint.
     def exitDihedral_restraint(self, ctx: GromacsMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by GromacsMRParser#dihedral_restraint.
+        """
 
         try:
 
@@ -1209,22 +1236,27 @@ class GromacsMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    # Enter a parse tree produced by GromacsMRParser#orientation_restraints.
     def enterOrientation_restraints(self, ctx: GromacsMRParser.Orientation_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#orientation_restraints.
+        """
+
         self.__cur_subtype = 'rdc'
 
-    # Exit a parse tree produced by GromacsMRParser#orientation_restraints.
     def exitOrientation_restraints(self, ctx: GromacsMRParser.Orientation_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsMRParser#orientation_restraints.
+        """
 
-    # Enter a parse tree produced by GromacsMRParser#orientation_restraint.
     def enterOrientation_restraint(self, ctx: GromacsMRParser.Orientation_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#orientation_restraint.
+        """
+
         self.rdcRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by GromacsMRParser#orientation_restraint.
     def exitOrientation_restraint(self, ctx: GromacsMRParser.Orientation_restraintContext):
+        """ Exit a parse tree produced by GromacsMRParser#orientation_restraint.
+        """
 
         try:
 
@@ -1501,22 +1533,27 @@ class GromacsMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    # Enter a parse tree produced by GromacsMRParser#angle_restraints.
     def enterAngle_restraints(self, ctx: GromacsMRParser.Angle_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#angle_restraints.
+        """
+
         self.__cur_subtype = 'ang'
 
-    # Exit a parse tree produced by GromacsMRParser#angle_restraints.
     def exitAngle_restraints(self, ctx: GromacsMRParser.Angle_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsMRParser#angle_restraints.
+        """
 
-    # Enter a parse tree produced by GromacsMRParser#angle_restraint.
     def enterAngle_restraint(self, ctx: GromacsMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#angle_restraint.
+        """
+
         self.angRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by GromacsMRParser#angle_restraint.
     def exitAngle_restraint(self, ctx: GromacsMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by GromacsMRParser#angle_restraint.
+        """
 
         try:
 
@@ -1703,22 +1740,27 @@ class GromacsMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by GromacsMRParser#angle_restraints_z.
     def enterAngle_restraints_z(self, ctx: GromacsMRParser.Angle_restraints_zContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#angle_restraints_z.
+        """
+
         self.__cur_subtype = 'ang'
 
-    # Exit a parse tree produced by GromacsMRParser#angle_restraints_z.
     def exitAngle_restraints_z(self, ctx: GromacsMRParser.Angle_restraints_zContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsMRParser#angle_restraints_z.
+        """
 
-    # Enter a parse tree produced by GromacsMRParser#angle_restraint_z.
     def enterAngle_restraint_z(self, ctx: GromacsMRParser.Angle_restraint_zContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#angle_restraint_z.
+        """
+
         self.angRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by GromacsMRParser#angle_restraint_z.
     def exitAngle_restraint_z(self, ctx: GromacsMRParser.Angle_restraint_zContext):
+        """ Exit a parse tree produced by GromacsMRParser#angle_restraint_z.
+        """
 
         try:
 
@@ -1834,22 +1876,27 @@ class GromacsMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by GromacsMRParser#position_restraints.
     def enterPosition_restraints(self, ctx: GromacsMRParser.Position_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#position_restraints.
+        """
+
         self.__cur_subtype = 'geo'
 
-    # Exit a parse tree produced by GromacsMRParser#position_restraints.
     def exitPosition_restraints(self, ctx: GromacsMRParser.Position_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsMRParser#position_restraints.
+        """
 
-    # Enter a parse tree produced by GromacsMRParser#position_restraint.
     def enterPosition_restraint(self, ctx: GromacsMRParser.Position_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsMRParser#position_restraint.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by GromacsMRParser#position_restraint.
     def exitPosition_restraint(self, ctx: GromacsMRParser.Position_restraintContext):
+        """ Exit a parse tree produced by GromacsMRParser#position_restraint.
+        """
 
         try:
 
@@ -1928,12 +1975,14 @@ class GromacsMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by GromacsMRParser#number.
     def enterNumber(self, ctx: GromacsMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsMRParser#number.
+        """
 
-    # Exit a parse tree produced by GromacsMRParser#number.
     def exitNumber(self, ctx: GromacsMRParser.NumberContext):
+        """ Exit a parse tree produced by GromacsMRParser#number.
+        """
+
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
 
@@ -2093,5 +2142,3 @@ class GromacsMRParserListener(ParseTreeListener):
         for k in ign_keys:
             del self.sfDict[k]
         return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict
-
-# del GromacsMRParser

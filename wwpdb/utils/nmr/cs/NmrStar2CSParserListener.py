@@ -31,8 +31,9 @@ except ImportError:
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
-# This class defines a complete listener for a parse tree produced by NmrStar2CSParser.
 class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
+    """ This class defines a complete listener for a parse tree produced by NmrStar2CSParser.
+    """
     __slots__ = ()
 
     __first_seq_id = None
@@ -49,38 +50,44 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.file_type = 'nm-shi-st2'
 
-    # Enter a parse tree produced by NmrStar2CSParser#nmrstar2_cs.
     def enterNmrstar2_cs(self, ctx: NmrStar2CSParser.Nmrstar2_csContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrStar2CSParser#nmrstar2_cs.
+        """
 
-    # Exit a parse tree produced by NmrStar2CSParser#nmrstar2_cs.
     def exitNmrstar2_cs(self, ctx: NmrStar2CSParser.Nmrstar2_csContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by NmrStar2CSParser#nmrstar2_cs.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by NmrStar2CSParser#seq_loop.
     def enterSeq_loop(self, ctx: NmrStar2CSParser.Seq_loopContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrStar2CSParser#seq_loop.
+        """
+
         self.__first_seq_id = None
         self.__cur_seq_ids = []
         self.__cur_comp_ids = []
 
-    # Exit a parse tree produced by NmrStar2CSParser#seq_loop.
     def exitSeq_loop(self, ctx: NmrStar2CSParser.Seq_loopContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrStar2CSParser#seq_loop.
+        """
 
-    # Enter a parse tree produced by NmrStar2CSParser#seq_tags.
     def enterSeq_tags(self, ctx: NmrStar2CSParser.Seq_tagsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrStar2CSParser#seq_tags.
+        """
 
-    # Exit a parse tree produced by NmrStar2CSParser#seq_tags.
     def exitSeq_tags(self, ctx: NmrStar2CSParser.Seq_tagsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrStar2CSParser#seq_tags.
+        """
 
-    # Enter a parse tree produced by NmrStar2CSParser#seq_data.
     def enterSeq_data(self, ctx: NmrStar2CSParser.Seq_dataContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrStar2CSParser#seq_data.
+        """
 
-    # Exit a parse tree produced by NmrStar2CSParser#seq_data.
     def exitSeq_data(self, ctx: NmrStar2CSParser.Seq_dataContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by NmrStar2CSParser#seq_data.
+        """
+
         for _any in self.anySelection:
             if _any is None:
                 continue
@@ -93,8 +100,9 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
         if self.__first_seq_id is None and len(self.__cur_seq_ids) > 0:
             self.__first_seq_id = self.__cur_seq_ids[0]
 
-    # Enter a parse tree produced by NmrStar2CSParser#cs_loop.
     def enterCs_loop(self, ctx: NmrStar2CSParser.Cs_loopContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrStar2CSParser#cs_loop.
+        """
 
         if not self.hasPolySeq and self.__first_seq_id is not None:
             self.hasPolySeq = True
@@ -137,12 +145,14 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.__tag_order = []
 
-    # Exit a parse tree produced by NmrStar2CSParser#cs_loop.
     def exitCs_loop(self, ctx: NmrStar2CSParser.Cs_loopContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrStar2CSParser#cs_loop.
+        """
 
-    # Enter a parse tree produced by NmrStar2CSParser#cs_tags.
     def enterCs_tags(self, ctx: NmrStar2CSParser.Cs_tagsContext):
+        """ Enter a parse tree produced by NmrStar2CSParser#cs_tags.
+        """
+
         if ctx.Atom_shift_assign_ID():
             self.__tag_order.append('index')
         elif ctx.Residue_author_seq_code():
@@ -164,16 +174,17 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
         else:
             self.__tag_order.append('unknown')
 
-    # Exit a parse tree produced by NmrStar2CSParser#cs_tags.
     def exitCs_tags(self, ctx: NmrStar2CSParser.Cs_tagsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrStar2CSParser#cs_tags.
+        """
 
-    # Enter a parse tree produced by NmrStar2CSParser#cs_data.
     def enterCs_data(self, ctx: NmrStar2CSParser.Cs_dataContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrStar2CSParser#cs_data.
+        """
 
-    # Exit a parse tree produced by NmrStar2CSParser#cs_data.
     def exitCs_data(self, ctx: NmrStar2CSParser.Cs_dataContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by NmrStar2CSParser#cs_data.
+        """
 
         def concat_assignment(seq, comp, atom):
             L = f'{str(seq)}:'
@@ -272,8 +283,9 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
         finally:
             self.anySelection.clear()
 
-    # Enter a parse tree produced by NmrStar2CSParser#any.
     def enterAny(self, ctx: NmrStar2CSParser.AnyContext):
+        """ Enter a parse tree produced by NmrStar2CSParser#any.
+        """
 
         try:
 
@@ -297,9 +309,6 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
         except ValueError:
             self.anySelection.append(None)
 
-    # Exit a parse tree produced by NmrStar2CSParser#any.
     def exitAny(self, ctx: NmrStar2CSParser.AnyContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del NmrStar2CSParser
+        """ Exit a parse tree produced by NmrStar2CSParser#any.
+        """

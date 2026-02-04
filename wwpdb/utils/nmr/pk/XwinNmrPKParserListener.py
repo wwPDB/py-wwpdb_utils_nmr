@@ -35,8 +35,9 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import getPkRow
 
 
-# This class defines a complete listener for a parse tree produced by XwinNmrPKParser.
 class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by XwinNmrPKParser.
+    """
     __slots__ = ()
 
     __spectrum_names = None
@@ -61,20 +62,26 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         self.file_type = 'nm-pea-xwi'
         self.software_name = 'XWINNMR'
 
-    # Enter a parse tree produced by XwinNmrPKParser#xwinnmr_pk.
     def enterXwinnmr_pk(self, ctx: XwinNmrPKParser.Xwinnmr_pkContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XwinNmrPKParser#xwinnmr_pk.
+        """
+
         self.__spectrum_names = {}
 
-    # Exit a parse tree produced by XwinNmrPKParser#xwinnmr_pk.
     def exitXwinnmr_pk(self, ctx: XwinNmrPKParser.Xwinnmr_pkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XwinNmrPKParser#xwinnmr_pk.
+        """
+
         self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
-    # Enter a parse tree produced by XwinNmrPKParser#comment.
     def enterComment(self, ctx: XwinNmrPKParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XwinNmrPKParser#comment.
+        """
 
-    # Exit a parse tree produced by XwinNmrPKParser#comment.
     def exitComment(self, ctx: XwinNmrPKParser.CommentContext):
+        """ Exit a parse tree produced by XwinNmrPKParser#comment.
+        """
+
         comment = []
         for col in range(20):
             if ctx.Any_name(col):
@@ -105,8 +112,10 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         if 'Volume' in comment:
             self.__volume_col = comment.index('Volume')
 
-    # Enter a parse tree produced by XwinNmrPKParser#dimension.
     def enterDimension(self, ctx: XwinNmrPKParser.DimensionContext):
+        """ Enter a parse tree produced by XwinNmrPKParser#dimension.
+        """
+
         if ctx.Integer_ND():
             self.num_of_dim = int(str(ctx.Integer_ND()))
             self.initSpectralDim()
@@ -117,16 +126,19 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
                     self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
-    # Exit a parse tree produced by XwinNmrPKParser#dimension.
     def exitDimension(self, ctx: XwinNmrPKParser.DimensionContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XwinNmrPKParser#dimension.
+        """
 
-    # Enter a parse tree produced by XwinNmrPKParser#peak_2d.
     def enterPeak_2d(self, ctx: XwinNmrPKParser.Peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XwinNmrPKParser#peak_2d.
+        """
+
         self.peaks2D += 1
 
-    # Exit a parse tree produced by XwinNmrPKParser#peak_2d.
     def exitPeak_2d(self, ctx: XwinNmrPKParser.Peak_2dContext):
+        """ Exit a parse tree produced by XwinNmrPKParser#peak_2d.
+        """
 
         if -1 in (self.__f1_ppm_col, self.__f2_ppm_col)\
            or (self.__intensity_col == -1 and self.__volume_col == -1):
@@ -197,12 +209,15 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                details=annotation)
                 sf['loop'].add_data(row)
 
-    # Enter a parse tree produced by XwinNmrPKParser#peak_3d.
     def enterPeak_3d(self, ctx: XwinNmrPKParser.Peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XwinNmrPKParser#peak_3d.
+        """
+
         self.peaks3D += 1
 
-    # Exit a parse tree produced by XwinNmrPKParser#peak_3d.
     def exitPeak_3d(self, ctx: XwinNmrPKParser.Peak_3dContext):
+        """ Exit a parse tree produced by XwinNmrPKParser#peak_3d.
+        """
 
         if -1 in (self.__f1_ppm_col, self.__f2_ppm_col, self.__f3_ppm_col)\
            or (self.__intensity_col == -1 and self.__volume_col == -1):
@@ -280,12 +295,15 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                details=annotation)
                 sf['loop'].add_data(row)
 
-    # Enter a parse tree produced by XwinNmrPKParser#peak_4d.
     def enterPeak_4d(self, ctx: XwinNmrPKParser.Peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XwinNmrPKParser#peak_4d.
+        """
+
         self.peaks4D += 1
 
-    # Exit a parse tree produced by XwinNmrPKParser#peak_4d.
     def exitPeak_4d(self, ctx: XwinNmrPKParser.Peak_4dContext):
+        """ Exit a parse tree produced by XwinNmrPKParser#peak_4d.
+        """
 
         if -1 in (self.__f1_ppm_col, self.__f2_ppm_col, self.__f3_ppm_col, self.__f4_ppm_col)\
            or (self.__intensity_col == -1 and self.__volume_col == -1):
@@ -369,6 +387,3 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                None, None, None,
                                details=annotation)
                 sf['loop'].add_data(row)
-
-
-# del XwinNmrPKParser

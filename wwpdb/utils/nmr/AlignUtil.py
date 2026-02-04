@@ -3809,7 +3809,7 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
                     os.remove(loc_cif_path)
             if not os.path.exists(loc_cif_path):
                 uncompress_gzip_file(loc_cif_gz_path, loc_cif_path)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(str(e))
             return None
 

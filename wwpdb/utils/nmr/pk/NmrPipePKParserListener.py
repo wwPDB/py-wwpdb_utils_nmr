@@ -46,8 +46,9 @@ except ImportError:
                                            roundString)
 
 
-# This class defines a complete listener for a parse tree produced by NmrPipePKParser.
 class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by NmrPipePKParser.
+    """
     __slots__ = ()
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -63,16 +64,19 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         self.file_type = 'nm-pea-pip'
         self.software_name = 'NMRPIPE'
 
-    # Enter a parse tree produced by NmrPipePKParser#nmrpipe_pk.
     def enterNmrpipe_pk(self, ctx: NmrPipePKParser.Nmrpipe_pkContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrPipePKParser#nmrpipe_pk.
+        """
 
-    # Exit a parse tree produced by NmrPipePKParser#dynamo_mr.
     def exitNmrpipe_pk(self, ctx: NmrPipePKParser.Nmrpipe_pkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by NmrPipePKParser#dynamo_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by NmrPipePKParser#data_label.
     def enterData_label(self, ctx: NmrPipePKParser.Data_labelContext):
+        """ Enter a parse tree produced by NmrPipePKParser#data_label.
+        """
 
         def set_spectral_dim(_dim_id):
             self.num_of_dim = max(self.num_of_dim, _dim_id)
@@ -171,8 +175,10 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         elif ctx.A_axis_DA():
             set_spectral_dim(4)
 
-    # Exit a parse tree produced by NmrPipePKParser#data_label.
     def exitData_label(self, ctx: NmrPipePKParser.Data_labelContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by NmrPipePKParser#data_label.
+        """
+
         if self.num_of_dim > 2 and self.exptlMethod != 'SOLID-STATE NMR':
             for _dim_id in range(2, self.num_of_dim + 1):
                 cur_spectral_dim = self.cur_spectral_dim[_dim_id]
@@ -183,27 +189,32 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 if cur_spectral_dim['sweep_width'] < 50.0:
                     cur_spectral_dim['under_sampling_type'] = 'folded'
 
-    # Enter a parse tree produced by NmrPipePKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: NmrPipePKParser.Peak_list_2dContext):
+        """ Enter a parse tree produced by NmrPipePKParser#peak_list_2d.
+        """
+
         self.initSpectralDim()
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
         self.software_name = 'NMRPIPE'
 
-    # Exit a parse tree produced by NmrPipePKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: NmrPipePKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#peak_list_2d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#peak_2d.
     def enterPeak_2d(self, ctx: NmrPipePKParser.Peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#peak_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#peak_2d.
     def exitPeak_2d(self, ctx: NmrPipePKParser.Peak_2dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#peak_2d.
+        """
 
         try:
 
@@ -327,27 +338,32 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrPipePKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: NmrPipePKParser.Peak_list_3dContext):
+        """ Enter a parse tree produced by NmrPipePKParser#peak_list_3d.
+        """
+
         self.initSpectralDim()
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
         self.software_name = 'NMRPIPE'
 
-    # Exit a parse tree produced by NmrPipePKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: NmrPipePKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#peak_list_3d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#peak_3d.
     def enterPeak_3d(self, ctx: NmrPipePKParser.Peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#peak_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#peak_3d.
     def exitPeak_3d(self, ctx: NmrPipePKParser.Peak_3dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#peak_3d.
+        """
 
         try:
 
@@ -485,27 +501,32 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrPipePKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: NmrPipePKParser.Peak_list_4dContext):
+        """ Enter a parse tree produced by NmrPipePKParser#peak_list_4d.
+        """
+
         self.initSpectralDim()
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
         self.software_name = 'NMRPIPE'
 
-    # Exit a parse tree produced by NmrPipePKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: NmrPipePKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#peak_list_4d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#peak_4d.
     def enterPeak_4d(self, ctx: NmrPipePKParser.Peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#peak_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#peak_4d.
     def exitPeak_4d(self, ctx: NmrPipePKParser.Peak_4dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#peak_4d.
+        """
 
         try:
 
@@ -657,17 +678,20 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_label.
     def enterPipp_label(self, ctx: NmrPipePKParser.Pipp_labelContext):
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_label.
+        """
+
         if ctx.Dim_count_DA():
             self.num_of_dim = int(str(ctx.Integer_DA()))
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_label.
     def exitPipp_label(self, ctx: NmrPipePKParser.Pipp_labelContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_label.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_axis.
     def enterPipp_axis(self, ctx: NmrPipePKParser.Pipp_axisContext):
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_axis.
+        """
 
         def set_spectral_dim(_dim_id):
             if _dim_id not in self.cur_spectral_dim:
@@ -704,30 +728,35 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         elif ctx.A_axis_DA():
             set_spectral_dim(4)
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_axis.
     def exitPipp_axis(self, ctx: NmrPipePKParser.Pipp_axisContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_axis.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_peak_list_2d.
     def enterPipp_peak_list_2d(self, ctx: NmrPipePKParser.Pipp_peak_list_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_peak_list_2d.
+        """
+
         if self.num_of_dim != 2:
             self.num_of_dim = 2
         self.initSpectralDim()
         self.software_name = 'PIPP'
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_2d.
     def exitPipp_peak_list_2d(self, ctx: NmrPipePKParser.Pipp_peak_list_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_2d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_peak_2d.
     def enterPipp_peak_2d(self, ctx: NmrPipePKParser.Pipp_peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_peak_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_peak_2d.
     def exitPipp_peak_2d(self, ctx: NmrPipePKParser.Pipp_peak_2dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_peak_2d.
+        """
 
         try:
 
@@ -835,26 +864,31 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_peak_list_3d.
     def enterPipp_peak_list_3d(self, ctx: NmrPipePKParser.Pipp_peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_peak_list_3d.
+        """
+
         if self.num_of_dim != 3:
             self.num_of_dim = 3
         self.initSpectralDim()
         self.software_name = 'PIPP'
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_3d.
     def exitPipp_peak_list_3d(self, ctx: NmrPipePKParser.Pipp_peak_list_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_3d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_peak_3d.
     def enterPipp_peak_3d(self, ctx: NmrPipePKParser.Pipp_peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_peak_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_peak_3d.
     def exitPipp_peak_3d(self, ctx: NmrPipePKParser.Pipp_peak_3dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_peak_3d.
+        """
 
         try:
 
@@ -970,26 +1004,31 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_peak_list_4d.
     def enterPipp_peak_list_4d(self, ctx: NmrPipePKParser.Pipp_peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_peak_list_4d.
+        """
+
         if self.num_of_dim != 4:
             self.num_of_dim = 4
         self.initSpectralDim()
         self.software_name = 'PIPP'
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_4d.
     def exitPipp_peak_list_4d(self, ctx: NmrPipePKParser.Pipp_peak_list_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_4d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_peak_4d.
     def enterPipp_peak_4d(self, ctx: NmrPipePKParser.Pipp_peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_peak_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_peak_4d.
     def exitPipp_peak_4d(self, ctx: NmrPipePKParser.Pipp_peak_4dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_peak_4d.
+        """
 
         try:
 
@@ -1102,24 +1141,30 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.originalNumberSelection.clear()
 
     def enterPipp_row_peak_list_2d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_2d.
+        """
+
         if self.num_of_dim != 2:
             self.num_of_dim = 2
         self.initSpectralDim()
         self.software_name = 'PIPP'
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_2d.
     def exitPipp_row_peak_list_2d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_2d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_2d.
     def enterPipp_row_peak_2d(self, ctx: NmrPipePKParser.Pipp_row_peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_2d.
     def exitPipp_row_peak_2d(self, ctx: NmrPipePKParser.Pipp_row_peak_2dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_2d.
+        """
 
         try:
 
@@ -1177,26 +1222,31 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                 f'{ass} -> ',
                                 None if has_assignments and not has_multiple_assignments else ass)
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_3d.
     def enterPipp_row_peak_list_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_3d.
+        """
+
         if self.num_of_dim != 3:
             self.num_of_dim = 3
         self.initSpectralDim()
         self.software_name = 'PIPP'
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_3d.
     def exitPipp_row_peak_list_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_3d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_3d.
     def enterPipp_row_peak_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_3d.
     def exitPipp_row_peak_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_3dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_3d.
+        """
 
         try:
 
@@ -1262,26 +1312,31 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                 f'{ass} -> ',
                                 None if has_assignments and not has_multiple_assignments else ass)
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_4d.
     def enterPipp_row_peak_list_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_4d.
+        """
+
         if self.num_of_dim != 4:
             self.num_of_dim = 4
         self.initSpectralDim()
         self.software_name = 'PIPP'
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_4d.
     def exitPipp_row_peak_list_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_4d.
+        """
 
-    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_4d.
     def enterPipp_row_peak_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_4d.
     def exitPipp_row_peak_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_4dContext):
+        """ Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_4d.
+        """
 
         try:
 
@@ -1344,6 +1399,8 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                 None if has_assignments and not has_multiple_assignments else ass)
 
     def enterNumber(self, ctx: NmrPipePKParser.NumberContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipePKParser#number.
+        """
 
         try:
 
@@ -1382,9 +1439,6 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Exit a parse tree produced by NmrPipePKParser#number.
     def exitNumber(self, ctx: NmrPipePKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del NmrPipePKParser
+        """ Exit a parse tree produced by NmrPipePKParser#number.
+        """

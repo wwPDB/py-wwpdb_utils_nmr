@@ -31,8 +31,9 @@ except ImportError:
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
-# This class defines a complete listener for a parse tree produced by OliviaCSParser.
 class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
+    """ This class defines a complete listener for a parse tree produced by OliviaCSParser.
+    """
     __slots__ = ()
 
     __polySeq = None
@@ -47,22 +48,27 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.file_type = 'nm-shi-oli'
         self.software_name = 'Olivia'
 
-    # Enter a parse tree produced by OliviaCSParser#olivia_cs.
     def enterOlivia_cs(self, ctx: OliviaCSParser.Olivia_csContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by OliviaCSParser#olivia_cs.
+        """
 
-    # Exit a parse tree produced by OliviaCSParser#olivia_cs.
     def exitOlivia_cs(self, ctx: OliviaCSParser.Olivia_csContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by OliviaCSParser#olivia_cs.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by OliviaCSParser#sequence.
     def enterSequence(self, ctx: OliviaCSParser.SequenceContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaCSParser#sequence.
+        """
+
         self.__polySeq = []
         self.__entityAssembly = {}
         self.offset = {}
 
-    # Exit a parse tree produced by OliviaCSParser#sequence.
     def exitSequence(self, ctx: OliviaCSParser.SequenceContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by OliviaCSParser#sequence.
+        """
 
         if not self.hasPolySeq:
 
@@ -95,8 +101,9 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
                     elif len(compId) == 1:
                         self.polyRibonucleotide = True
 
-    # Enter a parse tree produced by OliviaCSParser#residue.
     def enterResidue(self, ctx: OliviaCSParser.ResidueContext):
+        """ Enter a parse tree produced by OliviaCSParser#residue.
+        """
 
         chain_id = str(ctx.Simple_name(0))
         comp_id = str(ctx.Simple_name(1))
@@ -114,12 +121,14 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
         ps['seq_id'].append(seq_id)
         ps['comp_id'].append(comp_id)
 
-    # Exit a parse tree produced by OliviaCSParser#residue.
     def exitResidue(self, ctx: OliviaCSParser.ResidueContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaCSParser#residue.
+        """
 
-    # Enter a parse tree produced by OliviaCSParser#chemical_shifts.
     def enterChemical_shifts(self, ctx: OliviaCSParser.Chemical_shiftsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaCSParser#chemical_shifts.
+        """
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -127,16 +136,19 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_subtype = 'chem_shift'
 
-    # Exit a parse tree produced by OliviaCSParser#chemical_shifts.
     def exitChemical_shifts(self, ctx: OliviaCSParser.Chemical_shiftsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaCSParser#chemical_shifts.
+        """
 
-    # Enter a parse tree produced by OliviaCSParser#chemical_shift.
     def enterChemical_shift(self, ctx: OliviaCSParser.Chemical_shiftContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaCSParser#chemical_shift.
+        """
+
         self.chemShifts += 1
 
-    # Exit a parse tree produced by OliviaCSParser#chemical_shift.
     def exitChemical_shift(self, ctx: OliviaCSParser.Chemical_shiftContext):
+        """ Exit a parse tree produced by OliviaCSParser#chemical_shift.
+        """
 
         try:
 
@@ -202,8 +214,10 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
         finally:
             self.anySelection.clear()
 
-    # Enter a parse tree produced by OliviaCSParser#number.
     def enterNumber(self, ctx: OliviaCSParser.NumberContext):
+        """ Enter a parse tree produced by OliviaCSParser#number.
+        """
+
         if ctx.Float():
             self.anySelection.append(float(str(ctx.Float())))
 
@@ -216,17 +230,14 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
         else:
             self.anySelection.append(None)
 
-    # Exit a parse tree produced by OliviaCSParser#number.
     def exitNumber(self, ctx: OliviaCSParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaCSParser#number.
+        """
 
-    # Enter a parse tree produced by OliviaCSParser#comment.
     def enterComment(self, ctx: OliviaCSParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by OliviaCSParser#comment.
+        """
 
-    # Exit a parse tree produced by OliviaCSParser#comment.
     def exitComment(self, ctx: OliviaCSParser.CommentContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del OliviaCSParser
+        """ Exit a parse tree produced by OliviaCSParser#comment.
+        """

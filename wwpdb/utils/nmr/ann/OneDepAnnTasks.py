@@ -2036,7 +2036,7 @@ class OneDepAnnTasks:
 
             try:
                 cifObj.writeToFile(file_path)
-            except Exception:
+            except IOError:
                 return False
 
             return True
@@ -2561,7 +2561,7 @@ class OneDepAnnTasks:
 
         try:
             cifObj.writeToFile(file_path)
-        except Exception:
+        except IOError:
             return False
 
         return True

@@ -114,15 +114,27 @@ class RosettaMRReader:
         self.__reasons = reasons
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def setRemediateMode(self, remediate: bool):
+        """ Set remediation mode.
+        """
+
         self.__remediate = remediate
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of parser error messages to save.
+        """
+
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,

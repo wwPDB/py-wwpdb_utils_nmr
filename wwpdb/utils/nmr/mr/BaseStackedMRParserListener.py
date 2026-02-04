@@ -3,7 +3,7 @@
 # Date: 23-Oct-2025
 #
 # Updates:
-""" ParserLister class for Generic Stacked MR files.
+""" ParserLister base class for generic stacked MR files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -287,6 +287,8 @@ except ImportError:
 
 
 class BaseStackedMRParserListener():
+    """ ParserLister base class for generic stacked MR files.
+    """
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
@@ -953,6 +955,9 @@ class BaseStackedMRParserListener():
 
     @property
     def debug(self):
+        """ Retrieve debug mode.
+        """
+
         return self.__debug
 
     @debug.setter
@@ -961,10 +966,16 @@ class BaseStackedMRParserListener():
 
     @property
     def log(self):
+        """ Retrieve current log.
+        """
+
         return self.__log
 
     @property
     def verbose_debug(self):
+        """ Retrieve verbose debug mode.
+        """
+
         return self.__verbose_debug
 
     @verbose_debug.setter
@@ -973,6 +984,9 @@ class BaseStackedMRParserListener():
 
     @property
     def remediate(self):
+        """ Retrieve remediation mode.
+        """
+
         return self.__remediate
 
     @remediate.setter
@@ -981,6 +995,9 @@ class BaseStackedMRParserListener():
 
     @property
     def internal(self):
+        """ Retrieve internal mode.
+        """
+
         return self.__internal
 
     @internal.setter
@@ -989,6 +1006,9 @@ class BaseStackedMRParserListener():
 
     @property
     def nmrVsModel(self):
+        """ Retrieve chain assignments between NMR data and model.
+        """
+
         return self.__nmrVsModel
 
     @nmrVsModel.setter
@@ -997,6 +1017,9 @@ class BaseStackedMRParserListener():
 
     @property
     def createSfDict(self):
+        """ Whether to create saveframe dictionary.
+        """
+
         return self.__createSfDict
 
     @createSfDict.setter
@@ -1005,6 +1028,9 @@ class BaseStackedMRParserListener():
 
     @property
     def originalFileName(self):
+        """ Retrieve the original file name.
+        """
+
         return self.__originalFileName
 
     @originalFileName.setter
@@ -1013,6 +1039,9 @@ class BaseStackedMRParserListener():
 
     @property
     def listIdCounter(self):
+        """ Retrieve list ID counter dictionary.
+        """
+
         return self.__listIdCounter
 
     @listIdCounter.setter
@@ -1021,6 +1050,9 @@ class BaseStackedMRParserListener():
 
     @property
     def entryId(self):
+        """ Retrieve entry ID.
+        """
+
         return self.__entryId
 
     @entryId.setter
@@ -1028,6 +1060,8 @@ class BaseStackedMRParserListener():
         self.__entryId = entryId
 
     def exit(self):
+        """ Common function to exit a parse tree.
+        """
 
         def set_label_seq_scheme():
             r = self.__getNamedReasonsForReparsing('label_seq_scheme')
@@ -4406,12 +4440,18 @@ class BaseStackedMRParserListener():
         return True
 
     def intersectionFactor_expressions(self, atomSelection: Optional[List[dict]] = None):
+        """ Take the intersection of the current factor and given atom selection.
+        """
+
         self.consumeFactor_expressions(cifCheck=False)
 
         self.factor = self.doIntersectionFactor_expressions(self.factor, atomSelection)
 
     def doIntersectionFactor_expressions(self, _factor: dict, atomSelection: Optional[List[dict]] = None  # noqa: E501, pylint: disable=no-self-use,line-too-long
                                          ) -> dict:
+        """ Take the intersection of given factor and atom selection.
+        """
+
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
             return _factor
@@ -4497,6 +4537,9 @@ class BaseStackedMRParserListener():
 
     def intersectionAtom_selections(self, _selection1: List[dict], _selection2: List[dict]  # pylint: disable=no-self-use
                                     ) -> List[dict]:
+        """ Take the intersection of given two atom selections.
+        """
+
         if None in (_selection1, _selection2) or 0 in (len(_selection1), len(_selection2)):
             return []
 
@@ -5772,7 +5815,7 @@ class BaseStackedMRParserListener():
 
         if 'alt_chain_id' in _factor:
             for _atom in atomSelection:
-                self.updateSegmentIdDict(_factor, _atom['chain_id'], _atom['is_poly'], valid)
+                self.__updateSegmentIdDict(_factor, _atom['chain_id'], _atom['is_poly'], valid)
 
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
@@ -6089,7 +6132,7 @@ class BaseStackedMRParserListener():
                                         authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(__seqId)]
                                         atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
                                                                          __seqId, authCompId, atomId, __coordAtomSite)
-                                    __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                    __atomIds = self.__getAtomIdList(_factor, __compId, atomId)
                                     if __atomIds[0] in __atomSiteAtomId:
                                         offsets.add(__seqId - seqId)
 
@@ -6129,7 +6172,7 @@ class BaseStackedMRParserListener():
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if not isPolySeq and isChainSpecified\
-                       and self.doesNonPolySeqIdMatchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):
+                       and self.__matchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):
                         if coordAtomSite is None or atomId not in coordAtomSite['atom_id']:
                             continue
 
@@ -6289,7 +6332,7 @@ class BaseStackedMRParserListener():
                                         atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
                                                                          seqId, authCompId, atomId, coordAtomSite)
 
-                        atomIds = self.getAtomIdList(_factor, compId, atomId)
+                        atomIds = self.__getAtomIdList(_factor, compId, atomId)
 
                         if atomSiteAtomId is not None:
                             if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
@@ -6402,7 +6445,7 @@ class BaseStackedMRParserListener():
 
                         if coordAtomSite is not None and compId != coordAtomSite['comp_id']\
                            and any(_atomId not in atomSiteAtomId for _atomId in atomIds):
-                            atomIds = self.getAtomIdList(_factor, coordAtomSite['comp_id'], _atomId)
+                            atomIds = self.__getAtomIdList(_factor, coordAtomSite['comp_id'], _atomId)
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
@@ -6437,7 +6480,7 @@ class BaseStackedMRParserListener():
                                             self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
-                                            _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
+                                            _atomId = self.__getAtomIdList(_factor, _compId, atomId)[0]
                                             skip = self.with_axis and self.__multiPolymer\
                                                 and not all('identical_chain_id' in ps for ps in self.polySeq)
                                             if _atomId in _coordAtomSite['atom_id']\
@@ -6508,7 +6551,7 @@ class BaseStackedMRParserListener():
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
-                                            _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
+                                            _atomId = self.__getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
@@ -6561,7 +6604,7 @@ class BaseStackedMRParserListener():
                                             self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
-                                            _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
+                                            _atomId = self.__getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 # _atom = {}
                                                 # _atom['comp_id'] = _compId
@@ -6607,7 +6650,7 @@ class BaseStackedMRParserListener():
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
-                                            _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
+                                            _atomId = self.__getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
@@ -6676,6 +6719,8 @@ class BaseStackedMRParserListener():
                                         seqKey: Tuple[str, int], coordAtomSite: Optional[dict], atomSiteAtomId: List[str],
                                         chainId: str, seqId: int, _seqId: int, compId: Optional[str], atomId: str, _atomId: str,
                                         origAtomId: str, extSeqScheme: bool):
+        """ Evaluate given factor.
+        """
 
         if (len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1 or not isPolySeq) and not atomSpecified:
             return
@@ -6827,7 +6872,7 @@ class BaseStackedMRParserListener():
                                        and (self.has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
                                         pass
                                     else:
-                                        offset = self.getLabelSeqOffsetDueToUnobs(ps)
+                                        offset = self.__getLabelSeqOffsetDueToUnobs(ps)
                                         self.__getNamedReasonsForReparsing('label_seq_offset')[chainId] = offset
                                         if offset != 0:
                                             update_label_seq_scheme()
@@ -6863,7 +6908,7 @@ class BaseStackedMRParserListener():
                                                          and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
                                                         or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
                                                     __compId = __coordAtomSite['comp_id']
-                                                    __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                                    __atomIds = self.__getAtomIdList(_factor, __compId, atomId)
                                                     if compId != __compId\
                                                        and __atomIds[0] in __coordAtomSite['atom_id']:
                                                         update_label_seq_scheme()
@@ -6972,7 +7017,7 @@ class BaseStackedMRParserListener():
                                                  and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)
                                                 or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
                                             __compId = __coordAtomSite['comp_id']
-                                            __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                            __atomIds = self.__getAtomIdList(_factor, __compId, atomId)
                                             # 2ld5
                                             if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']\
                                                and self.csStat.getTypeOfCompId(compId) == self.csStat.getTypeOfCompId(__compId):
@@ -7096,13 +7141,15 @@ class BaseStackedMRParserListener():
 
                             if self.cur_subtype == 'dist' and isPolySeq and isChainSpecified\
                                and compId in STD_MON_DICT and self.csStat.peptideLike(compId):
-                                self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
+                                self.__checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
                             if 'alt_chain_id' in _factor:
                                 self.__failure_chain_ids.append(chainId)
 
     def __handleNoAtomSelection(self, _factor: dict, clauseName: str, cifCheck: bool, trial: int,
                                 chain_not_specified: bool, ambig_atom_sel: bool,
                                 found_comp_id: bool, atom_not_found_error: bool, _atomId: Optional[str]) -> Tuple[bool, dict]:
+        """ Handle case of no atom selection.
+        """
 
         def has_identical_chain_id(chain_id):
             try:
@@ -7167,7 +7214,7 @@ class BaseStackedMRParserListener():
                     #               f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}.")
                     if 'alt_chain_id' in _factor:  # 2mnz
                         for chainId in _factor['chain_id']:
-                            self.updateSegmentIdDict(_factor, chainId, None, False)
+                            self.__updateSegmentIdDict(_factor, chainId, None, False)
                     if found_comp_id and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                         compIds = guessCompIdFromAtomId(_factor['atom_id'], self.polySeq, self.nefT)
                         if compIds is not None:
@@ -7435,8 +7482,9 @@ class BaseStackedMRParserListener():
                                 if _seqKey in self.__coordUnobsRes:
                                     unobs_seq = True  # 2n25
                                 if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
-                                    _atomIds = self.getAtomIdList(_factor,
-                                                                  self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
+                                    _atomIds = self.__getAtomIdList(_factor,
+                                                                    self.__coordUnobsAtom[_seqKey]['comp_id'],
+                                                                    _factor['atom_id'][0])
                                     if _atomIds[0] in self.__coordUnobsAtom[_seqKey]['atom_ids']:
                                         unobs_seq = True
                             elif len(_factor['chain_id']) > 1 and len(_factor['seq_id']) == 1:
@@ -7482,8 +7530,8 @@ class BaseStackedMRParserListener():
                                         unobs_seq = True  # 2n25
                                     if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
                                         _atomIds[0] =\
-                                            self.getAtomIdList(_factor,
-                                                               self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
+                                            self.__getAtomIdList(_factor,
+                                                                 self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
                                         if _atomIds in self.__coordUnobsAtom[_seqKey]['atom_ids']:
                                             unobs_seq = True
                             if (no_ext_seq or self.reasons is None) and not unobs_seq:
@@ -7524,6 +7572,9 @@ class BaseStackedMRParserListener():
 
     @functools.lru_cache(maxsize=128)
     def getRealCompId(self, compId: str) -> str:
+        """ Return a realistic comp ID for a given residue name.
+        """
+
         if self.ccU.updateChemCompDict(compId, False):
             if self.ccU.lastChemCompDict['release_status'] == 'OBS'\
                and 'replaced_by' in self.ccU.lastChemCompDict:
@@ -7533,6 +7584,9 @@ class BaseStackedMRParserListener():
         return compId
 
     def getOrigSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Optional[int]:
+        """ Return a original sequence code for a given polymer sequence and sequence code.
+        """
+
         offset = 0
         if not self.preferAuthSeq:
             chainId = ps['chain_id']
@@ -7611,6 +7665,9 @@ class BaseStackedMRParserListener():
         return seqId
 
     def getRealSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Tuple[Optional[int], Optional[str], bool]:
+        """ Return a realistic sequence for a given polymer sequence and sequence code.
+        """
+
         offset = 0
         preferLabelSeq = False
         if self.reasons is not None and 'segment_id_mismatch' in self.reasons and 'segment_id_match_stats' in self.reasons:
@@ -7711,6 +7768,9 @@ class BaseStackedMRParserListener():
 
     @functools.lru_cache(maxsize=128)
     def getRealChainId(self, chainId: str, hint: str = None) -> str:
+        """ Return a realistic chain ID for geven conditions.
+        """
+
         if self.reasons is not None and 'segment_id_mismatch' in self.reasons and chainId in self.reasons['segment_id_mismatch']:
             _chainId = self.reasons['segment_id_mismatch'][chainId]
             if _chainId is not None:
@@ -7722,7 +7782,10 @@ class BaseStackedMRParserListener():
                 chainId = hint
         return chainId
 
-    def updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool):
+    def __updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool):
+        """ Update segment ID dictionary.
+        """
+
         if self.reasons is not None or 'alt_chain_id' not in factor\
            or len(self.reasonsForReParsing) == 0 or 'segment_id_mismatch' not in self.reasonsForReParsing:
             return
@@ -7790,6 +7853,9 @@ class BaseStackedMRParserListener():
     @functools.lru_cache(maxsize=2048)
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        """ Retrieve sequence key and coordinates for given conditions.
+        """
+
         seqKey = (chainId, seqId)
         if asis:
             if cifCheck and compId is not None:
@@ -7817,7 +7883,10 @@ class BaseStackedMRParserListener():
             return seqKey, self.__coordAtomSite[seqKey] if cifCheck and seqKey in self.__coordAtomSite else None
         return seqKey, None
 
-    def getAtomIdList(self, factor: dict, compId: str, atomId: str) -> List[str]:
+    def __getAtomIdList(self, factor: dict, compId: str, atomId: str) -> List[str]:
+        """ Retrieve list of atom IDs for given conditions.
+        """
+
         key = (compId, atomId, 'alt_atom_id' in factor)
         if key in self.__cachedDictForAtomIdList:
             return copy.copy(self.__cachedDictForAtomIdList[key])
@@ -7839,7 +7908,10 @@ class BaseStackedMRParserListener():
         self.__cachedDictForAtomIdList[key] = atomIds
         return atomIds
 
-    def getLabelSeqOffsetDueToUnobs(self, ps: dict) -> int:
+    def __getLabelSeqOffsetDueToUnobs(self, ps: dict) -> int:
+        """ Get offset of label sequence scheme because of unobs residue.
+        """
+
         authChainId = ps['auth_chain_id']
         for labelSeqId, authSeqId in zip(ps['seq_id'], ps['auth_seq_id']):
             seqKey = (authChainId, authSeqId)
@@ -7847,7 +7919,10 @@ class BaseStackedMRParserListener():
                 return labelSeqId - 1
         return max(list(filter(None, ps['seq_id']))) - 1
 
-    def doesNonPolySeqIdMatchWithPolySeqUnobs(self, chainId: str, seqId: int) -> bool:
+    def __matchWithPolySeqUnobs(self, chainId: str, seqId: int) -> bool:
+        """ Check whether given sequence matches with unobs residue.
+        """
+
         _ps_ = next((_ps_ for _ps_ in self.polySeq if _ps_['auth_chain_id'] == chainId), None)
         if _ps_ is not None:
             _chainId_ = _ps_['chain_id']
@@ -7884,8 +7959,8 @@ class BaseStackedMRParserListener():
                                 return True
         return False
 
-    def checkDistSequenceOffset(self, chainId: str, seqId: int, compId: str, origAtomId: str) -> bool:
-        """ Try to find sequence offset.
+    def __checkDistSequenceOffset(self, chainId: str, seqId: int, compId: str, origAtomId: str) -> bool:
+        """ Find sequence offset from tentative distance restraint.
         """
 
         if not self.hasPolySeq or self.cur_subtype != 'dist':
@@ -8034,7 +8109,7 @@ class BaseStackedMRParserListener():
                         atom2['auth_atom_id'] = atom2['atom_id']
                     atom2['atom_id'] = alt_atom_id2
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
@@ -8205,7 +8280,7 @@ class BaseStackedMRParserListener():
                 if upper_linear_limit is not None:
                     dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
@@ -8266,7 +8341,7 @@ class BaseStackedMRParserListener():
             if dist_error(lower_limit, upper_limit, d_org) >= DIST_AMBIG_UP:
                 return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.isRealisticDistanceRestraint() ++ Error  - {str(e)}")
 
@@ -8380,6 +8455,9 @@ class BaseStackedMRParserListener():
         return '/'.join(__factor)
 
     def getCurrentRestraint(self) -> str:
+        """ Retrieve indicator of the current restraint.
+        """
+
         if self.cur_subtype == 'dist'\
            or (self.in_noe and self.cur_subtype_altered):  # resolve side effect derived from rdc -> dist type change (2ljb)
             return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
@@ -8433,12 +8511,18 @@ class BaseStackedMRParserListener():
         return ''
 
     def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        """ Retrieve reasons for re-parsing by name. create a dictionary if name does not exist.
+        """
+
         if name in self.reasonsForReParsing:
             return self.reasonsForReParsing[name]
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
     def setLocalSeqScheme(self):
+        """ Set sequence scheme for each restraint.
+        """
+
         r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         if self.cur_subtype == 'dist':
             r[(self.cur_subtype, self.distRestraints)] = self.preferAuthSeq
@@ -8488,6 +8572,9 @@ class BaseStackedMRParserListener():
                 self.__getNamedReasonsForReparsing('label_seq_scheme')[self.cur_subtype] = True
 
     def retrieveLocalSeqScheme(self):
+        """ Retrieve sequence scheme for each restraint.
+        """
+
         if self.reasons is None\
            or ('label_seq_scheme' not in self.reasons
                and 'local_seq_scheme' not in self.reasons
@@ -8564,6 +8651,9 @@ class BaseStackedMRParserListener():
 
     def addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
               rdcCode: Optional[str] = None, alignCenter: Optional[str] = None):
+        """ Add saveframe for given conditions if not exists.
+        """
+
         content_subtype = contentSubtypeOf(self.cur_subtype)
 
         if content_subtype is None:
@@ -8625,6 +8715,9 @@ class BaseStackedMRParserListener():
 
     def getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
               rdcCode: Optional[str] = None, alignCenter: Optional[str] = None) -> dict:
+        """ Retrieve saveframe for given conditions.
+        """
+
         key = (self.cur_subtype, constraintType, potentialType, rdcCode, None if alignCenter is None else str(alignCenter))
 
         if key not in self.sfDict:
@@ -8680,6 +8773,9 @@ class BaseStackedMRParserListener():
         return sf
 
     def trimSfWoLp(self):
+        """ Trim saveframe(s) without any loop.
+        """
+
         if self.cur_subtype not in self.lastSfDict:
             return
         if self.lastSfDict[self.cur_subtype]['index_id'] > 0:

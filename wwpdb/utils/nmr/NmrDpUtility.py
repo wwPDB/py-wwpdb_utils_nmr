@@ -961,8 +961,8 @@ class NmrDpUtility:
             else:
                 raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type!r}.")
 
-        except Exception as e:
-            raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e))
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e)) from e
 
     def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of output parameters.
@@ -985,8 +985,8 @@ class NmrDpUtility:
             else:
                 raise KeyError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type!r}.")
 
-        except Exception as e:
-            raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e))
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e)) from e
 
     def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
@@ -1552,7 +1552,7 @@ class NmrDpUtility:
 
                                     uncompress_gzip_file(cs, _cs)
 
-                                except Exception as e:
+                                except Exception as e:  # pylint: disable=broad-exception-caught
 
                                     self.__reg.report.error.appendDescription('internal_error',
                                                                               f"+{self.__class_name__}.__initializeDpReport() "
@@ -1595,7 +1595,7 @@ class NmrDpUtility:
 
                                     uncompress_gzip_file(cs['file_name'], _cs)
 
-                                except Exception as e:
+                                except Exception as e:  # pylint: disable=broad-exception-caught
 
                                     self.__reg.report.error.appendDescription('internal_error',
                                                                               f"+{self.__class_name__}.__initializeDpReport() "
@@ -1652,7 +1652,7 @@ class NmrDpUtility:
 
                                 uncompress_gzip_file(cs, _cs)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
 
                                 self.__reg.report.error.appendDescription('internal_error',
                                                                           f"+{self.__class_name__}.__initializeDpReport() "
@@ -1696,7 +1696,7 @@ class NmrDpUtility:
 
                                 uncompress_gzip_file(cs['file_name'], _cs)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
 
                                 self.__reg.report.error.appendDescription('internal_error',
                                                                           f"+{self.__class_name__}.__initializeDpReport() "
@@ -1800,7 +1800,7 @@ class NmrDpUtility:
 
                                 uncompress_gzip_file(arPath, _arPath)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
 
                                 self.__reg.report.error.appendDescription('internal_error'
                                                                           f"+{self.__class_name__}.__initializeDpReport() "
@@ -1997,7 +1997,7 @@ class NmrDpUtility:
                                 self.__reg.report.setDiamagnetic(False)
                                 break
 
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 pass
 
         return input_source is not None
@@ -2337,7 +2337,7 @@ class NmrDpUtility:
                                 self.__reg.log.write(f"+{self.__class_name__}.__extractPolymerSequence() "
                                                      f"++ Error  - {err}\n")
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self.__reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.__extractPolymerSequence() "
@@ -2628,7 +2628,7 @@ class NmrDpUtility:
                         self.__reg.log.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() "
                                              f"++ Error  - {err}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__extractPolymerSequenceInLoop() "
@@ -5557,10 +5557,10 @@ class NmrDpUtility:
                                 self.__reg.log.write(f"+{self.__class_name__}.__testNmrCovalentBond() "
                                                      f"++ ValueError  - {str(e)}\n")
 
-                        except UserWarning:
+                        except UserWarning:  # pylint: disable=broad-exception-caught
                             pass
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
 
                             self.__reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.__testNmrCovalentBond() "
@@ -5837,10 +5837,10 @@ class NmrDpUtility:
                                                                                                      num_dim, lp_category, aux_data,
                                                                                                      sf, parent_pointer)
 
-                                except Exception:
+                                except Exception:  # pylint: disable=broad-exception-caught
                                     pass
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
 
                                 self.__reg.report.error.appendDescription('internal_error',
                                                                           f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() "  # noqa: E501, pylint: disable=line-too-long
@@ -6137,10 +6137,10 @@ class NmrDpUtility:
                                                                                              num_dim, lp_category, aux_data,
                                                                                              sf, parent_pointer)
 
-                        except Exception:
+                        except Exception:  # pylint: disable=broad-exception-caught
                             pass
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() "
@@ -6347,10 +6347,10 @@ class NmrDpUtility:
                             self.__reg.sf_tag_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                             'data': sf_tag_data})
 
-                        except Exception:
+                        except Exception:  # pylint: disable=broad-exception-caught
                             pass
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.__testSfTagConsistency() "
@@ -6893,7 +6893,7 @@ class NmrDpUtility:
                                                 self.__reg.log.write(f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                      f"++ Warning  - {warn}\n")
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
 
                             self.__reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() "  # noqa: E501, pylint: disable=line-too-long
@@ -7003,7 +7003,7 @@ class NmrDpUtility:
                         self.__reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                     'data': lp_data})
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() "  # noqa: E501, pylint: disable=line-too-long
@@ -7062,7 +7062,7 @@ class NmrDpUtility:
 
                     cs_list = get_first_sf_tag(sf, CS_LIST_SF_TAG_NAME[file_type])
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
                     continue
 
                 cs_data = None
@@ -7533,7 +7533,7 @@ class NmrDpUtility:
                                                     self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                          f"++ ValueError  - {err}\n")
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self.__reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() "
@@ -7625,7 +7625,7 @@ class NmrDpUtility:
                             cs_file_name = cs_input_source_dic['file_name']
                             csFileListId = 0
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
                     pass
 
                 if cs_data is None:
@@ -8094,7 +8094,7 @@ class NmrDpUtility:
                                                 self.__reg.log.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() "  # noqa: E501, pylint: disable=line-too-long
                                                                      f"++ ValueError  - {err}\n")
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self.__reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() "
@@ -8481,7 +8481,7 @@ class NmrDpUtility:
                                     myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY],
                                                    containerList=containerList[eff_block_id:])
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 self.__reg.log.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {str(e)}\n")
 
             return True
@@ -8655,7 +8655,7 @@ class NmrDpUtility:
                                 myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY],
                                                containerList=containerList[eff_block_id:])
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             self.__reg.log.write(f"+{self.__class_name__}.__validateStrPk() ++ Error  - {str(e)}\n")
 
             return True
@@ -9091,7 +9091,7 @@ class NmrDpUtility:
                             self.__reg.total_models = len(model_ids)
                             self.__reg.eff_model_ids = sorted(model_ids)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.__parseCoordinate() "
@@ -9126,7 +9126,7 @@ class NmrDpUtility:
                         self.__reg.total_models = len(model_ids)
                         self.__reg.eff_model_ids = sorted(model_ids)
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self.__reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
@@ -9358,7 +9358,7 @@ class NmrDpUtility:
 
                         except ImportError:
                             pass
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             print(str(e))
 
                     if not os.path.exists(internal_cif_file0):
@@ -9411,7 +9411,7 @@ class NmrDpUtility:
                                                         ret_code = 0
                                                         break
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             print(str(e))
 
                     if os.path.exists(internal_cif_file):
@@ -9538,7 +9538,7 @@ class NmrDpUtility:
                                                                         self.__reg.representative_alt_id,
                                                                         self.__reg.csStat)
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             print(str(e))
 
             if len(self.__reg.internal_atom_name_mapping) == 0:
@@ -9600,7 +9600,7 @@ class NmrDpUtility:
                                                                     self.__reg.representative_alt_id,
                                                                     self.__reg.csStat)
 
-                    except Exception:
+                    except Exception:  # pylint: disable=broad-exception-caught
                         pass
 
             # DAOTHER-8580: convert working model file if pdbx_poly_seq_scheme category is missing
@@ -9651,7 +9651,7 @@ class NmrDpUtility:
                         rdU.cleanup()
                         os.rmdir(dirPath)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.__parseCoordinate() "
@@ -9672,7 +9672,7 @@ class NmrDpUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
@@ -9702,7 +9702,7 @@ class NmrDpUtility:
 
                         uncompress_gzip_file(fPath, _fPath)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.__parseCoordFilePath() "
@@ -9745,7 +9745,7 @@ class NmrDpUtility:
                     if self.__reg.cR.parse(fPath):
                         return True
 
-            except Exception:
+            except IOError:
                 pass
 
             finally:
@@ -9833,7 +9833,7 @@ class NmrDpUtility:
 
                                 touch_file = os.path.join(dir_path, '.entry_without_cs')
                                 if not os.path.exists(touch_file):
-                                    with open(touch_file, 'w') as ofh:
+                                    with open(touch_file, 'w', encoding='utf-8') as ofh:
                                         ofh.write('')
 
                     self.__reg.suspended_errors_for_lazy_eval.clear()
@@ -9933,6 +9933,7 @@ class NmrDpUtility:
                         key_items = _key_items
 
                     try:
+
                         branched_seq = self.__reg.cR.getPolymerSequence(lp_category, key_items,
                                                                         withStructConf=False, withRmsd=False, alias=False,
                                                                         totalModels=self.__reg.total_models,
@@ -9940,7 +9941,8 @@ class NmrDpUtility:
                                                                         repAltId=self.__reg.representative_alt_id)
                         if len(branched_seq) > 0:
                             poly_seq.extend(branched_seq)
-                    except Exception:
+
+                    except Exception:  # pylint: disable=broad-exception-caught
                         pass
 
                 content_subtype = 'non_poly'
@@ -9964,6 +9966,7 @@ class NmrDpUtility:
                         key_items = _key_items
 
                     try:
+
                         non_poly = self.__reg.cR.getPolymerSequence(lp_category, key_items,
                                                                     withStructConf=False, withRmsd=False, alias=False,
                                                                     totalModels=self.__reg.total_models,
@@ -9972,7 +9975,8 @@ class NmrDpUtility:
 
                         if len(non_poly) > 0:
                             poly_seq.extend(non_poly)
-                    except Exception:
+
+                    except Exception:  # pylint: disable=broad-exception-caught
                         pass
 
                 if len(poly_seq) > 0 and poly_seq_cache_path is not None:
@@ -9996,7 +10000,7 @@ class NmrDpUtility:
 
                                 touch_file = os.path.join(dir_path, '.entry_without_cs')
                                 if not os.path.exists(touch_file):
-                                    with open(touch_file, 'w') as ofh:
+                                    with open(touch_file, 'w', encoding='utf-8') as ofh:
                                         ofh.write('')
 
                     self.__reg.suspended_errors_for_lazy_eval.clear()
@@ -10184,7 +10188,7 @@ class NmrDpUtility:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ ValueError  - {str(e)}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__extractCoordPolymerSequence() "
@@ -10296,7 +10300,7 @@ class NmrDpUtility:
                         self.__reg.log.write(f"+{self.__class_name__}.__extractCoordPolymerSequenceInLoop() "
                                              f"++ ValueError  - {str(e)}\n")
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__extractCoordPolymerSequenceInLoop() "
@@ -12654,7 +12658,7 @@ class NmrDpUtility:
                                                                         enforce_allowed_tags=(file_type == 'nmr-star'),
                                                                         excl_missing_data=self.__reg.excl_missing_data)[0]
 
-                    except Exception:
+                    except Exception:  # pylint: disable=broad-exception-caught
                         pass
 
         return True
@@ -12731,7 +12735,7 @@ class NmrDpUtility:
                                 for _id in conflict_id:
                                     del _loop.data[_id]
 
-                        except Exception:
+                        except Exception:  # pylint: disable=broad-exception-caught
                             pass
 
         return True
@@ -13653,7 +13657,7 @@ class NmrDpUtility:
                                                                     'enum': (self.__reg.representative_alt_id,)}
                                                                    ])
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self.__reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() "
@@ -13787,7 +13791,7 @@ class NmrDpUtility:
             else:
                 struct_conn = []
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__extractCoordDisulfideBond() ++ Error  - " + str(e))
@@ -13877,7 +13881,7 @@ class NmrDpUtility:
             else:
                 struct_conn = []
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__extractCoordOtherBond() ++ Error  - " + str(e))
@@ -14342,7 +14346,7 @@ class NmrDpUtility:
                         self.__reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                     'data': lp_data})
 
-                    except Exception:
+                    except Exception:  # pylint: disable=broad-exception-caught
                         pass
 
                 if lp_data is not None:
@@ -14378,7 +14382,7 @@ class NmrDpUtility:
 
                             update_index[data_type].append(index_id)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.__updateDihedralAngleType() "
@@ -15403,7 +15407,7 @@ class NmrDpUtility:
                     abandon_symbolic_labels(containerList)
                     myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], containerList=containerList[eff_block_id:])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__reg.log.write(f"+{self.__class_name__}.__depositNmrData() ++ Error  - {str(e)}\n")
 
         return not self.__reg.report.isError()
@@ -15798,7 +15802,7 @@ class NmrDpUtility:
                                        show_comments=(self.__reg.bmrb_only and self.__reg.internal_mode),
                                        skip_empty_loops=True, skip_empty_tags=False)
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
         if NMR_CIF_FILE_PATH_KEY in self.__reg.outputParamDict:
@@ -15819,7 +15823,7 @@ class NmrDpUtility:
 
                     return True
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__reg.log.write(f"+{self.__class_name__}.__depositLegacyNmrData() ++ Error  - {str(e)}\n")
 
         return False
@@ -16056,7 +16060,7 @@ class NmrDpUtility:
                 os.remove(self.__tmpPath)
                 self.__tmpPath = None
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             err = f"{file_name!r} is not compliant with the {READABLE_FILE_TYPE[file_type]} dictionary."
 
@@ -16095,7 +16099,7 @@ class NmrDpUtility:
                         myIo.writeFile(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY],
                                        containerList=containerList[eff_block_id:])
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     self.__reg.log.write(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - {str(e)}\n")
 
             return True
@@ -16149,9 +16153,9 @@ class NmrDpUtility:
 
             return True
 
-        except Exception:
+        except Exception as e:
             raise KeyError(f"+{self.__class_name__}.__initReousrceForNef2Str() ++ Error  - "
-                           f"Could not find {NEXT_STAR_FILE_PATH_KEY!r} or {REPORT_FILE_PATH_KEY!r} output parameter.")
+                           f"Could not find {NEXT_STAR_FILE_PATH_KEY!r} or {REPORT_FILE_PATH_KEY!r} output parameter.") from e
 
         return False
 
@@ -16186,7 +16190,7 @@ class NmrDpUtility:
                 os.remove(self.__tmpPath)
                 self.__tmpPath = None
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             err = f"{file_name!r} is not compliant with the {READABLE_FILE_TYPE[file_type]} dictionary."
 
@@ -16257,9 +16261,9 @@ class NmrDpUtility:
 
             return True
 
-        except Exception:
+        except Exception as e:
             raise KeyError(f"+{self.__class_name__}.__initReousrceForStr2Nef() ++ Error  - "
-                           f"Could not find {NEXT_NEF_FILE_PATH_KEY!r} or {REPORT_FILE_PATH_KEY!r} output parameter.")
+                           f"Could not find {NEXT_NEF_FILE_PATH_KEY!r} or {REPORT_FILE_PATH_KEY!r} output parameter.") from e
 
         return False
 
@@ -16291,7 +16295,7 @@ class NmrDpUtility:
             if self.__nmrIfR.parse(fPath):
                 return True
 
-        except Exception:
+        except IOError:
             pass
 
         return False

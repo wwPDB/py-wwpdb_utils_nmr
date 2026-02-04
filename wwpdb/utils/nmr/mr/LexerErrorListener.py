@@ -3,7 +3,7 @@
 # Date: 11-Feb-2022
 #
 # Updates:
-""" Inheritance of ANTLR ErrorListener for Lexer.
+""" Inheritance of ANTLR ErrorListener class for lexer analysis.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -24,6 +24,8 @@ except ImportError:
 
 
 class LexerErrorListener(ErrorListener):
+    """ Inheritance of ANTLR ErrorListener class for lexer analysis.
+    """
     __slots__ = ()
 
     __messageList = None
@@ -115,7 +117,13 @@ class LexerErrorListener(ErrorListener):
         pass
 
     def getMessageList(self) -> Optional[List[dict]]:
+        """ Retrieve message list.
+        """
+
         return self.__messageList if len(self.__messageList) > 0 else None
 
     def getErrorLineNumber(self) -> Optional[List[int]]:
+        """ Retrieve error line numbers.
+        """
+
         return self.__errorLineNumber if len(self.__errorLineNumber) > 0 else None

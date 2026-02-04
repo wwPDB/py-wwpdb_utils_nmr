@@ -43,8 +43,9 @@ except ImportError:
     from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
 
 
-# This class defines a complete listener for a parse tree produced by CharmmCRDParser.
 class CharmmCRDParserListener(ParseTreeListener, BaseTopologyParserListener):
+    """ This class defines a complete listener for a parse tree produced by CharmmCRDParser.
+    """
     __slots__ = ('coordinatesStatements', )
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -63,12 +64,13 @@ class CharmmCRDParserListener(ParseTreeListener, BaseTopologyParserListener):
 
         self.coordinatesStatements = 0
 
-    # Enter a parse tree produced by CharmmCRDParser#charmm_crd.
     def enterCharmm_crd(self, ctx: CharmmCRDParser.Charmm_crdContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmCRDParser#charmm_crd.
+        """
 
-    # Exit a parse tree produced by CharmmCRDParser#charmm_crd.
     def exitCharmm_crd(self, ctx: CharmmCRDParser.Charmm_crdContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CharmmCRDParser#charmm_crd.
+        """
 
         if not self.hasPolySeqModel:
             return
@@ -153,30 +155,35 @@ class CharmmCRDParserListener(ParseTreeListener, BaseTopologyParserListener):
 
         self.exit(retrievedAtomNumList)
 
-    # Enter a parse tree produced by CharmmCRDParser#comment.
     def enterComment(self, ctx: CharmmCRDParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmCRDParser#comment.
+        """
 
-    # Exit a parse tree produced by CharmmCRDParser#comment.
     def exitComment(self, ctx: CharmmCRDParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmCRDParser#comment.
+        """
 
-    # Enter a parse tree produced by CharmmCRDParser#coordinates.
     def enterCoordinates(self, ctx: CharmmCRDParser.CoordinatesContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmCRDParser#coordinates.
+        """
+
         self.coordinatesStatements += 1
 
-    # Exit a parse tree produced by CharmmCRDParser#coordinates.
     def exitCoordinates(self, ctx: CharmmCRDParser.CoordinatesContext):
+        """ Exit a parse tree produced by CharmmCRDParser#coordinates.
+        """
+
         if ctx.Integer():
             return
         self.coordinatesStatements -= -1
 
-    # Enter a parse tree produced by CharmmCRDParser#atom_coordinate.
     def enterAtom_coordinate(self, ctx: CharmmCRDParser.Atom_coordinateContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmCRDParser#atom_coordinate.
+        """
 
-    # Exit a parse tree produced by CharmmCRDParser#atom_coordinate.
     def exitAtom_coordinate(self, ctx: CharmmCRDParser.Atom_coordinateContext):
+        """ Exit a parse tree produced by CharmmCRDParser#atom_coordinate.
+        """
 
         try:
 
@@ -214,5 +221,3 @@ class CharmmCRDParserListener(ParseTreeListener, BaseTopologyParserListener):
         contentSubtype = {'coordinates': self.coordinatesStatements}
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
-
-# del CharmmCRDParser

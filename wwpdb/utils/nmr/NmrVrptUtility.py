@@ -112,7 +112,8 @@ def uncompress_gzip_file(inPath: str, outPath: str):
     """ Uncompress a given gzip file.
     """
 
-    with gzip.open(inPath, mode='rt') as ifh, open(outPath, 'w') as ofh:
+    with gzip.open(inPath, mode='rt') as ifh, \
+            open(outPath, 'w', encoding='utf-8') as ofh:
         for line in ifh:
             ofh.write(line)
 
@@ -121,7 +122,8 @@ def compress_as_gzip_file(inPath: str, outPath: str):
     """ Compress a given file as a gzip file.
     """
 
-    with open(inPath, mode='r') as ifh, gzip.open(outPath, 'wt') as ofh:
+    with open(inPath, mode='r', encoding='utf-8') as ifh, \
+            gzip.open(outPath, 'wt') as ofh:
         for line in ifh:
             ofh.write(line)
 
@@ -138,7 +140,7 @@ def load_from_pickle(file_name: str, default: Any = None) -> Any:
                 obj = pickle.load(ifh)
                 return obj if obj is not None else default
 
-        except Exception:
+        except IOError:
             try:
                 os.remove(file_name)
             except OSError:
@@ -507,6 +509,9 @@ def rdc_error(lower_bound: Optional[float], upper_bound: Optional[float], rdc: f
 
 
 def get_violated_model_ids(viol_per_model: List[dict]) -> List[int]:
+    """ Return the list of violated model IDs.
+    """
+
     return [m for m, err in viol_per_model.items() if err is not None and err > 0.0]
 
 
@@ -514,6 +519,10 @@ def get_violation_statistics_for_each_bin(beg_err_bin: Optional[float], end_err_
                                           total_models: int, eff_model_ids: List[int], viol_dict: dict
                                           ) -> Tuple[Optional[float], Optional[float], Optional[int],
                                                      Optional[float], Optional[float], Optional[int], Optional[float]]:
+    """ Calculate violation statistics for each bin.
+        The results were summarized against all models and per model, respectively.
+    """
+
     viol_stat_per_model = []
 
     all_err_list = []
@@ -790,8 +799,8 @@ class NmrVrptUtility:
             else:
                 raise KeyError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type!r}.")
 
-        except Exception as e:
-            raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e))
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e)) from e
 
     def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of output parameters.
@@ -808,8 +817,8 @@ class NmrVrptUtility:
             else:
                 raise KeyError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type!r}.")
 
-        except Exception as e:
-            raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e))
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e)) from e
 
     def op(self, op: str) -> Optional[dict]:
         """ Perform a series of tasks for a given workflow operation.
@@ -927,7 +936,7 @@ class NmrVrptUtility:
                             self.__total_models = len(model_ids)
                             self.__eff_model_ids = sorted(model_ids)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         if self.__verbose:
                             self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
@@ -960,7 +969,7 @@ class NmrVrptUtility:
                         self.__total_models = len(model_ids)
                         self.__eff_model_ids = sorted(model_ids)
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     if self.__verbose:
                         self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
@@ -978,7 +987,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
     def __checkCoordInputSource(self) -> bool:
@@ -1002,7 +1011,7 @@ class NmrVrptUtility:
 
                         uncompress_gzip_file(fPath, _fPath)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         if self.__verbose:
                             self.__log.write(f"+{self.__class_name__}.__checkCoordInputSource() ++ Error  - {str(e)}\n")
@@ -1033,7 +1042,7 @@ class NmrVrptUtility:
                         self.__cifHashCode = self.__cR.getHashCode()
                     return True
 
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 pass
 
         if CIF_READER_OBJ_KEY in self.__inputParamDict:
@@ -1096,7 +1105,7 @@ class NmrVrptUtility:
 
                         uncompress_gzip_file(fPath, _fPath)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         if self.__verbose:
                             self.__log.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
@@ -1116,7 +1125,7 @@ class NmrVrptUtility:
                         self.__nmrDataHashCode = self.__rR.getHashCode()
                     return True
 
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 pass
 
         if NMR_CIF_READER_OBJ_KEY in self.__inputParamDict:
@@ -1163,8 +1172,9 @@ class NmrVrptUtility:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
                         return True
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__log.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
+
             finally:
                 try:
                     if os.path.exists(_fPath):
@@ -1205,8 +1215,9 @@ class NmrVrptUtility:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
                         return True
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__log.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
+
             finally:
                 try:
                     if os.path.exists(_fPath):
@@ -1400,7 +1411,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
@@ -1629,7 +1640,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
@@ -1833,7 +1844,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
@@ -2012,7 +2023,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - {str(e)}\n")
@@ -2302,7 +2313,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
@@ -2484,7 +2495,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
@@ -2647,7 +2658,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
@@ -2926,7 +2937,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
@@ -3173,7 +3184,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
@@ -3402,7 +3413,7 @@ class NmrVrptUtility:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")

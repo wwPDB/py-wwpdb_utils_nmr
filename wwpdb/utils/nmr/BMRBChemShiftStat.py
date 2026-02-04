@@ -2476,14 +2476,14 @@ class BMRBChemShiftStat:
             try:
                 print(f'Downloading {self.url_for_bmrb_cs_stat_dir + csv_file} ...')
                 r = requests.get(self.url_for_bmrb_cs_stat_dir + csv_file, timeout=5.0)
-                with open(os.path.join(self.__work_dir, csv_file), 'w') as f_out:
+                with open(os.path.join(self.__work_dir, csv_file), 'w', encoding='utf-8') as f_out:
                     f_out.write(r.text)
                 if csv_file in ('rna_filt.csv', 'rna_full.csv'):
                     src_csv_file = os.path.join(self.__work_dir, csv_file)
                     dst_csv_file = src_csv_file + '~'
                     shutil.copyfile(src_csv_file, dst_csv_file)
-                    with open(dst_csv_file, 'r') as f_in, \
-                            open(src_csv_file, 'w') as f_out:
+                    with open(dst_csv_file, 'r', encoding='utf-8') as f_in, \
+                            open(src_csv_file, 'w', encoding='utf-8') as f_out:
                         for line in f_in:
                             row = line.split(',')
                             if row[0] in ('A', 'C', 'G', 'U') and row[1] == '"H5"""':
@@ -2491,14 +2491,14 @@ class BMRBChemShiftStat:
                             f_out.write(line)
                     os.remove(dst_csv_file)
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__log.write(f"+{self.__class_name__}.updateStatCsvFiles() ++ Error  - {e}\n")
 
         for csv_file in self.csv_files:
 
             try:
                 r = requests.head(self.url_for_bmrb_cs_stat_dir + csv_file, timeout=5.0)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__log.write(f"+{self.__class_name__}.updateStatCsvFiles() ++ Error  - {e}\n")
                 return False
 

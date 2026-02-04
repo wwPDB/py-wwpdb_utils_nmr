@@ -28,8 +28,9 @@ except ImportError:
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
-# This class defines a complete listener for a parse tree produced by XMLParser.
 class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
+    """ This class defines a complete listener for a parse tree produced by XMLParser.
+    """
     __slots__ = ()
 
     __cur_path = None
@@ -57,32 +58,38 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.file_type = 'nm-shi-ari'
         self.software_name = 'ARIA'
 
-    # Enter a parse tree produced by XMLParser#document.
     def enterDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XMLParser#document.
+        """
+
         self.__cur_path = ''
 
-    # Exit a parse tree produced by XMLParser#document.
     def exitDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XMLParser#document.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by XMLParser#prolog.
     def enterProlog(self, ctx: XMLParser.PrologContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#prolog.
+        """
 
-    # Exit a parse tree produced by XMLParser#prolog.
     def exitProlog(self, ctx: XMLParser.PrologContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#prolog.
+        """
 
-    # Enter a parse tree produced by XMLParser#content.
     def enterContent(self, ctx: XMLParser.ContentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#content.
+        """
 
-    # Exit a parse tree produced by XMLParser#content.
     def exitContent(self, ctx: XMLParser.ContentContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#content.
+        """
 
-    # Enter a parse tree produced by XMLParser#element.
     def enterElement(self, ctx: XMLParser.ElementContext):
+        """ Enter a parse tree produced by XMLParser#element.
+        """
+
         self.__cur_path += '/' + str(ctx.Name(0))
 
         if self.__cur_path == '/chemical_shift_list':
@@ -110,8 +117,9 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.__value = None
             self.__error = None
 
-    # Exit a parse tree produced by XMLParser#element.
     def exitElement(self, ctx: XMLParser.ElementContext):
+        """ Exit a parse tree produced by XMLParser#element.
+        """
 
         try:
 
@@ -316,16 +324,17 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
         finally:
             self.__cur_path = self.__cur_path[:-(1 + len(str(ctx.Name(0))))]
 
-    # Enter a parse tree produced by XMLParser#reference.
     def enterReference(self, ctx: XMLParser.ReferenceContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#reference.
+        """
 
-    # Exit a parse tree produced by XMLParser#reference.
     def exitReference(self, ctx: XMLParser.ReferenceContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#reference.
+        """
 
-    # Enter a parse tree produced by XMLParser#attribute.
     def enterAttribute(self, ctx: XMLParser.AttributeContext):
+        """ Enter a parse tree produced by XMLParser#attribute.
+        """
 
         if ctx.Name() and ctx.STRING():
             name = str(ctx.Name())
@@ -369,22 +378,22 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
                     except ValueError:
                         pass
 
-    # Exit a parse tree produced by XMLParser#attribute.
     def exitAttribute(self, ctx: XMLParser.AttributeContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#attribute.
+        """
 
-    # Enter a parse tree produced by XMLParser#chardata.
     def enterChardata(self, ctx: XMLParser.ChardataContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#chardata.
+        """
 
-    # Exit a parse tree produced by XMLParser#chardata.
     def exitChardata(self, ctx: XMLParser.ChardataContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#chardata.
+        """
 
-    # Enter a parse tree produced by XMLParser#misc.
     def enterMisc(self, ctx: XMLParser.MiscContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#misc.
+        """
 
-    # Exit a parse tree produced by XMLParser#misc.
     def exitMisc(self, ctx: XMLParser.MiscContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#misc.
+        """

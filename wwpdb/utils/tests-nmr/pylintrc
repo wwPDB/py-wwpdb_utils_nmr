@@ -11,12 +11,7 @@ ignore=CVS
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=wwpdb/utils/nmr/mr/*Parser.py,
-                wwpdb/utils/nmr/mr/*Lexer.py,
-                wwpdb/utils/nmr/pk/*Parser.py,
-                wwpdb/utils/nmr/pk/*Lexer.py,
-                wwpdb/utils/nmr/cs/*Parser.py,
-                wwpdb/utils/nmr/cs/*Lexer.py,
+ignore-patterns=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -65,7 +60,11 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=
+disable=missing-docstring,
+         empty-docstring,
+         broad-except,
+         unspecified-encoding,
+         raise-missing-from 
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

@@ -125,18 +125,33 @@ class AmberMRReader:
         self.__reasons = self.__reasons__ = reasons
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def setInternalMode(self, internal: bool):
+        """ Set internal mode.
+        """
+
         self.__internal = internal
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of parser error messages to save.
+        """
+
         self.__maxParserErrorReport = maxErrReport
 
     def getReasons(self) -> Optional[dict]:
+        """ Retrieve reasons for re-parsing.
+        """
+
         return self.__reasons
 
     def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, ptFilePath: Optional[str] = None, isFilePath: bool = True,

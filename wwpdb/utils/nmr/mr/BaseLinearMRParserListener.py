@@ -3,7 +3,7 @@
 # Date: 20-Oct-2025
 #
 # Updates:
-""" ParserLister class for Generic Linear MR files.
+""" ParserLister base class for generic linear MR files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -216,6 +216,8 @@ except ImportError:
 
 
 class BaseLinearMRParserListener():
+    """ ParserLister base class for generic linear MR files.
+    """
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
@@ -654,14 +656,23 @@ class BaseLinearMRParserListener():
 
     @property
     def verbose(self):
+        """ Retrieve verbose mode.
+        """
+
         return self.__verbose
 
     @property
     def log(self):
+        """ Retrieve current log.
+        """
+
         return self.__log
 
     @property
     def debug(self):
+        """ Retrieve debug mode.
+        """
+
         return self.__debug
 
     @debug.setter
@@ -670,6 +681,9 @@ class BaseLinearMRParserListener():
 
     @property
     def remediate(self):
+        """ Retrieve remediation mode.
+        """
+
         return self.__remediate
 
     @remediate.setter
@@ -678,6 +692,9 @@ class BaseLinearMRParserListener():
 
     @property
     def createSfDict(self):
+        """ Whether to create saveframe dictionary.
+        """
+
         return self.__createSfDict
 
     @createSfDict.setter
@@ -686,6 +703,9 @@ class BaseLinearMRParserListener():
 
     @property
     def originalFileName(self):
+        """ Retrieve the original file name.
+        """
+
         return self.__originalFileName
 
     @originalFileName.setter
@@ -694,6 +714,9 @@ class BaseLinearMRParserListener():
 
     @property
     def listIdCounter(self):
+        """ Retrieve list ID counter dictionary.
+        """
+
         return self.__listIdCounter
 
     @listIdCounter.setter
@@ -702,6 +725,9 @@ class BaseLinearMRParserListener():
 
     @property
     def entryId(self):
+        """ Retrieve entry ID.
+        """
+
         return self.__entryId
 
     @entryId.setter
@@ -709,6 +735,8 @@ class BaseLinearMRParserListener():
         self.__entryId = entryId
 
     def exit(self):
+        """ Common function to exit a parse tree.
+        """
 
         try:
 
@@ -1392,6 +1420,9 @@ class BaseLinearMRParserListener():
 
     @functools.lru_cache(maxsize=256)
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
+        """ A wrapper function for ParserListenerUtil.translateToStdResName().
+        """
+
         _compId = compId
         refCompId = None
         for ps in self.polySeq:
@@ -1415,6 +1446,9 @@ class BaseLinearMRParserListener():
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str] = None, isPolySeq: bool = True,
                           isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
+        """ Return a realistic sequence for a given polymer sequence, sequence code, and residue name.
+        """
+
         if compId in ('MTS', 'ORI'):
             compId = _compId = None
         if compId is not None:
@@ -1620,7 +1654,7 @@ class BaseLinearMRParserListener():
         if self.reasons is not None:
             if 'ambig_atom_id_remap' in self.reasons and _compId in self.reasons['ambig_atom_id_remap']\
                and atomId in self.reasons['ambig_atom_id_remap'][_compId]:
-                return self.atomIdListToChainAssign(self.reasons['ambig_atom_id_remap'][_compId][atomId])
+                return self.__mapAtomIdListToChainAssign(self.reasons['ambig_atom_id_remap'][_compId][atomId])
             if 'unambig_atom_id_remap' in self.reasons and _compId in self.reasons['unambig_atom_id_remap']\
                and atomId in self.reasons['unambig_atom_id_remap'][_compId]:
                 atomId = self.reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
@@ -1658,7 +1692,7 @@ class BaseLinearMRParserListener():
 
         if len(self.ambigAtomNameMapping) > 0:
             if compId in self.ambigAtomNameMapping and atomId in self.ambigAtomNameMapping[compId]:
-                return self.atomIdListToChainAssign(self.ambigAtomNameMapping[compId][atomId])
+                return self.__mapAtomIdListToChainAssign(self.ambigAtomNameMapping[compId][atomId])
         if len(self.unambigAtomNameMapping) > 0:
             if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
@@ -2294,7 +2328,7 @@ class BaseLinearMRParserListener():
         if self.reasons is not None:
             if 'ambig_atom_id_remap' in self.reasons and _compId in self.reasons['ambig_atom_id_remap']\
                and atomId in self.reasons['ambig_atom_id_remap'][_compId]:
-                return self.atomIdListToChainAssign(self.reasons['ambig_atom_id_remap'][_compId][atomId])
+                return self.__mapAtomIdListToChainAssign(self.reasons['ambig_atom_id_remap'][_compId][atomId])
             if 'unambig_atom_id_remap' in self.reasons and _compId in self.reasons['unambig_atom_id_remap']\
                and atomId in self.reasons['unambig_atom_id_remap'][_compId]:
                 atomId = self.reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
@@ -2341,7 +2375,7 @@ class BaseLinearMRParserListener():
 
         if len(self.ambigAtomNameMapping) > 0:
             if compId in self.ambigAtomNameMapping and atomId in self.ambigAtomNameMapping[compId]:
-                return self.atomIdListToChainAssign(self.ambigAtomNameMapping[compId][atomId])
+                return self.__mapAtomIdListToChainAssign(self.ambigAtomNameMapping[compId][atomId])
         if len(self.unambigAtomNameMapping) > 0:
             if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
@@ -4066,7 +4100,7 @@ class BaseLinearMRParserListener():
             if self.reasons is not None:
                 if 'ambig_atom_id_remap' in self.reasons and compId in self.reasons['ambig_atom_id_remap']\
                    and atomId in self.reasons['ambig_atom_id_remap'][compId]:
-                    atomSelection = self.atomIdListToAtomSelection(self.reasons['ambig_atom_id_remap'][compId][atomId])
+                    atomSelection = self.__mapAtomIdListToAtomSelection(self.reasons['ambig_atom_id_remap'][compId][atomId])
                     for atom in atomSelection:
                         chainId = atom['chain_id']
                         cifSeqId = atom['seq_id']
@@ -4094,7 +4128,7 @@ class BaseLinearMRParserListener():
 
             if len(self.ambigAtomNameMapping) > 0:
                 if compId in self.ambigAtomNameMapping and atomId in self.ambigAtomNameMapping[compId]:
-                    atomSelection = self.atomIdListToAtomSelection(self.ambigAtomNameMapping[compId][atomId])
+                    atomSelection = self.__mapAtomIdListToAtomSelection(self.ambigAtomNameMapping[compId][atomId])
                     for atom in atomSelection:
                         chainId = atom['chain_id']
                         cifSeqId = atom['seq_id']
@@ -4735,6 +4769,9 @@ class BaseLinearMRParserListener():
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
                                    seqKey: Tuple[str, int], coordAtomSite: Optional[dict],
                                    enableWarning: bool = True) -> Tuple[str, bool]:
+        """ Perform consistency test for each atom in reference to the coordinates.
+        """
+
         asis = False
         if not self.hasCoord:
             return atomId, asis
@@ -5003,6 +5040,9 @@ class BaseLinearMRParserListener():
     def testCoordAtomIdConsistencyWithIndex(self, chainId: str, seqId: int, compId: str, atomId: str,
                                             seqKey: Tuple[str, int], coordAtomSite: Optional[dict],
                                             index: Optional[int] = None, group: Optional[int] = None) -> Tuple[str, bool]:
+        """ Perform consistency test for each atom in reference to the coordinates.
+        """
+
         asis = False
         if not self.hasCoord:
             return atomId, asis
@@ -5373,7 +5413,7 @@ class BaseLinearMRParserListener():
                         atom2['auth_atom_id'] = atom2['atom_id']
                     atom2['atom_id'] = alt_atom_id2
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
@@ -5544,7 +5584,7 @@ class BaseLinearMRParserListener():
                 if upper_linear_limit is not None:
                     dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
@@ -5552,6 +5592,9 @@ class BaseLinearMRParserListener():
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        """ A wrapper function to retrieve sequence key and coordinates for given conditions.
+        """
+
         return self.__getCoordAtomSiteOf(chainId, seqId, compId, cifCheck, asis, self.__preferAuthSeq)
 
     @functools.lru_cache(maxsize=2048)
@@ -6061,6 +6104,9 @@ class BaseLinearMRParserListener():
         return dstFunc
 
     def updateAmbigAtomNameMapping(self):
+        """ Update ambiguous atom name mapping dictionary.
+        """
+
         if (not self.hasPolySeq and not self.hasNonPolySeq) or len(self.ambigAtomNameMapping) == 0:
             return
 
@@ -6135,7 +6181,10 @@ class BaseLinearMRParserListener():
 
                     ambig['atom_id_list'] = [dict(s) for s in set(frozenset(atom.items()) for atom in ambig['atom_id_list'])]
 
-    def atomIdListToChainAssign(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
+    def __mapAtomIdListToChainAssign(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
+        """ Map ambiguity atom name mapping to chain assignment.
+        """
+
         chainAssign = set()
         for item in atomIdList:
             if 'atom_id_list' in item:
@@ -6143,7 +6192,10 @@ class BaseLinearMRParserListener():
                     chainAssign.add((atom_id['chain_id'], atom_id['seq_id'], atom_id['comp_id']))
         return list(chainAssign)
 
-    def atomIdListToAtomSelection(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
+    def __mapAtomIdListToAtomSelection(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
+        """ Map ambiguity atom name mapping to atom selection.
+        """
+
         atomSelection = []
         for item in atomIdList:
             if 'atom_id_list' in item:
@@ -6153,6 +6205,9 @@ class BaseLinearMRParserListener():
         return atomSelection
 
     def getCurrentRestraint(self, n: Optional[int] = None, g: Optional[int] = None) -> str:
+        """ Retrieve indicator of the current restraint.
+        """
+
         if self.cur_subtype == 'dist':
             if None in (n, g):
                 return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
@@ -6187,12 +6242,18 @@ class BaseLinearMRParserListener():
         return ''
 
     def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        """ Retrieve reasons for re-parsing by name. create a dictionary if name does not exist.
+        """
+
         if name in self.reasonsForReParsing:
             return self.reasonsForReParsing[name]
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
     def __setLocalSeqScheme(self):
+        """ Set sequence scheme for each restraint.
+        """
+
         r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         preferAuthSeq = self.authSeqId == 'auth_seq_id'
         if self.cur_subtype == 'dist':
@@ -6221,6 +6282,9 @@ class BaseLinearMRParserListener():
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
     def retrieveLocalSeqScheme(self):
+        """ Retrieve sequence scheme for each restraint.
+        """
+
         if self.reasons is None\
            or ('label_seq_scheme' not in self.reasons
                and 'local_seq_scheme' not in self.reasons
@@ -6262,6 +6326,9 @@ class BaseLinearMRParserListener():
     def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                 rdcCode: Optional[str] = None, orientationId: Optional[str] = None,
                 cyanaParameter: Optional[str] = None):
+        """ Add saveframe for given conditions if not exists.
+        """
+
         content_subtype = contentSubtypeOf(self.cur_subtype)
 
         if content_subtype is None:
@@ -6317,6 +6384,9 @@ class BaseLinearMRParserListener():
 
     def __addSfWithSoftware(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                             rdcCode: Optional[str] = None, softwareName: Optional[str] = None):
+        """ Add saveframe for given conditions if not exists.
+        """
+
         content_subtype = contentSubtypeOf(self.cur_subtype)
 
         if content_subtype is None:
@@ -6368,6 +6438,9 @@ class BaseLinearMRParserListener():
     def getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
               rdcCode: Optional[str] = None, orientationId: Optional[str] = None,
               cyanaParameter: Optional[str] = None) -> dict:
+        """ Retrieve saveframe for given conditions.
+        """
+
         key = (self.cur_subtype, constraintType, potentialType, rdcCode, orientationId)
 
         if key not in self.sfDict:
@@ -6405,6 +6478,9 @@ class BaseLinearMRParserListener():
 
     def getSfWithSoftware(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                           rdcCode: Optional[str] = None, softwareName: Optional[str] = None) -> dict:
+        """ Retrieve saveframe for given conditions with software name specification.
+        """
+
         key = (self.cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
@@ -6441,6 +6517,9 @@ class BaseLinearMRParserListener():
         return self.sfDict[key][-1]
 
     def trimSfWoLp(self):
+        """ Trim saveframe(s) without any loop.
+        """
+
         if self.cur_subtype not in self.__lastSfDict:
             return
         if self.__lastSfDict[self.cur_subtype]['index_id'] > 0:

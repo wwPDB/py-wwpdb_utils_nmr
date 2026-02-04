@@ -126,21 +126,39 @@ class CharmmMRReader:
         self.__reasons = reasons
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def setInternalMode(self, internal: bool):
+        """ Set internal mode.
+        """
+
         self.__internal = internal
 
     def setNmrVsModel(self, nmrVsModel: Optional[List[dict]]):
+        """ Set chain assignments between NMR data and model.
+        """
+
         self.__nmrVsModel = nmrVsModel
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of parser error messages to save.
+        """
+
         self.__maxParserErrorReport = maxErrReport
 
     def setSllPredMode(self, sll_pred: bool):
+        """ Set ANTLR4 SLL prediction mode.
+        """
+
         self.__sll_pred = sll_pred
 
     def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, crdFilePath: Optional[str] = None, isFilePath: bool = True,

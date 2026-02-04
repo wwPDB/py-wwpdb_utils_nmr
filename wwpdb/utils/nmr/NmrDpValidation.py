@@ -905,7 +905,7 @@ class NmrDpValidation:
 
                                 uncompress_gzip_file(csPath, _csPath)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
 
                                 self.__reg.report.error.appendDescription('internal_error',
                                                                           f"+{self.__class_name__}.validateInputSource() "
@@ -1006,7 +1006,7 @@ class NmrDpValidation:
                                         else:
                                             self.__reg.star_data[-1] = self.__convertCsToEntry(star_data)
 
-                                except Exception as e:
+                                except Exception as e:  # pylint: disable=broad-exception-caught
 
                                     err = f"{file_name!r} is not compliant with the {READABLE_FILE_TYPE[_file_type]} dictionary."
 
@@ -1111,7 +1111,7 @@ class NmrDpValidation:
 
                             uncompress_gzip_file(csPath, _csPath)
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
 
                             self.__reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateInputSource() "
@@ -1251,7 +1251,7 @@ class NmrDpValidation:
                                     else:
                                         self.__reg.star_data[-1] = self.__convertCsToEntry(star_data)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
 
                                 err = f"{file_name!r} is not compliant with the {READABLE_FILE_TYPE[_file_type]} dictionary."
 
@@ -1523,7 +1523,7 @@ class NmrDpValidation:
 
                                 uncompress_gzip_file(arPath, _arPath)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
 
                                 self.__reg.report.error.appendDescription('internal_error',
                                                                           f"+{self.__class_name__}.validateInputSource() "
@@ -2004,7 +2004,7 @@ class NmrDpValidation:
 
                 touch_file = os.path.join(dir_path, '.entry_without_cs')
                 if not os.path.exists(touch_file):
-                    with open(touch_file, 'w') as ofh:
+                    with open(touch_file, 'w', encoding='utf-8') as ofh:
                         ofh.write('')
 
         if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__reg.bmrb_only:
@@ -2133,7 +2133,7 @@ class NmrDpValidation:
             if self.__reg.remediation_mode and dir_path is not None:
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
                 if not os.path.exists(touch_file):
-                    with open(touch_file, 'w') as ofh:
+                    with open(touch_file, 'w', encoding='utf-8') as ofh:
                         ofh.write('')
 
         if self.__reg.combined_mode and file_list_id == 0:
@@ -2235,7 +2235,7 @@ class NmrDpValidation:
             else:
                 struct_conn = []
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - " + str(e))
@@ -2279,7 +2279,7 @@ class NmrDpValidation:
                                                                               'value': 'C'}
                                                                              ])
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self.__reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - " + str(e))
@@ -2357,7 +2357,7 @@ class NmrDpValidation:
                 else:
                     prot_cis = []
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.isProtCis() ++ Error  - " + str(e))
@@ -2476,7 +2476,7 @@ class NmrDpValidation:
                                                                 'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.getCoordBondLength() ++ Error  - " + str(e))
@@ -2557,7 +2557,7 @@ class NmrDpValidation:
                                                                 'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__getNearestAromaticRing() "
@@ -2604,7 +2604,7 @@ class NmrDpValidation:
                                                                   'enum': (self.__reg.representative_alt_id,)}
                                                                  ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__getNearestAromaticRing() "
@@ -2794,7 +2794,7 @@ class NmrDpValidation:
                                                             'enum': (self.__reg.representative_alt_id,)}
                                                            ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__getNearestAromaticRing() "
@@ -2921,7 +2921,7 @@ class NmrDpValidation:
                                                                 'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() "
@@ -2969,7 +2969,7 @@ class NmrDpValidation:
                                                                   'enum': (self.__reg.representative_alt_id,)}
                                                                  ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() "
@@ -3022,7 +3022,7 @@ class NmrDpValidation:
                                                            'enum': (self.__reg.representative_alt_id,)}
                                                           ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() "
@@ -3166,7 +3166,7 @@ class NmrDpValidation:
                                                                     'enum': (self.__reg.representative_alt_id,)}
                                                                    ])
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self.__reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.testTautomerOfHistidinePerModel() "
@@ -3307,7 +3307,7 @@ class NmrDpValidation:
                                                                 'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.getTautomerOfHistidine() ++ Error  - " + str(e))
@@ -3398,7 +3398,7 @@ class NmrDpValidation:
                                                               'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.getRotamerOfValine() ++ Error  - " + str(e))
@@ -3509,7 +3509,7 @@ class NmrDpValidation:
                                                               'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.getRotamerOfLeucine() ++ Error  - " + str(e))
@@ -3641,7 +3641,7 @@ class NmrDpValidation:
                                                               'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.getRotamerOfIsoleucine() ++ Error  - " + str(e))
@@ -4938,7 +4938,7 @@ class NmrDpValidation:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
                                                      f"++ Error  - {err}\n")
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self.__reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.validateAtomNomenclature() "
@@ -4999,7 +4999,7 @@ class NmrDpValidation:
                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
                                              f"++ Error  - {err}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.validateAtomNomenclature() "
@@ -5122,7 +5122,7 @@ class NmrDpValidation:
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - " + str(e))
@@ -5372,7 +5372,7 @@ class NmrDpValidation:
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ Error  - {err}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ Error  - " + str(e))
@@ -5464,7 +5464,7 @@ class NmrDpValidation:
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.testIndexConsistency() ++ Error  - {err}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.testIndexConsistency() ++ Error  - " + str(e))
@@ -5707,10 +5707,10 @@ class NmrDpValidation:
                 self.__reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                             'category': lp_category, 'data': lp_data})
 
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 pass
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Error  - " + str(e))
@@ -6065,7 +6065,7 @@ class NmrDpValidation:
 
                             break
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.testParentChildRelation() ++ Error  - " + str(e))
@@ -6175,7 +6175,7 @@ class NmrDpValidation:
                                                          enforce_allowed_tags=(file_type == 'nmr-star'),
                                                          excl_missing_data=self.__reg.excl_missing_data)[0]
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
 
                     err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. "\
                         "Please fix problems reported."
@@ -7849,7 +7849,7 @@ class NmrDpValidation:
                 self.__reg.log.write(f"+{self.__class_name__}.validateCsValue() "
                                      f"++ Error  - {err}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.validateCsValue() "
@@ -8055,7 +8055,7 @@ class NmrDpValidation:
                         else:  # raised warning already somewhere because of unknown comp_id
                             pass
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.testRdcVector() ++ Error  - " + str(e))
@@ -8343,7 +8343,7 @@ class NmrDpValidation:
                     self.__reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                 'data': lp_data})
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
                     pass
 
             if lp_data is not None:
@@ -8654,7 +8654,7 @@ class NmrDpValidation:
                     self.__reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                 'data': lp_data})
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
                     pass
 
             if lp_data is not None:
@@ -8745,7 +8745,7 @@ class NmrDpValidation:
                     if self.__reg.verbose:
                         self.__reg.log.write(f"+{self.__class_name__}.testCoordCovalentBond() ++ Warning  - {warn}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.testCoordCovalentBond() ++ Error  - " + str(e))
@@ -9058,7 +9058,7 @@ class NmrDpValidation:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ ValueError  - {str(e)}\n")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.testResidueVariant() ++ Error  - " + str(e))
@@ -12258,7 +12258,7 @@ class NmrDpValidation:
                                                      enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__reg.excl_missing_data)[0]
 
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 return False
 
         if lp_data is None:
@@ -13046,7 +13046,7 @@ class NmrDpValidation:
                                     self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
                                                          f"++ ValueError  - {err}\n")
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
@@ -13263,7 +13263,7 @@ class NmrDpValidation:
                     self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
                                          f"++ ValueError  - {str(e)}\n")
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
@@ -13455,7 +13455,7 @@ class NmrDpValidation:
                                                                 'enum': (self.__reg.representative_alt_id,)}
                                                                ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__getTautomerOfHistidine() "
@@ -13547,10 +13547,11 @@ class NmrDpValidation:
                                                               'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.__getRotamerOfValine() ++ Error  - " + str(e))
+                                                          f"+{self.__class_name__}.__getRotamerOfValine() "
+                                                          "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.__getRotamerOfValine() ++ Error  - {str(e)}\n")
@@ -13658,10 +13659,11 @@ class NmrDpValidation:
                                                               'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.__getRotamerOfLeucine() ++ Error  - " + str(e))
+                                                          f"+{self.__class_name__}.__getRotamerOfLeucine() "
+                                                          "++ Error  - " + str(e))
 
                 if self.__reg.verbose:
                     self.__reg.log.write(f"+{self.__class_name__}.__getRotamerOfLeucine() ++ Error  - {str(e)}\n")
@@ -13790,7 +13792,7 @@ class NmrDpValidation:
                                                               'enum': (self.__reg.representative_alt_id,)}
                                                              ])
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.__getRotamerOfIsoleucine() "
@@ -14150,7 +14152,7 @@ class NmrDpValidation:
 
                                 cs_ann.append(ann)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.calculateStatsOfExptlData() "
@@ -15868,7 +15870,7 @@ class NmrDpValidation:
                                             if score > _score:
                                                 _score = score
                                                 dom_idx = i
-                                        except Exception:
+                                        except Exception:  # pylint: disable=broad-exception-caught
                                             continue
 
                                     if dom_idx != -1:
@@ -15887,7 +15889,7 @@ class NmrDpValidation:
 
                 ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID', 'Atom_ID', 'Original_PDB_atom_name']])
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
@@ -16587,7 +16589,7 @@ class NmrDpValidation:
                 ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1'],
                                                                       ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']])
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() "
@@ -16772,7 +16774,7 @@ class NmrDpValidation:
             if has_inter_chain_constraint:
                 ent['constraints_on_asym_contact_map'] = count_on_asym_map
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__calculateStatsOfCovalentBond() "
@@ -18109,7 +18111,7 @@ class NmrDpValidation:
                                                                       ['Comp_ID_3', 'Atom_ID_3', 'Auth_atom_name_3'],
                                                                       ['Comp_ID_4', 'Atom_ID_4', 'Auth_atom_name_4']])
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__calculateStatsOfDihedralRestraint() "
@@ -18553,7 +18555,7 @@ class NmrDpValidation:
                 ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1'],
                                                                       ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']])
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__calculateStatsOfRdcRestraint() "
@@ -18895,7 +18897,7 @@ class NmrDpValidation:
                     if lp is not None:
                         ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID', 'Atom_ID', 'Auth_atom_ID']])
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__calculateStatsOfSpectralPeak() "
@@ -19176,7 +19178,7 @@ class NmrDpValidation:
                 if lp is not None:
                     ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID', 'Atom_ID', 'Auth_atom_ID']])
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
 
             self.__reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__calculateStatsOfSpectralPeakAlt() "

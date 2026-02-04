@@ -57,8 +57,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by AriaMRParser.
 class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by AriaMRParser.
+    """
     __slots__ = ()
 
     # current contributions
@@ -89,32 +90,39 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.file_type = 'nm-res-ari'
         self.software_name = 'ARIA'
 
-    # Enter a parse tree produced by AriaMRParser#aria_mr.
     def enterAria_mr(self, ctx: AriaMRParser.Aria_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AriaMRParser#aria_mr.
+        """
 
-    # Exit a parse tree produced by AriaMRParser#aria_mr.
     def exitAria_mr(self, ctx: AriaMRParser.Aria_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AriaMRParser#aria_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by AriaMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: AriaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AriaMRParser#distance_restraints.
+        """
+
         self.cur_subtype = 'dist'
 
-    # Exit a parse tree produced by AriaMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: AriaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AriaMRParser#distance_restraints.
+        """
 
-    # Enter a parse tree produced by AriaMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: AriaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AriaMRParser#distance_restraint.
+        """
+
         self.distRestraints += 1
 
         self.__cur_comb_id = 0
         self.__cur_contrib.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by AriaMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: AriaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AriaMRParser#distance_restraint.
+        """
 
         try:
 
@@ -291,12 +299,13 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by AriaMRParser#contribution.
     def enterContribution(self, ctx: AriaMRParser.ContributionContext):
-        pass
+        """ Enter a parse tree produced by AriaMRParser#contribution.
+        """
 
-    # Exit a parse tree produced by AriaMRParser#contribution.
     def exitContribution(self, ctx: AriaMRParser.ContributionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AriaMRParser#contribution.
+        """
 
         try:
 
@@ -324,16 +333,19 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.__numberCSelection.clear()
 
-    # Enter a parse tree produced by AriaMRParser#atom_pair.
     def enterAtom_pair(self, ctx: AriaMRParser.Atom_pairContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AriaMRParser#atom_pair.
+        """
+
         self.__cur_atom_pair.clear()
 
-    # Exit a parse tree produced by AriaMRParser#atom_pair.
     def exitAtom_pair(self, ctx: AriaMRParser.Atom_pairContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AriaMRParser#atom_pair.
+        """
 
-    # Enter a parse tree produced by AriaMRParser#atom_selection.
     def enterAtom_selection(self, ctx: AriaMRParser.Atom_selectionContext):
+        """ Enter a parse tree produced by AriaMRParser#atom_selection.
+        """
 
         try:
 
@@ -354,28 +366,33 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.__cur_atom_pair.append(atom_sel)
 
-    # Exit a parse tree produced by AriaMRParser#atom_selection.
     def exitAtom_selection(self, ctx: AriaMRParser.Atom_selectionContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AriaMRParser#atom_selection.
+        """
 
-    # Enter a parse tree produced by AriaMRParser#old_distance_restraints.
     def enterOld_distance_restraints(self, ctx: AriaMRParser.Old_distance_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AriaMRParser#old_distance_restraints.
+        """
+
         self.cur_subtype = 'dist'
 
-    # Exit a parse tree produced by AriaMRParser#old_distance_restraints.
     def exitOld_distance_restraints(self, ctx: AriaMRParser.Old_distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AriaMRParser#old_distance_restraints.
+        """
 
-    # Enter a parse tree produced by AriaMRParser#old_distance_restraint.
     def enterOld_distance_restraint(self, ctx: AriaMRParser.Old_distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AriaMRParser#old_distance_restraint.
+        """
+
         self.distRestraints += 1
 
         self.__cur_comb_id = 0
         self.__cur_contrib.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by AriaMRParser#old_distance_restraint.
     def exitOld_distance_restraint(self, ctx: AriaMRParser.Old_distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AriaMRParser#old_distance_restraint.
+        """
 
         try:
 
@@ -538,29 +555,33 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by AriaMRParser#p_row.
     def enterP_row(self, ctx: AriaMRParser.P_rowContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AriaMRParser#p_row.
+        """
 
-    # Exit a parse tree produced by AriaMRParser#p_row.
     def exitP_row(self, ctx: AriaMRParser.P_rowContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AriaMRParser#p_row.
+        """
 
-    # Enter a parse tree produced by AriaMRParser#a_row.
     def enterA_row(self, ctx: AriaMRParser.A_rowContext):
+        """ Enter a parse tree produced by AriaMRParser#a_row.
+        """
+
         self.cur_lower_limit = float(str(ctx.Float(2))) if ctx.Float(2) else -1.0
         self.cur_upper_limit = float(str(ctx.Float(3))) if ctx.Float(3) else -1.0
 
-    # Exit a parse tree produced by AriaMRParser#a_row.
     def exitA_row(self, ctx: AriaMRParser.A_rowContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AriaMRParser#a_row.
+        """
 
-    # Enter a parse tree produced by AriaMRParser#c_row.
     def enterC_row(self, ctx: AriaMRParser.C_rowContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AriaMRParser#c_row.
+        """
 
-    # Exit a parse tree produced by AriaMRParser#c_row.
     def exitC_row(self, ctx: AriaMRParser.C_rowContext):
+        """ Exit a parse tree produced by AriaMRParser#c_row.
+        """
+
         self.__cur_comb_id += 1
 
         atom_pair = [{'atom_id': str(ctx.Simple_name(2)).upper(),
@@ -576,12 +597,14 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                    'weight': weight,
                                    'combination_id': self.__cur_comb_id})
 
-    # Enter a parse tree produced by AriaMRParser#number.
     def enterNumber(self, ctx: AriaMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AriaMRParser#number.
+        """
 
-    # Exit a parse tree produced by AriaMRParser#number.
     def exitNumber(self, ctx: AriaMRParser.NumberContext):
+        """ Exit a parse tree produced by AriaMRParser#number.
+        """
+
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float()).rstrip(',')))
 
@@ -591,12 +614,14 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         else:
             self.numberSelection.append(None)
 
-    # Enter a parse tree produced by AriaMRParser#number_c.
     def enterNumber_c(self, ctx: AriaMRParser.Number_cContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AriaMRParser#number_c.
+        """
 
-    # Exit a parse tree produced by AriaMRParser#number_c.
     def exitNumber_c(self, ctx: AriaMRParser.Number_cContext):
+        """ Exit a parse tree produced by AriaMRParser#number_c.
+        """
+
         if ctx.Float():
             self.__numberCSelection.append(float(str(ctx.Float()).rstrip(',')))
 
@@ -605,5 +630,3 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         else:
             self.__numberCSelection.append(None)
-
-# del AriaMRParser

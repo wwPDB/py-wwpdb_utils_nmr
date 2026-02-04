@@ -97,8 +97,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by CharmmMRParser.
 class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by CharmmMRParser.
+    """
     __slots__ = ('__atomNumberDict', )
 
     # distance
@@ -139,20 +140,24 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.__atomNumberDict = {}
 
-    # Enter a parse tree produced by CharmmMRParser#charmm_mr.
     def enterCharmm_mr(self, ctx: CharmmMRParser.Charmm_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#charmm_mr.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#charmm_mr.
     def exitCharmm_mr(self, ctx: CharmmMRParser.Charmm_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CharmmMRParser#charmm_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by CharmmMRParser#comment.
     def enterComment(self, ctx: CharmmMRParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#comment.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#comment.
     def exitComment(self, ctx: CharmmMRParser.CommentContext):
+        """ Exit a parse tree produced by CharmmMRParser#comment.
+        """
+
         comment = []
         for col in range(20):
             if ctx.Any_name(col):
@@ -164,8 +169,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 break
         self.lastComment = None if len(comment) == 0 else ' '.join(comment)
 
-    # Enter a parse tree produced by CharmmMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: CharmmMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#distance_restraint.
+        """
+
         self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
         self.cur_subtype = 'dist'
 
@@ -188,8 +195,9 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by CharmmMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CharmmMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CharmmMRParser#distance_restraint.
+        """
 
         try:
 
@@ -325,23 +333,28 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.createSfDict:
                 self.trimSfWoLp()
 
-    # Enter a parse tree produced by CharmmMRParser#point_distance_restraint.
     def enterPoint_distance_restraint(self, ctx: CharmmMRParser.Point_distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#point_distance_restraint.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#point_distance_restraint.
     def exitPoint_distance_restraint(self, ctx: CharmmMRParser.Point_distance_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#point_distance_restraint.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: CharmmMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#dihedral_angle_restraint.
+        """
+
         self.cur_subtype = 'dihed'
 
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by CharmmMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: CharmmMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CharmmMRParser#dihedral_angle_restraint.
+        """
 
         try:
 
@@ -466,104 +479,126 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if self.createSfDict:
                 self.trimSfWoLp()
 
-    # Enter a parse tree produced by CharmmMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: CharmmMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#harmonic_restraint.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CharmmMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#harmonic_restraint.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#manipulate_internal_coordinate.
     def enterManipulate_internal_coordinate(self, ctx: CharmmMRParser.Manipulate_internal_coordinateContext
                                             ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#manipulate_internal_coordinate.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#manipulate_internal_coordinate.
     def exitManipulate_internal_coordinate(self, ctx: CharmmMRParser.Manipulate_internal_coordinateContext
                                            ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#manipulate_internal_coordinate.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#droplet_potential.
     def enterDroplet_potential(self, ctx: CharmmMRParser.Droplet_potentialContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#droplet_potential.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#droplet_potential.
     def exitDroplet_potential(self, ctx: CharmmMRParser.Droplet_potentialContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#droplet_potential.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#fix_atom_constraint.
     def enterFix_atom_constraint(self, ctx: CharmmMRParser.Fix_atom_constraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#fix_atom_constraint.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#fix_atom_constraint.
     def exitFix_atom_constraint(self, ctx: CharmmMRParser.Fix_atom_constraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#fix_atom_constraint.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#center_of_mass_constraint.
     def enterCenter_of_mass_constraint(self, ctx: CharmmMRParser.Center_of_mass_constraintContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#center_of_mass_constraint.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#center_of_mass_constraint.
     def exitCenter_of_mass_constraint(self, ctx: CharmmMRParser.Center_of_mass_constraintContext
                                       ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#center_of_mass_constraint.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#fix_bond_or_angle_constraint.
     def enterFix_bond_or_angle_constraint(self, ctx: CharmmMRParser.Fix_bond_or_angle_constraintContext
                                           ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#fix_bond_or_angle_constraint.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#fix_bond_or_angle_constraint.
     def exitFix_bond_or_angle_constraint(self, ctx: CharmmMRParser.Fix_bond_or_angle_constraintContext
                                          ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#fix_bond_or_angle_constraint.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#restrained_distance.
     def enterRestrained_distance(self, ctx: CharmmMRParser.Restrained_distanceContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#restrained_distance.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#restrained_distance.
     def exitRestrained_distance(self, ctx: CharmmMRParser.Restrained_distanceContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#restrained_distance.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#external_force.
     def enterExternal_force(self, ctx: CharmmMRParser.External_forceContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#external_force.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#external_force.
     def exitExternal_force(self, ctx: CharmmMRParser.External_forceContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#external_force.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#rmsd_restraint.
     def enterRmsd_restraint(self, ctx: CharmmMRParser.Rmsd_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#rmsd_restraint.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#rmsd_restraint.
     def exitRmsd_restraint(self, ctx: CharmmMRParser.Rmsd_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#rmsd_restraint.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#gyration_restraint.
     def enterGyration_restraint(self, ctx: CharmmMRParser.Gyration_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#gyration_restraint.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#gyration_restraint.
     def exitGyration_restraint(self, ctx: CharmmMRParser.Gyration_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#gyration_restraint.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#distance_matrix_restraint.
     def enterDistance_matrix_restraint(self, ctx: CharmmMRParser.Distance_matrix_restraintContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#distance_matrix_restraint.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CharmmMRParser#distance_matrix_restraint.
     def exitDistance_matrix_restraint(self, ctx: CharmmMRParser.Distance_matrix_restraintContext
                                       ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#distance_matrix_restraint.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#noe_statement.
     def enterNoe_statement(self, ctx: CharmmMRParser.Noe_statementContext):
+        """ Enter a parse tree produced by CharmmMRParser#noe_statement.
+        """
+
         if ctx.MinDist():
             self.noeAverage = 'min'
 
@@ -731,42 +766,48 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             # self.tCon = 0.0
             self.rExp = -1.0 / 6.0
 
-    # Exit a parse tree produced by CharmmMRParser#noe_statement.
     def exitNoe_statement(self, ctx: CharmmMRParser.Noe_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#noe_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#noe_assign.
     def enterNoe_assign(self, ctx: CharmmMRParser.Noe_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#noe_assign.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#noe_assign.
     def exitNoe_assign(self, ctx: CharmmMRParser.Noe_assignContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#noe_assign.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#pnoe_statement.
     def enterPnoe_statement(self, ctx: CharmmMRParser.Pnoe_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#pnoe_statement.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#pnoe_statement.
     def exitPnoe_statement(self, ctx: CharmmMRParser.Pnoe_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#pnoe_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#pnoe_assign.
     def enterPnoe_assign(self, ctx: CharmmMRParser.Pnoe_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#pnoe_assign.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#pnoe_assign.
     def exitPnoe_assign(self, ctx: CharmmMRParser.Pnoe_assignContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#pnoe_assign.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#dihedral_statement.
     def enterDihedral_statement(self, ctx: CharmmMRParser.Dihedral_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#dihedral_statement.
+        """
+
         if ctx.Force():
             self.force = float(str(ctx.Force()))
 
@@ -779,19 +820,23 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.Period():
             self.period = int(str(ctx.Period()))
 
-    # Exit a parse tree produced by CharmmMRParser#dihedral_statement.
     def exitDihedral_statement(self, ctx: CharmmMRParser.Dihedral_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#dihedral_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#dihedral_assign.
     def enterDihedral_assign(self, ctx: CharmmMRParser.Dihedral_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#dihedral_assign.
+        """
+
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: CharmmMRParser.Dihedral_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CharmmMRParser#dihedral_assign.
+        """
+
         if ctx.selection(0):
             pass
 
@@ -826,204 +871,226 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     atomSelection = self.factor['atom_selection'] if 'atom_selection' in self.factor else []
                     self.atomSelectionSet.append(atomSelection)
 
-    # Enter a parse tree produced by CharmmMRParser#harmonic_statement.
     def enterHarmonic_statement(self, ctx: CharmmMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#harmonic_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#harmonic_statement.
     def exitHarmonic_statement(self, ctx: CharmmMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#harmonic_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#absolute_spec.
     def enterAbsolute_spec(self, ctx: CharmmMRParser.Absolute_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#absolute_spec.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#absolute_spec.
     def exitAbsolute_spec(self, ctx: CharmmMRParser.Absolute_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#absolute_spec.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#force_const_spec.
     def enterForce_const_spec(self, ctx: CharmmMRParser.Force_const_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#force_const_spec.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#force_const_spec.
     def exitForce_const_spec(self, ctx: CharmmMRParser.Force_const_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#force_const_spec.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#bestfit_spec.
     def enterBestfit_spec(self, ctx: CharmmMRParser.Bestfit_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#bestfit_spec.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#bestfit_spec.
     def exitBestfit_spec(self, ctx: CharmmMRParser.Bestfit_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#bestfit_spec.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#coordinate_spec.
     def enterCoordinate_spec(self, ctx: CharmmMRParser.Coordinate_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#coordinate_spec.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#coordinate_spec.
     def exitCoordinate_spec(self, ctx: CharmmMRParser.Coordinate_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#coordinate_spec.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#ic_statement.
     def enterIc_statement(self, ctx: CharmmMRParser.Ic_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#ic_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#ic_statement.
     def exitIc_statement(self, ctx: CharmmMRParser.Ic_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#ic_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#droplet_statement.
     def enterDroplet_statement(self, ctx: CharmmMRParser.Droplet_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#droplet_statement.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#droplet_statement.
     def exitDroplet_statement(self, ctx: CharmmMRParser.Droplet_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#droplet_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#fix_atom_statement.
     def enterFix_atom_statement(self, ctx: CharmmMRParser.Fix_atom_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#fix_atom_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#fix_atom_statement.
     def exitFix_atom_statement(self, ctx: CharmmMRParser.Fix_atom_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#fix_atom_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#center_of_mass_statement.
     def enterCenter_of_mass_statement(self, ctx: CharmmMRParser.Center_of_mass_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#center_of_mass_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#center_of_mass_statement.
     def exitCenter_of_mass_statement(self, ctx: CharmmMRParser.Center_of_mass_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#center_of_mass_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#fix_bond_or_angle_statement.
     def enterFix_bond_or_angle_statement(self, ctx: CharmmMRParser.Fix_bond_or_angle_statementContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#fix_bond_or_angle_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#fix_bond_or_angle_statement.
     def exitFix_bond_or_angle_statement(self, ctx: CharmmMRParser.Fix_bond_or_angle_statementContext
                                         ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#fix_bond_or_angle_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#shake_opt.
     def enterShake_opt(self, ctx: CharmmMRParser.Shake_optContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#shake_opt.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#shake_opt.
     def exitShake_opt(self, ctx: CharmmMRParser.Shake_optContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#shake_opt.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#fast_opt.
     def enterFast_opt(self, ctx: CharmmMRParser.Fast_optContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#fast_opt.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#fast_opt.
     def exitFast_opt(self, ctx: CharmmMRParser.Fast_optContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#fast_opt.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#restrained_distance_statement.
     def enterRestrained_distance_statement(self, ctx: CharmmMRParser.Restrained_distance_statementContext
                                            ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#restrained_distance_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#restrained_distance_statement.
     def exitRestrained_distance_statement(self, ctx: CharmmMRParser.Restrained_distance_statementContext
                                           ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#restrained_distance_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#external_force_statement.
     def enterExternal_force_statement(self, ctx: CharmmMRParser.External_force_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#external_force_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#external_force_statement.
     def exitExternal_force_statement(self, ctx: CharmmMRParser.External_force_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#external_force_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#rmsd_statement.
     def enterRmsd_statement(self, ctx: CharmmMRParser.Rmsd_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#rmsd_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#rmsd_statement.
     def exitRmsd_statement(self, ctx: CharmmMRParser.Rmsd_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#rmsd_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#rmsd_orient_spec.
     def enterRmsd_orient_spec(self, ctx: CharmmMRParser.Rmsd_orient_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#rmsd_orient_spec.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#rmsd_orient_spec.
     def exitRmsd_orient_spec(self, ctx: CharmmMRParser.Rmsd_orient_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#rmsd_orient_spec.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#rmsd_force_const_spec.
     def enterRmsd_force_const_spec(self, ctx: CharmmMRParser.Rmsd_force_const_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#rmsd_force_const_spec.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#rmsd_force_const_spec.
     def exitRmsd_force_const_spec(self, ctx: CharmmMRParser.Rmsd_force_const_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#rmsd_force_const_spec.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#rmsd_coordinate_spec.
     def enterRmsd_coordinate_spec(self, ctx: CharmmMRParser.Rmsd_coordinate_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#rmsd_coordinate_spec.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#rmsd_coordinate_spec.
     def exitRmsd_coordinate_spec(self, ctx: CharmmMRParser.Rmsd_coordinate_specContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#rmsd_coordinate_spec.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#gyration_statement.
     def enterGyration_statement(self, ctx: CharmmMRParser.Gyration_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#gyration_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#gyration_statement.
     def exitGyration_statement(self, ctx: CharmmMRParser.Gyration_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#gyration_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#distance_matrix_statement.
     def enterDistance_matrix_statement(self, ctx: CharmmMRParser.Distance_matrix_statementContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#distance_matrix_statement.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CharmmMRParser#distance_matrix_statement.
     def exitDistance_matrix_statement(self, ctx: CharmmMRParser.Distance_matrix_statementContext
                                       ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#distance_matrix_statement.
+        """
 
-    # Enter a parse tree produced by CharmmMRParser#selection.
     def enterSelection(self, ctx: CharmmMRParser.SelectionContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CharmmMRParser#selection.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + "enter_selection")
 
@@ -1032,8 +1099,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.stackTerms = []
             self.factor = {}
 
-    # Exit a parse tree produced by CharmmMRParser#selection.
     def exitSelection(self, ctx: CharmmMRParser.SelectionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CharmmMRParser#selection.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + "exit_selection")
 
@@ -1194,8 +1263,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.atomSelectionSet.append(atomSelection)
 
-    # Enter a parse tree produced by CharmmMRParser#selection_expression.
     def enterSelection_expression(self, ctx: CharmmMRParser.Selection_expressionContext):
+        """ Enter a parse tree produced by CharmmMRParser#selection_expression.
+        """
+
         self.cur_union_expr = self.con_union_expr = bool(ctx.Or_op(0))
         if self.depth == 0:
             self.top_union_expr = self.cur_union_expr
@@ -1215,8 +1286,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by CharmmMRParser#selection_expression.
     def exitSelection_expression(self, ctx: CharmmMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CharmmMRParser#selection_expression.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_sel_expr")
@@ -1249,8 +1322,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.con_union_expr = False
             self.unionFactor = None
 
-    # Enter a parse tree produced by CharmmMRParser#term.
     def enterTerm(self, ctx: CharmmMRParser.TermContext):
+        """ Enter a parse tree produced by CharmmMRParser#term.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
 
@@ -1259,8 +1334,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by CharmmMRParser#term.
     def exitTerm(self, ctx: CharmmMRParser.TermContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CharmmMRParser#term.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_term")
@@ -1324,8 +1401,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if 'atom_selection' in self.factor and not isinstance(self.factor['atom_selection'], str):
             self.stackTerms.append(self.factor['atom_selection'])
 
-    # Enter a parse tree produced by CharmmMRParser#factor.
     def enterFactor(self, ctx: CharmmMRParser.FactorContext):
+        """ Enter a parse tree produced by CharmmMRParser#factor.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
@@ -1338,8 +1417,10 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by CharmmMRParser#factor.
     def exitFactor(self, ctx: CharmmMRParser.FactorContext):
+        """ Exit a parse tree produced by CharmmMRParser#factor.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_factor")
@@ -1407,7 +1488,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if 'alt_atom_id' in self.factor:
                             del self.factor['alt_atom_id']
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -1476,7 +1557,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del atom['z']
                                 _atomSelection.append(atom)
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -2248,7 +2329,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                     'enum': (self.representativeAltId,)}
                                                                    ])
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -2277,7 +2358,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                             'enum': (self.representativeAltId,)}
                                                            ])
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
                         if self.verbose:
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -2338,7 +2419,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             del atom['z']
                             atomSelection.append(atom)
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -2755,12 +2836,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberFSelection.clear()
 
-    # Enter a parse tree produced by CharmmMRParser#number.
     def enterNumber(self, ctx: CharmmMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#number.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#number.
     def exitNumber(self, ctx: CharmmMRParser.NumberContext):
+        """ Exit a parse tree produced by CharmmMRParser#number.
+        """
+
         if ctx.Real():
             self.numberSelection.append(float(str(ctx.Real())))
 
@@ -2779,12 +2862,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.numberSelection.append(None)
 
-    # Enter a parse tree produced by CharmmMRParser#number_f.
     def enterNumber_f(self, ctx: CharmmMRParser.Number_fContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#number_f.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#number_f.
     def exitNumber_f(self, ctx: CharmmMRParser.Number_fContext):
+        """ Exit a parse tree produced by CharmmMRParser#number_f.
+        """
+
         if ctx.Real():
             self.numberFSelection.append(float(str(ctx.Real())))
 
@@ -2794,15 +2879,18 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.numberFSelection.append(None)
 
-    # Enter a parse tree produced by CharmmMRParser#number_s.
     def enterNumber_s(self, ctx: CharmmMRParser.Number_sContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#number_s.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#number_s.
     def exitNumber_s(self, ctx: CharmmMRParser.Number_sContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CharmmMRParser#number_s.
+        """
 
     def getNumber_s(self, ctx: CharmmMRParser.Number_sContext):  # pylint: disable=no-self-use
+        """ Retrieve context of Number_s.
+        """
+
         if ctx is None:
             return None
 
@@ -2817,12 +2905,14 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         return None
 
-    # Enter a parse tree produced by CharmmMRParser#set_statement.
     def enterSet_statement(self, ctx: CharmmMRParser.Set_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CharmmMRParser#set_statement.
+        """
 
-    # Exit a parse tree produced by CharmmMRParser#set_statement.
     def exitSet_statement(self, ctx: CharmmMRParser.Set_statementContext):
+        """ Exit a parse tree produced by CharmmMRParser#set_statement.
+        """
+
         if ctx.Simple_name_VE(0):
 
             if ctx.Real_VE():
@@ -2833,5 +2923,3 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
             elif ctx.Simple_name_VE(1):
                 self.evaluate[str(ctx.Simple_name_VE(0))] = str(ctx.Simple_name_VE(1))
-
-# del CharmmMRParser

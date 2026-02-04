@@ -105,8 +105,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by XMLParser.
 class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by XMLParser.
+    """
     __slots__ = ()
 
     __polySeqRstRef = None
@@ -148,33 +149,39 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.file_type = 'nm-res-arx'
         self.software_name = 'ARIA'
 
-    # Enter a parse tree produced by XMLParser#document.
     def enterDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XMLParser#document.
+        """
+
         self.__cur_path = ''
         self.__polySeqRstRef = []
 
-    # Exit a parse tree produced by XMLParser#document.
     def exitDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XMLParser#document.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by XMLParser#prolog.
-    def enterProlog(self, ctx: XMLParser.PrologContext):  # pylint: disable=unused-argument
-        pass
+    def enterProlog(self, ctx: XMLParser.PrologContext):  # pylint: disable=unused-argument"
+        """ Enter a parse tree produced by XMLParser#prolog.
+        """
 
-    # Exit a parse tree produced by XMLParser#prolog.
     def exitProlog(self, ctx: XMLParser.PrologContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#prolog.
+        """
 
-    # Enter a parse tree produced by XMLParser#content.
     def enterContent(self, ctx: XMLParser.ContentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#content.
+        """
 
-    # Exit a parse tree produced by XMLParser#content.
     def exitContent(self, ctx: XMLParser.ContentContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#content.
+        """
 
-    # Enter a parse tree produced by XMLParser#element.
     def enterElement(self, ctx: XMLParser.ElementContext):
+        """ Enter a parse tree produced by XMLParser#element.
+        """
+
         self.__cur_path += '/' + str(ctx.Name(0))
 
         # noe_restraint_list
@@ -248,8 +255,9 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.cur_target_value = None
             self.cur_target_value_uncertainty = None
 
-    # Exit a parse tree produced by XMLParser#element.
     def exitElement(self, ctx: XMLParser.ElementContext):
+        """ Exit a parse tree produced by XMLParser#element.
+        """
 
         try:
 
@@ -293,7 +301,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 self.atomSelectionSet.clear()
 
-                self.exitDistance_restraint()
+                self.extractDistance_restraint()
 
             elif self.__cur_path == '/noe_restraint_list/peak/contribution/spin_system/atom':
                 if self.__cur_contrib_weight is not None:
@@ -343,7 +351,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                 self.atomSelectionSet.clear()
 
-                self.exitTorsion_angle_restraint()
+                self.extractTorsion_angle_restraint()
 
             elif self.__cur_path == '/data_set/sequence':
                 sortPolySeqRst(self.__polySeqRstRef)
@@ -412,16 +420,17 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.__cur_path = self.__cur_path[:-(1 + len(str(ctx.Name(0))))]
 
-    # Enter a parse tree produced by XMLParser#reference.
     def enterReference(self, ctx: XMLParser.ReferenceContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#reference.
+        """
 
-    # Exit a parse tree produced by XMLParser#reference.
     def exitReference(self, ctx: XMLParser.ReferenceContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#reference.
+        """
 
-    # Enter a parse tree produced by XMLParser#attribute.
     def enterAttribute(self, ctx: XMLParser.AttributeContext):
+        """ Enter a parse tree produced by XMLParser#attribute.
+        """
 
         if ctx.Name() and ctx.STRING():
             name = str(ctx.Name())
@@ -498,27 +507,29 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
             except ValueError:
                 pass
 
-    # Exit a parse tree produced by XMLParser#attribute.
     def exitAttribute(self, ctx: XMLParser.AttributeContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#attribute.
+        """
 
-    # Enter a parse tree produced by XMLParser#chardata.
     def enterChardata(self, ctx: XMLParser.ChardataContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#chardata.
+        """
 
-    # Exit a parse tree produced by XMLParser#chardata.
     def exitChardata(self, ctx: XMLParser.ChardataContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#chardata.
+        """
 
-    # Enter a parse tree produced by XMLParser#misc.
     def enterMisc(self, ctx: XMLParser.MiscContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XMLParser#misc.
+        """
 
-    # Exit a parse tree produced by XMLParser#misc.
     def exitMisc(self, ctx: XMLParser.MiscContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XMLParser#misc.
+        """
 
     def extractCommonAtomName(self, atom_sel: List[dict]) -> str:
+        """ Return standardized pseudo atom name from given atom selections.
+        """
 
         if len(atom_sel) == 0:
             return None
@@ -593,7 +604,9 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         return common_name
 
-    def exitDistance_restraint(self):
+    def extractDistance_restraint(self):
+        """ Extract distance restraint.
+        """
 
         try:
 
@@ -746,9 +759,9 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     if distance(to_np_array(_head[0]), to_np_array(_tail[0])) < 10.0:
                                         self.symmetric = 'circular'
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
-                                    self.log.write(f"+{self.__class_name__}.exitDistance_restraint() ++ Error  - {str(e)}")
+                                    self.log.write(f"+{self.__class_name__}.extractDistance_restraint() ++ Error  - {str(e)}")
 
             combinationId = memberId = memberLogicCode = '.'
             if self.createSfDict:
@@ -831,7 +844,9 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    def exitTorsion_angle_restraint(self):
+    def extractTorsion_angle_restraint(self):
+        """ Extract torsion angle restraint.
+        """
 
         try:
 

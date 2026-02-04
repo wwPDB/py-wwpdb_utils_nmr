@@ -91,13 +91,20 @@ class XeasyCSReader:
         self.__reasons = reasons
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
-        self.__maxParserErrorReport = maxErrReport
+        """ Set the maximum number of parser error messages to save.
+        """
 
     def parse(self, csFilePath: str, isFilePath: bool = True,
               createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,

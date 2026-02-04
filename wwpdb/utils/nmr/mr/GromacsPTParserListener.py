@@ -43,8 +43,9 @@ except ImportError:
     from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
 
 
-# This class defines a complete listener for a parse tree produced by GromacsPTParser.
 class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
+    """ This class defines a complete listener for a parse tree produced by GromacsPTParser.
+    """
     __slots__ = ('defaultStatements',
                  'moleculetypeStatements',
                  'atomtypesStatements',
@@ -123,12 +124,13 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         self.systemStatements = 0
         self.moleculesStatements = 0
 
-    # Enter a parse tree produced by GromacsPTParser#gromacs_pt.
     def enterGromacs_pt(self, ctx: GromacsPTParser.Gromacs_ptContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#gromacs_pt.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#gromacs_pt.
     def exitGromacs_pt(self, ctx: GromacsPTParser.Gromacs_ptContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by GromacsPTParser#gromacs_pt.
+        """
 
         if not self.hasPolySeqModel:
             return
@@ -213,178 +215,219 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
 
         self.exit(retrievedAtomNumList)
 
-    # Enter a parse tree produced by GromacsPTParser#default_statement.
     def enterDefault_statement(self, ctx: GromacsPTParser.Default_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#default_statement.
+        """
+
         self.defaultStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#default_statement.
     def exitDefault_statement(self, ctx: GromacsPTParser.Default_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#default_statement.
+        """
+
         if ctx.Integer(0):
             return
         self.defaultStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#moleculetype_statement.
     def enterMoleculetype_statement(self, ctx: GromacsPTParser.Moleculetype_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#moleculetype_statement.
+        """
+
         self.moleculetypeStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#moleculetype_statement.
     def exitMoleculetype_statement(self, ctx: GromacsPTParser.Moleculetype_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#moleculetype_statement.
+        """
+
         if ctx.moleculetype(0):
             return
         self.moleculetypeStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#moleculetype.
     def enterMoleculetype(self, ctx: GromacsPTParser.MoleculetypeContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#moleculetype.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#moleculetype.
     def exitMoleculetype(self, ctx: GromacsPTParser.MoleculetypeContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#moleculetype.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#atomtypes_statement.
     def enterAtomtypes_statement(self, ctx: GromacsPTParser.Atomtypes_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#atomtypes_statement.
+        """
+
         self.atomtypesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#atomtypes_statement.
     def exitAtomtypes_statement(self, ctx: GromacsPTParser.Atomtypes_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#atomtypes_statement.
+        """
+
         if ctx.atomtypes(0):
             return
         self.atomtypesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#atomtypes.
     def enterAtomtypes(self, ctx: GromacsPTParser.AtomtypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#atomtypes.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#atomtypes.
     def exitAtomtypes(self, ctx: GromacsPTParser.AtomtypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#atomtypes.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#pairtypes_statement.
     def enterPairtypes_statement(self, ctx: GromacsPTParser.Pairtypes_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#pairtypes_statement.
+        """
+
         self.pairtypesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#pairtypes_statement.
     def exitPairtypes_statement(self, ctx: GromacsPTParser.Pairtypes_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#pairtypes_statement.
+        """
+
         if ctx.pairtypes(0):
             return
         self.pairtypesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#pairtypes.
     def enterPairtypes(self, ctx: GromacsPTParser.PairtypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#pairtypes.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#pairtypes.
     def exitPairtypes(self, ctx: GromacsPTParser.PairtypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#pairtypes.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#bondtypes_statement.
     def enterBondtypes_statement(self, ctx: GromacsPTParser.Bondtypes_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#bondtypes_statement.
+        """
+
         self.bondtypesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#bondtypes_statement.
     def exitBondtypes_statement(self, ctx: GromacsPTParser.Bondtypes_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#bondtypes_statement.
+        """
+
         if ctx.bondtypes(0):
             return
         self.bondtypesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#bondtypes.
     def enterBondtypes(self, ctx: GromacsPTParser.BondtypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#bondtypes.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#bondtypes.
     def exitBondtypes(self, ctx: GromacsPTParser.BondtypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#bondtypes.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#angletypes_statement.
     def enterAngletypes_statement(self, ctx: GromacsPTParser.Angletypes_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#angletypes_statement.
+        """
+
         self.angletypesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#angletypes_statement.
     def exitAngletypes_statement(self, ctx: GromacsPTParser.Angletypes_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#angletypes_statement.
+        """
+
         if ctx.angletypes(0):
             return
         self.angletypesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#angletypes.
     def enterAngletypes(self, ctx: GromacsPTParser.AngletypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#angletypes.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#angletypes.
     def exitAngletypes(self, ctx: GromacsPTParser.AngletypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#angletypes.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#dihedraltypes_statement.
     def enterDihedraltypes_statement(self, ctx: GromacsPTParser.Dihedraltypes_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#dihedraltypes_statement.
+        """
+
         self.dihedraltypesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#dihedraltypes_statement.
     def exitDihedraltypes_statement(self, ctx: GromacsPTParser.Dihedraltypes_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#dihedraltypes_statement.
+        """
+
         if ctx.dihedraltypes(0):
             return
         self.dihedraltypesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#dihedraltypes.
     def enterDihedraltypes(self, ctx: GromacsPTParser.DihedraltypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#dihedraltypes.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#dihedraltypes.
     def exitDihedraltypes(self, ctx: GromacsPTParser.DihedraltypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#dihedraltypes.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#constrainttypes_statement.
     def enterConstrainttypes_statement(self, ctx: GromacsPTParser.Constrainttypes_statementContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#constrainttypes_statement.
+        """
+
         self.constrainttypesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#constrainttypes_statement.
     def exitConstrainttypes_statement(self, ctx: GromacsPTParser.Constrainttypes_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#constrainttypes_statement.
+        """
+
         if ctx.constrainttypes(0):
             return
         self.constrainttypesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#constrainttypes.
     def enterConstrainttypes(self, ctx: GromacsPTParser.ConstrainttypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#constrainttypes.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#constrainttypes.
     def exitConstrainttypes(self, ctx: GromacsPTParser.ConstrainttypesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#constrainttypes.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#nonbonded_params_statement.
     def enterNonbonded_params_statement(self, ctx: GromacsPTParser.Nonbonded_params_statementContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#nonbonded_params_statement.
+        """
+
         self.nonbond_paramsStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#nonbonded_params_statement.
     def exitNonbonded_params_statement(self, ctx: GromacsPTParser.Nonbonded_params_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#nonbonded_params_statement.
+        """
+
         if ctx.nonbonded_params(0):
             return
         self.nonbond_paramsStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#nonbonded_params.
     def enterNonbonded_params(self, ctx: GromacsPTParser.Nonbonded_paramsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#nonbonded_params.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#nonbonded_params.
     def exitNonbonded_params(self, ctx: GromacsPTParser.Nonbonded_paramsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#nonbonded_params.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#atoms_statement.
     def enterAtoms_statement(self, ctx: GromacsPTParser.Atoms_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#atoms_statement.
+        """
+
         self.atomsStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#atoms_statement.
     def exitAtoms_statement(self, ctx: GromacsPTParser.Atoms_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by GromacsPTParser#atoms_statement.
+        """
+
         if ctx.atoms(0):
             return
         self.atomsStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#atoms.
     def enterAtoms(self, ctx: GromacsPTParser.AtomsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#atoms.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#atoms.
     def exitAtoms(self, ctx: GromacsPTParser.AtomsContext):
+        """ Exit a parse tree produced by GromacsPTParser#atoms.
+        """
 
         try:
 
@@ -417,251 +460,307 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by GromacsPTParser#bonds_statement.
     def enterBonds_statement(self, ctx: GromacsPTParser.Bonds_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#bonds_statement.
+        """
+
         self.bondsStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#bonds_statement.
     def exitBonds_statement(self, ctx: GromacsPTParser.Bonds_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#bonds_statement.
+        """
+
         if ctx.bonds(0):
             return
         self.bondsStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#bonds.
     def enterBonds(self, ctx: GromacsPTParser.BondsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#bonds.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#bonds.
     def exitBonds(self, ctx: GromacsPTParser.BondsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#bonds.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#pairs_statement.
     def enterPairs_statement(self, ctx: GromacsPTParser.Pairs_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#pairs_statement.
+        """
+
         self.pairsStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#pairs_statement.
     def exitPairs_statement(self, ctx: GromacsPTParser.Pairs_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#pairs_statement.
+        """
+
         if ctx.pairs(0):
             return
         self.pairsStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#pairs.
     def enterPairs(self, ctx: GromacsPTParser.PairsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#pairs.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#pairs.
     def exitPairs(self, ctx: GromacsPTParser.PairsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#pairs.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#pairs_nb_statement.
     def enterPairs_nb_statement(self, ctx: GromacsPTParser.Pairs_nb_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#pairs_nb_statement.
+        """
+
         self.pairs_nbStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#pairs_nb_statement.
     def exitPairs_nb_statement(self, ctx: GromacsPTParser.Pairs_nb_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#pairs_nb_statement.
+        """
+
         if ctx.pairs_nb(0):
             return
         self.pairs_nbStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#pairs_nb.
     def enterPairs_nb(self, ctx: GromacsPTParser.Pairs_nbContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#pairs_nb.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#pairs_nb.
     def exitPairs_nb(self, ctx: GromacsPTParser.Pairs_nbContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#pairs_nb.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#angles_statement.
     def enterAngles_statement(self, ctx: GromacsPTParser.Angles_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#angles_statement.
+        """
+
         self.anglesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#angles_statement.
     def exitAngles_statement(self, ctx: GromacsPTParser.Angles_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#angles_statement.
+        """
+
         if ctx.angles(0):
             return
         self.anglesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#angles.
     def enterAngles(self, ctx: GromacsPTParser.AnglesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#angles.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#angles.
     def exitAngles(self, ctx: GromacsPTParser.AnglesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#angles.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#dihedrals_statement.
     def enterDihedrals_statement(self, ctx: GromacsPTParser.Dihedrals_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#dihedrals_statement.
+        """
+
         self.dihedralsStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#dihedrals_statement.
     def exitDihedrals_statement(self, ctx: GromacsPTParser.Dihedrals_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#dihedrals_statement.
+        """
+
         if ctx.dihedrals(0):
             return
         self.dihedralsStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#dihedrals.
     def enterDihedrals(self, ctx: GromacsPTParser.DihedralsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#dihedrals.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#dihedrals.
     def exitDihedrals(self, ctx: GromacsPTParser.DihedralsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#dihedrals.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#exclusions_statement.
     def enterExclusions_statement(self, ctx: GromacsPTParser.Exclusions_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#exclusions_statement.
+        """
+
         self.exclusionsStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#exclusions_statement.
     def exitExclusions_statement(self, ctx: GromacsPTParser.Exclusions_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#exclusions_statement.
+        """
+
         if ctx.exclusions(0):
             return
         self.exclusionsStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#exclusions.
     def enterExclusions(self, ctx: GromacsPTParser.ExclusionsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#exclusions.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#exclusions.
     def exitExclusions(self, ctx: GromacsPTParser.ExclusionsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#exclusions.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#constraints_statement.
     def enterConstraints_statement(self, ctx: GromacsPTParser.Constraints_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#constraints_statement.
+        """
+
         self.constraintsStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#constraints_statement.
     def exitConstraints_statement(self, ctx: GromacsPTParser.Constraints_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#constraints_statement.
+        """
+
         if ctx.constraints(0):
             return
         self.constraintsStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#constraints.
     def enterConstraints(self, ctx: GromacsPTParser.ConstraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#constraints.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#constraints.
     def exitConstraints(self, ctx: GromacsPTParser.ConstraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#constraints.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#settles_statement.
     def enterSettles_statement(self, ctx: GromacsPTParser.Settles_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#settles_statement.
+        """
+
         self.settlesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#settles_statement.
     def exitSettles_statement(self, ctx: GromacsPTParser.Settles_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#settles_statement.
+        """
+
         if ctx.settles(0):
             return
         self.settlesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#settles.
     def enterSettles(self, ctx: GromacsPTParser.SettlesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#settles.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#settles.
     def exitSettles(self, ctx: GromacsPTParser.SettlesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#settles.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sites1_statement.
     def enterVirtual_sites1_statement(self, ctx: GromacsPTParser.Virtual_sites1_statementContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sites1_statement.
+        """
+
         self.virtual_sites1Statements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sites1_statement.
     def exitVirtual_sites1_statement(self, ctx: GromacsPTParser.Virtual_sites1_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sites1_statement.
+        """
+
         if ctx.virtual_sites1(0):
             return
         self.virtual_sites1Statements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sites1.
     def enterVirtual_sites1(self, ctx: GromacsPTParser.Virtual_sites1Context):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sites1.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sites1.
     def exitVirtual_sites1(self, ctx: GromacsPTParser.Virtual_sites1Context):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sites1.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sites2_statement.
     def enterVirtual_sites2_statement(self, ctx: GromacsPTParser.Virtual_sites2_statementContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sites2_statement.
+        """
+
         self.virtual_sites2Statements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sites2_statement.
     def exitVirtual_sites2_statement(self, ctx: GromacsPTParser.Virtual_sites2_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sites2_statement.
+        """
+
         if ctx.virtual_sites2(0):
             return
         self.virtual_sites2Statements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sites2.
     def enterVirtual_sites2(self, ctx: GromacsPTParser.Virtual_sites2Context):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sites2.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sites2.
     def exitVirtual_sites2(self, ctx: GromacsPTParser.Virtual_sites2Context):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sites2.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sites3_statement.
     def enterVirtual_sites3_statement(self, ctx: GromacsPTParser.Virtual_sites3_statementContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sites3_statement.
+        """
+
         self.virtual_sites3Statements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sites3_statement.
     def exitVirtual_sites3_statement(self, ctx: GromacsPTParser.Virtual_sites3_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sites3_statement.
+        """
+
         if ctx.virtual_sites3(0):
             return
         self.virtual_sites3Statements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sites3.
     def enterVirtual_sites3(self, ctx: GromacsPTParser.Virtual_sites3Context):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sites3.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sites3.
     def exitVirtual_sites3(self, ctx: GromacsPTParser.Virtual_sites3Context):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sites3.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sites4_statement.
     def enterVirtual_sites4_statement(self, ctx: GromacsPTParser.Virtual_sites4_statementContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sites4_statement.
+        """
+
         self.virtual_sites4Statements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sites4_statement.
     def exitVirtual_sites4_statement(self, ctx: GromacsPTParser.Virtual_sites4_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sites4_statement.
+        """
+
         if ctx.virtual_sites4(0):
             return
         self.virtual_sites4Statements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sites4.
     def enterVirtual_sites4(self, ctx: GromacsPTParser.Virtual_sites4Context):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sites4.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sites4.
     def exitVirtual_sites4(self, ctx: GromacsPTParser.Virtual_sites4Context):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sites4.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sitesn_statement.
     def enterVirtual_sitesn_statement(self, ctx: GromacsPTParser.Virtual_sitesn_statementContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sitesn_statement.
+        """
+
         self.virtual_sitesnStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sitesn_statement.
     def exitVirtual_sitesn_statement(self, ctx: GromacsPTParser.Virtual_sitesn_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sitesn_statement.
+        """
+
         if ctx.virtual_sitesn(0):
             return
         self.virtual_sitesnStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#virtual_sitesn.
     def enterVirtual_sitesn(self, ctx: GromacsPTParser.Virtual_sitesnContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#virtual_sitesn.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#virtual_sitesn.
     def exitVirtual_sitesn(self, ctx: GromacsPTParser.Virtual_sitesnContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#virtual_sitesn.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#system_statement.
     def enterSystem_statement(self, ctx: GromacsPTParser.System_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#system_statement.
+        """
+
         self.systemStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#system_statement.
     def exitSystem_statement(self, ctx: GromacsPTParser.System_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#system_statement.
+        """
+
         if ctx.Simple_name_AA(0):
             if self.hasCoord:
                 title = []
@@ -674,33 +773,40 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
             return
         self.systemStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#molecules_statement.
     def enterMolecules_statement(self, ctx: GromacsPTParser.Molecules_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GromacsPTParser#molecules_statement.
+        """
+
         self.moleculesStatements += 1
 
-    # Exit a parse tree produced by GromacsPTParser#molecules_statement.
     def exitMolecules_statement(self, ctx: GromacsPTParser.Molecules_statementContext):
+        """ Exit a parse tree produced by GromacsPTParser#molecules_statement.
+        """
+
         if ctx.molecules(0):
             return
         self.moleculesStatements -= 1
 
-    # Enter a parse tree produced by GromacsPTParser#molecules.
     def enterMolecules(self, ctx: GromacsPTParser.MoleculesContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#molecules.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#molecules.
     def exitMolecules(self, ctx: GromacsPTParser.MoleculesContext):
+        """ Exit a parse tree produced by GromacsPTParser#molecules.
+        """
+
         name = str(ctx.Simple_name())
         number = int(str(ctx.Integer()))
         if number > 0:
             self.__molecules.append({'molecule_name': name, 'number_of_copies': number})
 
-    # Enter a parse tree produced by GromacsPTParser#number.
     def enterNumber(self, ctx: GromacsPTParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#number.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#number.
     def exitNumber(self, ctx: GromacsPTParser.NumberContext):
+        """ Exit a parse tree produced by GromacsPTParser#number.
+        """
         # """ not used the 'number' in the '[ atoms ]' statement so that pass through for performance
         # if ctx.Real():
         #     self.numberSelection.append(float(str(ctx.Real())))
@@ -711,23 +817,22 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         # else:
         #     self.numberSelection.append(None)
         # """
-        pass
 
-    # Enter a parse tree produced by GromacsPTParser#position_restraints.
     def enterPosition_restraints(self, ctx: GromacsPTParser.Position_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#position_restraints.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#position_restraints.
     def exitPosition_restraints(self, ctx: GromacsPTParser.Position_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#position_restraints.
+        """
 
-    # Enter a parse tree produced by GromacsPTParser#position_restraint.
     def enterPosition_restraint(self, ctx: GromacsPTParser.Position_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by GromacsPTParser#position_restraint.
+        """
 
-    # Exit a parse tree produced by GromacsPTParser#position_restraint.
     def exitPosition_restraint(self, ctx: GromacsPTParser.Position_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GromacsPTParser#position_restraint.
+        """
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of GROMACS parameter/topology file.
@@ -773,5 +878,3 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         """
 
         return self.__molecules
-
-# del GromacsPTParser

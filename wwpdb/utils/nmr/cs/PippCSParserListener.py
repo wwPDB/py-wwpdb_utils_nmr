@@ -27,8 +27,9 @@ except ImportError:
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
-# This class defines a complete listener for a parse tree produced by PippCSParser.
 class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
+    """ This class defines a complete listener for a parse tree produced by PippCSParser.
+    """
     __slots__ = ()
 
     __seq_id = None
@@ -44,16 +45,20 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.file_type = 'nm-shi-pip'
         self.software_name = 'PIPP'
 
-    # Enter a parse tree produced by PippCSParser#pipp_cs.
     def enterPipp_cs(self, ctx: PippCSParser.Pipp_csContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by PippCSParser#pipp_cs.
+        """
 
-    # Exit a parse tree produced by PippCSParser#pipp_cs.
     def exitPipp_cs(self, ctx: PippCSParser.Pipp_csContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by PippCSParser#pipp_cs.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by PippCSParser#pipp_format.
     def enterPipp_format(self, ctx: PippCSParser.Pipp_formatContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by PippCSParser#pipp_format.
+        """
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -64,41 +69,44 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.predictSequenceNumberOffsetByFirstResidue(None, int(str(ctx.Integer())), None)
 
-    # Exit a parse tree produced by PippCSParser#pipp_format.
     def exitPipp_format(self, ctx: PippCSParser.Pipp_formatContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by PippCSParser#pipp_format.
+        """
 
-    # Enter a parse tree produced by PippCSParser#ext_peak_pick_tbl.
     def enterExt_peak_pick_tbl(self, ctx: PippCSParser.Ext_peak_pick_tblContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by PippCSParser#ext_peak_pick_tbl.
+        """
 
-    # Exit a parse tree produced by PippCSParser#ext_peak_pick_tbl.
     def exitExt_peak_pick_tbl(self, ctx: PippCSParser.Ext_peak_pick_tblContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by PippCSParser#ext_peak_pick_tbl.
+        """
 
-    # Enter a parse tree produced by PippCSParser#ext_peak_pick_tbl_row.
     def enterExt_peak_pick_tbl_row(self, ctx: PippCSParser.Ext_peak_pick_tbl_rowContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by PippCSParser#ext_peak_pick_tbl_row.
+        """
 
-    # Exit a parse tree produced by PippCSParser#ext_peak_pick_tbl_row.
     def exitExt_peak_pick_tbl_row(self, ctx: PippCSParser.Ext_peak_pick_tbl_rowContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by PippCSParser#ext_peak_pick_tbl_row.
+        """
 
-    # Enter a parse tree produced by PippCSParser#residue_list.
     def enterResidue_list(self, ctx: PippCSParser.Residue_listContext):
+        """ Enter a parse tree produced by PippCSParser#residue_list.
+        """
+
         self.__seq_id = int(str(ctx.Integer(0)))
         self.__comp_id = str(ctx.Simple_name())
 
-    # Exit a parse tree produced by PippCSParser#residue_list.
     def exitResidue_list(self, ctx: PippCSParser.Residue_listContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by PippCSParser#residue_list.
+        """
 
-    # Enter a parse tree produced by PippCSParser#shift_list.
     def enterShift_list(self, ctx: PippCSParser.Shift_listContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by PippCSParser#shift_list.
+        """
 
-    # Exit a parse tree produced by PippCSParser#shift_list.
     def exitShift_list(self, ctx: PippCSParser.Shift_listContext):
+        """ Exit a parse tree produced by PippCSParser#shift_list.
+        """
 
         index = self.chemShifts + 1
 
@@ -157,8 +165,9 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.chemShifts += 1
 
-    # Enter a parse tree produced by PippCSParser#number.
     def enterNumber(self, ctx: PippCSParser.NumberContext):
+        """ Enter a parse tree produced by PippCSParser#number.
+        """
 
         try:
 
@@ -174,9 +183,6 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
         except ValueError:
             self.__number = None
 
-    # Exit a parse tree produced by PippCSParser#number.
     def exitNumber(self, ctx: PippCSParser.NumberContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del PippCSParser
+        """ Exit a parse tree produced by PippCSParser#number.
+        """

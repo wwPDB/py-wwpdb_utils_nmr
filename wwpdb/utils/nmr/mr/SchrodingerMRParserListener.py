@@ -99,8 +99,9 @@ except ImportError:
                                            getDstFuncForHBond)
 
 
-# This class defines a complete listener for a parse tree produced by SchrodingerMRParser.
 class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by SchrodingerMRParser.
+    """
     __slots__ = ('__atomNumberDict', )
 
     __compIdSet = None
@@ -137,58 +138,62 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.storeSet = {}
 
-    # Enter a parse tree produced by SchrodingerMRParser#schrodinger_mr
     def enterSchrodinger_mr(self, ctx: SchrodingerMRParser.Schrodinger_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SchrodingerMRParser#schrodinger_mr
+        """
 
-    # Exit a parse tree produced by SchrodingerMRParser#schrodinger_mr.
     def exitSchrodinger_mr(self, ctx: SchrodingerMRParser.Schrodinger_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#schrodinger_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by SchrodingerMRParser#import_structure.
     def enterImport_structure(self, ctx: SchrodingerMRParser.Import_structureContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SchrodingerMRParser#import_structure.
+        """
 
-    # Exit a parse tree produced by SchrodingerMRParser#import_structure.
     def exitImport_structure(self, ctx: SchrodingerMRParser.Import_structureContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#import_structure.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#struct_statement.
     def enterStruct_statement(self, ctx: SchrodingerMRParser.Struct_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SchrodingerMRParser#struct_statement.
+        """
 
-    # Exit a parse tree produced by SchrodingerMRParser#struct_statement.
     def exitStruct_statement(self, ctx: SchrodingerMRParser.Struct_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#struct_statement.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: SchrodingerMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SchrodingerMRParser#distance_restraint.
+        """
 
-    # Exit a parse tree produced by SchrodingerMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: SchrodingerMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#distance_restraint.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: SchrodingerMRParser.Dihedral_angle_restraintContext
                                       ):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_restraint.
+        """
 
-    # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: SchrodingerMRParser.Dihedral_angle_restraintContext
                                      ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_restraint.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#angle_restraint.
     def enterAngle_restraint(self, ctx: SchrodingerMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SchrodingerMRParser#angle_restraint.
+        """
 
-    # Exit a parse tree produced by SchrodingerMRParser#angle_restraint.
     def exitAngle_restraint(self, ctx: SchrodingerMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#angle_restraint.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#distance_statement.
     def enterDistance_statement(self, ctx: SchrodingerMRParser.Distance_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#distance_statement.
+        """
+
         self.distStatements += 1
         self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
         self.cur_subtype = 'dist'
@@ -200,13 +205,17 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by SchrodingerMRParser#distance_statement.
     def exitDistance_statement(self, ctx: SchrodingerMRParser.Distance_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#distance_statement.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by SchrodingerMRParser#distance_assign.
     def enterDistance_assign(self, ctx: SchrodingerMRParser.Distance_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#distance_assign.
+        """
+
         self.distRestraints += 1
         self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
         if self.cur_subtype_altered:
@@ -222,8 +231,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.has_nx = False
 
-    # Exit a parse tree produced by SchrodingerMRParser#distance_assign.
     def exitDistance_assign(self, ctx: SchrodingerMRParser.Distance_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#distance_assign.
+        """
 
         try:
 
@@ -375,8 +385,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         finally:
             self.numberSelection.clear()
 
-    # Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
     def enterDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext):
+        """ Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -398,28 +410,34 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                   f"'{ai}' is not defined in the atom number dictionary.")
                     self.distRestraints -= 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
     def exitDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext
                                       ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_statement.
     def enterDihedral_angle_statement(self, ctx: SchrodingerMRParser.Dihedral_angle_statementContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_statement.
+        """
+
         self.dihedStatements += 1
         self.cur_subtype = 'dihed'
 
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_statement.
     def exitDihedral_angle_statement(self, ctx: SchrodingerMRParser.Dihedral_angle_statementContext
                                      ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_statement.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_assign.
     def enterDihedral_angle_assign(self, ctx: SchrodingerMRParser.Dihedral_angle_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_assign.
+        """
+
         self.dihedRestraints += 1
         if self.cur_subtype != 'dihed':
             self.dihedStatements += 1
@@ -428,8 +446,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_assign.
     def exitDihedral_angle_assign(self, ctx: SchrodingerMRParser.Dihedral_angle_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_assign.
+        """
 
         try:
 
@@ -553,8 +572,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_by_number.
     def enterDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_by_number.
+        """
+
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -576,26 +597,32 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                   f"'{ai}' is not defined in the atom number dictionary.")
                     self.dihedRestraints -= 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_by_number.
     def exitDihedral_angle_assign_by_number(self, ctx: SchrodingerMRParser.Dihedral_angle_assign_by_numberContext
                                             ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#dihedral_angle_assign_by_number.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#angle_statement.
     def enterAngle_statement(self, ctx: SchrodingerMRParser.Angle_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#angle_statement.
+        """
+
         self.angStatements += 1
         self.cur_subtype = 'ang'
 
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by SchrodingerMRParser#angle_statement.
     def exitAngle_statement(self, ctx: SchrodingerMRParser.Angle_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#angle_statement.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by SchrodingerMRParser#angle_assign.
     def enterAngle_assign(self, ctx: SchrodingerMRParser.Angle_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#angle_assign.
+        """
+
         self.angRestraints += 1
         if self.cur_subtype != 'ang':
             self.angStatements += 1
@@ -604,8 +631,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by SchrodingerMRParser#angle_assign.
     def exitAngle_assign(self, ctx: SchrodingerMRParser.Angle_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#angle_assign.
+        """
 
         try:
 
@@ -679,8 +707,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by SchrodingerMRParser#angle_assign_by_number.
     def enterAngle_assign_by_number(self, ctx: SchrodingerMRParser.Angle_assign_by_numberContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#angle_assign_by_number.
+        """
+
         self.angRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -702,12 +732,14 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                   f"'{ai}' is not defined in the atom number dictionary.")
                     self.distRestraints -= 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#angle_assign_by_number.
     def exitAngle_assign_by_number(self, ctx: SchrodingerMRParser.Angle_assign_by_numberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#angle_assign_by_number.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxdi_statement.
     def enterFxdi_statement(self, ctx: SchrodingerMRParser.Fxdi_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#fxdi_statement.
+        """
+
         self.distStatements += 1
         self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
         self.cur_subtype = 'dist'
@@ -719,13 +751,17 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxdi_statement.
     def exitFxdi_statement(self, ctx: SchrodingerMRParser.Fxdi_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#fxdi_statement.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxdi_assign.
     def enterFxdi_assign(self, ctx: SchrodingerMRParser.Fxdi_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#fxdi_assign.
+        """
+
         self.distRestraints += 1
         self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
         if self.cur_subtype_altered:
@@ -741,8 +777,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.has_nx = False
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxdi_assign.
     def exitFxdi_assign(self, ctx: SchrodingerMRParser.Fxdi_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#fxdi_assign.
+        """
 
         try:
 
@@ -907,8 +944,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxdi_assign_by_number.
     def enterFxdi_assign_by_number(self, ctx: SchrodingerMRParser.Fxdi_assign_by_numberContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#fxdi_assign_by_number.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -931,25 +970,31 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
             self.exitFxdi_assign(ctx)
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxdi_assign_by_number.
     def exitFxdi_assign_by_number(self, ctx: SchrodingerMRParser.Fxdi_assign_by_numberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#fxdi_assign_by_number.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxta_statement.
     def enterFxta_statement(self, ctx: SchrodingerMRParser.Fxta_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#fxta_statement.
+        """
+
         self.dihedStatements += 1
         self.cur_subtype = 'dihed'
 
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxta_statement.
     def exitFxta_statement(self, ctx: SchrodingerMRParser.Fxta_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#fxta_statement.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxta_assign.
     def enterFxta_assign(self, ctx: SchrodingerMRParser.Fxta_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#fxta_assign.
+        """
+
         self.dihedRestraints += 1
         if self.cur_subtype != 'dihed':
             self.dihedStatements += 1
@@ -958,8 +1003,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxta_assign.
     def exitFxta_assign(self, ctx: SchrodingerMRParser.Fxta_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#fxta_assign.
+        """
 
         try:
 
@@ -1118,8 +1164,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxta_assign_by_number.
     def enterFxta_assign_by_number(self, ctx: SchrodingerMRParser.Fxta_assign_by_numberContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#fxta_assign_by_number.
+        """
+
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -1142,25 +1190,31 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
             self.exitFxta_assign(ctx)
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxba_assign_by_number.
     def exitFxba_assign_by_number(self, ctx: SchrodingerMRParser.Fxba_assign_by_numberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#fxba_assign_by_number.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxhb_statement.
     def enterFxhb_statement(self, ctx: SchrodingerMRParser.Fxhb_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#fxhb_statement.
+        """
+
         self.dihedStatements += 1
         self.cur_subtype = 'hbond'
 
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxhb_statement.
     def exitFxhb_statement(self, ctx: SchrodingerMRParser.Fxhb_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#fxhb_statement.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxhb_assign.
     def enterFxhb_assign(self, ctx: SchrodingerMRParser.Fxhb_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#fxhb_assign.
+        """
+
         self.hbondRestraints += 1
         if self.cur_subtype != 'hbond':
             self.hbondStatements += 1
@@ -1169,8 +1223,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxhb_assign.
     def exitFxhb_assign(self, ctx: SchrodingerMRParser.Fxhb_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#fxhb_assign.
+        """
 
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
@@ -1312,7 +1367,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                   f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                   f"{chain_id_3}:{seq_id_3}:{atom_id_3}) is too far apart in the coordinates ({dist:.3f}Å).")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.verbose:
                 self.log.write(f"+{self.__class_name__}.exitFxhb_assign() ++ Error  - {str(e)}")
 
@@ -1350,8 +1405,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         if not is_hbond:
             self.cur_subtype = 'hbond'
 
-    # Enter a parse tree produced by SchrodingerMRParser#fxhb_assign_by_number.
     def enterFxhb_assign_by_number(self, ctx: SchrodingerMRParser.Fxhb_assign_by_numberContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#fxhb_assign_by_number.
+        """
+
         self.hbondRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -1374,12 +1431,14 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
             self.exitFxhb_assign(ctx)
 
-    # Exit a parse tree produced by SchrodingerMRParser#fxhb_assign_by_number.
     def exitFxhb_assign_by_number(self, ctx: SchrodingerMRParser.Fxhb_assign_by_numberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SchrodingerMRParser#fxhb_assign_by_number.
+        """
 
-    # Enter a parse tree produced by SchrodingerMRParser#selection.
     def enterSelection(self, ctx: SchrodingerMRParser.SelectionContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SchrodingerMRParser#selection.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + "enter_selection")
 
@@ -1388,8 +1447,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.stackTerms = []
             self.factor = {}
 
-    # Exit a parse tree produced by SchrodingerMRParser#selection.
     def exitSelection(self, ctx: SchrodingerMRParser.SelectionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#selection.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + "exit_selection")
 
@@ -1550,8 +1611,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.atomSelectionSet.append(atomSelection)
 
-    # Enter a parse tree produced by SchrodingerMRParser#selection_expression.
     def enterSelection_expression(self, ctx: SchrodingerMRParser.Selection_expressionContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#selection_expression.
+        """
+
         self.cur_union_expr = self.con_union_expr = bool(ctx.Or_op(0))
         if self.depth == 0:
             self.top_union_expr = self.cur_union_expr
@@ -1571,8 +1634,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.depth += 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#selection_expression.
     def exitSelection_expression(self, ctx: SchrodingerMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#selection_expression.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_sel_expr")
@@ -1605,8 +1670,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.con_union_expr = False
             self.unionFactor = None
 
-    # Enter a parse tree produced by SchrodingerMRParser#term.
     def enterTerm(self, ctx: SchrodingerMRParser.TermContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#term.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
 
@@ -1615,8 +1682,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.depth += 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#term.
     def exitTerm(self, ctx: SchrodingerMRParser.TermContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SchrodingerMRParser#term.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_term")
@@ -1684,8 +1753,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         if 'atom_selection' in self.factor and not isinstance(self.factor['atom_selection'], str):
             self.stackTerms.append(self.factor['atom_selection'])
 
-    # Enter a parse tree produced by SchrodingerMRParser#factor.
     def enterFactor(self, ctx: SchrodingerMRParser.FactorContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#factor.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
@@ -1698,8 +1769,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.depth += 1
 
-    # Exit a parse tree produced by SchrodingerMRParser#factor.
     def exitFactor(self, ctx: SchrodingerMRParser.FactorContext):
+        """ Exit a parse tree produced by SchrodingerMRParser#factor.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_factor")
@@ -1732,7 +1805,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     unq = int(str(_ctx.Integer(0)))
                     ret['range'] = [unq, unq]
 
-            except Exception:
+            except (TypeError, ValueError):
                 pass
 
             if len(ret) == 0:
@@ -2835,7 +2908,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                     del atom['z']
                                     _atomSelection.append(atom)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -2926,7 +2999,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                     del atom['z']
                                     _atomSel.append(atom)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -2943,7 +3016,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
                             _atomSelection = [atom for atom in _atomAll if atom not in _atomSel]
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -3073,7 +3146,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                         for atom in _neighbor:
                                             neighbor.remove(atom)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -3214,7 +3287,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                         for atom in _neighbor:
                                             neighbor.remove(atom)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -3241,7 +3314,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
                             _atomSelection = [atom for atom in _atomAll if atom not in _atomSel]
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -3417,7 +3490,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                                                     'enum': (self.representativeAltId,)}
                                                                    ])
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -3446,7 +3519,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                                             'enum': (self.representativeAltId,)}
                                                            ])
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
                         if self.verbose:
                             self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -3491,12 +3564,14 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         finally:
             self.numberFSelection.clear()
 
-    # Enter a parse tree produced by SchrodingerMRParser#number.
     def enterNumber(self, ctx: SchrodingerMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SchrodingerMRParser#number.
+        """
 
-    # Exit a parse tree produced by SchrodingerMRParser#number.
     def exitNumber(self, ctx: SchrodingerMRParser.NumberContext):
+        """ Exit a parse tree produced by SchrodingerMRParser#number.
+        """
+
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
 
@@ -3506,12 +3581,14 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         else:
             self.numberSelection.append(None)
 
-    # Enter a parse tree produced by SchrodingerMRParser#number_f.
     def enterNumber_f(self, ctx: SchrodingerMRParser.Number_fContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SchrodingerMRParser#number_f.
+        """
 
-    # Exit a parse tree produced by SchrodingerMRParser#number_f.
     def exitNumber_f(self, ctx: SchrodingerMRParser.Number_fContext):
+        """ Exit a parse tree produced by SchrodingerMRParser#number_f.
+        """
+
         if ctx.Float():
             self.numberFSelection.append(float(str(ctx.Float())))
 
@@ -3521,8 +3598,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         else:
             self.numberFSelection.append(None)
 
-    # Enter a parse tree produced by SchrodingerMRParser#parameter_statement.
     def enterParameter_statement(self, ctx: SchrodingerMRParser.Parameter_statementContext):
+        """ Enter a parse tree produced by SchrodingerMRParser#parameter_statement.
+        """
+
         self.__cur_store_name = str(ctx.Simple_name())
 
         self.depth = 0
@@ -3530,8 +3609,10 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.enterSelection(ctx)
 
-    # Exit a parse tree produced by SchrodingerMRParser#parameter_statement.
     def exitParameter_statement(self, ctx: SchrodingerMRParser.Parameter_statementContext):
+        """ Exit a parse tree produced by SchrodingerMRParser#parameter_statement.
+        """
+
         self.exitSelection(ctx)
 
         if len(self.atomSelectionSet) == 1 and len(self.atomSelectionSet[0]) > 0 and self.__cur_store_name not in EMPTY_VALUE:
@@ -3539,5 +3620,3 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         self.atomSelectionSet.clear()
         self.g.clear()
-
-# del SchrodingerMRParser

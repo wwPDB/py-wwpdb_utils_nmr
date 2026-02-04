@@ -27,8 +27,9 @@ except ImportError:
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
-# This class defines a complete listener for a parse tree produced by PpmCSParser.
 class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
+    """ This class defines a complete listener for a parse tree produced by PpmCSParser.
+    """
     __slots__ = ()
 
     __number = None
@@ -41,8 +42,10 @@ class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.file_type = 'nm-shi-ppm'
 
-    # Enter a parse tree produced by PpmCSParser#ppm_cs.
     def enterPpm_cs(self, ctx: PpmCSParser.Ppm_csContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by PpmCSParser#ppm_cs.
+        """
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -51,17 +54,22 @@ class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.chemShifts = 0
         self.offset = {}
 
-    # Exit a parse tree produced by PpmCSParser#ppm_cs.
     def exitPpm_cs(self, ctx: PpmCSParser.Ppm_csContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by PpmCSParser#ppm_cs.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by PpmCSParser#ppm_list.
     def enterPpm_list(self, ctx: PpmCSParser.Ppm_listContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by PpmCSParser#ppm_list.
+        """
+
         self.cur_subtype = 'chem_shift'
         self.cur_line_num += 1
 
-    # Exit a parse tree produced by PpmCSParser#ppm_list.
     def exitPpm_list(self, ctx: PpmCSParser.Ppm_listContext):
+        """ Exit a parse tree produced by PpmCSParser#ppm_list.
+        """
 
         chain_id = None
 
@@ -96,8 +104,9 @@ class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.chemShifts += 1
 
-    # Enter a parse tree produced by PpmCSParser#number.
     def enterNumber(self, ctx: PpmCSParser.NumberContext):
+        """ Enter a parse tree produced by PpmCSParser#number.
+        """
 
         try:
 
@@ -113,9 +122,6 @@ class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
         except ValueError:
             self.__number = None
 
-    # Exit a parse tree produced by PpmCSParser#number.
     def exitNumber(self, ctx: PpmCSParser.NumberContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del PpmCSParser
+        """ Exit a parse tree produced by PpmCSParser#number.
+        """

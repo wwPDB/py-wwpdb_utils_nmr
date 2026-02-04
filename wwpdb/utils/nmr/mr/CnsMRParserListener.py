@@ -748,7 +748,6 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.has_nx = False
 
     def exitNoe_assign(self, ctx: CnsMRParser.Noe_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by CnsMRParser#noe_assign.
         """
 
@@ -1038,7 +1037,6 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitDihedral_assign(self, ctx: CnsMRParser.Dihedral_assignContext):
-
         """ Exit a parse tree produced by CnsMRParser#dihedral_assign.
         """
 
@@ -1340,7 +1338,6 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by CnsMRParser#harmonic_assign.
         """
 
@@ -1411,7 +1408,6 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitSani_assign(self, ctx: CnsMRParser.Sani_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by CnsMRParser#sani_assign.
         """
 

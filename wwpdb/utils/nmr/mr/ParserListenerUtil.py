@@ -4670,7 +4670,7 @@ def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None
                     if abs(_s1[0] - _s2[0]) > 1:
                         return True
 
-            except (IndexError, KeyError, StopIteration):
+            except ValueError:
                 return True
 
     return False

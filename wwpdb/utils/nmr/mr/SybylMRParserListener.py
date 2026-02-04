@@ -112,7 +112,6 @@ class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     def exitDistance_restraint(self, ctx: SybylMRParser.Distance_restraintContext):
-
         """ Exit a parse tree produced by SybylMRParser#distance_restraint.
         """
 

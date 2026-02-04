@@ -1107,7 +1107,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.donor_columnSel = self.acceptor_columnSel = -1
 
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#noe_assign.
         """
 
@@ -1471,7 +1470,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):
-
         """ Exit a parse tree produced by XplorMRParser#dihedral_assign.
         """
 
@@ -1682,7 +1680,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#sani_assign.
         """
 
@@ -2037,7 +2034,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#xdip_assign.
         """
 
@@ -2251,7 +2247,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#vean_assign.
         """
 
@@ -2465,7 +2460,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#tenso_assign.
         """
 
@@ -2671,7 +2665,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#anis_assign.
         """
 
@@ -2964,7 +2957,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#harmonic_assign.
         """
 
@@ -3156,7 +3148,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#coup_assign.
         """
 
@@ -3448,7 +3439,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
         """
 
@@ -3599,7 +3589,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#carbon_shift_rcoil.
         """
 
@@ -3680,7 +3669,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#observed.
         """
 
@@ -3777,7 +3765,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#proton_shift_rcoil.
         """
 
@@ -4333,7 +4320,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#coll_assign.
         """
 
@@ -4447,7 +4433,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitDani_assign(self, ctx: XplorMRParser.Dani_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#dani_assign.
         """
 
@@ -5294,7 +5279,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.in_noe = False
 
     def exitPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#pre_assign.
         """
 
@@ -5393,7 +5377,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#pcs_assign.
         """
 
@@ -5533,7 +5516,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitPrdc_assign(self, ctx: XplorMRParser.Prdc_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#prdc_assign.
         """
 
@@ -5712,7 +5694,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#porientation_assign.
         """
 
@@ -5890,7 +5871,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.g.clear()
 
     def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by XplorMRParser#pccr_assign.
         """
 

@@ -2571,7 +2571,6 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     def exitFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by CyanaMRParser#fixres_distance_restraint.
         """
 
@@ -3518,7 +3517,6 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.atomSelectionSet.clear()
 
     def exitFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):  # pylint: disable=unused-argument
-
         """ Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
         """
 

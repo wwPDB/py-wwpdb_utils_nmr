@@ -17,8 +17,8 @@ import re
 import copy
 import itertools
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
@@ -60,8 +60,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by SybylMRParser.
 class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by SybylMRParser.
+    """
     __slots__ = ()
 
     __atom_sel_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)\.([A-Z][0-9A-Z]*)')
@@ -82,30 +83,37 @@ class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.file_type = 'nm-res-syb'
         self.software_name = 'SYBYL'
 
-    # Enter a parse tree produced by SybylMRParser#biosym_mr.
     def enterSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SybylMRParser#biosym_mr.
+        """
 
-    # Exit a parse tree produced by SybylMRParser#biosym_mr.
     def exitSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SybylMRParser#biosym_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by SybylMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: SybylMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SybylMRParser#distance_restraints.
+        """
+
         self.cur_subtype = 'dist'
 
-    # Exit a parse tree produced by SybylMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: SybylMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SybylMRParser#distance_restraints.
+        """
 
-    # Enter a parse tree produced by SybylMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: SybylMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SybylMRParser#distance_restraint.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by SybylMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: SybylMRParser.Distance_restraintContext):
+        """ Exit a parse tree produced by SybylMRParser#distance_restraint.
+        """
 
         try:
 
@@ -258,12 +266,14 @@ class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         except (ValueError, AttributeError):
             return None, None, None
 
-    # Enter a parse tree produced by SybylMRParser#number.
     def enterNumber(self, ctx: SybylMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SybylMRParser#number.
+        """
 
-    # Exit a parse tree produced by SybylMRParser#number.
     def exitNumber(self, ctx: SybylMRParser.NumberContext):
+        """ Exit a parse tree produced by SybylMRParser#number.
+        """
+
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
 
@@ -275,5 +285,3 @@ class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         else:
             self.numberSelection.append(None)
-
-# del SybylMRParser

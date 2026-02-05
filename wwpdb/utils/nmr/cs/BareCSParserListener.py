@@ -15,8 +15,8 @@ __version__ = "1.1.1"
 import sys
 import re
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
@@ -32,8 +32,9 @@ except ImportError:
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
-# This class defines a complete listener for a parse tree produced by BareCSParser.
 class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
+    """ This class defines a complete listener for a parse tree produced by BareCSParser.
+    """
     __slots__ = ()
 
     __col_name = None
@@ -54,28 +55,31 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.file_type = 'nm-shi-bar'
 
-    # Enter a parse tree produced by BareCSParser#bare_cs.
     def enterBare_cs(self, ctx: BareCSParser.Bare_csContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BareCSParser#bare_cs.
+        """
 
-    # Exit a parse tree produced by BareCSParser#bare_cs.
     def exitBare_cs(self, ctx: BareCSParser.Bare_csContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BareCSParser#bare_cs.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by BareCSParser#cs_row_format.
     def enterCs_row_format(self, ctx: BareCSParser.Cs_row_formatContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BareCSParser#cs_row_format.
+        """
 
-    # Exit a parse tree produced by BareCSParser#cs_row_format.
     def exitCs_row_format(self, ctx: BareCSParser.Cs_row_formatContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BareCSParser#cs_row_format.
+        """
 
-    # Enter a parse tree produced by BareCSParser#header.
     def enterHeader(self, ctx: BareCSParser.HeaderContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BareCSParser#header.
+        """
 
-    # Exit a parse tree produced by BareCSParser#header.
     def exitHeader(self, ctx: BareCSParser.HeaderContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BareCSParser#header.
+        """
 
         def is_half_spin_nuclei(atom_id: str) -> bool:
             """ Return whether nuclei of a given atom_id has a spin 1/2.
@@ -154,12 +158,15 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.chemShifts = 0
         self.offset = {}
 
-    # Enter a parse tree produced by BareCSParser#cs_row_list.
     def enterCs_row_list(self, ctx: BareCSParser.Cs_row_listContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BareCSParser#cs_row_list.
+        """
+
         self.cur_line_num += 1
 
-    # Exit a parse tree produced by BareCSParser#cs_row_list.
     def exitCs_row_list(self, ctx: BareCSParser.Cs_row_listContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BareCSParser#cs_row_list.
+        """
 
         def concat_assignment(chain, seq, comp, atom):
             L = ''
@@ -567,8 +574,9 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
         finally:
             self.anySelection.clear()
 
-    # Enter a parse tree produced by BareCSParser#any.
     def enterAny(self, ctx: BareCSParser.AnyContext):
+        """ Enter a parse tree produced by BareCSParser#any.
+        """
 
         try:
 
@@ -597,12 +605,14 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
         except ValueError:
             self.anySelection.append(None)
 
-    # Exit a parse tree produced by BareCSParser#any.
     def exitAny(self, ctx: BareCSParser.AnyContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BareCSParser#any.
+        """
 
-        # Enter a parse tree produced by BareCSParser#column_name.
     def enterColumn_name(self, ctx: BareCSParser.Column_nameContext):
+        """ Enter a parse tree produced by BareCSParser#column_name.
+        """
+
         if ctx.Simple_name():
             self.columnNameSelection.append(str(ctx.Simple_name()))
 
@@ -612,9 +622,6 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
         else:
             self.columnNameSelection.append(str(ctx.Number_of_name()))
 
-    # Exit a parse tree produced by BareCSParser#column_name.
     def exitColumn_name(self, ctx: BareCSParser.Column_nameContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del BareCSParser
+        """ Exit a parse tree produced by BareCSParser#column_name.
+        """

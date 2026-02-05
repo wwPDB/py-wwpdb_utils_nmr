@@ -24,7 +24,10 @@ import pynmrstar
 
 from packaging import version
 
-from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+try:
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 if __package__ is None or __package__ == "":
@@ -1171,6 +1174,7 @@ class TestNEFTranslator(unittest.TestCase):
         ]
         data = [["A", "484", "THR", "N", "108.193", "0.4", "N", "15"]]
         data_out = [["A", 484, "THR", "N", "108.193", "0.4", "N", "15", 1, 113, "THR", "N", 1, None, None, None]]
+        # pylint: disable=protected-access
         self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)
         data = [["A", "488", "ALA", "HB%", "1.625", "0.02", "H", "1"]]
         data_out = [
@@ -1178,6 +1182,7 @@ class TestNEFTranslator(unittest.TestCase):
             ["A", 488, "ALA", "HB%", "1.625", "0.02", "H", "1", 1, 117, "ALA", "HB2", 1, None, None, None],
             ["A", 488, "ALA", "HB%", "1.625", "0.02", "H", "1", 1, 117, "ALA", "HB3", 1, None, None, None]
         ]
+        # pylint: disable=protected-access
         self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)
         data = [["A", "493", "ILE", "HD1%", "0.996", "0.02", "H", "1"]]
         data_out = [
@@ -1185,12 +1190,15 @@ class TestNEFTranslator(unittest.TestCase):
             ["A", 493, "ILE", "HD1%", "0.996", "0.02", "H", "1", 1, 122, "ILE", "HD12", 1, None, None, None],
             ["A", 493, "ILE", "HD1%", "0.996", "0.02", "H", "1", 1, 122, "ILE", "HD13", 1, None, None, None]
         ]
+        # pylint: disable=protected-access
         self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)
         data = [["A", "493", "ILE", "HG1x", "1.627", "0.02", "H", "1"]]
         data_out = [["A", 493, "ILE", "HG1x", "1.627", "0.02", "H", "1", 1, 122, "ILE", "HG12", 2, None, None, None]]
+        # pylint: disable=protected-access
         self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)
         data = [["A", "493", "ILE", "HG1y", "1.536", "0.02", "H", "1"]]
         data_out = [["A", 493, "ILE", "HG1y", "1.536", "0.02", "H", "1", 1, 122, "ILE", "HG13", 2, None, None, None]]
+        # pylint: disable=protected-access
         self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)
         data = [["A", "493", "ILE", "HG2%", "0.859", "0.02", "H", "1"]]
         data_out = [
@@ -1198,6 +1206,7 @@ class TestNEFTranslator(unittest.TestCase):
             ["A", 493, "ILE", "HG2%", "0.859", "0.02", "H", "1", 1, 122, "ILE", "HG22", 1, None, None, None],
             ["A", 493, "ILE", "HG2%", "0.859", "0.02", "H", "1", 1, 122, "ILE", "HG23", 1, None, None, None]
         ]
+        # pylint: disable=protected-access
         self.assertEqual(self.neft._NEFTranslator__nef2star_cs_row(input_tags, output_tags, data), data_out)
 
     def test_get_seq_ident_tags(self):
@@ -1322,7 +1331,8 @@ class TestNEFTranslator(unittest.TestCase):
                 1, 24, "ARG", "C"
             ]
         ]
-        self.assertEqual(self.neft._NEFTranslator__nef2star_row(intag, outtag, indat), outdat)  # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_row(intag, outtag, indat), outdat)
 
     def test_nef2star_seq_row(self):
         intag = [
@@ -1348,8 +1358,8 @@ class TestNEFTranslator(unittest.TestCase):
         ]
         indat = [["177", "A", "548", "SER", "middle", ".", "."]]
         outdat = ([["177", "A", "548", "SER", "middle", ".", ".", 1, 1, "SER"]], [])
-        self.assertEqual(self.neft._NEFTranslator__nef2star_seq_row(intag, outtag, indat),
-                         outdat)  # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_seq_row(intag, outtag, indat), outdat)
 
     def test_nef2star_dist_row(self):
         intag = [
@@ -1410,8 +1420,8 @@ class TestNEFTranslator(unittest.TestCase):
             [2, 1, ".", "A", 384, "TYR", "HD2", "A", 449, "CYS", "HB3", 1, ".", ".", ".", ".",
              5.7, ".", 1, 13, "TYR", "HD2", 1, 78, "CYS", "HB3", "OR", "HD%", "HBy"]
         ]
-        self.assertEqual(self.neft._NEFTranslator__nef2star_dist_row(intag, outtag, indat),
-                         outdat)  # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        self.assertEqual(self.neft._NEFTranslator__nef2star_dist_row(intag, outtag, indat), outdat)
 
     def test_nef_nmrstar(self):
         strOut = os.path.join(TESTOUTPUT, "test_out.str")

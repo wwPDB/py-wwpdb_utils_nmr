@@ -14,9 +14,8 @@ __version__ = "1.1.1"
 
 import sys
 
-from antlr4 import ParseTreeListener
-from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
@@ -46,8 +45,9 @@ except ImportError:
     from nmr.mr.BaseTopologyParserListener import BaseTopologyParserListener
 
 
-# This class defines a complete listener for a parse tree produced by XeasyPROTParser.
 class XeasyPROTParserListener(ParseTreeListener, BaseTopologyParserListener):
+    """ This class defines a complete listener for a parse tree produced by XeasyPROTParser.
+    """
     __slots__ = ('__base_pk',
                  'protStatements')
 
@@ -75,12 +75,13 @@ class XeasyPROTParserListener(ParseTreeListener, BaseTopologyParserListener):
 
         self.protStatements = 0
 
-    # Enter a parse tree produced by XeasyPROTParser#xeasy_prot.
     def enterXeasy_prot(self, ctx: XeasyPROTParser.Xeasy_protContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XeasyPROTParser#xeasy_prot.
+        """
 
-    # Exit a parse tree produced by XeasyPROTParser#xeasy_prot.
     def exitXeasy_prot(self, ctx: XeasyPROTParser.Xeasy_protContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XeasyPROTParser#xeasy_prot.
+        """
 
         if not self.hasPolySeqModel:
             return
@@ -161,12 +162,15 @@ class XeasyPROTParserListener(ParseTreeListener, BaseTopologyParserListener):
 
         self.exit(retrievedAtomNumList)
 
-    # Enter a parse tree produced by XeasyPROTParser#prot.
     def enterProt(self, ctx: XeasyPROTParser.ProtContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XeasyPROTParser#prot.
+        """
+
         self.protStatements += 1
 
-    # Exit a parse tree produced by XeasyPROTParser#prot.
     def exitProt(self, ctx: XeasyPROTParser.ProtContext):
+        """ Exit a parse tree produced by XeasyPROTParser#prot.
+        """
 
         if not self.hasPolySeqModel and not self.hasNonPolyModel:
             return
@@ -203,16 +207,18 @@ class XeasyPROTParserListener(ParseTreeListener, BaseTopologyParserListener):
         except (ValueError, TypeError):
             self.protStatements -= 1
 
-    # Enter a parse tree produced by XeasyPROTParser#residue.
     def enterResidue(self, ctx: XeasyPROTParser.ResidueContext):
+        """ Enter a parse tree produced by XeasyPROTParser#residue.
+        """
+
         if ctx.Integer():
             self.__cur_residue = str(ctx.Integer())
         else:
             self.__cur_residue = str(ctx.Simple_name())
 
-    # Exit a parse tree produced by XeasyPROTParser#residue.
     def exitResidue(self, ctx: XeasyPROTParser.ResidueContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XeasyPROTParser#residue.
+        """
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of XEASY PROT file.
@@ -221,5 +227,3 @@ class XeasyPROTParserListener(ParseTreeListener, BaseTopologyParserListener):
         contentSubtype = {'prot': self.protStatements}
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
-
-# del XeasyPROTParser

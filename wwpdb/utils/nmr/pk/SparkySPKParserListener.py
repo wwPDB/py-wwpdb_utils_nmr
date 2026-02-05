@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 
 import sys
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
@@ -35,8 +35,9 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import getPkRow
 
 
-# This class defines a complete listener for a parse tree produced by SparkySPKParser.
 class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by SparkySPKParser.
+    """
     __slots__ = ()
 
     __spectrum_names = None
@@ -61,40 +62,48 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         self.file_type = 'nm-pea-sps'
         self.software_name = 'SPARKY'
 
-    # Enter a parse tree produced by SparkySPKParser#sparky_spk.
     def enterSparky_spk(self, ctx: SparkySPKParser.Sparky_spkContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SparkySPKParser#sparky_spk.
+        """
+
         self.__spectrum_names = {}
 
-    # Exit a parse tree produced by SparkySPKParser#sparky_spk.
     def exitSparky_spk(self, ctx: SparkySPKParser.Sparky_spkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SparkySPKParser#sparky_spk.
+        """
+
         self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
-    # Enter a parse tree produced by SparkySPKParser#user_block.
     def enterUser_block(self, ctx: SparkySPKParser.User_blockContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#user_block.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#user_block.
     def exitUser_block(self, ctx: SparkySPKParser.User_blockContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#user_block.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#user_statement.
     def enterUser_statement(self, ctx: SparkySPKParser.User_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#user_statement.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#user_statement.
     def exitUser_statement(self, ctx: SparkySPKParser.User_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#user_statement.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#spectrum_block.
     def enterSpectrum_block(self, ctx: SparkySPKParser.Spectrum_blockContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SparkySPKParser#spectrum_block.
+        """
+
         self.__cur_spectrum_name = []
 
-    # Exit a parse tree produced by SparkySPKParser#spectrum_block.
     def exitSpectrum_block(self, ctx: SparkySPKParser.Spectrum_blockContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#spectrum_block.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#spectrum_statement.
     def enterSpectrum_statement(self, ctx: SparkySPKParser.Spectrum_statementContext):
+        """ Enter a parse tree produced by SparkySPKParser#spectrum_statement.
+        """
+
         if ctx.Dimension():
             self.num_of_dim = int(str(ctx.Integer_SP(0)))
             self.spectrum_name = ' '.join(self.__cur_spectrum_name)
@@ -104,12 +113,14 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
                 self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
-    # Exit a parse tree produced by SparkySPKParser#spectrum_statement.
     def exitSpectrum_statement(self, ctx: SparkySPKParser.Spectrum_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#spectrum_statement.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#spectrum_name.
     def enterSpectrum_name(self, ctx: SparkySPKParser.Spectrum_nameContext):
+        """ Enter a parse tree produced by SparkySPKParser#spectrum_name.
+        """
+
         if ctx.Integer_SP():
             self.__cur_spectrum_name.append(str(ctx.Integer_SP()))
         elif ctx.Float_SP():
@@ -119,84 +130,86 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         elif ctx.Any_name_SP():
             self.__cur_spectrum_name.append(str(ctx.Any_name_SP()))
 
-    # Exit a parse tree produced by SparkySPKParser#spectrum_name.
     def exitSpectrum_name(self, ctx: SparkySPKParser.Spectrum_nameContext):
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#spectrum_name.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#attached_data.
     def enterAttached_data(self, ctx: SparkySPKParser.Attached_dataContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#attached_data.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#attached_data.
     def exitAttached_data(self, ctx: SparkySPKParser.Attached_dataContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#attached_data.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#attached_data_statement.
     def enterAttached_data_statement(self, ctx: SparkySPKParser.Attached_data_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#attached_data_statement.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#attached_data_statement.
     def exitAttached_data_statement(self, ctx: SparkySPKParser.Attached_data_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#attached_data_statement.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#view.
     def enterView(self, ctx: SparkySPKParser.ViewContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#view.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#view.
     def exitView(self, ctx: SparkySPKParser.ViewContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#view.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#view_statement.
     def enterView_statement(self, ctx: SparkySPKParser.View_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#view_statement.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#view_statement.
     def exitView_statement(self, ctx: SparkySPKParser.View_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#view_statement.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#view_name.
     def enterView_name(self, ctx: SparkySPKParser.View_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#view_name.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#view_name.
     def exitView_name(self, ctx: SparkySPKParser.View_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#view_name.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#view_number.
     def enterView_number(self, ctx: SparkySPKParser.View_numberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#view_number.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#view_number.
     def exitView_number(self, ctx: SparkySPKParser.View_numberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#view_number.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#params.
     def enterParams(self, ctx: SparkySPKParser.ParamsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#params.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#params.
     def exitParams(self, ctx: SparkySPKParser.ParamsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#params.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#params_statement.
     def enterParams_statement(self, ctx: SparkySPKParser.Params_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#params_statement.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#params_statement.
     def exitParams_statement(self, ctx: SparkySPKParser.Params_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#params_statement.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#ornament.
     def enterOrnament(self, ctx: SparkySPKParser.OrnamentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#ornament.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#ornament.
     def exitOrnament(self, ctx: SparkySPKParser.OrnamentContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#ornament.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#ornament_statement.
     def enterOrnament_statement(self, ctx: SparkySPKParser.Ornament_statementContext):
+        """ Enter a parse tree produced by SparkySPKParser#ornament_statement.
+        """
+
         if ctx.Type_OR() and ctx.Peak():
             if self.num_of_dim == 2:
                 self.peaks2D += 1
@@ -229,12 +242,13 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         elif ctx.Rs():
             self.__cur_rs = [str(ctx.Rs_ex(col)).strip('|') for col in range(self.num_of_dim)]
 
-    # Exit a parse tree produced by SparkySPKParser#ornament_statement.
     def exitOrnament_statement(self, ctx: SparkySPKParser.Ornament_statementContext):
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#ornament_statement.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#ornament_position.
     def enterOrnament_position(self, ctx: SparkySPKParser.Ornament_positionContext):
+        """ Enter a parse tree produced by SparkySPKParser#ornament_position.
+        """
 
         try:
 
@@ -252,12 +266,13 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         except ValueError:
             self.positionSelection.append(None)
 
-    # Exit a parse tree produced by SparkySPKParser#ornament_position.
     def exitOrnament_position(self, ctx: SparkySPKParser.Ornament_positionContext):
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#ornament_position.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#label.
     def enterLabel(self, ctx: SparkySPKParser.LabelContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SparkySPKParser#label.
+        """
 
         if self.__cur_rs is not None:
             if all(len(rs.replace('|', '')) == 0 for rs in self.__cur_rs):
@@ -287,27 +302,29 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             elif self.num_of_dim == 4:
                 self.exit_Peak_wo_assign_4d()
 
-    # Exit a parse tree produced by SparkySPKParser#label.
     def exitLabel(self, ctx: SparkySPKParser.LabelContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#label.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#label_statement.
     def enterLabel_statement(self, ctx: SparkySPKParser.Label_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#label_statement.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#label_statement.
     def exitLabel_statement(self, ctx: SparkySPKParser.Label_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#label_statement.
+        """
 
-    # Enter a parse tree produced by SparkySPKParser#label_position.
     def enterLabel_position(self, ctx: SparkySPKParser.Label_positionContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkySPKParser#label_position.
+        """
 
-    # Exit a parse tree produced by SparkySPKParser#label_position.
     def exitLabel_position(self, ctx: SparkySPKParser.Label_positionContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkySPKParser#label_position.
+        """
 
     def exit_Peak_2d(self):
+        """ Extract 2D spectral peak.
+        """
 
         try:
 
@@ -381,6 +398,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             self.positionSelection.clear()
 
     def exit_Peak_3d(self):
+        """ Extract 3D spectral peak.
+        """
 
         try:
 
@@ -455,6 +474,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             self.positionSelection.clear()
 
     def exit_Peak_4d(self):
+        """ Extract 4D spectral peak.
+        """
 
         try:
 
@@ -531,6 +552,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             self.positionSelection.clear()
 
     def exit_Peak_wo_assign_2d(self):
+        """ Extract 2D spectral peak without peak assignment.
+        """
 
         try:
 
@@ -586,6 +609,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             self.positionSelection.clear()
 
     def exit_Peak_wo_assign_3d(self):
+        """ Extract 3D spectral peak without peak assignment.
+        """
 
         try:
 
@@ -642,6 +667,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             self.positionSelection.clear()
 
     def exit_Peak_wo_assign_4d(self):
+        """ Extract 4D spectral peak without peak assignment.
+        """
 
         try:
 
@@ -698,6 +725,3 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
 
         finally:
             self.positionSelection.clear()
-
-
-# del SparkySPKParser

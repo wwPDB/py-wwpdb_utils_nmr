@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 from typing import IO, List, Tuple, Optional
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -123,21 +123,39 @@ class SchrodingerMRReader:
         self.__reasons = reasons
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def setInternalMode(self, internal: bool):
+        """ Set internal mode.
+        """
+
         self.__internal = internal
 
     def setNmrVsModel(self, nmrVsModel: Optional[List[dict]]):
+        """ Set chain assignments between NMR data and model.
+        """
+
         self.__nmrVsModel = nmrVsModel
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of parser error messages to save.
+        """
+
         self.__maxParserErrorReport = maxErrReport
 
     def setSllPredMode(self, sll_pred: bool):
+        """ Set ANTLR4 SLL prediction mode.
+        """
+
         self.__sll_pred = sll_pred
 
     def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
@@ -161,7 +179,7 @@ class SchrodingerMRReader:
                     return None, None, None
 
                 ifh = open(mrFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())
+                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
 
             else:
                 mrFilePath, mrString = None, mrFilePath

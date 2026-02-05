@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from typing import IO, List, Tuple, Optional
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -103,12 +103,21 @@ class XeasyPROTReader:
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of parser error messages to save.
+        """
+
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, protFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True
@@ -130,7 +139,7 @@ class XeasyPROTReader:
                     return None, None, None
 
                 ifh = open(protFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())
+                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
 
             else:
                 protFilePath, protString = None, protFilePath

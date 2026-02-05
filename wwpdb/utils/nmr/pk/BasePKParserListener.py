@@ -16,12 +16,13 @@ import sys
 import re
 import copy
 import collections
-import numpy
 import itertools
-import pynmrstar
 import functools
 
 from typing import IO, List, Tuple, Union, Optional
+
+import numpy
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
@@ -894,6 +895,8 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 
 
 class BasePKParserListener():
+    """ ParserLister base class for any peak list file.
+    """
     __slots__ = ('representativeModelId',
                  'representativeAltId',
                  '__mrAtomNameMapping',
@@ -1234,6 +1237,9 @@ class BasePKParserListener():
 
     @property
     def debug(self):
+        """ Retrieve debug mode.
+        """
+
         return self.__debug
 
     @debug.setter
@@ -1242,6 +1248,9 @@ class BasePKParserListener():
 
     @property
     def verbose_debug(self):
+        """ Retrieve vebose debug mode.
+        """
+
         return self.__verbose_debug
 
     @verbose_debug.setter
@@ -1250,6 +1259,9 @@ class BasePKParserListener():
 
     @property
     def internal(self):
+        """ Retrieve internal mode.
+        """
+
         return self.__internal
 
     @internal.setter
@@ -1258,6 +1270,9 @@ class BasePKParserListener():
 
     @property
     def createSfDict(self):
+        """ Whether to create saveframe dictionary.
+        """
+
         return self.__createSfDict
 
     @createSfDict.setter
@@ -1266,6 +1281,9 @@ class BasePKParserListener():
 
     @property
     def enforcePeakRowFormat(self):
+        """ Whether to enforce peak row format or not.
+        """
+
         return self.__enforcePeakRowFormat
 
     @enforcePeakRowFormat.setter
@@ -1274,6 +1292,9 @@ class BasePKParserListener():
 
     @property
     def originalFileName(self):
+        """ Retrieve the original file name.
+        """
+
         return self.__originalFileName
 
     @originalFileName.setter
@@ -1282,6 +1303,9 @@ class BasePKParserListener():
 
     @property
     def listIdCounter(self):
+        """ Retrieve list ID counter dictionary.
+        """
+
         return self.__listIdCounter
 
     @listIdCounter.setter
@@ -1290,6 +1314,9 @@ class BasePKParserListener():
 
     @property
     def reservedListIds(self):
+        """ Retrieve reserved list IDs.
+        """
+
         return self.__reservedListIds
 
     @reservedListIds.setter
@@ -1298,6 +1325,9 @@ class BasePKParserListener():
 
     @property
     def entryId(self):
+        """ Retrieve entry ID.
+        """
+
         return self.__entryId
 
     @entryId.setter
@@ -1306,6 +1336,9 @@ class BasePKParserListener():
 
     @property
     def csLoops(self):
+        """ Retrieve CS loops as reference for peak assignment.
+        """
+
         return self.__csLoops
 
     @csLoops.setter
@@ -1333,6 +1366,8 @@ class BasePKParserListener():
             self.__defaultSegId__ = collections.Counter(segIds).most_common()[0][0]
 
     def exit(self, spectrum_names: Optional[dict] = None):
+        """ Common function to exit a parse tree.
+        """
 
         self.fillPkAuxLoops(spectrum_names)
 
@@ -1694,6 +1729,9 @@ class BasePKParserListener():
             translateToStdAtomNameWithRef.cache_clear()
 
     def initSpectralDim(self):
+        """ Initialize spectral_dim dictionary.
+        """
+
         if self.num_of_dim not in (2, 3, 4):
             return
         self.cur_subtype = f'peak{self.num_of_dim}d'
@@ -1743,6 +1781,9 @@ class BasePKParserListener():
         self.use_peak_row_format = True
 
     def testAssignment(self, _dim_id: int, _assign: List[dict], _label: str) -> Tuple[bool, Optional[str]]:
+        """ Perform consistency test between peak assignment and spectral_dim.
+        """
+
         cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
         if cur_spectral_dim['atom_type'] is not None:
             if len(_assign) > 0 and 'atom_id' in _assign[0]:
@@ -1758,6 +1799,9 @@ class BasePKParserListener():
         return True, None
 
     def validateAtomType(self, _dim_id: int, atom_type: str, position: str) -> bool:
+        """ Validate peak position based on atom type.
+        """
+
         if self.reasons is None and self.software_name == 'PIPP':
             return True
 
@@ -1843,6 +1887,9 @@ class BasePKParserListener():
         return False
 
     def fillPkAuxLoops(self, spectrum_names: Optional[dict]):
+        """ Create auxiliary loops of spectral peak list.
+        """
+
         if len(self.spectral_dim) > 0:
             dim_to_code = {1: 'x', 2: 'y', 3: 'z', 4: 'a'}
 
@@ -2653,9 +2700,10 @@ class BasePKParserListener():
                                 if v_1['acquisition'] != v_2['acquisition'] and v_1['acquisition'] == 'no':
                                     onebond_1, onebond_2 = onebond_2, onebond_1
                                     v_1, v_2 = v_2, v_1
+                                # pylint: disable=line-too-long
                                 exp_class = f'{onebond_codes[onebonds.index(onebond_1)] if onebond_1 is not None else v_1["atom_type"]}_'\
                                     f'{onebond_codes[onebonds.index(onebond_2)] if onebond_2 is not None else v_2["atom_type"]}.'\
-                                    f'{primary_dim_transfer}'  # noqa: E501, pylint: disable=line-too-long
+                                    f'{primary_dim_transfer}'  # noqa: E501
                                 break
 
                     else:
@@ -2865,6 +2913,8 @@ class BasePKParserListener():
                             self.__remediatePeakAssignmentForRelayedTransfer(d, relayed_dim_transfers, sf['peak_row_format'], lp)
 
     def __canRemediatePeakAssignmentForOneBondTransfer(self, atom1: dict, atom2: dict, position: float, position2: float) -> bool:
+        """ Return whether peak assignment remediation based on onebond transfer is possible.
+        """
 
         chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'], \
@@ -3125,6 +3175,8 @@ class BasePKParserListener():
         return False
 
     def __canRemediatePeakAssignmentForJcouplingTransfer(self, atom1: dict, atom2: dict, position: float, position2: float) -> bool:
+        """ Return whether peak assignment remediation based on J-coupling transfer is possible.
+        """
 
         chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'], \
@@ -3177,6 +3229,8 @@ class BasePKParserListener():
         return False
 
     def __canRemediatePeakAssignmentForRelayedTransfer(self, atom1: dict, atom2: dict, position: float, position2: float) -> bool:
+        """ Return whether peak assignment remediation based on relayed transfer is possible.
+        """
 
         chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'], \
@@ -3230,6 +3284,8 @@ class BasePKParserListener():
 
     def __remediatePeakAssignmentForAtomType(self, num_of_dim: int, atom_type: List[str],
                                              use_peak_row_format: bool, loop: pynmrstar.Loop):
+        """ Remediate peak assignment for decided atom type (PIPP specific)
+        """
 
         is_reparsable = self.reasons is None and self.software_name != 'PIPP'
 
@@ -3296,6 +3352,8 @@ class BasePKParserListener():
 
     def __remediateIncompletePeakAssignment(self, num_of_dim: int, use_peak_row_format: bool, loop: pynmrstar.Loop
                                             ):  # pylint: disable=no-self-use
+        """ Remediate imcomplete peak assignment.
+        """
 
         del_idx_list = []
 
@@ -3344,6 +3402,8 @@ class BasePKParserListener():
 
     def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]],
                                                     use_peak_row_format: bool, loop: pynmrstar.Loop):
+        """ Remediate peak assignment based on onebond transfer.
+        """
 
         is_reparsable = self.reasons is None and self.software_name != 'PIPP'
 
@@ -4559,6 +4619,8 @@ class BasePKParserListener():
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]],
                                                       use_peak_row_format: bool, loop: pynmrstar.Loop):
+        """ Remediate peak assignment based on J-coupling transfer.
+        """
 
         is_reparsable = self.reasons is None and self.software_name != 'PIPP'
 
@@ -4836,6 +4898,8 @@ class BasePKParserListener():
 
     def __remediatePeakAssignmentForRelayedTransfer(self, num_of_dim: int, relayed_transfers: List[List[int]],
                                                     use_peak_row_format: bool, loop: pynmrstar.Loop):
+        """ Remediate peak assignment based on relayed transfer.
+        """
 
         is_reparsable = self.reasons is None and self.software_name != 'PIPP'
 
@@ -5120,6 +5184,8 @@ class BasePKParserListener():
                             is_reparsable = False
 
     def __getCsValue(self, chain_id: str, seq_id: int, comp_id: str, atom_id: str) -> Tuple[Optional[float], Optional[float]]:
+        """ Retrieve CS value for a given atom as reference for peak assignment.
+        """
 
         if self.__csLoops is None or len(self.__csLoops) == 0:
             return None, None
@@ -5158,6 +5224,8 @@ class BasePKParserListener():
         return None, None
 
     def __setTempCsValue(self, star_atom: dict, values: List[float]):
+        """ Set reference CS value for a given atom as reference for peak assignment.
+        """
 
         try:
 
@@ -5206,6 +5274,8 @@ class BasePKParserListener():
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str],
                        figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
+        """ Validate value range of 2D peak.
+        """
 
         validRange = True
         dstFunc = {}
@@ -5293,6 +5363,8 @@ class BasePKParserListener():
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str],
                        figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
+        """ Validate value range of 3D peak.
+        """
 
         validRange = True
         dstFunc = {}
@@ -5400,6 +5472,8 @@ class BasePKParserListener():
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str],
                        figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
+        """ Validate value range of 4D peak.
+        """
 
         validRange = True
         dstFunc = {}
@@ -5518,6 +5592,8 @@ class BasePKParserListener():
 
     def selectProbablePosition(self, index: int, label: str, positions: List[float],
                                with_segid: Optional[str] = None, with_compid: Optional[str] = None,) -> float:
+        """ Select the most realistic peak position with given conditions.
+        """
 
         position = positions[0]
 
@@ -5586,6 +5662,8 @@ class BasePKParserListener():
         return position
 
     def checkAssignment(self, index: int, assignment: List[dict]):
+        """ Evaluate peak assignment for selecting the most realistic peak position.
+        """
 
         if assignment is not None:
 
@@ -5626,6 +5704,9 @@ class BasePKParserListener():
 
     def checkAssignments2D(self, index: int, assignments: List[List[dict]], dstFunc: dict
                            ) -> Tuple[bool, bool, Optional[bool], Optional[bool]]:
+        """ Evaluate 2D peak assignment.
+        """
+
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = None
 
@@ -5776,6 +5857,9 @@ class BasePKParserListener():
 
     def checkAssignments3D(self, index: int, assignments: List[List[dict]], dstFunc: dict, onebondOrder: int = 0
                            ) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool]]:
+        """ Evaluate 3D peak assignment.
+        """
+
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = None
 
@@ -5939,6 +6023,9 @@ class BasePKParserListener():
 
     def checkAssignments4D(self, index: int, assignments: List[List[dict]], dstFunc: dict
                            ) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool], Optional[bool]]:
+        """ Evaluate 4D peak assignment.
+        """
+
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = asis4 = None
 
@@ -6145,6 +6232,8 @@ class BasePKParserListener():
         return has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4
 
     def __extractCommonAtom(self, atom_sel: List[dict]) -> dict:
+        """ Return standardized pseudo atom name from given atom selections.
+        """
 
         if len(atom_sel) == 0:
             return {}
@@ -6265,6 +6354,8 @@ class BasePKParserListener():
     def addAssignedPkRow2D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
+        """ Add assigned peak list row (22D).
+        """
 
         if self.__debug:
             if not has_assignments:
@@ -6524,6 +6615,8 @@ class BasePKParserListener():
     def addAssignedPkRow3D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
+        """ Add assigned peak list row (3D).
+        """
 
         if self.__debug:
             if not has_assignments:
@@ -6810,6 +6903,8 @@ class BasePKParserListener():
     def addAssignedPkRow4D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool], asis4: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
+        """ Add assigned peak list row (4D).
+        """
 
         if self.__debug:
             if not has_assignments:
@@ -8911,6 +9006,9 @@ class BasePKParserListener():
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq: bool = True,
                           isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
+        """ Return a realistic sequence for a given polymer sequence, sequence code, and residue name.
+        """
+
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.ccU)
             if len(_compId) == 2 and _compId.startswith('D'):
@@ -8963,6 +9061,9 @@ class BasePKParserListener():
 
     @functools.lru_cache(maxsize=256)
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
+        """ A wrapper function for ParserListenerUtil.translateToStdResName().
+        """
+
         _compId = compId
         refCompId = None
         for ps in self.polySeq:
@@ -10980,7 +11081,7 @@ class BasePKParserListener():
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.f.append(f"[Invalid atom selection] {self.getCurrentSpectralPeak(n=index)}"
-                              f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
+                              f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed.")
                 continue
 
             if __compId != cifCompId and __compId not in self.compIdMap:
@@ -11022,6 +11123,9 @@ class BasePKParserListener():
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
                                    seqKey: Tuple[str, int], coordAtomSite: Optional[dict], index: int) -> Tuple[str, bool]:
+        """ Perform consistency test for each atom in reference to the coordinates.
+        """
+
         asis = False
         if not self.__hasCoord:
             return atomId, asis
@@ -11284,6 +11388,9 @@ class BasePKParserListener():
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        """ A wrapper function to retrieve sequence key and coordinates for given conditions.
+        """
+
         return self.__getCoordAtomSiteOf(chainId, seqId, compId, cifCheck, asis, self.__preferAuthSeq)
 
     @functools.lru_cache(maxsize=2048)
@@ -11323,6 +11430,9 @@ class BasePKParserListener():
         return seqKey, None
 
     def getCurrentSpectralPeak(self, n: int) -> str:
+        """ Retrieve indicator of the current spectral peak.
+        """
+
         if self.cur_subtype == 'peak2d':
             return f"[Check the {self.peaks2D}th row of 2D spectral peaks "\
                 f"(list_id={self.cur_list_id}, index={n}), {self.__def_err_sf_framecode}] "
@@ -11335,12 +11445,18 @@ class BasePKParserListener():
         return ''
 
     def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        """ Retrieve reasons for re-parsing by name. create a dictionary if name does not exist.
+        """
+
         if name in self.reasonsForReParsing:
             return self.reasonsForReParsing[name]
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
     def __setLocalSeqScheme(self):
+        """ Set sequence scheme for each spectral peak.
+        """
+
         r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.cur_subtype == 'peak2d':
@@ -11355,6 +11471,9 @@ class BasePKParserListener():
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
     def retrieveLocalSeqScheme(self):
+        """ Retrieve sequence scheme for each spectral peak.
+        """
+
         if self.reasons is None\
            or ('label_seq_scheme' not in self.reasons
                and 'local_seq_scheme' not in self.reasons
@@ -11380,6 +11499,9 @@ class BasePKParserListener():
             self.__preferAuthSeq = self.reasons['local_seq_scheme'][key]
 
     def __addSf(self):
+        """ Add saveframe for given conditions if not exists.
+        """
+
         content_subtype = contentSubtypeOf(self.cur_subtype)
 
         if content_subtype is None:
@@ -11417,6 +11539,9 @@ class BasePKParserListener():
         self.sfDict[key].append(item)
 
     def getSf(self) -> dict:
+        """ Retrieve saveframe for given conditions.
+        """
+
         key = (self.cur_subtype, self.cur_list_id)
 
         if key not in self.sfDict:

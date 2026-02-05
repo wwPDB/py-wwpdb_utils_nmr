@@ -141,16 +141,17 @@ import ntpath
 import logging
 import re
 import io
-# import csv
 import itertools
 import copy
-import pynmrstar
 import collections
 import functools
 
-from packaging import version
 from operator import itemgetter
 from typing import IO, List, Tuple, Union, Optional
+from packaging import version
+
+# import csv
+import pynmrstar
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -1556,7 +1557,7 @@ class NEFTranslator:
     #
     #         data_map = list(map(list, zip(*data))) if transpose else data
     #
-    #     except Exception as e:
+    #     except Exception as e:  # pylint: disable=broad-exception-caught
     #         self.__log.write(f"+{self.__class_name__}.load_csv_data() ++ Error  - {str(e)}\n")
     #
     #     return data_map
@@ -1579,19 +1580,19 @@ class NEFTranslator:
 
             star_data = pynmrstar.Entry.from_file(in_file)
 
-        except Exception as e1:
+        except Exception as e1:  # pylint: disable=broad-exception-caught
 
             try:
 
                 star_data = pynmrstar.Saveframe.from_file(in_file)
 
-            except Exception as e2:
+            except Exception as e2:  # pylint: disable=broad-exception-caught
 
                 try:
 
                     star_data = pynmrstar.Loop.from_file(in_file)
 
-                except Exception as e3:
+                except Exception as e3:  # pylint: disable=broad-exception-caught
 
                     is_ok = False
 
@@ -1635,10 +1636,10 @@ class NEFTranslator:
                         tags = star_data.get_tags([k])
                         if len(tags[k]) == 0 and k[1:].split('.')[0] in sf_list:
                             missing_sf_tags.append(k)
-                    except Exception:  # ValueError:
+                    except Exception:  # pylint: disable=broad-exception-caught
                         missing_lp_tags.append(k)
 
-        except Exception:  # ValueError:
+        except Exception:  # pylint: disable=broad-exception-caught
 
             try:
                 star_data = pynmrstar.Saveframe.from_file(in_file)
@@ -1654,7 +1655,7 @@ class NEFTranslator:
                         except Exception:  # ValueError:
                             missing_lp_tags.append(k)
 
-            except Exception:  # ValueError:
+            except Exception:  # pylint: disable=broad-exception-caught
 
                 try:
                     star_data = pynmrstar.Loop.from_file(in_file)
@@ -1668,7 +1669,7 @@ class NEFTranslator:
                             except Exception:  # ValueError:
                                 missing_lp_tags.append(k)
 
-                except Exception:  # ValueError:
+                except Exception:  # pylint: disable=broad-exception-caught
                     pass
 
         return missing_sf_tags, missing_lp_tags
@@ -2043,7 +2044,7 @@ class NEFTranslator:
                 is_valid = False
                 error.append(data_type)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             is_valid = False
             error.append(str(e))
 
@@ -4981,12 +4982,12 @@ class NEFTranslator:
                             if len(dup_idxs) > 0:
                                 raise KeyError(f"{tags[idx_tag_id]} must be unique in loop. {dup_idxs} are duplicated.")
 
-                        except (ValueError, TypeError):
+                        except (ValueError, TypeError) as e:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
                             raise ValueError(f"{tags[idx_tag_id]} must be an integer. "
-                                             f"#_of_row {idx + 1}, data_of_row {r}.")
+                                             f"#_of_row {idx + 1}, data_of_row {r}.") from e
 
                 if not excl_missing_data:
                     for idx, row in enumerate(tag_data):
@@ -5400,7 +5401,7 @@ class NEFTranslator:
                             elif type == 'bool':
                                 try:
                                     ent[name] = val.lower() in TRUE_VALUE
-                                except ValueError:
+                                except ValueError as e:
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -5414,12 +5415,12 @@ class NEFTranslator:
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                             elif type == 'int':
                                 try:
                                     ent[name] = int(val)
-                                except (ValueError, TypeError):
+                                except (ValueError, TypeError) as e:
                                     if 'default-from' in k and k['default-from'] == 'self':
                                         row[j] = ent[name] = letterToDigit(val)
                                     elif 'default-from' in k and k['default-from'] in tags:
@@ -5440,12 +5441,12 @@ class NEFTranslator:
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                             elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                 try:
                                     ent[name] = int(val)
-                                except (ValueError, TypeError):
+                                except (ValueError, TypeError) as e:
                                     if 'default-from' in k and k['default-from'] == 'self':
                                         row[j] = ent[name] = letterToDigit(val, 1)
                                     elif 'default-from' in k and k['default-from'] in tags\
@@ -5471,7 +5472,7 @@ class NEFTranslator:
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                 if (type == 'index-int' and ent[name] <= 0)\
                                    or (type == 'positive-int'
@@ -5494,7 +5495,7 @@ class NEFTranslator:
                             elif type == 'pointer-index':
                                 try:
                                     ent[name] = int(val)
-                                except (ValueError, TypeError):
+                                except (ValueError, TypeError) as e:
                                     if 'default-from' in k and k['default-from'] == 'self':
                                         row[j] = ent[name] = letterToDigit(val, 1)
                                     elif 'default-from' in k and k['default-from'] in tags:
@@ -5517,7 +5518,7 @@ class NEFTranslator:
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                         + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                 if ent[name] <= 0:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -5530,7 +5531,7 @@ class NEFTranslator:
                             elif type == 'float':
                                 try:
                                     ent[name] = float(val)
-                                except (ValueError, TypeError):
+                                except (ValueError, TypeError) as e:
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -5544,12 +5545,12 @@ class NEFTranslator:
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                             elif type == 'positive-float':
                                 try:
                                     ent[name] = float(val)
-                                except (ValueError, TypeError):
+                                except (ValueError, TypeError) as e:
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -5563,7 +5564,7 @@ class NEFTranslator:
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                 if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -5582,8 +5583,8 @@ class NEFTranslator:
                                 try:
                                     _range = k['range']
                                     ent[name] = float(val)
-                                except KeyError:
-                                    raise ValueError(f"Range of key item {name} is not defined")
+                                except KeyError as e:
+                                    raise ValueError(f"Range of key item {name} is not defined") from e
                                 except (ValueError, TypeError):
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
@@ -5683,8 +5684,8 @@ class NEFTranslator:
                                             f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                      f"{name} {val!r} should be one of {enum}.")
                                     ent[name] = val
-                                except KeyError:
-                                    raise ValueError(f"Enumeration of key item {name} is not defined")
+                                except KeyError as e:
+                                    raise ValueError(f"Enumeration of key item {name} is not defined") from e
 
                             elif type == 'enum-int':
                                 try:
@@ -5706,9 +5707,9 @@ class NEFTranslator:
                                             f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                      f"{name} {val!r} should be one of {enum}.")
                                     ent[name] = int(val)
-                                except KeyError:
-                                    raise ValueError(f"Enumeration of key item {name} is not defined")
-                                except (ValueError, TypeError):
+                                except KeyError as e:
+                                    raise ValueError(f"Enumeration of key item {name} is not defined") from e
+                                except (ValueError, TypeError) as e:
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -5722,7 +5723,7 @@ class NEFTranslator:
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                     + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                             else:
                                 if val in EMPTY_VALUE:
@@ -5772,7 +5773,7 @@ class NEFTranslator:
                                     elif type == 'bool':
                                         try:
                                             ent[name] = val.lower() in TRUE_VALUE
-                                        except ValueError:
+                                        except ValueError as e:
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in EMPTY_VALUE:
                                                     ent[name] = None
@@ -5792,12 +5793,12 @@ class NEFTranslator:
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                     elif type == 'int':
                                         try:
                                             ent[name] = int(val)
-                                        except (ValueError, TypeError):
+                                        except (ValueError, TypeError) as e:
                                             if 'default-from' in d and d['default-from'] == 'self':
                                                 row[j] = ent[name] = letterToDigit(val)
                                             elif 'default-from' in d and d['default-from'] in tags:
@@ -5824,12 +5825,12 @@ class NEFTranslator:
                                                 continue
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                     elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                         try:
                                             ent[name] = int(val)
-                                        except (ValueError, TypeError):
+                                        except (ValueError, TypeError) as e:
                                             if 'default-from' in d and d['default-from'] == 'self':
                                                 row[j] = ent[name] = letterToDigit(val, 1)
                                             elif 'default-from' in d and d['default-from'] in tags\
@@ -5861,7 +5862,7 @@ class NEFTranslator:
                                                 continue
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                         if (type == 'index-int' and ent[name] <= 0)\
                                            or (type == 'positive-int'
@@ -5884,7 +5885,7 @@ class NEFTranslator:
                                     elif type == 'pointer-index':
                                         try:
                                             ent[name] = int(val)
-                                        except (ValueError, TypeError):
+                                        except (ValueError, TypeError) as e:
                                             if 'default-from' in d and d['default-from'] == 'self':
                                                 row[j] = ent[name] = letterToDigit(val, 1)
                                             elif 'default-from' in d and d['default-from'] in tags:
@@ -5914,7 +5915,7 @@ class NEFTranslator:
                                                 continue
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                                 + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                         if ent[name] <= 0:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -5929,7 +5930,7 @@ class NEFTranslator:
                                     elif type == 'float':
                                         try:
                                             ent[name] = float(val)
-                                        except (ValueError, TypeError):
+                                        except (ValueError, TypeError) as e:
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in EMPTY_VALUE:
                                                     ent[name] = None
@@ -5949,12 +5950,12 @@ class NEFTranslator:
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                     elif type == 'positive-float':
                                         try:
                                             ent[name] = float(val)
-                                        except (ValueError, TypeError):
+                                        except (ValueError, TypeError) as e:
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in EMPTY_VALUE:
                                                     ent[name] = None
@@ -5974,7 +5975,7 @@ class NEFTranslator:
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
                                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d
                                                                and d['enforce-non-zero']):
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -6004,8 +6005,8 @@ class NEFTranslator:
                                                        or not any(methyl_atom in atom_ids for methyl_atom in methyl_atoms)):
                                                     remove_bad_pattern = True
                                                     continue
-                                        except KeyError:
-                                            raise ValueError(f"Range of data item {name} is not defined")
+                                        except KeyError as e:
+                                            raise ValueError(f"Range of data item {name} is not defined") from e
                                         except (ValueError, TypeError):
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in EMPTY_VALUE:
@@ -6148,8 +6149,8 @@ class NEFTranslator:
                                                 elif skip_empty_value_error(loop, idx):
                                                     continue
                                             ent[name] = val
-                                        except KeyError:
-                                            raise ValueError(f"Enumeration of data item {name} is not defined")
+                                        except KeyError as e:
+                                            raise ValueError(f"Enumeration of data item {name} is not defined") from e
 
                                     elif type == 'enum-int':
                                         try:
@@ -6191,14 +6192,14 @@ class NEFTranslator:
                                                 if skip_empty_value_error(loop, idx):
                                                     continue
                                             ent[name] = int(val)
-                                        except KeyError:
-                                            raise ValueError(f"Enumeration of data item {name} is not defined")
-                                        except (ValueError, TypeError):
+                                        except KeyError as e:
+                                            raise ValueError(f"Enumeration of data item {name} is not defined") from e
+                                        except (ValueError, TypeError) as e:
                                             if excl_missing_data:
                                                 ent[name] = None
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                                             + f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                                     else:
                                         if val in EMPTY_VALUE:
@@ -6765,13 +6766,13 @@ class NEFTranslator:
                     elif type == 'bool':
                         try:
                             ent[name] = val.lower() in TRUE_VALUE
-                        except ValueError:
-                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                        except ValueError as e:
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                     elif type == 'int':
                         try:
                             ent[name] = int(val)
-                        except (ValueError, TypeError):
+                        except (ValueError, TypeError) as e:
                             if 'default-from' in t and t['default-from'] == 'self':
                                 ent[name] = letterToDigit(val)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys():
@@ -6779,12 +6780,12 @@ class NEFTranslator:
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
-                                raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                     elif type in ('positive-int', 'positive-int-as-str'):
                         try:
                             ent[name] = int(val)
-                        except (ValueError, TypeError):
+                        except (ValueError, TypeError) as e:
                             if 'default-from' in t and t['default-from'] == 'self':
                                 ent[name] = letterToDigit(val, 1)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys()\
@@ -6797,7 +6798,7 @@ class NEFTranslator:
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
-                                raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                                raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
                         if ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
                             raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                         if ent[name] == 0 and enforce_non_zero:
@@ -6814,14 +6815,14 @@ class NEFTranslator:
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
-                        except (ValueError, TypeError):
-                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                        except (ValueError, TypeError) as e:
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
 
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
-                        except (ValueError, TypeError):
-                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                        except (ValueError, TypeError) as e:
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
                             raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
                         if ent[name] == 0.0 and enforce_non_zero:
@@ -6837,8 +6838,8 @@ class NEFTranslator:
                         try:
                             _range = t['range']
                             ent[name] = float(val)
-                        except KeyError:
-                            raise ValueError(f"Range of tag item {name} is not defined.")
+                        except KeyError as e:
+                            raise ValueError(f"Range of tag item {name} is not defined.") from e
                         except (ValueError, TypeError):
                             if not enforce_range:
                                 ent[name] = None
@@ -6914,8 +6915,8 @@ class NEFTranslator:
                                 elif enforce_enum and name in mand_tag_names:
                                     f.append(f"[Enumeration error] {name} {val!r} should be one of {enum}.")
                             ent[name] = None if val in EMPTY_VALUE else val
-                        except KeyError:
-                            raise ValueError(f"Enumeration of tag item {name} is not defined.")
+                        except KeyError as e:
+                            raise ValueError(f"Enumeration of tag item {name} is not defined.") from e
 
                     elif type == 'enum-int':
                         try:
@@ -6926,10 +6927,10 @@ class NEFTranslator:
                                 if enforce_enum:
                                     f.append(f"[Enumeration error] {name} {val!r} should be one of {enum}.")
                             ent[name] = int(val)
-                        except KeyError:
-                            raise ValueError(f"Enumeration of tag item {name} is not defined.")
-                        except (ValueError, TypeError):
-                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.")
+                        except KeyError as e:
+                            raise ValueError(f"Enumeration of tag item {name} is not defined.") from e
+                        except (ValueError, TypeError) as e:
+                            raise ValueError(f"{name} {val!r} must be {READABLE_ITEM_TYPE[type]}.") from e
                     else:
                         ent[name] = val
 
@@ -11489,7 +11490,7 @@ class NEFTranslator:
 
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
-        except Exception:  # AttributeError:
+        except Exception:  # pylint: disable=broad-exception-caught
             star_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             # warning.append('Not a complete Entry')
 
@@ -12012,7 +12013,7 @@ class NEFTranslator:
 
         try:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
-        except Exception:  # AttributeError:
+        except Exception:  # pylint: disable=broad-exception-caught
             nef_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             # warning.append('Not a complete Entry.')
 

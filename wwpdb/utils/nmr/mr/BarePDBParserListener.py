@@ -15,9 +15,8 @@ __version__ = "1.1.1"
 import sys
 import re
 
-from antlr4 import ParseTreeListener
-from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
@@ -47,8 +46,9 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import translateToStdResName
 
 
-# This class defines a complete listener for a parse tree produced by BarePDBParser.
 class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
+    """ This class defines a complete listener for a parse tree produced by BarePDBParser.
+    """
     __slots__ = ('coordinatesStatements', )
 
     # total appearances of TER clause
@@ -77,14 +77,17 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
 
         self.coordinatesStatements = 0
 
-    # Enter a parse tree produced by BarePDBParser#bare_pdb.
     def enterBare_pdb(self, ctx: BarePDBParser.Bare_pdbContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePDBParser#bare_pdb.
+        """
+
         self.__ter_count = 0
         self.__ter_offset = 0
         self.__end = False
 
-    # Exit a parse tree produced by BarePDBParser#bare_pdb.
     def exitBare_pdb(self, ctx: BarePDBParser.Bare_pdbContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BarePDBParser#bare_pdb.
+        """
 
         if not self.hasPolySeqModel:
             return
@@ -187,28 +190,31 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
 
         self.exit(retrievedAtomNumList)
 
-    # Enter a parse tree produced by BarePDBParser#comment.
     def enterComment(self, ctx: BarePDBParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#comment.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#comment.
     def exitComment(self, ctx: BarePDBParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#comment.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#coordinates.
     def enterCoordinates(self, ctx: BarePDBParser.CoordinatesContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePDBParser#coordinates.
+        """
+
         self.coordinatesStatements += 1
 
-    # Exit a parse tree produced by BarePDBParser#coordinates.
     def exitCoordinates(self, ctx: BarePDBParser.CoordinatesContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#coordinates.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#atom_coordinate.
     def enterAtom_coordinate(self, ctx: BarePDBParser.Atom_coordinateContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#atom_coordinate.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#atom_coordinate.
     def exitAtom_coordinate(self, ctx: BarePDBParser.Atom_coordinateContext):
+        """ Exit a parse tree produced by BarePDBParser#atom_coordinate.
+        """
 
         try:
 
@@ -263,8 +269,10 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
         finally:
             self.atomNameSelection.clear()
 
-    # Enter a parse tree produced by BarePDBParser#atom_num.
     def enterAtom_num(self, ctx: BarePDBParser.Atom_numContext):
+        """ Enter a parse tree produced by BarePDBParser#atom_num.
+        """
+
         if ctx.Atom() and ctx.Integer():
             self.cur_nr = int(str(ctx.Integer()))
         elif ctx.Hetatm() and ctx.Integer():
@@ -275,75 +283,79 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
         else:
             self.cur_nr = -1
 
-    # Exit a parse tree produced by BarePDBParser#atom_num.
     def exitAtom_num(self, ctx: BarePDBParser.Atom_numContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#atom_num.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#atom_name.
     def enterAtom_name(self, ctx: BarePDBParser.Atom_nameContext):
+        """ Enter a parse tree produced by BarePDBParser#atom_name.
+        """
+
         if ctx.Simple_name():
             self.atomNameSelection.append(str(ctx.Simple_name()))
         else:
             self.atomNameSelection.append(str(ctx.Integer_concat_alt()))
 
-    # Exit a parse tree produced by BarePDBParser#atom_name.
     def exitAtom_name(self, ctx: BarePDBParser.Atom_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#atom_name.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#xyz.
     def enterXyz(self, ctx: BarePDBParser.XyzContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#xyz.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#xyz.
     def exitXyz(self, ctx: BarePDBParser.XyzContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#xyz.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#x_yz.
     def enterX_yz(self, ctx: BarePDBParser.X_yzContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#x_yz.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#x_yz.
     def exitX_yz(self, ctx: BarePDBParser.X_yzContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#x_yz.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#xy_z.
     def enterXy_z(self, ctx: BarePDBParser.Xy_zContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#xy_z.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#xy_z.
     def exitXy_z(self, ctx: BarePDBParser.Xy_zContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#xy_z.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#x_y_z.
     def enterX_y_z(self, ctx: BarePDBParser.X_y_zContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#x_y_z.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#x_y_z.
     def exitX_y_z(self, ctx: BarePDBParser.X_y_zContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#x_y_z.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#undefined.
     def enterUndefined(self, ctx: BarePDBParser.UndefinedContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#undefined.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#undefined.
     def exitUndefined(self, ctx: BarePDBParser.UndefinedContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#undefined.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#number.
     def enterNumber(self, ctx: BarePDBParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#number.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#number.
     def exitNumber(self, ctx: BarePDBParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#number.
+        """
 
-    # Enter a parse tree produced by BarePDBParser#terminal.
     def enterTerminal(self, ctx: BarePDBParser.TerminalContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePDBParser#terminal.
+        """
 
-    # Exit a parse tree produced by BarePDBParser#terminal.
     def exitTerminal(self, ctx: BarePDBParser.TerminalContext):
+        """ Exit a parse tree produced by BarePDBParser#terminal.
+        """
+
         self.atoms.append('TER')
         self.__ter_count += 1
 
@@ -354,13 +366,15 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
             except ValueError:
                 pass
 
-    # Enter a parse tree produced by BarePDBParser#end.
     def enterEnd(self, ctx: BarePDBParser.EndContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePDBParser#end.
+        """
+
         self.__end = True
 
-    # Exit a parse tree produced by BarePDBParser#end.
     def exitEnd(self, ctx: BarePDBParser.EndContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePDBParser#end.
+        """
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of Bare PDB file.
@@ -369,5 +383,3 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
         contentSubtype = {'coordinates': self.coordinatesStatements}
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
-
-# del BarePDBParser

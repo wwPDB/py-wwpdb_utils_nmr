@@ -57,10 +57,10 @@ import copy
 import inspect
 import pickle
 
-import numpy as np
-
 from operator import itemgetter
 from typing import IO, List, Tuple, Optional
+
+import numpy as np
 
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
@@ -356,7 +356,7 @@ class CifReader:
 
             return self.__setDataBlock(self.__getDataBlockFromFile())
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose and 'loop_ declaration outside of data_ block or save_ frame' not in str(e):
                 self.__log.write(f"+{self.__class_name__} ++ Error  - Parse {self.__filePath} failed {str(e)}\n")
             return False
@@ -390,7 +390,7 @@ class CifReader:
 
                     os.remove(self.__cachePath)
 
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
                     pass
 
         if self.__dBlockList is None:
@@ -435,7 +435,7 @@ class CifReader:
 
                 return True
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             pass
 
         self.__dBlock = None

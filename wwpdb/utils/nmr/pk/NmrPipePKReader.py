@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 import sys
 import os
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from typing import IO, List, Tuple, Optional
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -114,18 +114,33 @@ class NmrPipePKReader:
         self.__reasons = reasons
 
     def setDebugMode(self, debug: bool):
+        """ Set debug mode.
+        """
+
         self.__debug = debug
 
     def enforcePeakRowFormat(self, enforcePeakRowFormat: bool):
+        """ Whether to enforce peak row format or not.
+        """
+
         self.__enforcePeakRowFormat = enforcePeakRowFormat
 
     def setInternalMode(self, internal: bool):
+        """ Set internal mode.
+        """
+
         self.__internal = internal
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of lexer error messages to save.
+        """
+
         self.__maxLexerErrorReport = maxErrReport
 
     def setParserMaxErrorReport(self, maxErrReport: int):
+        """ Set the maximum number of parser error messages to save.
+        """
+
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, pkFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
@@ -149,7 +164,7 @@ class NmrPipePKReader:
                     return None, None, None
 
                 ifh = open(pkFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())
+                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
 
             else:
                 pkFilePath, pkString = None, pkFilePath

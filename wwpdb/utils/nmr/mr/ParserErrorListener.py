@@ -3,7 +3,7 @@
 # Date: 11-Feb-2022
 #
 # Updates:
-""" Inheritance of ANTLR ErrorListener for Parser.
+""" Inheritance of ANTLR ErrorListener class for parser analysis.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -14,8 +14,8 @@ __version__ = "1.0.2"
 
 import re
 
-from antlr4.error.ErrorListener import ErrorListener
 from typing import List, Optional
+from antlr4.error.ErrorListener import ErrorListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -31,6 +31,8 @@ substitution_pattern = re.compile(r"_(A[APR]|[BIQR][AP]|CM|[DE]A|FO?|HB|MP|PR|V[
 
 
 class ParserErrorListener(ErrorListener):
+    """ Inheritance of ANTLR ErrorListener class for parser analysis.
+    """
     __slots__ = ()
 
     __messageList = None
@@ -149,7 +151,13 @@ class ParserErrorListener(ErrorListener):
         pass
 
     def getMessageList(self) -> Optional[List[dict]]:
+        """ Retrieve message list.
+        """
+
         return self.__messageList if len(self.__messageList) > 0 else None
 
     def getErrorLineNumber(self) -> Optional[List[int]]:
+        """ Retrieve error line numbers.
+        """
+
         return self.__errorLineNumber if len(self.__errorLineNumber) > 0 else None

@@ -16,8 +16,8 @@ import sys
 import re
 import copy
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -45,8 +45,9 @@ except ImportError:
                                            roundString)
 
 
-# This class defines a complete listener for a parse tree produced by OliviaPKParser.
 class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by OliviaPKParser.
+    """
     __slots__ = ()
 
     __spectrum_names = None
@@ -71,20 +72,26 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
         self.file_type = 'nm-pea-oli'
         self.software_name = 'Olivia'
 
-    # Enter a parse tree produced by OliviaPKParser#nmrpipe_pk.
     def enterOlivia_pk(self, ctx: OliviaPKParser.Olivia_pkContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#nmrpipe_pk.
+        """
+
         self.__spectrum_names = {}
 
-    # Exit a parse tree produced by OliviaPKParser#dynamo_mr.
     def exitOlivia_pk(self, ctx: OliviaPKParser.Olivia_pkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by OliviaPKParser#dynamo_mr.
+        """
+
         self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
-    # Enter a parse tree produced by OliviaPKParser#comment.
     def enterComment(self, ctx: OliviaPKParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by OliviaPKParser#comment.
+        """
 
-    # Exit a parse tree produced by OliviaPKParser#comment.
     def exitComment(self, ctx: OliviaPKParser.CommentContext):
+        """ Exit a parse tree produced by OliviaPKParser#comment.
+        """
+
         comment = []
         for col in range(20):
             if ctx.Any_name(col):
@@ -232,6 +239,9 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.cur_spectral_dim[_dim_id] = cur_spectral_dim
 
     def enterIdx_peak_list_2d(self, ctx: OliviaPKParser.Idx_peak_list_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#idx_peak_list_2d.
+        """
+
         if self.num_of_dim != 2:
             self.num_of_dim = 2
         self.initSpectralDim()
@@ -243,20 +253,24 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__strings = []
         self.__integers = []
 
-    # Exit a parse tree produced by OliviaPKParser#idx_peak_list_2d.
     def exitIdx_peak_list_2d(self, ctx: OliviaPKParser.Idx_peak_list_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#idx_peak_list_2d.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#idx_peak_2d.
     def enterIdx_peak_2d(self, ctx: OliviaPKParser.Idx_peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#idx_peak_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by OliviaPKParser#idx_peak_2d.
     def exitIdx_peak_2d(self, ctx: OliviaPKParser.Idx_peak_2dContext):
+        """ Exit a parse tree produced by OliviaPKParser#idx_peak_2d.
+        """
+
         self.__exit_peak_2d(int(str(ctx.Integer(0))))
 
     def __exit_peak_2d(self, index):
@@ -347,8 +361,10 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__strings.clear()
             self.__integers.clear()
 
-    # Enter a parse tree produced by OliviaPKParser#idx_peak_list_3d.
     def enterIdx_peak_list_3d(self, ctx: OliviaPKParser.Idx_peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#idx_peak_list_3d.
+        """
+
         if self.num_of_dim != 3:
             self.num_of_dim = 3
         self.initSpectralDim()
@@ -360,8 +376,10 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__strings = []
         self.__integers = []
 
-    # Exit a parse tree produced by OliviaPKParser#idx_peak_list_3d.
     def exitIdx_peak_list_3d(self, ctx: OliviaPKParser.Idx_peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by OliviaPKParser#idx_peak_list_3d.
+        """
+
         if self.exptlMethod != 'SOLID-STATE NMR':
             for _dim_id in range(2, self.num_of_dim + 1):
                 cur_spectral_dim = self.cur_spectral_dim[_dim_id]
@@ -372,16 +390,20 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 if cur_spectral_dim['sweep_width'] < 50.0:
                     cur_spectral_dim['under_sampling_type'] = 'folded'
 
-    # Enter a parse tree produced by OliviaPKParser#idx_peak_3d.
     def enterIdx_peak_3d(self, ctx: OliviaPKParser.Idx_peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#idx_peak_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by OliviaPKParser#idx_peak_3d.
     def exitIdx_peak_3d(self, ctx: OliviaPKParser.Idx_peak_3dContext):
+        """ Exit a parse tree produced by OliviaPKParser#idx_peak_3d.
+        """
+
         self.__exit_peak_3d(int(str(ctx.Integer(0))))
 
     def __exit_peak_3d(self, index):
@@ -480,8 +502,10 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__strings.clear()
             self.__integers.clear()
 
-    # Enter a parse tree produced by OliviaPKParser#idx_peak_list_4d.
     def enterIdx_peak_list_4d(self, ctx: OliviaPKParser.Idx_peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#idx_peak_list_4d.
+        """
+
         if self.num_of_dim != 4:
             self.num_of_dim = 4
         self.initSpectralDim()
@@ -493,8 +517,10 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__strings = []
         self.__integers = []
 
-    # Exit a parse tree produced by OliviaPKParser#idx_peak_list_4d.
     def exitIdx_peak_list_4d(self, ctx: OliviaPKParser.Idx_peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by OliviaPKParser#idx_peak_list_4d.
+        """
+
         if self.exptlMethod != 'SOLID-STATE NMR':
             for _dim_id in range(2, self.num_of_dim + 1):
                 cur_spectral_dim = self.cur_spectral_dim[_dim_id]
@@ -505,16 +531,20 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 if cur_spectral_dim['sweep_width'] < 50.0:
                     cur_spectral_dim['under_sampling_type'] = 'folded'
 
-    # Enter a parse tree produced by OliviaPKParser#idx_peak_4d.
     def enterIdx_peak_4d(self, ctx: OliviaPKParser.Idx_peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#idx_peak_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by OliviaPKParser#idx_peak_4d.
     def exitIdx_peak_4d(self, ctx: OliviaPKParser.Idx_peak_4dContext):
+        """ Exit a parse tree produced by OliviaPKParser#idx_peak_4d.
+        """
+
         self.__exit_peak_4d(int(str(ctx.Integer(0))))
 
     def __exit_peak_4d(self, index):
@@ -621,8 +651,10 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__strings.clear()
             self.__integers.clear()
 
-    # Enter a parse tree produced by OliviaPKParser#ass_peak_list_2d.
     def enterAss_peak_list_2d(self, ctx: OliviaPKParser.Ass_peak_list_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#ass_peak_list_2d.
+        """
+
         if self.num_of_dim != 2:
             self.num_of_dim = 2
         self.initSpectralDim()
@@ -634,24 +666,30 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__strings = []
         self.__integers = []
 
-    # Exit a parse tree produced by OliviaPKParser#ass_peak_list_2d.
     def exitAss_peak_list_2d(self, ctx: OliviaPKParser.Ass_peak_list_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#ass_peak_list_2d.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#ass_peak_2d.
     def enterAss_peak_2d(self, ctx: OliviaPKParser.Ass_peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#ass_peak_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by OliviaPKParser#ass_peak_2d.
     def exitAss_peak_2d(self, ctx: OliviaPKParser.Ass_peak_2dContext):
+        """ Exit a parse tree produced by OliviaPKParser#ass_peak_2d.
+        """
+
         self.__exit_peak_2d(int(str(ctx.Integer(0))))
 
-    # Enter a parse tree produced by OliviaPKParser#ass_peak_list_3d.
     def enterAss_peak_list_3d(self, ctx: OliviaPKParser.Ass_peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#ass_peak_list_3d.
+        """
+
         if self.num_of_dim != 3:
             self.num_of_dim = 3
         self.initSpectralDim()
@@ -663,8 +701,10 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__strings = []
         self.__integers = []
 
-    # Exit a parse tree produced by OliviaPKParser#ass_peak_list_3d.
     def exitAss_peak_list_3d(self, ctx: OliviaPKParser.Ass_peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by OliviaPKParser#ass_peak_list_3d.
+        """
+
         if self.exptlMethod != 'SOLID-STATE NMR':
             for _dim_id in range(2, self.num_of_dim + 1):
                 cur_spectral_dim = self.cur_spectral_dim[_dim_id]
@@ -675,20 +715,26 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 if cur_spectral_dim['sweep_width'] < 50.0:
                     cur_spectral_dim['under_sampling_type'] = 'folded'
 
-    # Enter a parse tree produced by OliviaPKParser#ass_peak_3d.
     def enterAss_peak_3d(self, ctx: OliviaPKParser.Ass_peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#ass_peak_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by OliviaPKParser#ass_peak_3d.
     def exitAss_peak_3d(self, ctx: OliviaPKParser.Ass_peak_3dContext):
+        """ Exit a parse tree produced by OliviaPKParser#ass_peak_3d.
+        """
+
         self.__exit_peak_3d(int(str(ctx.Integer(0))))
 
-    # Enter a parse tree produced by OliviaPKParser#ass_peak_list_4d.
     def enterAss_peak_list_4d(self, ctx: OliviaPKParser.Ass_peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#ass_peak_list_4d.
+        """
+
         if self.num_of_dim != 4:
             self.num_of_dim = 4
         self.initSpectralDim()
@@ -700,8 +746,10 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__strings = []
         self.__integers = []
 
-    # Exit a parse tree produced by OliviaPKParser#ass_peak_list_4d.
     def exitAss_peak_list_4d(self, ctx: OliviaPKParser.Ass_peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by OliviaPKParser#ass_peak_list_4d.
+        """
+
         if self.exptlMethod != 'SOLID-STATE NMR':
             for _dim_id in range(2, self.num_of_dim + 1):
                 cur_spectral_dim = self.cur_spectral_dim[_dim_id]
@@ -712,150 +760,183 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 if cur_spectral_dim['sweep_width'] < 50.0:
                     cur_spectral_dim['under_sampling_type'] = 'folded'
 
-    # Enter a parse tree produced by OliviaPKParser#ass_peak_4d.
     def enterAss_peak_4d(self, ctx: OliviaPKParser.Ass_peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#ass_peak_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.spectrum_name = None
 
-    # Exit a parse tree produced by OliviaPKParser#ass_peak_4d.
     def exitAss_peak_4d(self, ctx: OliviaPKParser.Ass_peak_4dContext):
+        """ Exit a parse tree produced by OliviaPKParser#ass_peak_4d.
+        """
+
         self.__exit_peak_4d(int(str(ctx.Integer(0))))
 
-    # Enter a parse tree produced by OliviaPKParser#def_2d_axis_order_ppm.
     def enterDef_2d_axis_order_ppm(self, ctx: OliviaPKParser.Def_2d_axis_order_ppmContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#def_2d_axis_order_ppm.
+        """
+
         self.__transposed = False
         self.__hz_unit = False
 
-    # Exit a parse tree produced by OliviaPKParser#def_2d_axis_order_ppm.
     def exitDef_2d_axis_order_ppm(self, ctx: OliviaPKParser.Def_2d_axis_order_ppmContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#def_2d_axis_order_ppm.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#tp_2d_axis_order_ppm.
     def enterTp_2d_axis_order_ppm(self, ctx: OliviaPKParser.Tp_2d_axis_order_ppmContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#tp_2d_axis_order_ppm.
+        """
+
         self.__transposed = True
         self.__hz_unit = False
 
-    # Exit a parse tree produced by OliviaPKParser#tp_2d_axis_order_ppm.
     def exitTp_2d_axis_order_ppm(self, ctx: OliviaPKParser.Tp_2d_axis_order_ppmContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#tp_2d_axis_order_ppm.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#def_2d_axis_order_hz.
     def enterDef_2d_axis_order_hz(self, ctx: OliviaPKParser.Def_2d_axis_order_hzContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#def_2d_axis_order_hz.
+        """
+
         self.__transposed = False
         self.__hz_unit = True
 
-    # Exit a parse tree produced by OliviaPKParser#def_2d_axis_order_hz.
     def exitDef_2d_axis_order_hz(self, ctx: OliviaPKParser.Def_2d_axis_order_hzContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#def_2d_axis_order_hz.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#tp_2d_axis_order_hz.
     def enterTp_2d_axis_order_hz(self, ctx: OliviaPKParser.Tp_2d_axis_order_hzContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#tp_2d_axis_order_hz.
+        """
+
         self.__transposed = True
         self.__hz_unit = True
 
-    # Exit a parse tree produced by OliviaPKParser#tp_2d_axis_order_hz.
     def exitTp_2d_axis_order_hz(self, ctx: OliviaPKParser.Tp_2d_axis_order_hzContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#tp_2d_axis_order_hz.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#def_3d_axis_order_ppm.
     def enterDef_3d_axis_order_ppm(self, ctx: OliviaPKParser.Def_3d_axis_order_ppmContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#def_3d_axis_order_ppm.
+        """
+
         self.__transposed = False
         self.__hz_unit = False
 
-    # Exit a parse tree produced by OliviaPKParser#def_3d_axis_order_ppm.
     def exitDef_3d_axis_order_ppm(self, ctx: OliviaPKParser.Def_3d_axis_order_ppmContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#def_3d_axis_order_ppm.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#tp_3d_axis_order_ppm.
     def enterTp_3d_axis_order_ppm(self, ctx: OliviaPKParser.Tp_3d_axis_order_ppmContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#tp_3d_axis_order_ppm.
+        """
+
         self.__transposed = True
         self.__hz_unit = False
 
-    # Exit a parse tree produced by OliviaPKParser#tp_3d_axis_order_ppm.
     def exitTp_3d_axis_order_ppm(self, ctx: OliviaPKParser.Tp_3d_axis_order_ppmContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#tp_3d_axis_order_ppm.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#def_3d_axis_order_hz.
     def enterDef_3d_axis_order_hz(self, ctx: OliviaPKParser.Def_3d_axis_order_hzContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#def_3d_axis_order_hz.
+        """
+
         self.__transposed = False
         self.__hz_unit = True
 
-    # Exit a parse tree produced by OliviaPKParser#def_3d_axis_order_hz.
     def exitDef_3d_axis_order_hz(self, ctx: OliviaPKParser.Def_3d_axis_order_hzContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#def_3d_axis_order_hz.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#tp_3d_axis_order_hz.
     def enterTp_3d_axis_order_hz(self, ctx: OliviaPKParser.Tp_3d_axis_order_hzContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#tp_3d_axis_order_hz.
+        """
+
         self.__transposed = True
         self.__hz_unit = True
 
-    # Exit a parse tree produced by OliviaPKParser#tp_3d_axis_order_hz.
     def exitTp_3d_axis_order_hz(self, ctx: OliviaPKParser.Tp_3d_axis_order_hzContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#tp_3d_axis_order_hz.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#def_4d_axis_order_ppm.
     def enterDef_4d_axis_order_ppm(self, ctx: OliviaPKParser.Def_4d_axis_order_ppmContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#def_4d_axis_order_ppm.
+        """
+
         self.__transposed = False
         self.__hz_unit = False
 
-    # Exit a parse tree produced by OliviaPKParser#def_4d_axis_order_ppm.
     def exitDef_4d_axis_order_ppm(self, ctx: OliviaPKParser.Def_4d_axis_order_ppmContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#def_4d_axis_order_ppm.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#tp_4d_axis_order_ppm.
     def enterTp_4d_axis_order_ppm(self, ctx: OliviaPKParser.Tp_4d_axis_order_ppmContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#tp_4d_axis_order_ppm.
+        """
+
         self.__transposed = True
         self.__hz_unit = False
 
-    # Exit a parse tree produced by OliviaPKParser#tp_4d_axis_order_ppm.
     def exitTp_4d_axis_order_ppm(self, ctx: OliviaPKParser.Tp_4d_axis_order_ppmContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#tp_4d_axis_order_ppm.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#def_4d_axis_order_hz.
     def enterDef_4d_axis_order_hz(self, ctx: OliviaPKParser.Def_4d_axis_order_hzContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#def_4d_axis_order_hz.
+        """
+
         self.__transposed = False
         self.__hz_unit = True
 
-    # Exit a parse tree produced by OliviaPKParser#def_4d_axis_order_hz.
     def exitDef_4d_axis_order_hz(self, ctx: OliviaPKParser.Def_4d_axis_order_hzContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#def_4d_axis_order_hz.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#tp_4d_axis_order_hz.
     def enterTp_4d_axis_order_hz(self, ctx: OliviaPKParser.Tp_4d_axis_order_hzContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#tp_4d_axis_order_hz.
+        """
+
         self.__transposed = True
         self.__hz_unit = True
 
-    # Exit a parse tree produced by OliviaPKParser#tp_4d_axis_order_hz.
     def exitTp_4d_axis_order_hz(self, ctx: OliviaPKParser.Tp_4d_axis_order_hzContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#tp_4d_axis_order_hz.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#string.
     def enterString(self, ctx: OliviaPKParser.StringContext):
+        """ Enter a parse tree produced by OliviaPKParser#string.
+        """
+
         if ctx.Simple_name():
             self.__strings.append(str(ctx.Simple_name()))
         else:
             self.__strings.append(None)
 
-    # Exit a parse tree produced by OliviaPKParser#string.
     def exitString(self, ctx: OliviaPKParser.StringContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#string.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#integer.
     def enterInteger(self, ctx: OliviaPKParser.IntegerContext):
+        """ Enter a parse tree produced by OliviaPKParser#integer.
+        """
+
         if ctx.Integer():
             self.__integers.append(int(str(ctx.Integer())))
         else:
             self.__integers.append(None)
 
-    # Exit a parse tree produced by OliviaPKParser#integer.
     def exitInteger(self, ctx: OliviaPKParser.IntegerContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#integer.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#number.
     def enterNumber(self, ctx: OliviaPKParser.NumberContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by OliviaPKParser#number.
+        """
 
         try:
 
@@ -882,12 +963,14 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Exit a parse tree produced by OliviaPKParser#number.
     def exitNumber(self, ctx: OliviaPKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by OliviaPKParser#number.
+        """
 
-    # Enter a parse tree produced by OliviaPKParser#memo.
     def enterMemo(self, ctx: OliviaPKParser.MemoContext):
+        """ Enter a parse tree produced by OliviaPKParser#memo.
+        """
+
         if ctx.Double_quote_string():
             self.__memo = str(ctx.Double_quote_string()).strip('"')
             if len(self.__memo) == 0:
@@ -901,9 +984,6 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
             if self.__memo in EMPTY_VALUE:
                 self.__memo = None
 
-    # Exit a parse tree produced by OliviaPKParser#memo.
     def exitMemo(self, ctx: OliviaPKParser.MemoContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del OliviaPKParser
+        """ Exit a parse tree produced by OliviaPKParser#memo.
+        """

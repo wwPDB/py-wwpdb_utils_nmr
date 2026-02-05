@@ -16,8 +16,8 @@ import sys
 import re
 import copy
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -41,8 +41,9 @@ except ImportError:
     from nmr.pk.BasePKParserListener import BasePKParserListener
 
 
-# This class defines a complete listener for a parse tree produced by NmrViewNPKParser.
 class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by NmrViewNPKParser.
+    """
     __slots__ = ()
 
     __cur_label_type = None
@@ -65,21 +66,29 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
         self.file_type = 'nm-pea-vie'
         self.software_name = 'NMRVIEW'
 
-    # Enter a parse tree produced by NmrViewNPKParser#nmrview_npk.
     def enterNmrview_npk(self, ctx: NmrViewNPKParser.Nmrview_npkContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#nmrview_npk.
+        """
+
         self.__spectrum_names = {}
 
-    # Exit a parse tree produced by NmrViewNPKParser#nmrview_npk.
     def exitNmrview_npk(self, ctx: NmrViewNPKParser.Nmrview_npkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by NmrViewNPKParser#nmrview_npk.
+        """
+
         self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
-    # Enter a parse tree produced by NmrViewNPKParser#data_label.
     def enterData_label(self, ctx: NmrViewNPKParser.Data_labelContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#data_label.
+        """
+
         self.__labels = {}
         self.__cur_label_type = None
 
-    # Exit a parse tree produced by NmrViewNPKParser#data_label.
     def exitData_label(self, ctx: NmrViewNPKParser.Data_labelContext):
+        """ Exit a parse tree produced by NmrViewNPKParser#data_label.
+        """
+
         self.__labels = None
         self.__cur_label_type = None
 
@@ -94,8 +103,10 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                     break
             self.spectrum_name = None if len(dataset_name) == 0 else ' '.join(dataset_name)
 
-    # Enter a parse tree produced by NmrViewNPKParser#labels.
     def enterLabels(self, ctx: NmrViewNPKParser.LabelsContext):  # pylint: disable=unused-argument:
+        """ Enter a parse tree produced by NmrViewNPKParser#labels.
+        """
+
         if self.__cur_label_type is None:
             self.__cur_label_type = 'label'
         elif self.__cur_label_type == 'label':
@@ -108,8 +119,9 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
         if self.__cur_label_type not in self.__labels:
             self.__labels[self.__cur_label_type] = []
 
-    # Exit a parse tree produced by NmrViewNPKParser#labels.
     def exitLabels(self, ctx: NmrViewNPKParser.LabelsContext):  # pylint: disable=unused-argument:
+        """ Exit a parse tree produced by NmrViewNPKParser#labels.
+        """
 
         labels = self.__labels[self.__cur_label_type]
 
@@ -169,8 +181,10 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.cur_spectral_dim[_dim_id] = copy.copy(SPECTRAL_DIM_TEMPLATE)
                 self.cur_spectral_dim[_dim_id]['spectrometer_frequency'] = float(_freq)
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: NmrViewNPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_list_2d.
+        """
+
         if self.num_of_dim != 2:
             self.num_of_dim = 2
         self.initSpectralDim()
@@ -181,20 +195,23 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__jcouplings = []
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: NmrViewNPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_list_2d.
+        """
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_2d.
     def enterPeak_2d(self, ctx: NmrViewNPKParser.Peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.__jcouplings.clear()
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_2d.
     def exitPeak_2d(self, ctx: NmrViewNPKParser.Peak_2dContext):
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_2d.
+        """
 
         try:
 
@@ -308,8 +325,10 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: NmrViewNPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_list_3d.
+        """
+
         if self.num_of_dim != 3:
             self.num_of_dim = 3
         self.initSpectralDim()
@@ -320,20 +339,23 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__jcouplings = []
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: NmrViewNPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_list_3d.
+        """
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_3d.
     def enterPeak_3d(self, ctx: NmrViewNPKParser.Peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.__jcouplings.clear()
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_3d.
     def exitPeak_3d(self, ctx: NmrViewNPKParser.Peak_3dContext):
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_3d.
+        """
 
         try:
 
@@ -470,8 +492,10 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: NmrViewNPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_list_4d.
+        """
+
         if self.num_of_dim != 4:
             self.num_of_dim = 4
         self.initSpectralDim()
@@ -482,20 +506,23 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__jcouplings = []
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: NmrViewNPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_list_4d.
+        """
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_4d.
     def enterPeak_4d(self, ctx: NmrViewNPKParser.Peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
         self.__jcouplings.clear()
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_4d.
     def exitPeak_4d(self, ctx: NmrViewNPKParser.Peak_4dContext):
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_4d.
+        """
 
         try:
 
@@ -655,20 +682,25 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_2d.
     def enterPeak_list_wo_eju_2d(self, ctx: NmrViewNPKParser.Peak_list_wo_eju_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_2d.
+        """
+
         self.enterPeak_list_2d(ctx)
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_2d.
     def exitPeak_list_wo_eju_2d(self, ctx: NmrViewNPKParser.Peak_list_wo_eju_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_2d.
+        """
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_wo_eju_2d.
     def enterPeak_wo_eju_2d(self, ctx: NmrViewNPKParser.Peak_wo_eju_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_wo_eju_2d.
+        """
+
         self.enterPeak_2d(ctx)
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_wo_eju_2d.
     def exitPeak_wo_eju_2d(self, ctx: NmrViewNPKParser.Peak_wo_eju_2dContext):
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_wo_eju_2d.
+        """
 
         try:
 
@@ -776,20 +808,25 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_3d.
     def enterPeak_list_wo_eju_3d(self, ctx: NmrViewNPKParser.Peak_list_wo_eju_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_3d.
+        """
+
         self.enterPeak_list_3d(ctx)
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_3d.
     def exitPeak_list_wo_eju_3d(self, ctx: NmrViewNPKParser.Peak_list_wo_eju_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_3d.
+        """
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_wo_eju_3d.
     def enterPeak_wo_eju_3d(self, ctx: NmrViewNPKParser.Peak_wo_eju_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_wo_eju_3d.
+        """
+
         self.enterPeak_3d(ctx)
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_wo_eju_3d.
     def exitPeak_wo_eju_3d(self, ctx: NmrViewNPKParser.Peak_wo_eju_3dContext):
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_wo_eju_3d.
+        """
 
         try:
 
@@ -917,20 +954,25 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_4d.
     def enterPeak_list_wo_eju_4d(self, ctx: NmrViewNPKParser.Peak_list_wo_eju_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_4d.
+        """
+
         self.enterPeak_list_4d(ctx)
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_4d.
     def exitPeak_list_wo_eju_4d(self, ctx: NmrViewNPKParser.Peak_list_wo_eju_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_list_wo_eju_4d.
+        """
 
-    # Enter a parse tree produced by NmrViewNPKParser#peak_wo_eju_4d.
     def enterPeak_wo_eju_4d(self, ctx: NmrViewNPKParser.Peak_wo_eju_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrViewNPKParser#peak_wo_eju_4d.
+        """
+
         self.enterPeak_4d(ctx)
 
-    # Exit a parse tree produced by NmrViewNPKParser#peak_wo_eju_4d.
     def exitPeak_wo_eju_4d(self, ctx: NmrViewNPKParser.Peak_wo_eju_4dContext):
+        """ Exit a parse tree produced by NmrViewNPKParser#peak_wo_eju_4d.
+        """
 
         try:
 
@@ -1078,8 +1120,10 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by NmrViewNPKParser#label.
     def enterLabel(self, ctx: NmrViewNPKParser.LabelContext):
+        """ Enter a parse tree produced by NmrViewNPKParser#label.
+        """
+
         if ctx.Float_LA():
             self.__labels[self.__cur_label_type].append(float(str(ctx.Float_LA())))
         elif ctx.Simple_name_LA():
@@ -1091,16 +1135,17 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             else:
                 self.__labels[self.__cur_label_type].append(float(value))
 
-    # Exit a parse tree produced by NmrViewNPKParser#label.
     def exitLabel(self, ctx: NmrViewNPKParser.LabelContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrViewNPKParser#label.
+        """
 
-    # Enter a parse tree produced by NmrViewNPKParser#jcoupling.
     def enterJcoupling(self, ctx: NmrViewNPKParser.JcouplingContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrViewNPKParser#jcoupling.
+        """
 
-    # Exit a parse tree produced by NmrViewNPKParser#jcoupling.
     def exitJcoupling(self, ctx: NmrViewNPKParser.JcouplingContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by NmrViewNPKParser#jcoupling.
+        """
 
         try:
 
@@ -1112,8 +1157,9 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
         except ValueError:
             self.__jcouplings.append(None)
 
-    # Enter a parse tree produced by NmrViewNPKParser#number.
     def enterNumber(self, ctx: NmrViewNPKParser.NumberContext):
+        """ Enter a parse tree produced by NmrViewNPKParser#number.
+        """
 
         try:
 
@@ -1135,9 +1181,6 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Exit a parse tree produced by NmrViewNPKParser#number.
     def exitNumber(self, ctx: NmrViewNPKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del NmrViewNPKParser
+        """ Exit a parse tree produced by NmrViewNPKParser#number.
+        """

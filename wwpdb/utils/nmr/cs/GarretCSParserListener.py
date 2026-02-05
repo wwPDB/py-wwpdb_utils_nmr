@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 
 import sys
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
@@ -27,8 +27,9 @@ except ImportError:
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
-# This class defines a complete listener for a parse tree produced by GarretCSParser.
 class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
+    """ This class defines a complete listener for a parse tree produced by GarretCSParser.
+    """
     __slots__ = ()
 
     __seq_id = None
@@ -43,8 +44,10 @@ class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.file_type = 'nm-shi-gar'
 
-    # Enter a parse tree produced by GarretCSParser#garret_cs.
     def enterGarret_cs(self, ctx: GarretCSParser.Garret_csContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GarretCSParser#garret_cs.
+        """
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -55,28 +58,35 @@ class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_subtype = 'chem_shift'
 
-    # Exit a parse tree produced by GarretCSParser#garret_cs.
     def exitGarret_cs(self, ctx: GarretCSParser.Garret_csContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by GarretCSParser#garret_cs.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by GarretCSParser#residue_list.
     def enterResidue_list(self, ctx: GarretCSParser.Residue_listContext):
+        """ Enter a parse tree produced by GarretCSParser#residue_list.
+        """
+
         if ctx.Integer():
             self.__seq_id = int(str(ctx.Integer()))
         if ctx.Simple_name():
             self.__comp_id = str(ctx.Simple_name())
 
-    # Exit a parse tree produced by GarretCSParser#residue_list.
     def exitResidue_list(self, ctx: GarretCSParser.Residue_listContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by GarretCSParser#residue_list.
+        """
 
-    # Enter a parse tree produced by GarretCSParser#shift_list.
     def enterShift_list(self, ctx: GarretCSParser.Shift_listContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by GarretCSParser#shift_list.
+        """
+
         self.cur_subtype = 'chem_shift'
         self.cur_line_num += 1
 
-    # Exit a parse tree produced by GarretCSParser#shift_list.
     def exitShift_list(self, ctx: GarretCSParser.Shift_listContext):
+        """ Exit a parse tree produced by GarretCSParser#shift_list.
+        """
 
         value = self.__number
 
@@ -103,8 +113,9 @@ class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.chemShifts += 1
 
-    # Enter a parse tree produced by GarretCSParser#number.
     def enterNumber(self, ctx: GarretCSParser.NumberContext):
+        """ Enter a parse tree produced by GarretCSParser#number.
+        """
 
         try:
 
@@ -120,9 +131,6 @@ class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
         except ValueError:
             self.__number = None
 
-    # Exit a parse tree produced by GarretCSParser#number.
     def exitNumber(self, ctx: GarretCSParser.NumberContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del GarretCSParser
+        """ Exit a parse tree produced by GarretCSParser#number.
+        """

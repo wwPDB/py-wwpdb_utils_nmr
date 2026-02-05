@@ -17,8 +17,8 @@ import re
 import copy
 import itertools
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -70,8 +70,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by BareMRParser.
 class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by BareMRParser.
+    """
     __slots__ = ()
 
     # collection of any selection
@@ -102,28 +103,32 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.file_type = 'nm-res-bar'
         self.software_name = ''
 
-    # Enter a parse tree produced by BareMRParser#bare_mr.
     def enterBare_mr(self, ctx: BareMRParser.Bare_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BareMRParser#bare_mr.
+        """
 
-    # Exit a parse tree produced by BareMRParser#bare_mr.
     def exitBare_mr(self, ctx: BareMRParser.Bare_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BareMRParser#bare_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by BareMRParser#mr_row_format.
     def enterMr_row_format(self, ctx: BareMRParser.Mr_row_formatContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BareMRParser#mr_row_format.
+        """
 
-    # Exit a parse tree produced by BareMRParser#mr_row_format.
     def exitMr_row_format(self, ctx: BareMRParser.Mr_row_formatContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BareMRParser#mr_row_format.
+        """
 
-    # Enter a parse tree produced by BareMRParser#header.
     def enterHeader(self, ctx: BareMRParser.HeaderContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BareMRParser#header.
+        """
 
-    # Exit a parse tree produced by BareMRParser#header.
     def exitHeader(self, ctx: BareMRParser.HeaderContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BareMRParser#header.
+        """
+
         self.__col_name = []
         self.__col_order = []
 
@@ -173,18 +178,22 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.cur_subtype = 'dihed'
             self.dihedRestraints = 0
 
-    # Enter a parse tree produced by BareMRParser#mr_row_list.
     def enterMr_row_list(self, ctx: BareMRParser.Mr_row_listContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BareMRParser#mr_row_list.
+        """
 
-    # Exit a parse tree produced by BareMRParser#mr_row_list.
     def exitMr_row_list(self, ctx: BareMRParser.Mr_row_listContext):  # pylint: disable=unused-argument
-        if self.cur_subtype == 'dist':
-            self.exitDist_row_list()
-        if self.cur_subtype == 'dihed':
-            self.exitDihed_row_list()
+        """ Exit a parse tree produced by BareMRParser#mr_row_list.
+        """
 
-    def exitDist_row_list(self):
+        if self.cur_subtype == 'dist':
+            self.extractDistance_restraint()
+        if self.cur_subtype == 'dihed':
+            self.extractTorsion_angle_restraint()
+
+    def extractDistance_restraint(self):
+        """ Extract distance restraint.
+        """
 
         try:
 
@@ -482,7 +491,9 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.anySelection.clear()
 
-    def exitDihed_row_list(self):
+    def extractTorsion_angle_restraint(self):
+        """ Extract torsion angle restraint.
+        """
 
         try:
 
@@ -801,8 +812,9 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.anySelection.clear()
 
-    # Enter a parse tree produced by BareMRParser#any.
     def enterAny(self, ctx: BareMRParser.AnyContext):
+        """ Enter a parse tree produced by BareMRParser#any.
+        """
 
         try:
 
@@ -831,12 +843,14 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         except ValueError:
             self.anySelection.append(None)
 
-    # Exit a parse tree produced by BareMRParser#any.
     def exitAny(self, ctx: BareMRParser.AnyContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BareMRParser#any.
+        """
 
-    # Enter a parse tree produced by BareMRParser#column_name.
     def enterColumn_name(self, ctx: BareMRParser.Column_nameContext):
+        """ Enter a parse tree produced by BareMRParser#column_name.
+        """
+
         if ctx.Simple_name():
             self.columnNameSelection.append(str(ctx.Simple_name()))
 
@@ -846,8 +860,6 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         else:
             self.columnNameSelection.append(str(ctx.Number_of_name()))
 
-    # Exit a parse tree produced by BareMRParser#column_name.
     def exitColumn_name(self, ctx: BareMRParser.Column_nameContext):  # pylint: disable=unused-argument
-        pass
-
-# del BareMRParser
+        """ Exit a parse tree produced by BareMRParser#column_name.
+        """

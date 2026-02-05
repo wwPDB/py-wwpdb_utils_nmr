@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 
 import sys
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
@@ -35,8 +35,9 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import getPkRow
 
 
-# This class defines a complete listener for a parse tree produced by SparkyPKParser.
 class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by SparkyPKParser.
+    """
     __slots__ = ('__has_real_vol', )
 
     __has_hz = False
@@ -68,16 +69,20 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__has_real_vol = reasons is not None and 'has_real_vol' in reasons
 
-    # Enter a parse tree produced by SparkyPKParser#sparky_pk.
     def enterSparky_pk(self, ctx: SparkyPKParser.Sparky_pkContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by SparkyPKParser#sparky_pk.
+        """
 
-    # Exit a parse tree produced by SparkyPKParser#sparky_pk.
     def exitSparky_pk(self, ctx: SparkyPKParser.Sparky_pkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SparkyPKParser#sparky_pk.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by SparkyPKParser#data_label.
     def enterData_label(self, ctx: SparkyPKParser.Data_labelContext):
+        """ Enter a parse tree produced by SparkyPKParser#data_label.
+        """
+
         if ctx.W2_LA():
             self.num_of_dim = max(self.num_of_dim, 2)
         if ctx.W3_LA():
@@ -123,12 +128,14 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.initSpectralDim()
 
-    # Exit a parse tree produced by SparkyPKParser#data_label.
     def exitData_label(self, ctx: SparkyPKParser.Data_labelContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkyPKParser#data_label.
+        """
 
-    # Enter a parse tree produced by SparkyPKParser#data_label_wo_assign.
     def enterData_label_wo_assign(self, ctx: SparkyPKParser.Data_label_wo_assignContext):
+        """ Enter a parse tree produced by SparkyPKParser#data_label_wo_assign.
+        """
+
         if ctx.W2_LA():
             self.num_of_dim = max(self.num_of_dim, 2)
         if ctx.W3_LA():
@@ -174,12 +181,14 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.initSpectralDim()
 
-    # Exit a parse tree produced by SparkyPKParser#data_label_wo_assign.
     def exitData_label_wo_assign(self, ctx: SparkyPKParser.Data_label_wo_assignContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkyPKParser#data_label_wo_assign.
+        """
 
-    # Enter a parse tree produced by SparkyPKParser#peak_2d.
     def enterPeak_2d(self, ctx: SparkyPKParser.Peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SparkyPKParser#peak_2d.
+        """
+
         if self.cur_subtype != 'peak2d':
             self.num_of_dim = 2
             self.initSpectralDim()
@@ -189,8 +198,9 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by SparkyPKParser#peak_2d.
     def exitPeak_2d(self, ctx: SparkyPKParser.Peak_2dContext):
+        """ Exit a parse tree produced by SparkyPKParser#peak_2d.
+        """
 
         try:
 
@@ -328,8 +338,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__real_vol = None
             self.__noteSelection.clear()
 
-    # Enter a parse tree produced by SparkyPKParser#peak_3d.
     def enterPeak_3d(self, ctx: SparkyPKParser.Peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SparkyPKParser#peak_3d.
+        """
+
         if self.cur_subtype != 'peak3d':
             self.num_of_dim = 3
             self.initSpectralDim()
@@ -339,8 +351,9 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by SparkyPKParser#peak_3d.
     def exitPeak_3d(self, ctx: SparkyPKParser.Peak_3dContext):
+        """ Exit a parse tree produced by SparkyPKParser#peak_3d.
+        """
 
         try:
 
@@ -489,8 +502,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__real_vol = None
             self.__noteSelection.clear()
 
-    # Enter a parse tree produced by SparkyPKParser#peak_4d.
     def enterPeak_4d(self, ctx: SparkyPKParser.Peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SparkyPKParser#peak_4d.
+        """
+
         if self.cur_subtype != 'peak4d':
             self.num_of_dim = 4
             self.initSpectralDim()
@@ -500,8 +515,9 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by SparkyPKParser#peak_4d.
     def exitPeak_4d(self, ctx: SparkyPKParser.Peak_4dContext):
+        """ Exit a parse tree produced by SparkyPKParser#peak_4d.
+        """
 
         try:
 
@@ -661,8 +677,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__real_vol = None
             self.__noteSelection.clear()
 
-    # Enter a parse tree produced by SparkyPKParser#peak_wo_assign.
     def enterPeak_wo_assign(self, ctx: SparkyPKParser.Peak_wo_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by SparkyPKParser#peak_wo_assign.
+        """
+
         if self.num_of_dim == 2:
             self.peaks2D += 1
         elif self.num_of_dim == 3:
@@ -670,8 +688,9 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         elif self.num_of_dim == 4:
             self.peaks4D += 1
 
-    # Exit a parse tree produced by SparkyPKParser#peak_wo_assign.
     def exitPeak_wo_assign(self, ctx: SparkyPKParser.Peak_wo_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by SparkyPKParser#peak_wo_assign.
+        """
 
         try:
 
@@ -1050,8 +1069,9 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__real_vol = None
             self.__noteSelection.clear()
 
-    # Enter a parse tree produced by SparkyPKParser#number.
     def enterNumber(self, ctx: SparkyPKParser.NumberContext):
+        """ Enter a parse tree produced by SparkyPKParser#number.
+        """
 
         try:
 
@@ -1085,12 +1105,14 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Exit a parse tree produced by SparkyPKParser#number.
     def exitNumber(self, ctx: SparkyPKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by SparkyPKParser#number.
+        """
 
-    # Enter a parse tree produced by SparkyPKParser#note.
     def enterNote(self, ctx: SparkyPKParser.NoteContext):
+        """ Enter a parse tree produced by SparkyPKParser#note.
+        """
+
         if ctx.Simple_name():
             self.__noteSelection.append(str(ctx.Simple_name()))
 
@@ -1109,9 +1131,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         elif ctx.Note_4d_ex():
             self.__noteSelection.append(str(ctx.Note_4d_ex()))
 
-    # Exit a parse tree produced by SparkyPKParser#note.
     def exitNote(self, ctx: SparkyPKParser.NoteContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del SparkyPKParser
+        """ Exit a parse tree produced by SparkyPKParser#note.
+        """

@@ -1,13 +1,15 @@
 import sys
 import os
 import json
-import pynmrstar
 import hashlib
+
+from typing import List, Tuple, Union, Optional
+
+import pynmrstar
 # import requests
 # import datetime
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
-from typing import List, Tuple, Union, Optional
 # from dateutil.parser import parse as parsedate
 
 try:

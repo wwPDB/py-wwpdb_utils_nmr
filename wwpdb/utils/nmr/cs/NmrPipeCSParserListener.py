@@ -14,8 +14,8 @@ __version__ = "1.1.1"
 
 import sys
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -31,8 +31,9 @@ except ImportError:
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
 
-# This class defines a complete listener for a parse tree produced by NmrPipeCSParser.
 class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
+    """ This class defines a complete listener for a parse tree produced by NmrPipeCSParser.
+    """
     __slots__ = ()
 
     __first_seq_id = 1
@@ -51,16 +52,20 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.file_type = 'nm-shi-npi'
         self.software_name = 'NMRPipe'
 
-    # Enter a parse tree produced by NmrPipeCSParser#nmrpipe_cs.
     def enterNmrpipe_cs(self, ctx: NmrPipeCSParser.Nmrpipe_csContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrPipeCSParser#nmrpipe_cs.
+        """
 
-    # Exit a parse tree produced by NmrPipeCSParser#nmrpipe_cs.
     def exitNmrpipe_cs(self, ctx: NmrPipeCSParser.Nmrpipe_csContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by NmrPipeCSParser#nmrpipe_cs.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by NmrPipeCSParser#sequence.
     def enterSequence(self, ctx: NmrPipeCSParser.SequenceContext):
+        """ Enter a parse tree produced by NmrPipeCSParser#sequence.
+        """
+
         if self.__has_sequence and not self.__open_sequence:
             self.__first_seq_id = 1
             self.__cur_sequence = ''
@@ -78,11 +83,14 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.offset = {}
 
-    # Exit a parse tree produced by NmrPipeCSParser#sequence.
     def exitSequence(self, ctx: NmrPipeCSParser.SequenceContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipeCSParser#sequence.
+        """
 
     def closeSequqnce(self):
+        """ Close and fix sequence.
+        """
+
         if not self.__open_sequence:
             return
 
@@ -127,8 +135,10 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
                     elif len(compId) == 1:
                         self.polyRibonucleotide = True
 
-    # Enter a parse tree produced by NmrPipeCSParser#chemical_shifts.
     def enterChemical_shifts(self, ctx: NmrPipeCSParser.Chemical_shiftsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipeCSParser#chemical_shifts.
+        """
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -140,16 +150,17 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.closeSequqnce()
 
-    # Exit a parse tree produced by NmrPipeCSParser#chemical_shifts.
     def exitChemical_shifts(self, ctx: NmrPipeCSParser.Chemical_shiftsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipeCSParser#chemical_shifts.
+        """
 
-    # Enter a parse tree produced by NmrPipeCSParser#chemical_shift.
     def enterChemical_shift(self, ctx: NmrPipeCSParser.Chemical_shiftContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrPipeCSParser#chemical_shift.
+        """
 
-    # Exit a parse tree produced by NmrPipeCSParser#chemical_shift.
     def exitChemical_shift(self, ctx: NmrPipeCSParser.Chemical_shiftContext):
+        """ Exit a parse tree produced by NmrPipeCSParser#chemical_shift.
+        """
 
         index = self.chemShifts + 1
 
@@ -202,9 +213,11 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.chemShifts += 1
 
-    # Enter a parse tree produced by NmrPipeCSParser#chemical_shifts_sw_segid.
     def enterChemical_shifts_sw_segid(self, ctx: NmrPipeCSParser.Chemical_shifts_sw_segidContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipeCSParser#chemical_shifts_sw_segid.
+        """
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -216,16 +229,17 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.closeSequqnce()
 
-    # Exit a parse tree produced by NmrPipeCSParser#chemical_shifts_sw_segid.
     def exitChemical_shifts_sw_segid(self, ctx: NmrPipeCSParser.Chemical_shifts_sw_segidContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipeCSParser#chemical_shifts_sw_segid.
+        """
 
-    # Enter a parse tree produced by NmrPipeCSParser#chemical_shift_sw_segid.
     def enterChemical_shift_sw_segid(self, ctx: NmrPipeCSParser.Chemical_shift_sw_segidContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrPipeCSParser#chemical_shift_sw_segid.
+        """
 
-    # Exit a parse tree produced by NmrPipeCSParser#chemical_shift_sw_segid.
     def exitChemical_shift_sw_segid(self, ctx: NmrPipeCSParser.Chemical_shift_sw_segidContext):
+        """ Exit a parse tree produced by NmrPipeCSParser#chemical_shift_sw_segid.
+        """
 
         index = self.chemShifts + 1
 
@@ -279,9 +293,11 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.chemShifts += 1
 
-    # Enter a parse tree produced by NmrPipeCSParser#chemical_shifts_ew_segid.
     def enterChemical_shifts_ew_segid(self, ctx: NmrPipeCSParser.Chemical_shifts_ew_segidContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by NmrPipeCSParser#chemical_shifts_ew_segid.
+        """
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -293,16 +309,17 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.closeSequqnce()
 
-    # Exit a parse tree produced by NmrPipeCSParser#chemical_shifts_ew_segid.
     def exitChemical_shifts_ew_segid(self, ctx: NmrPipeCSParser.Chemical_shifts_ew_segidContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by NmrPipeCSParser#chemical_shifts_ew_segid.
+        """
 
-    # Enter a parse tree produced by NmrPipeCSParser#chemical_shift_ew_segid.
     def enterChemical_shift_ew_segid(self, ctx: NmrPipeCSParser.Chemical_shift_ew_segidContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by NmrPipeCSParser#chemical_shift_ew_segid.
+        """
 
-    # Exit a parse tree produced by NmrPipeCSParser#chemical_shift_ew_segid.
     def exitChemical_shift_ew_segid(self, ctx: NmrPipeCSParser.Chemical_shift_ew_segidContext):
+        """ Exit a parse tree produced by NmrPipeCSParser#chemical_shift_ew_segid.
+        """
 
         index = self.chemShifts + 1
 
@@ -356,8 +373,10 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.chemShifts += 1
 
-    # Enter a parse tree produced by NmrPipeCSParser#number.
     def enterNumber(self, ctx: NmrPipeCSParser.NumberContext):
+        """ Enter a parse tree produced by NmrPipeCSParser#number.
+        """
+
         if ctx.Float():
             self.__number = float(str(ctx.Float()))
 
@@ -370,9 +389,6 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         else:
             self.__number = None
 
-    # Exit a parse tree produced by NmrPipeCSParser#number.
     def exitNumber(self, ctx: NmrPipeCSParser.NumberContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del NmrPipeCSParser
+        """ Exit a parse tree produced by NmrPipeCSParser#number.
+        """

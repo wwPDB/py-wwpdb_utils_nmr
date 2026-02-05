@@ -16,12 +16,13 @@ import sys
 import re
 import copy
 import itertools
-import numpy
 import collections
 import functools
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
+from antlr4 import ParseTreeListener
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
@@ -233,8 +234,9 @@ except ImportError:
                                            getDstFuncForSsBond)
 
 
-# This class defines a complete listener for a parse tree produced by RosettaMRParser.
 class RosettaMRParserListener(ParseTreeListener):
+    """ This class defines a complete listener for a parse tree produced by RosettaMRParser.
+    """
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
@@ -514,6 +516,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     @property
     def debug(self):
+        """ Retrieve debug mode.
+        """
+
         return self.__debug
 
     @debug.setter
@@ -522,6 +527,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     @property
     def remediate(self):
+        """ Retrieve remediation mode.
+        """
+
         return self.__remediate
 
     @remediate.setter
@@ -530,6 +538,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     @property
     def createSfDict(self):
+        """ Whether to create saveframe dictionary.
+        """
+
         return self.__createSfDict
 
     @createSfDict.setter
@@ -538,6 +549,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     @property
     def originalFileName(self):
+        """ Retrieve the original file name.
+        """
+
         return self.__originalFileName
 
     @originalFileName.setter
@@ -546,6 +560,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     @property
     def listIdCounter(self):
+        """ Retrieve list ID counter dictionary.
+        """
+
         return self.__listIdCounter
 
     @listIdCounter.setter
@@ -554,18 +571,22 @@ class RosettaMRParserListener(ParseTreeListener):
 
     @property
     def entryId(self):
+        """ Retrieve entry ID.
+        """
+
         return self.__entryId
 
     @entryId.setter
     def entryId(self, entryId: str):
         self.__entryId = entryId
 
-    # Enter a parse tree produced by RosettaMRParser#rosetta_mr.
     def enterRosetta_mr(self, ctx: RosettaMRParser.Rosetta_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by RosettaMRParser#rosetta_mr.
+        """
 
-    # Exit a parse tree produced by RosettaMRParser#rosetta_mr.
     def exitRosetta_mr(self, ctx: RosettaMRParser.Rosetta_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#rosetta_mr.
+        """
 
         def set_label_seq_scheme():
             r = self.__getNamedReasonsForReparsing('label_seq_scheme')
@@ -1096,8 +1117,10 @@ class RosettaMRParserListener(ParseTreeListener):
             translateToStdAtomNameNoRef.cache_clear()
             translateToStdAtomNameWithRef.cache_clear()
 
-    # Enter a parse tree produced by RosettaMRParser#comment.
     def enterComment(self, ctx: RosettaMRParser.CommentContext):
+        """ Enter a parse tree produced by RosettaMRParser#comment.
+        """
+
         if not self.__cur_comment_inlined:
             return
 
@@ -1118,29 +1141,36 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.atomSelectionInComment.clear()
                     break
 
-    # Exit a parse tree produced by RosettaMRParser#comment.
     def exitComment(self, ctx: RosettaMRParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#comment.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#atom_pair_restraints.
     def enterAtom_pair_restraints(self, ctx: RosettaMRParser.Atom_pair_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#atom_pair_restraints.
+        """
+
         self.__cur_subtype = 'dist'
 
         self.__cur_comment_inlined = True
 
-    # Exit a parse tree produced by RosettaMRParser#atom_pair_restraints.
     def exitAtom_pair_restraints(self, ctx: RosettaMRParser.Atom_pair_restraintsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#atom_pair_restraints.
+        """
+
         self.__cur_comment_inlined = False
 
-    # Enter a parse tree produced by RosettaMRParser#atom_pair_restraint.
     def enterAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#atom_pair_restraint.
+        """
+
         self.distRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#atom_pair_restraint.
     def exitAtom_pair_restraint(self, ctx: RosettaMRParser.Atom_pair_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#atom_pair_restraint.
+        """
 
         try:
 
@@ -1583,6 +1613,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def getRealChainSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True,
                           isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
+        """ Return a realistic sequence for a given polymer sequence and sequence code.
+        """
+
         offset = 0
         if not self.__preferAuthSeq:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
@@ -2500,6 +2533,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
                                    seqKey: Tuple[str, int], coordAtomSite: Optional[dict]) -> Tuple[str, bool]:
+        """ Perform consistency test for each atom in reference to the coordinates.
+        """
+
         asis = False
         if not self.__hasCoord:
             return atomId, asis
@@ -2869,7 +2905,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         atom2['auth_atom_id'] = atom2['atom_id']
                     atom2['atom_id'] = alt_atom_id2
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
@@ -3040,7 +3076,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if upper_linear_limit is not None:
                     dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
@@ -3048,6 +3084,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        """ A wrapper function to retrieve sequence key and coordinates for given conditions.
+        """
+
         return self.__getCoordAtomSiteOf(chainId, seqId, cifCheck, asis, self.__preferAuthSeq)
 
     @functools.lru_cache(maxsize=2048)
@@ -3067,23 +3106,28 @@ class RosettaMRParserListener(ParseTreeListener):
                         coordAtomSite = self.__coordAtomSite[seqKey]
         return seqKey, coordAtomSite
 
-    # Enter a parse tree produced by RosettaMRParser#angle_restraints.
     def enterAngle_restraints(self, ctx: RosettaMRParser.Angle_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#angle_restraints.
+        """
+
         self.__cur_subtype = 'ang'
 
-    # Exit a parse tree produced by RosettaMRParser#angle_restraints.
     def exitAngle_restraints(self, ctx: RosettaMRParser.Angle_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#angle_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#angle_restraint.
     def enterAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#angle_restraint.
+        """
+
         self.angRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#angle_restraint.
     def exitAngle_restraint(self, ctx: RosettaMRParser.Angle_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#angle_restraint.
+        """
 
         try:
 
@@ -3362,23 +3406,28 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    # Enter a parse tree produced by RosettaMRParser#dihedral_restraints.
     def enterDihedral_restraints(self, ctx: RosettaMRParser.Dihedral_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#dihedral_restraints.
+        """
+
         self.__cur_subtype = 'dihed'
 
-    # Exit a parse tree produced by RosettaMRParser#dihedral_restraints.
     def exitDihedral_restraints(self, ctx: RosettaMRParser.Dihedral_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#dihedral_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#dihedral_restraint.
     def enterDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#dihedral_restraint.
+        """
+
         self.dihedRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#dihedral_restraint.
     def exitDihedral_restraint(self, ctx: RosettaMRParser.Dihedral_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#dihedral_restraint.
+        """
 
         try:
 
@@ -3521,24 +3570,29 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
     def enterDihedral_pair_restraints(self, ctx: RosettaMRParser.Dihedral_pair_restraintsContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
+        """
+
         self.__cur_subtype = 'dihed'
 
-    # Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
     def exitDihedral_pair_restraints(self, ctx: RosettaMRParser.Dihedral_pair_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
     def enterDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
+        """
+
         self.dihedRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
     def exitDihedral_pair_restraint(self, ctx: RosettaMRParser.Dihedral_pair_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#dihedral_pair_restraint.
+        """
 
         try:
 
@@ -3704,23 +3758,28 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#coordinate_restraints.
     def enterCoordinate_restraints(self, ctx: RosettaMRParser.Coordinate_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#coordinate_restraints.
+        """
+
         self.__cur_subtype = 'geo'
 
-    # Exit a parse tree produced by RosettaMRParser#coordinate_restraints.
     def exitCoordinate_restraints(self, ctx: RosettaMRParser.Coordinate_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#coordinate_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#coordinate_restraint.
     def enterCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#coordinate_restraint.
+        """
+
         self.geoRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#coordinate_restraint.
     def exitCoordinate_restraint(self, ctx: RosettaMRParser.Coordinate_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#coordinate_restraint.
+        """
 
         try:
 
@@ -3823,26 +3882,31 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#local_coordinate_restraints.
     def enterLocal_coordinate_restraints(self, ctx: RosettaMRParser.Local_coordinate_restraintsContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#local_coordinate_restraints.
+        """
+
         self.__cur_subtype = 'geo'
 
-    # Exit a parse tree produced by RosettaMRParser#local_coordinate_restraints.
     def exitLocal_coordinate_restraints(self, ctx: RosettaMRParser.Local_coordinate_restraintsContext
                                         ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#local_coordinate_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#local_coordinate_restraint.
     def enterLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#local_coordinate_restraint.
+        """
+
         self.geoRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#local_coordinate_restraint.
     def exitLocal_coordinate_restraint(self, ctx: RosettaMRParser.Local_coordinate_restraintContext):
+        """ Exit a parse tree produced by RosettaMRParser#local_coordinate_restraint.
+        """
 
         try:
 
@@ -3935,23 +3999,28 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#site_restraints.
     def enterSite_restraints(self, ctx: RosettaMRParser.Site_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#site_restraints.
+        """
+
         self.__cur_subtype = 'geo'
 
-    # Exit a parse tree produced by RosettaMRParser#site_restraints.
     def exitSite_restraints(self, ctx: RosettaMRParser.Site_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#site_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#site_restraint.
     def enterSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#site_restraint.
+        """
+
         self.geoRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#site_restraint.
     def exitSite_restraint(self, ctx: RosettaMRParser.Site_restraintContext):
+        """ Exit a parse tree produced by RosettaMRParser#site_restraint.
+        """
 
         try:
 
@@ -4035,24 +4104,29 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#site_residues_restraints.
     def enterSite_residues_restraints(self, ctx: RosettaMRParser.Site_residues_restraintsContext
                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#site_residues_restraints.
+        """
+
         self.__cur_subtype = 'geo'
 
-    # Exit a parse tree produced by RosettaMRParser#site_residues_restraints.
     def exitSite_residues_restraints(self, ctx: RosettaMRParser.Site_residues_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#site_residues_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#site_residues_restraint.
     def enterSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#site_residues_restraint.
+        """
+
         self.geoRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#site_residues_restraint.
     def exitSite_residues_restraint(self, ctx: RosettaMRParser.Site_residues_restraintContext):
+        """ Exit a parse tree produced by RosettaMRParser#site_residues_restraint.
+        """
 
         try:
 
@@ -4135,27 +4209,32 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
     def enterMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext
                                                     ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
+        """
+
         self.__cur_subtype = 'geo'
 
-    # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
     def exitMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext
                                                    ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
     def enterMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext
                                                    ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
+        """
+
         self.geoRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
     def exitMin_residue_atomic_distance_restraint(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintContext
                                                   ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraint.
+        """
 
         try:
 
@@ -4246,23 +4325,28 @@ class RosettaMRParserListener(ParseTreeListener):
             self.numberSelection.clear()
             self.genResNumSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#big_bin_restraints.
     def enterBig_bin_restraints(self, ctx: RosettaMRParser.Big_bin_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#big_bin_restraints.
+        """
+
         self.__cur_subtype = 'geo'
 
-    # Exit a parse tree produced by RosettaMRParser#big_bin_restraints.
     def exitBig_bin_restraints(self, ctx: RosettaMRParser.Big_bin_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#big_bin_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#big_bin_restraint.
     def enterBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#big_bin_restraint.
+        """
+
         self.geoRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#big_bin_restraint.
     def exitBig_bin_restraint(self, ctx: RosettaMRParser.Big_bin_restraintContext):
+        """ Exit a parse tree produced by RosettaMRParser#big_bin_restraint.
+        """
 
         try:
 
@@ -4350,16 +4434,18 @@ class RosettaMRParserListener(ParseTreeListener):
             self.numberSelection.clear()
             self.genResNumSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#nested_restraints.
     def enterNested_restraints(self, ctx: RosettaMRParser.Nested_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by RosettaMRParser#nested_restraints.
+        """
 
-    # Exit a parse tree produced by RosettaMRParser#nested_restraints.
     def exitNested_restraints(self, ctx: RosettaMRParser.Nested_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#nested_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#nested_restraint.
     def enterNested_restraint(self, ctx: RosettaMRParser.Nested_restraintContext):
+        """ Enter a parse tree produced by RosettaMRParser#nested_restraint.
+        """
+
         if len(self.stackNest) == 0:
             self.__is_first_nest = True
             self.__is_any_nest = False
@@ -4396,22 +4482,30 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.stackNest.append(cur_nest)
 
-    # Exit a parse tree produced by RosettaMRParser#nested_restraint.
     def exitNested_restraint(self, ctx: RosettaMRParser.Nested_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#nested_restraint.
+        """
+
         self.stackNest.pop()
 
-    # Enter a parse tree produced by RosettaMRParser#any_restraint.
     def enterAny_restraint(self, ctx: RosettaMRParser.Any_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#any_restraint.
+        """
+
         self.__is_any_nest = True
         cur_nest = self.stackNest[-1]
         cur_nest['id'] += 1
 
-    # Exit a parse tree produced by RosettaMRParser#any_restraint.
     def exitAny_restraint(self, ctx: RosettaMRParser.Any_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#any_restraint.
+        """
+
         self.__is_first_nest = False
 
-    # Enter a parse tree produced by RosettaMRParser#func_type_def.
     def enterFunc_type_def(self, ctx: RosettaMRParser.Func_type_defContext):
+        """ Enter a parse tree produced by RosettaMRParser#func_type_def.
+        """
+
         if ctx.SCALARWEIGHTEDFUNC():  # weight func_type_def
             func = {}
             valid = True
@@ -4461,8 +4555,10 @@ class RosettaMRParserListener(ParseTreeListener):
             if valid:
                 self.stackFuncs.append(func)
 
-    # Exit a parse tree produced by RosettaMRParser#func_type_def.
     def exitFunc_type_def(self, ctx: RosettaMRParser.Func_type_defContext):
+        """ Exit a parse tree produced by RosettaMRParser#func_type_def.
+        """
+
         fnum_offset = 0
         if len(self.stackFuncs) > 0 and self.stackFuncs[-1]['name'] == 'SCALARWEIGHTEDFUNC':
             fnum_offset = 1
@@ -5245,22 +5341,27 @@ class RosettaMRParserListener(ParseTreeListener):
         finally:
             self.numberFSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: RosettaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#rdc_restraints.
+        """
+
         self.__cur_subtype = 'rdc'
 
-    # Exit a parse tree produced by RosettaMRParser#rdc_restraints.
     def exitRdc_restraints(self, ctx: RosettaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#rdc_restraints.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#rdc_restraint.
+        """
+
         self.rdcRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: RosettaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#rdc_restraint.
+        """
 
         try:
 
@@ -5312,10 +5413,10 @@ class RosettaMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-            """
-            if not self.areUniqueCoordAtoms('an RDC'):
-                return
-            """
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC'):
+            #     return
+            # """
             try:
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
                 seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -5465,22 +5566,27 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return True
 
-    # Enter a parse tree produced by RosettaMRParser#disulfide_bond_linkages.
     def enterDisulfide_bond_linkages(self, ctx: RosettaMRParser.Disulfide_bond_linkagesContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#disulfide_bond_linkages.
+        """
+
         self.__cur_subtype = 'ssbond'
 
-    # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkages.
     def exitDisulfide_bond_linkages(self, ctx: RosettaMRParser.Disulfide_bond_linkagesContext):
-        pass
+        """ Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkages.
+        """
 
-    # Enter a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
     def enterDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
+        """
+
         self.ssbondRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
     def exitDisulfide_bond_linkage(self, ctx: RosettaMRParser.Disulfide_bond_linkageContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#disulfide_bond_linkage.
+        """
 
         try:
 
@@ -5557,7 +5663,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                         f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                         f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 if self.__verbose:
                     self.__log.write(f"+{self.__class_name__}.exitDisulfide_bond_linkage() ++ Error  - {str(e)}")
 
@@ -5613,25 +5719,33 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def enterAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext
                                           ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraints.
+        """
+
         self.__cur_subtype = 'dist'
 
         self.__cur_comment_inlined = True
 
-    # Exit a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraints.
     def exitAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext
                                          ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraints.
+        """
+
         self.__cur_comment_inlined = False
 
-    # Enter a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraint.
     def enterAtom_pair_w_chain_restraint(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraint.
+        """
+
         self.distRestraints += 1
 
         self.stackFuncs.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraint.
     def exitAtom_pair_w_chain_restraint(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintContext):
+        """ Exit a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraint.
+        """
 
         try:
 
@@ -5808,12 +5922,14 @@ class RosettaMRParserListener(ParseTreeListener):
             self.atomSelectionInComment.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by RosettaMRParser#number.
     def enterNumber(self, ctx: RosettaMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by RosettaMRParser#number.
+        """
 
-    # Exit a parse tree produced by RosettaMRParser#number.
     def exitNumber(self, ctx: RosettaMRParser.NumberContext):
+        """ Exit a parse tree produced by RosettaMRParser#number.
+        """
+
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
 
@@ -5823,12 +5939,14 @@ class RosettaMRParserListener(ParseTreeListener):
         else:
             self.numberSelection.append(None)
 
-    # Enter a parse tree produced by RosettaMRParser#number_f.
     def enterNumber_f(self, ctx: RosettaMRParser.Number_fContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by RosettaMRParser#number_f.
+        """
 
-    # Exit a parse tree produced by RosettaMRParser#number_f.
     def exitNumber_f(self, ctx: RosettaMRParser.Number_fContext):
+        """ Exit a parse tree produced by RosettaMRParser#number_f.
+        """
+
         if ctx.Float():
             self.numberFSelection.append(float(str(ctx.Float())))
 
@@ -5839,6 +5957,9 @@ class RosettaMRParserListener(ParseTreeListener):
             self.numberFSelection.append(None)
 
     def getNumber_f(self, ctx: RosettaMRParser.Number_fContext):  # pylint: disable=no-self-use
+        """ Retrieve context of Number_f.
+        """
+
         if ctx is None:
             return None
 
@@ -5850,12 +5971,14 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return None
 
-    # Enter a parse tree produced by RosettaMRParser#gen_res_num.
     def enterGen_res_num(self, ctx: RosettaMRParser.Gen_res_numContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by RosettaMRParser#gen_res_num.
+        """
 
-    # Exit a parse tree produced by RosettaMRParser#gen_res_num.
     def exitGen_res_num(self, ctx: RosettaMRParser.Gen_res_numContext):
+        """ Exit a parse tree produced by RosettaMRParser#gen_res_num.
+        """
+
         if ctx.Integer():
             self.genResNumSelection.append((int(str(ctx.Integer())), None))
 
@@ -5868,12 +5991,14 @@ class RosettaMRParserListener(ParseTreeListener):
         else:
             self.genResNumSelection.append((None, None))
 
-    # Enter a parse tree produced by RosettaMRParser#gen_simple_name.
     def enterGen_simple_name(self, ctx: RosettaMRParser.Gen_simple_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by RosettaMRParser#gen_simple_name.
+        """
 
-    # Exit a parse tree produced by RosettaMRParser#gen_simple_name.
     def exitGen_simple_name(self, ctx: RosettaMRParser.Gen_simple_nameContext):
+        """ Exit a parse tree produced by RosettaMRParser#gen_simple_name.
+        """
+
         if ctx.Simple_name():
             self.genSimpleNameSelection.append(str(ctx.Simple_name()))
 
@@ -5887,6 +6012,9 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genSimpleNameSelection.append(None)
 
     def __getCurrentRestraint(self) -> str:
+        """ Retrieve indicator of the current restraint.
+        """
+
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'ang':
@@ -5902,12 +6030,18 @@ class RosettaMRParserListener(ParseTreeListener):
         return ''
 
     def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        """ Retrieve reasons for re-parsing by name. create a dictionary if name does not exist.
+        """
+
         if name in self.reasonsForReParsing:
             return self.reasonsForReParsing[name]
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
     def __setLocalSeqScheme(self):
+        """ Set sequence scheme for each restraint.
+        """
+
         r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.__cur_subtype == 'dist':
@@ -5928,6 +6062,9 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
     def __retrieveLocalSeqScheme(self):
+        """ Retrieve sequence scheme for each restraint.
+        """
+
         if self.__reasons is None\
            or ('label_seq_scheme' not in self.__reasons
                and 'local_seq_scheme' not in self.__reasons
@@ -5960,6 +6097,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                 rdcCode: Optional[str] = None):
+        """ Add saveframe for given conditions if not exists.
+        """
+
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -6009,6 +6149,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                 rdcCode: Optional[str] = None) -> dict:
+        """ Retrieve saveframe for given conditions.
+        """
+
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
@@ -6123,5 +6266,3 @@ class RosettaMRParserListener(ParseTreeListener):
         for k in ign_keys:
             del self.sfDict[k]
         return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict
-
-# del RosettaMRParser

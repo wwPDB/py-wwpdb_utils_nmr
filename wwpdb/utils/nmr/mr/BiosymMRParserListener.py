@@ -16,8 +16,8 @@ import sys
 import itertools
 import copy
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Tuple, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -71,8 +71,9 @@ except ImportError:
                                            getDstFuncForSsBond)
 
 
-# This class defines a complete listener for a parse tree produced by BiosymMRParser.
 class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by BiosymMRParser.
+    """
     __slots__ = ()
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -91,30 +92,37 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.file_type = 'nm-res-bio'
         self.software_name = 'BIOSYM'
 
-    # Enter a parse tree produced by BiosymMRParser#biosym_mr.
     def enterBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BiosymMRParser#biosym_mr.
+        """
 
-    # Exit a parse tree produced by BiosymMRParser#biosym_mr.
     def exitBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BiosymMRParser#biosym_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by BiosymMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: BiosymMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#distance_restraints.
+        """
+
         self.cur_subtype = 'dist'
 
-    # Exit a parse tree produced by BiosymMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: BiosymMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#distance_restraints.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: BiosymMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#distance_restraint.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by BiosymMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: BiosymMRParser.Distance_restraintContext):
+        """ Exit a parse tree produced by BiosymMRParser#distance_restraint.
+        """
 
         try:
 
@@ -246,22 +254,27 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by BiosymMRParser#distance_constraints.
     def enterDistance_constraints(self, ctx: BiosymMRParser.Distance_constraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#distance_constraints.
+        """
+
         self.cur_subtype = 'dist'
 
-    # Exit a parse tree produced by BiosymMRParser#distance_constraints.
     def exitDistance_constraints(self, ctx: BiosymMRParser.Distance_constraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#distance_constraints.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#distance_constraint.
     def enterDistance_constraint(self, ctx: BiosymMRParser.Distance_constraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#distance_constraint.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by BiosymMRParser#distance_constraint.
     def exitDistance_constraint(self, ctx: BiosymMRParser.Distance_constraintContext):
+        """ Exit a parse tree produced by BiosymMRParser#distance_constraint.
+        """
 
         try:
 
@@ -414,24 +427,29 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         except ValueError:
             return None, None, None, None
 
-    # Enter a parse tree produced by BiosymMRParser#dihedral_angle_restraints.
     def enterDihedral_angle_restraints(self, ctx: BiosymMRParser.Dihedral_angle_restraintsContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#dihedral_angle_restraints.
+        """
+
         self.cur_subtype = 'dihed'
 
-    # Exit a parse tree produced by BiosymMRParser#dihedral_angle_restraints.
     def exitDihedral_angle_restraints(self, ctx: BiosymMRParser.Dihedral_angle_restraintsContext
                                       ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#dihedral_angle_restraints.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: BiosymMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#dihedral_angle_restraint.
+        """
+
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by BiosymMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: BiosymMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BiosymMRParser#dihedral_angle_restraint.
+        """
 
         try:
 
@@ -645,26 +663,31 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by BiosymMRParser#dihedral_angle_constraints.
     def enterDihedral_angle_constraints(self, ctx: BiosymMRParser.Dihedral_angle_constraintsContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#dihedral_angle_constraints.
+        """
+
         self.cur_subtype = 'dihed'
 
-    # Exit a parse tree produced by BiosymMRParser#dihedral_angle_constraints.
     def exitDihedral_angle_constraints(self, ctx: BiosymMRParser.Dihedral_angle_constraintsContext
                                        ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#dihedral_angle_constraints.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#dihedral_angle_constraint.
     def enterDihedral_angle_constraint(self, ctx: BiosymMRParser.Dihedral_angle_constraintContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#dihedral_angle_constraint.
+        """
+
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by BiosymMRParser#dihedral_angle_constraint.
     def exitDihedral_angle_constraint(self, ctx: BiosymMRParser.Dihedral_angle_constraintContext
                                       ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BiosymMRParser#dihedral_angle_constraint.
+        """
 
         try:
 
@@ -811,22 +834,28 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by BiosymMRParser#chirality_constraints.
     def enterChirality_constraints(self, ctx: BiosymMRParser.Chirality_constraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#chirality_constraints.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by BiosymMRParser#chirality_constraints.
     def exitChirality_constraints(self, ctx: BiosymMRParser.Chirality_constraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#chirality_constraints.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#chirality_constraint.
     def enterChirality_constraint(self, ctx: BiosymMRParser.Chirality_constraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#chirality_constraint.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by BiosymMRParser#chirality_constraint.
     def exitChirality_constraint(self, ctx: BiosymMRParser.Chirality_constraintContext):
+        """ Exit a parse tree produced by BiosymMRParser#chirality_constraint.
+        """
+
         chainId1, seqId1, compId1, atomId1 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection()))
 
         chirality = str(ctx.Chiral_code())
@@ -869,22 +898,28 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                            chirality,
                                            sf['list_id']])
 
-    # Enter a parse tree produced by BiosymMRParser#prochirality_constraints.
     def enterProchirality_constraints(self, ctx: BiosymMRParser.Prochirality_constraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#prochirality_constraints.
+        """
+
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by BiosymMRParser#prochirality_constraints.
     def exitProchirality_constraints(self, ctx: BiosymMRParser.Prochirality_constraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#prochirality_constraints.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#prochirality_constraint.
     def enterProchirality_constraint(self, ctx: BiosymMRParser.Prochirality_constraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#prochirality_constraint.
+        """
+
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by BiosymMRParser#prochirality_constraint.
     def exitProchirality_constraint(self, ctx: BiosymMRParser.Prochirality_constraintContext):
+        """ Exit a parse tree produced by BiosymMRParser#prochirality_constraint.
+        """
+
         chainId1, seqId1, compId1, atomId1 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
         chainId2, seqId2, compId2, atomId2 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
         chainId3, seqId3, compId3, atomId3 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(2)))
@@ -944,20 +979,22 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                            atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
                                            sf['list_id']])
 
-    # Enter a parse tree produced by BiosymMRParser#mixing_time.
     def enterMixing_time(self, ctx: BiosymMRParser.Mixing_timeContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BiosymMRParser#mixing_time.
+        """
 
-    # Exit a parse tree produced by BiosymMRParser#mixing_time.
     def exitMixing_time(self, ctx: BiosymMRParser.Mixing_timeContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#mixing_time.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#number.
     def enterNumber(self, ctx: BiosymMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BiosymMRParser#number.
+        """
 
-    # Exit a parse tree produced by BiosymMRParser#number.
     def exitNumber(self, ctx: BiosymMRParser.NumberContext):
+        """ Exit a parse tree produced by BiosymMRParser#number.
+        """
+
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
 
@@ -970,23 +1007,28 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         else:
             self.numberSelection.append(None)
 
-    # Enter a parse tree produced by BiosymMRParser#ins_distance_restraints.
     def enterIns_distance_restraints(self, ctx: BiosymMRParser.Ins_distance_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#ins_distance_restraints.
+        """
+
         self.cur_subtype = 'dist'
 
-    # Exit a parse tree produced by BiosymMRParser#ins_distance_restraints.
     def exitIns_distance_restraints(self, ctx: BiosymMRParser.Ins_distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#ins_distance_restraints.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#ins_distance_restraint.
     def enterIns_distance_restraint(self, ctx: BiosymMRParser.Ins_distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#ins_distance_restraint.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
         self.insAtomSelection.clear()
 
-    # Exit a parse tree produced by BiosymMRParser#ins_distance_restraint.
     def exitIns_distance_restraint(self, ctx: BiosymMRParser.Ins_distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BiosymMRParser#ins_distance_restraint.
+        """
 
         if len(self.insAtomSelection) != 2:
             self.distRestraints -= 1
@@ -1129,8 +1171,10 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if self.createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
             sf['loop'].data[-1] = resetMemberId(self.cur_subtype, sf['loop'].data[-1])
 
-    # Enter a parse tree produced by BiosymMRParser#decl_create.
     def enterDecl_create(self, ctx: BiosymMRParser.Decl_createContext):
+        """ Enter a parse tree produced by BiosymMRParser#decl_create.
+        """
+
         if ctx.Double_quote_string(0):
             self.cur_ins_decl = str(ctx.Double_quote_string(0))
 
@@ -1140,20 +1184,22 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if ctx.Double_quote_string(2):
             self.insAtomSelection.append(self.splitInsAtomSelectionExpr(str(ctx.Double_quote_string(2)).strip('"')))
 
-    # Exit a parse tree produced by BiosymMRParser#decl_create.
     def exitDecl_create(self, ctx: BiosymMRParser.Decl_createContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#decl_create.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#decl_function.
     def enterDecl_function(self, ctx: BiosymMRParser.Decl_functionContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BiosymMRParser#decl_function.
+        """
 
-    # Exit a parse tree produced by BiosymMRParser#decl_function.
     def exitDecl_function(self, ctx: BiosymMRParser.Decl_functionContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#decl_function.
+        """
 
-    # Enter a parse tree produced by BiosymMRParser#decl_target.
     def enterDecl_target(self, ctx: BiosymMRParser.Decl_targetContext):
+        """ Enter a parse tree produced by BiosymMRParser#decl_target.
+        """
+
         if ctx.Double_quote_string(0):
             if str(ctx.Double_quote_string(0)) != self.cur_ins_decl:
                 return
@@ -1175,9 +1221,9 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     except (ValueError, TypeError):
                         pass
 
-    # Exit a parse tree produced by BiosymMRParser#decl_target.
     def exitDecl_target(self, ctx: BiosymMRParser.Decl_targetContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BiosymMRParser#decl_target.
+        """
 
     def splitInsAtomSelectionExpr(self, atomSelection: str) -> Tuple[str, int, str]:  # pylint: disable=no-self-use
         """ Split Insight II atom selection expression.
@@ -1191,5 +1237,3 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         except (IndexError, ValueError, TypeError):
             return None, None, None
-
-# del BiosymMRParser

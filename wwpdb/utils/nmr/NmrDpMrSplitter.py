@@ -16,13 +16,14 @@ import os
 import re
 import codecs
 import shutil
-import chardet
 import hashlib
 import itertools
 
 from operator import itemgetter
-from striprtf.striprtf import rtf_to_text
 from typing import Any, List, Tuple, Optional
+from striprtf.striprtf import rtf_to_text
+
+import chardet
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,
@@ -278,7 +279,7 @@ def convert_rtf_to_ascii(inPath: str, outPath: str):
     """
 
     with open(inPath, 'r') as ifh, \
-            open(outPath, 'w+') as ofh:
+            open(outPath, 'w+', encoding='utf-8') as ofh:  # pylint: disable=unspecified-encoding
         contents = ifh.read()
         ofh.write(rtf_to_text(contents, encoding='ascii', errors='ignore'))
 
@@ -436,7 +437,7 @@ def detect_encoding(line: str) -> str:
     try:
         result = chardet.detect(line.encode('utf-8'))
         return result['encoding']
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return 'binary'
 
 
@@ -2266,7 +2267,7 @@ class NmrDpMrSplitter:
                     if has_parser_error:
                         total_line = -1
                         if os.path.exists(file_path):
-                            with open(file_path, 'r', errors='replace') as ifh:
+                            with open(file_path, 'r', encoding='utf-8', errors='replace') as ifh:
                                 total_line = len(ifh.readlines())
 
                         messageList = parser_err_listener.getMessageList()
@@ -2986,7 +2987,7 @@ class NmrDpMrSplitter:
 
                     continue
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() "
@@ -3124,7 +3125,7 @@ class NmrDpMrSplitter:
             if file_type != 'nm-res-mr':
 
                 if file_type in LINEAR_MR_FILE_TYPES:
-                    with open(src_file, 'r', errors='ignore') as ifh:
+                    with open(src_file, 'r', encoding='utf-8', errors='ignore') as ifh:
                         for line in ifh:
                             if 'Submitted Coord H atom name' in line:
                                 input_source.setItemValue('file_type', 'nm-res-mr')
@@ -3167,7 +3168,7 @@ class NmrDpMrSplitter:
 
                         uncompress_gzip_file(src_file, dst_file)
 
-                    except Exception as e:
+                    except IOError as e:
 
                         self.__reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
@@ -3232,7 +3233,7 @@ class NmrDpMrSplitter:
 
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
                 if not os.path.exists(touch_file):
-                    with open(touch_file, 'w') as ofh:
+                    with open(touch_file, 'w', encoding='utf-8') as ofh:
                         ofh.write('')
 
                 continue
@@ -3287,10 +3288,10 @@ class NmrDpMrSplitter:
 
                 i = 0
 
-                with open(src_file, 'r') as ifh, \
-                        open(dst_file, 'w') as ofh, \
-                        open(header_file, 'w') as hofh, \
-                        open(footer_file, 'w') as fofh:
+                with open(src_file, 'r', encoding='utf-8') as ifh, \
+                        open(dst_file, 'w', encoding='utf-8') as ofh, \
+                        open(header_file, 'w', encoding='utf-8') as hofh, \
+                        open(footer_file, 'w', encoding='utf-8') as fofh:
                     for line in ifh:
                         i += 1
 
@@ -3453,9 +3454,9 @@ class NmrDpMrSplitter:
 
                         i = 0
 
-                        with open(src_file, 'r') as ifh, \
-                                open(dst_file, 'w') as ofh, \
-                                open(mrPath, 'w') as ofh2:
+                        with open(src_file, 'r', encoding='utf-8') as ifh, \
+                                open(dst_file, 'w', encoding='utf-8') as ofh, \
+                                open(mrPath, 'w', encoding='utf-8') as ofh2:
                             for line in ifh:
                                 i += 1
 
@@ -3636,9 +3637,9 @@ class NmrDpMrSplitter:
 
                         i = 0
 
-                        with open(src_file, 'r') as ifh, \
-                                open(dst_file, 'w') as ofh, \
-                                open(mrPath, 'w') as ofh2:
+                        with open(src_file, 'r', encoding='utf-8') as ifh, \
+                                open(dst_file, 'w', encoding='utf-8') as ofh, \
+                                open(mrPath, 'w', encoding='utf-8') as ofh2:
                             for line in ifh:
                                 i += 1
 
@@ -3811,7 +3812,7 @@ class NmrDpMrSplitter:
                             except OSError:
                                 pass
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.extractPublicMrFileIntoLegacyMr() "
@@ -3824,7 +3825,7 @@ class NmrDpMrSplitter:
                 return False
 
             has_content = False
-            with open(dst_file, 'r') as ifh:
+            with open(dst_file, 'r', encoding='utf-8') as ifh:
                 for line in ifh:
                     if line.isspace() or COMMENT_PAT.match(line):
                         continue
@@ -3833,7 +3834,7 @@ class NmrDpMrSplitter:
 
             if not has_content:
                 if not self.__reg.mr_has_valid_star_restraint:
-                    with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofh:
+                    with open(os.path.join(dir_path, '.entry_without_mr'), 'w', encoding='utf-8') as ofh:
                         ofh.write('')
 
                     remediated = False
@@ -3975,7 +3976,7 @@ class NmrDpMrSplitter:
             if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                 dst_file = cor_dst_file
 
-                with open(dst_file, 'r') as ifh:
+                with open(dst_file, 'r', encoding='utf-8') as ifh:
                     for line in ifh:
                         if line.isspace() or COMMENT_PAT.match(line):
                             continue
@@ -4300,7 +4301,7 @@ class NmrDpMrSplitter:
                 ofh = ofh_w_sel = None
                 j = 0
 
-                with open(dst_file, 'r') as ifh:
+                with open(dst_file, 'r', encoding='utf-8') as ifh:
                     for line in ifh:
 
                         if PDB_MR_FILE_HEADER_PAT.match(line):
@@ -4317,7 +4318,7 @@ class NmrDpMrSplitter:
                             j = 0
                             _dst_file = os.path.join(dir_path, g[2])
                             original_file_path_list.append(_dst_file)
-                            ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                            ofh = open(_dst_file, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             distinct = True
 
                         elif SEL_MR_FILE_HEADER_PAT.match(line)\
@@ -4338,9 +4339,9 @@ class NmrDpMrSplitter:
                             j = 0
                             _dst_file = os.path.join(dir_path, g[1])
                             original_file_path_list.append(_dst_file)
-                            ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                            ofh = open(_dst_file, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             _dst_file_w_sel = _dst_file + f'-selected-as-{g[0][-7:]}'
-                            ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
+                            ofh_w_sel = open(_dst_file_w_sel, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             distinct = True
 
                         elif SEL_CS_FILE_HEADER_PAT.match(line):
@@ -4357,9 +4358,9 @@ class NmrDpMrSplitter:
                             j = 0
                             _dst_file = os.path.join(dir_path, g[1])
                             original_file_path_list.append(_dst_file)
-                            ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                            ofh = open(_dst_file, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             _dst_file_w_sel = _dst_file + '-ignored'
-                            ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
+                            ofh_w_sel = open(_dst_file_w_sel, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             distinct = True
 
                         elif not line.isspace() and not COMMENT_PAT.match(line):
@@ -4367,7 +4368,7 @@ class NmrDpMrSplitter:
                             if ofh is None:
                                 _dst_file = os.path.join(dir_path, src_basename + '-noname.mr')
                                 original_file_path_list.append(_dst_file)
-                                ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                                ofh = open(_dst_file, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             ofh.write(line)
                             if ofh_w_sel is not None:
                                 ofh_w_sel.write(line)
@@ -4409,7 +4410,7 @@ class NmrDpMrSplitter:
                     if file_ext in ('x', 'rc', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
                        or 'rc' in file_ext or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:
                         is_crd = False
-                        with open(dst_file, 'r') as ifh:
+                        with open(dst_file, 'r', encoding='utf-8') as ifh:
                             for pos, line in enumerate(ifh, start=1):
                                 if pos == 1:
                                     if line.isdigit():
@@ -4431,7 +4432,7 @@ class NmrDpMrSplitter:
 
                     if file_ext in ('frc', 'known') or 'frc' in file_ext:
                         is_frc = False
-                        with open(dst_file, 'r') as ifh:
+                        with open(dst_file, 'r', encoding='utf-8') as ifh:
                             for pos, line in enumerate(ifh, start=1):
                                 if pos == 1:
                                     if not line.startswith('FRCMOD'):
@@ -4449,7 +4450,7 @@ class NmrDpMrSplitter:
                     if file_ext == 'seq':
                         is_seq = False
                         _len_seq = None
-                        with open(dst_file, 'r') as ifh:
+                        with open(dst_file, 'r', encoding='utf-8') as ifh:
                             for line in ifh:
                                 if line.isspace() or COMMENT_PAT.match(line):
                                     continue
@@ -4484,7 +4485,7 @@ class NmrDpMrSplitter:
 
                     if file_ext == 'cor':
                         is_cor = False
-                        with open(dst_file, 'r') as ifh:
+                        with open(dst_file, 'r', encoding='utf-8') as ifh:
                             for pos, line in enumerate(ifh, start=1):
                                 if pos == 1:
                                     if 'Structures from CYANA' not in line:
@@ -5284,7 +5285,7 @@ class NmrDpMrSplitter:
 
                     touch_file = os.path.join(dir_path, '.entry_without_mr')
                     if not os.path.exists(touch_file):
-                        with open(touch_file, 'w') as ofh:
+                        with open(touch_file, 'w', encoding='utf-8') as ofh:
                             ofh.write('')
 
                     if not any(re.search(r'\/bmr\d+\/work\/data\/', ar['file_name'])
@@ -5326,14 +5327,14 @@ class NmrDpMrSplitter:
 
             touch_file = os.path.join(dir_path, '.entry_with_pk')
             if not os.path.exists(touch_file):
-                with open(touch_file, 'w') as ofh:
+                with open(touch_file, 'w', encoding='utf-8') as ofh:
                     ofh.write('')
 
         if not aborted and remediated and mr_file_path is not None:
-            with open(mr_file_path, 'w') as ofh:
+            with open(mr_file_path, 'w', encoding='utf-8') as ofh:
 
                 header_file = next(mr_part_path['header'] for mr_part_path in mr_part_paths if 'header' in mr_part_path)
-                with open(header_file, 'r') as ifh:
+                with open(header_file, 'r', encoding='utf-8') as ifh:
                     for line in ifh:
                         ofh.write(line)
 
@@ -5353,7 +5354,7 @@ class NmrDpMrSplitter:
                             ofh.write(f'# Restraints file {file_idx}: {original_file_name}\n')
                             ofh.write(f'# Restraint file format: {getRestraintFormatName(file_type).split()[0]}\n')
 
-                            with open(file_path, 'r') as ifh:
+                            with open(file_path, 'r', encoding='utf-8') as ifh:
                                 for line in ifh:
                                     ofh.write(line)
 
@@ -5367,12 +5368,12 @@ class NmrDpMrSplitter:
                     file_type = split_file_list[0]['file_type']
                     ofh.write(f'# Restraint file format: {getRestraintFormatName(file_type).split()[0]}\n')
 
-                    with open(mr_core_path, 'r') as ifh:
+                    with open(mr_core_path, 'r', encoding='utf-8') as ifh:
                         for line in ifh:
                             ofh.write(line)
 
                 footer_file = next(mr_part_path['footer'] for mr_part_path in mr_part_paths if 'footer' in mr_part_path)
-                with open(footer_file, 'r') as ifh:
+                with open(footer_file, 'r', encoding='utf-8') as ifh:
                     for line in ifh:
                         ofh.write(line)
 
@@ -5792,8 +5793,8 @@ class NmrDpMrSplitter:
 
                                 j = 0
 
-                                with open(src_path, 'r') as ifh, \
-                                        open(cor_src_path, 'w') as ofh:
+                                with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                        open(cor_src_path, 'w', encoding='utf-8') as ofh:
                                     for line in ifh:
                                         if j == offset:
                                             ofh.write(line[:err_column_position + 1] + '\n')
@@ -5828,9 +5829,9 @@ class NmrDpMrSplitter:
 
         interval = []
 
-        with open(file_path, 'r') as ifh, \
-                open(div_src_file, 'w') as ofh, \
-                open(div_try_file, 'w') as ofh2:
+        with open(file_path, 'r', encoding='utf-8') as ifh, \
+                open(div_src_file, 'w', encoding='utf-8') as ofh, \
+                open(div_try_file, 'w', encoding='utf-8') as ofh2:
             for line in ifh:
                 i += 1
                 if i < err_line_number - MR_MAX_SPACER_LINES:
@@ -5909,7 +5910,7 @@ class NmrDpMrSplitter:
 
                     k = k2 = 0
 
-                    with open(file_path, 'r') as ifh:
+                    with open(file_path, 'r', encoding='utf-8') as ifh:
                         for line in ifh:
                             k += 1
                             if k <= err_line_number:
@@ -5931,8 +5932,8 @@ class NmrDpMrSplitter:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifh, \
-                                    open(cor_src_path, 'w') as ofh:
+                            with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                    open(cor_src_path, 'w', encoding='utf-8') as ofh:
                                 for line in ifh:
                                     k += 1
                                     if k < err_line_number:
@@ -5969,8 +5970,8 @@ class NmrDpMrSplitter:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifh, \
-                            open(cor_src_path, 'w') as ofh:
+                    with open(src_path, 'r', encoding='utf-8') as ifh, \
+                            open(cor_src_path, 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             if ' 00' in line:
                                 ofh.write(re.sub(r' 00', ' OO', line))
@@ -5991,7 +5992,7 @@ class NmrDpMrSplitter:
 
                 k = 0
 
-                with open(src_path, 'r') as ifh:
+                with open(src_path, 'r', encoding='utf-8') as ifh:
                     for line in ifh:
                         if k == offset:
                             if xplor_ends_wo_statement and XPLOR_END_PAT.match(line):
@@ -6009,8 +6010,8 @@ class NmrDpMrSplitter:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifh, \
-                                open(cor_src_path, 'w') as ofh:
+                        with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                open(cor_src_path, 'w', encoding='utf-8') as ofh:
                             for line in ifh:
                                 if k == offset:
                                     ofh.write('#' + line)
@@ -6064,8 +6065,8 @@ class NmrDpMrSplitter:
 
                                 k = 0
 
-                                with open(src_path, 'r') as ifh, \
-                                        open(cor_src_path, 'w') as ofh:
+                                with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                        open(cor_src_path, 'w', encoding='utf-8') as ofh:
                                     for line in ifh:
                                         if k == offset:
                                             if typo_for_comment_out:
@@ -6150,8 +6151,8 @@ class NmrDpMrSplitter:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifh, \
-                                    open(cor_src_path, 'w') as ofh:
+                            with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                    open(cor_src_path, 'w', encoding='utf-8') as ofh:
                                 for line in ifh:
                                     if k == offset:
                                         ofh.write(f"{test_line} {err_input[comment_code_index:]}\n")
@@ -6180,8 +6181,8 @@ class NmrDpMrSplitter:
 
                         k = 0 if xplor_missing_end else 1
 
-                        with open(src_path, 'r') as ifh, \
-                                open(cor_src_path, 'w') as ofh:
+                        with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                open(cor_src_path, 'w', encoding='utf-8') as ofh:
                             for line in ifh:
                                 if middle:
                                     if k == err_line_number - 2 and COMMENT_PAT.match(line):
@@ -6210,8 +6211,8 @@ class NmrDpMrSplitter:
 
                     k = 1
 
-                    with open(src_path, 'r') as ifh, \
-                            open(cor_src_path, 'w') as ofh:
+                    with open(src_path, 'r', encoding='utf-8') as ifh, \
+                            open(cor_src_path, 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             if k == err_line_number:
                                 ofh.write(',' + line)
@@ -6233,8 +6234,8 @@ class NmrDpMrSplitter:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifh, \
-                            open(cor_src_path, 'w') as ofh:
+                    with open(src_path, 'r', encoding='utf-8') as ifh, \
+                            open(cor_src_path, 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             ofh.write(line)
                         ofh.write('&end\n')
@@ -6267,8 +6268,8 @@ class NmrDpMrSplitter:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifh, \
-                                open(cor_src_path, 'w') as ofh:
+                        with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                open(cor_src_path, 'w', encoding='utf-8') as ofh:
                             for line in ifh:
                                 if k == offset:
                                     ofh.write('#' + line)
@@ -6391,7 +6392,7 @@ class NmrDpMrSplitter:
 
                                 k = l = 0  # noqa: E741
 
-                                with open(div_dst_file, 'r') as ifh:
+                                with open(div_dst_file, 'r', encoding='utf-8') as ifh:
                                     for line in ifh:
                                         if k > 0 and not (line.isspace() or bool(COMMENT_PAT.match(line))):
                                             listener, parser_err_listener, lexer_err_listener =\
@@ -6429,9 +6430,9 @@ class NmrDpMrSplitter:
 
                                     l = 0  # noqa: E741
 
-                                    with open(div_dst_file, 'r') as ifh, \
-                                            open(_div_src_file, 'w') as ofh, \
-                                            open(_div_dst_file, 'w') as ofh2:
+                                    with open(div_dst_file, 'r', encoding='utf-8') as ifh, \
+                                            open(_div_src_file, 'w', encoding='utf-8') as ofh, \
+                                            open(_div_dst_file, 'w', encoding='utf-8') as ofh2:
                                         for line in ifh:
                                             if l < k:
                                                 ofh.write(line)
@@ -6637,7 +6638,7 @@ class NmrDpMrSplitter:
 
             k = 0
 
-            with open(src_path, 'r') as ifh:
+            with open(src_path, 'r', encoding='utf-8') as ifh:
                 for line in ifh:
                     if k == _offset:
                         if xplor_ends_wo_statement and XPLOR_END_PAT.match(line):
@@ -6655,8 +6656,8 @@ class NmrDpMrSplitter:
 
                     k = 0
 
-                    with open(src_path, 'r') as ifh, \
-                            open(cor_src_path, 'w') as ofh:
+                    with open(src_path, 'r', encoding='utf-8') as ifh, \
+                            open(cor_src_path, 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             if k == _offset:
                                 ofh.write('#' + line)
@@ -6719,7 +6720,7 @@ class NmrDpMrSplitter:
 
             prev_input = None
 
-            with open(file_path, 'r') as ifh:
+            with open(file_path, 'r', encoding='utf-8') as ifh:
                 for line in ifh:
                     i += 1
                     if i < err_line_number - MR_MAX_SPACER_LINES:
@@ -6759,9 +6760,9 @@ class NmrDpMrSplitter:
 
                         i = 0
 
-                        with open(file_path, 'r') as ifh, \
-                                open(div_src_file, 'w') as ofh, \
-                                open(div_try_file, 'w') as ofh3:
+                        with open(file_path, 'r', encoding='utf-8') as ifh, \
+                                open(div_src_file, 'w', encoding='utf-8') as ofh, \
+                                open(div_try_file, 'w', encoding='utf-8') as ofh3:
                             for line in ifh:
                                 i += 1
                                 if i < err_line_number:
@@ -6782,10 +6783,10 @@ class NmrDpMrSplitter:
             is_valid = False
             ws_or_comment = True
 
-            with open(file_path, 'r') as ifh, \
-                    open(div_src_file, 'w') as ofh, \
-                    open(div_ext_file, 'w') as ofh2, \
-                    open(div_try_file, 'w') as ofh3:
+            with open(file_path, 'r', encoding='utf-8') as ifh, \
+                    open(div_src_file, 'w', encoding='utf-8') as ofh, \
+                    open(div_ext_file, 'w', encoding='utf-8') as ofh2, \
+                    open(div_try_file, 'w', encoding='utf-8') as ofh3:
                 for line in ifh:
                     i += 1
                     if i < err_line_number - MR_MAX_SPACER_LINES:
@@ -6920,8 +6921,8 @@ class NmrDpMrSplitter:
 
             if div_src:
                 os.remove(file_path)
-            with open(div_try_file, 'r') as ifh, \
-                    open(div_ext_file, 'a') as ofh:
+            with open(div_try_file, 'r', encoding='utf-8') as ifh, \
+                    open(div_ext_file, 'a', encoding='utf-8') as ofh:
                 for line in ifh:
                     ofh.write(line)
             os.remove(div_try_file)
@@ -7072,9 +7073,9 @@ class NmrDpMrSplitter:
 
         ws_or_comment = True
 
-        with open(file_path, 'r') as ifh, \
-                open(div_src_file, 'w') as ofh, \
-                open(div_try_file, 'w') as ofh2:
+        with open(file_path, 'r', encoding='utf-8') as ifh, \
+                open(div_src_file, 'w', encoding='utf-8') as ofh, \
+                open(div_try_file, 'w', encoding='utf-8') as ofh2:
             for line in ifh:
                 i += 1
                 if i < err_line_number:
@@ -7141,8 +7142,8 @@ class NmrDpMrSplitter:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifh, \
-                            open(cor_src_path, 'w') as ofh:
+                    with open(src_path, 'r', encoding='utf-8') as ifh, \
+                            open(cor_src_path, 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             if ' 00' in line:
                                 ofh.write(re.sub(r' 00', ' OO', line))
@@ -7163,7 +7164,7 @@ class NmrDpMrSplitter:
 
                 k = 0
 
-                with open(src_path, 'r') as ifh:
+                with open(src_path, 'r', encoding='utf-8') as ifh:
                     for line in ifh:
                         if k == offset:
                             if xplor_ends_wo_statement and XPLOR_END_PAT.match(line):
@@ -7181,8 +7182,8 @@ class NmrDpMrSplitter:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifh, \
-                                open(cor_src_path, 'w') as ofh:
+                        with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                open(cor_src_path, 'w', encoding='utf-8') as ofh:
                             for line in ifh:
                                 if k == offset:
                                     ofh.write('#' + line)
@@ -7236,8 +7237,8 @@ class NmrDpMrSplitter:
 
                                 k = 0
 
-                                with open(src_path, 'r') as ifh, \
-                                        open(cor_src_path, 'w') as ofh:
+                                with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                        open(cor_src_path, 'w', encoding='utf-8') as ofh:
                                     for line in ifh:
                                         if k == offset:
                                             if typo_for_comment_out:
@@ -7291,8 +7292,8 @@ class NmrDpMrSplitter:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifh, \
-                                    open(cor_src_path, 'w') as ofh:
+                            with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                    open(cor_src_path, 'w', encoding='utf-8') as ofh:
                                 for line in ifh:
                                     if k == offset:
                                         ofh.write(f"{test_line} {err_input[comment_code_index:]}\n")
@@ -7321,8 +7322,8 @@ class NmrDpMrSplitter:
 
                         k = 0 if xplor_missing_end else 1
 
-                        with open(src_path, 'r') as ifh, \
-                                open(cor_src_path, 'w') as ofh:
+                        with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                open(cor_src_path, 'w', encoding='utf-8') as ofh:
                             for line in ifh:
                                 if middle:
                                     if k == err_line_number - 2 and COMMENT_PAT.match(line):
@@ -7351,8 +7352,8 @@ class NmrDpMrSplitter:
 
                     k = 1
 
-                    with open(src_path, 'r') as ifh, \
-                            open(cor_src_path, 'w') as ofh:
+                    with open(src_path, 'r', encoding='utf-8') as ifh, \
+                            open(cor_src_path, 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             if k == err_line_number:
                                 ofh.write(',' + line)
@@ -7374,8 +7375,8 @@ class NmrDpMrSplitter:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifh, \
-                            open(cor_src_path, 'w') as ofh:
+                    with open(src_path, 'r', encoding='utf-8') as ifh, \
+                            open(cor_src_path, 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             ofh.write(line)
                         ofh.write('&end\n')
@@ -7408,8 +7409,8 @@ class NmrDpMrSplitter:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifh, \
-                                open(cor_src_path, 'w') as ofh:
+                        with open(src_path, 'r', encoding='utf-8') as ifh, \
+                                open(cor_src_path, 'w', encoding='utf-8') as ofh:
                             for line in ifh:
                                 if k == offset:
                                     ofh.write('#' + line)

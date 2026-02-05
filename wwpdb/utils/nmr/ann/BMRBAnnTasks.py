@@ -14,11 +14,12 @@ __version__ = "1.1.1"
 
 import re
 import copy
-import pynmrstar
 import itertools
 
 from operator import itemgetter
 from typing import Optional
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -1630,6 +1631,7 @@ class BMRBAnnTasks:
                                         or 'ch3coo' in mol_common_name\
                                         or 'citric' in mol_common_name\
                                         or 'hepes' in mol_common_name\
+                                        or 'pipes' in mol_common_name\
                                         or 'mes' in mol_common_name\
                                         or 'mops' in mol_common_name\
                                         or 'pbs' in mol_common_name\

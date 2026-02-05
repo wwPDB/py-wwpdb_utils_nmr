@@ -15,8 +15,8 @@ __version__ = "1.1.1"
 import sys
 import re
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
@@ -37,8 +37,9 @@ except ImportError:
 POSITION_SEPARATOR_PAT = re.compile(r'[,;\|/]+')
 
 
-# This class defines a complete listener for a parse tree produced by BarePKParser.
 class BarePKParserListener(ParseTreeListener, BasePKParserListener):
+    """ This class defines a complete listener for a parse tree produced by BarePKParser.
+    """
     __slots__ = ()
 
     __position_order = True
@@ -59,32 +60,39 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.file_type = 'nm-pea-bar'
 
-    # Enter a parse tree produced by BarePKParser#ccpn_pk.
     def enterBare_pk(self, ctx: BarePKParser.Bare_pkContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by BarePKParser#ccpn_pk.
+        """
 
-    # Exit a parse tree produced by BarePKParser#ccpn_pk.
     def exitBare_pk(self, ctx: BarePKParser.Bare_pkContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BarePKParser#ccpn_pk.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by BarePKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: BarePKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_2d.
+        """
+
         self.num_of_dim = 2
         self.initSpectralDim()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: BarePKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#peak_list_2d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#peak_2d.
     def enterPeak_2d(self, ctx: BarePKParser.Peak_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_2d.
     def exitPeak_2d(self, ctx: BarePKParser.Peak_2dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_2d.
+        """
 
         try:
 
@@ -185,24 +193,29 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: BarePKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_3d.
+        """
+
         self.num_of_dim = 3
         self.initSpectralDim()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: BarePKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#peak_list_3d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#peak_3d.
     def enterPeak_3d(self, ctx: BarePKParser.Peak_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_3d.
     def exitPeak_3d(self, ctx: BarePKParser.Peak_3dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_3d.
+        """
 
         try:
 
@@ -323,24 +336,29 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: BarePKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_4d.
+        """
+
         self.num_of_dim = 4
         self.initSpectralDim()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: BarePKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#peak_list_4d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#peak_4d.
     def enterPeak_4d(self, ctx: BarePKParser.Peak_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_4d.
     def exitPeak_4d(self, ctx: BarePKParser.Peak_4dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_4d.
+        """
 
         try:
 
@@ -481,24 +499,29 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#peak_list_wo_chain_2d.
     def enterPeak_list_wo_chain_2d(self, ctx: BarePKParser.Peak_list_wo_chain_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_wo_chain_2d.
+        """
+
         self.num_of_dim = 2
         self.initSpectralDim()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_wo_chain_2d.
     def exitPeak_list_wo_chain_2d(self, ctx: BarePKParser.Peak_list_wo_chain_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#peak_list_wo_chain_2d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#peak_wo_chain_2d.
     def enterPeak_wo_chain_2d(self, ctx: BarePKParser.Peak_wo_chain_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_wo_chain_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_wo_chain_2d.
     def exitPeak_wo_chain_2d(self, ctx: BarePKParser.Peak_wo_chain_2dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_wo_chain_2d.
+        """
 
         try:
 
@@ -597,24 +620,29 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#peak_list_wo_chain_3d.
     def enterPeak_list_wo_chain_3d(self, ctx: BarePKParser.Peak_list_wo_chain_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_wo_chain_3d.
+        """
+
         self.num_of_dim = 3
         self.initSpectralDim()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_wo_chain_3d.
     def exitPeak_list_wo_chain_3d(self, ctx: BarePKParser.Peak_list_wo_chain_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#peak_list_wo_chain_3d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#peak_wo_chain_3d.
     def enterPeak_wo_chain_3d(self, ctx: BarePKParser.Peak_wo_chain_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_wo_chain_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_wo_chain_3d.
     def exitPeak_wo_chain_3d(self, ctx: BarePKParser.Peak_wo_chain_3dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_wo_chain_3d.
+        """
 
         try:
 
@@ -732,24 +760,29 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#peak_list_wo_chain_4d.
     def enterPeak_list_wo_chain_4d(self, ctx: BarePKParser.Peak_list_wo_chain_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_wo_chain_4d.
+        """
+
         self.num_of_dim = 4
         self.initSpectralDim()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_wo_chain_4d.
     def exitPeak_list_wo_chain_4d(self, ctx: BarePKParser.Peak_list_wo_chain_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#peak_list_wo_chain_4d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#peak_wo_chain_4d.
     def enterPeak_wo_chain_4d(self, ctx: BarePKParser.Peak_wo_chain_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_wo_chain_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_wo_chain_4d.
     def exitPeak_wo_chain_4d(self, ctx: BarePKParser.Peak_wo_chain_4dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_wo_chain_4d.
+        """
 
         try:
 
@@ -886,8 +919,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#row_format_2d.
     def enterRow_format_2d(self, ctx: BarePKParser.Row_format_2dContext):
+        """ Enter a parse tree produced by BarePKParser#row_format_2d.
+        """
+
         self.num_of_dim = 2
         self.initSpectralDim()
 
@@ -897,12 +932,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
 
-    # Exit a parse tree produced by BarePKParser#row_format_2d.
     def exitRow_format_2d(self, ctx: BarePKParser.Row_format_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#row_format_2d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#row_format_3d.
     def enterRow_format_3d(self, ctx: BarePKParser.Row_format_3dContext):
+        """ Enter a parse tree produced by BarePKParser#row_format_3d.
+        """
+
         self.num_of_dim = 3
         self.initSpectralDim()
 
@@ -912,12 +949,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
 
-    # Exit a parse tree produced by BarePKParser#row_format_3d.
     def exitRow_format_3d(self, ctx: BarePKParser.Row_format_3dContext):
-        pass
+        """ Exit a parse tree produced by BarePKParser#row_format_3d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#row_format_4d.
     def enterRow_format_4d(self, ctx: BarePKParser.Row_format_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#row_format_4d.
+        """
+
         self.num_of_dim = 4
         self.initSpectralDim()
 
@@ -927,12 +966,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
 
-    # Exit a parse tree produced by BarePKParser#row_format_4d.
     def exitRow_format_4d(self, ctx: BarePKParser.Row_format_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#row_format_4d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#rev_row_format_2d.
     def enterRev_row_format_2d(self, ctx: BarePKParser.Rev_row_format_2dContext):
+        """ Enter a parse tree produced by BarePKParser#rev_row_format_2d.
+        """
+
         self.num_of_dim = 2
         self.initSpectralDim()
 
@@ -942,12 +983,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
 
-    # Exit a parse tree produced by BarePKParser#rev_row_format_2d.
     def exitRev_row_format_2d(self, ctx: BarePKParser.Rev_row_format_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#rev_row_format_2d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#rev_row_format_3d.
     def enterRev_row_format_3d(self, ctx: BarePKParser.Rev_row_format_3dContext):
+        """ Enter a parse tree produced by BarePKParser#rev_row_format_3d.
+        """
+
         self.num_of_dim = 3
         self.initSpectralDim()
 
@@ -957,12 +1000,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
 
-    # Exit a parse tree produced by BarePKParser#rev_row_format_3d.
     def exitRev_row_format_3d(self, ctx: BarePKParser.Rev_row_format_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#rev_row_format_3d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#rev_row_format_4d.
     def enterRev_row_format_4d(self, ctx: BarePKParser.Rev_row_format_4dContext):
+        """ Enter a parse tree produced by BarePKParser#rev_row_format_4d.
+        """
+
         self.num_of_dim = 4
         self.initSpectralDim()
 
@@ -972,12 +1017,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = bool(ctx.Volume())
         self.__has_assign = bool(ctx.Label())
 
-    # Exit a parse tree produced by BarePKParser#rev_row_format_4d.
     def exitRev_row_format_4d(self, ctx: BarePKParser.Rev_row_format_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#rev_row_format_4d.
+        """
 
-        # Enter a parse tree produced by BarePKParser#row_format_wo_label_2d.
     def enterRow_format_wo_label_2d(self, ctx: BarePKParser.Row_format_wo_label_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#row_format_wo_label_2d.
+        """
+
         self.num_of_dim = 2
         self.initSpectralDim()
 
@@ -985,12 +1032,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_amplitude = True
         self.__has_width = False
 
-    # Exit a parse tree produced by BarePKParser#row_format_wo_label_2d.
     def exitRow_format_wo_label_2d(self, ctx: BarePKParser.Row_format_wo_label_2dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#row_format_wo_label_2d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#row_format_wo_label_3d.
     def enterRow_format_wo_label_3d(self, ctx: BarePKParser.Row_format_wo_label_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#row_format_wo_label_3d.
+        """
+
         self.num_of_dim = 3
         self.initSpectralDim()
 
@@ -998,12 +1047,14 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_amplitude = True
         self.__has_width = False
 
-    # Exit a parse tree produced by BarePKParser#row_format_wo_label_3d.
     def exitRow_format_wo_label_3d(self, ctx: BarePKParser.Row_format_wo_label_3dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#row_format_wo_label_3d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#row_format_wo_label_4d.
     def enterRow_format_wo_label_4d(self, ctx: BarePKParser.Row_format_wo_label_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#row_format_wo_label_4d.
+        """
+
         self.num_of_dim = 4
         self.initSpectralDim()
 
@@ -1011,19 +1062,22 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_amplitude = True
         self.__has_width = False
 
-    # Exit a parse tree produced by BarePKParser#row_format_wo_label_4d.
     def exitRow_format_wo_label_4d(self, ctx: BarePKParser.Row_format_wo_label_4dContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#row_format_wo_label_4d.
+        """
 
-    # Enter a parse tree produced by BarePKParser#peak_list_row_2d.
     def enterPeak_list_row_2d(self, ctx: BarePKParser.Peak_list_row_2dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_row_2d.
+        """
+
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_row_2d.
     def exitPeak_list_row_2d(self, ctx: BarePKParser.Peak_list_row_2dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_list_row_2d.
+        """
 
         try:
 
@@ -1137,15 +1191,18 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#peak_list_row_3d.
     def enterPeak_list_row_3d(self, ctx: BarePKParser.Peak_list_row_3dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_row_3d.
+        """
+
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_row_3d.
     def exitPeak_list_row_3d(self, ctx: BarePKParser.Peak_list_row_3dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_list_row_3d.
+        """
 
         try:
 
@@ -1263,15 +1320,18 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#peak_list_row_4d.
     def enterPeak_list_row_4d(self, ctx: BarePKParser.Peak_list_row_4dContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BarePKParser#peak_list_row_4d.
+        """
+
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by BarePKParser#peak_list_row_4d.
     def exitPeak_list_row_4d(self, ctx: BarePKParser.Peak_list_row_4dContext):
+        """ Exit a parse tree produced by BarePKParser#peak_list_row_4d.
+        """
 
         try:
 
@@ -1394,8 +1454,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by BarePKParser#position.
     def enterPosition(self, ctx: BarePKParser.PositionContext):
+        """ Enter a parse tree produced by BarePKParser#position.
+        """
 
         try:
 
@@ -1418,12 +1479,13 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         except ValueError:
             self.positionSelection.append(None)
 
-    # Exit a parse tree produced by BarePKParser#position.
     def exitPosition(self, ctx: BarePKParser.PositionContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by BarePKParser#position.
+        """
 
-    # Enter a parse tree produced by BarePKParser#number.
     def enterNumber(self, ctx: BarePKParser.NumberContext):
+        """ Enter a parse tree produced by BarePKParser#number.
+        """
 
         try:
 
@@ -1450,9 +1512,6 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Exit a parse tree produced by BarePKParser#number.
     def exitNumber(self, ctx: BarePKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
-
-
-# del BarePKParser
+        """ Exit a parse tree produced by BarePKParser#number.
+        """

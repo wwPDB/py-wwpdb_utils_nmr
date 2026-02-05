@@ -20,10 +20,10 @@ __version__ = "1.0.6"
 import sys
 import os
 
+from typing import IO, List, Optional
+
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
-
-from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -208,7 +208,7 @@ class ChemCompReader:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Set {self.__filePath} failed {str(e)}\n")
             return False
@@ -255,7 +255,7 @@ class ChemCompReader:
 
             return self.__getDictList(catName='chem_comp')[0]
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return {}
 
     def __updateDataBlock(self) -> bool:
@@ -274,7 +274,7 @@ class ChemCompReader:
 
             return False
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.__updateDataBlock() ++ Error  - {str(e)}\n")
             return False
@@ -307,7 +307,7 @@ class ChemCompReader:
                             block.printIt(self.__log)
                         return block
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.__getDataBlock() ++ Error  - {str(e)}\n")
 
@@ -327,7 +327,7 @@ class ChemCompReader:
                 self.__dBlock = dataBlock
                 return True
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             pass
 
         self.__dBlock = None

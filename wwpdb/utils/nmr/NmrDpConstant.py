@@ -16,7 +16,7 @@ __version__ = "5.0.0"
 import re
 import copy
 
-from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error
+from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module,import-error
 
 # supported parameter keys as input/output file path(s) for NmrDpUtility class
 MODEL_FILE_PATH_KEY = 'coordinate_file_path'
@@ -535,7 +535,7 @@ BMRB_ID_PAT = re.compile(r'^(bmr)?([1-9]\d{0,4})$')
 
 DEP_ID_PAT = re.compile(r'^D_[1-9]\d{5,9}$')
 
-CCD_ID_PAT = re.compile(r'(\w{1,3}|\w{5})')
+CCD_ID_PAT = re.compile(r'^(\w{1,3}|\w{5})$')
 
 BMRB_NMR_STAR_FILE_NAME_PAT = re.compile(r'^bmr[1-9]\d{0,4}_3.str$')
 

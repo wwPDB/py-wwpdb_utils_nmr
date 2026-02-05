@@ -13,10 +13,10 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-# import csv
-import pynmrstar
 import re
 import collections
+# import csv
+import pynmrstar
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -243,8 +243,8 @@ def get_nmr_software(name: str) -> str:
     for software in NMR_SOFTWERE_LIST:
         _software = software.lower()
 
-        pA.setReferenceSequence([c for c in _software], 'REFNAME')  # pylint: disable=unnecessary-comprehension
-        pA.addTestSequence([c for c in _name], 'NAME')  # pylint: disable=unnecessary-comprehension
+        pA.setReferenceSequence(list(_software), 'REFNAME')
+        pA.addTestSequence(list(_name), 'NAME')
         pA.doAlign()
 
         myAlign = pA.getAlignment('NAME')
@@ -2036,7 +2036,7 @@ class OneDepAnnTasks:
 
             try:
                 cifObj.writeToFile(file_path)
-            except Exception:
+            except IOError:
                 return False
 
             return True
@@ -2561,7 +2561,7 @@ class OneDepAnnTasks:
 
         try:
             cifObj.writeToFile(file_path)
-        except Exception:
+        except IOError:
             return False
 
         return True

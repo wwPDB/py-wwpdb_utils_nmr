@@ -17,12 +17,13 @@ import copy
 import collections
 import re
 import itertools
-import numpy
 import functools
 
-from antlr4 import ParseTreeListener
 from operator import itemgetter
 from typing import IO, List, Tuple, Optional
+from antlr4 import ParseTreeListener
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
@@ -266,8 +267,9 @@ COL_DIST_COORD3 = 6
 COL_DIST_COORD4 = 8
 
 
-# This class defines a complete listener for a parse tree produced by AmberMRParser.
 class AmberMRParserListener(ParseTreeListener):
+    """ This class defines a complete listener for a parse tree produced by AmberMRParser.
+    """
     __slots__ = ('__class_name__',
                  '__version__',
                  '__verbose',
@@ -799,6 +801,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     @property
     def debug(self):
+        """ Retrieve debug mode.
+        """
+
         return self.__debug
 
     @debug.setter
@@ -807,6 +812,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     @property
     def internal(self):
+        """ Retrieve internal mode.
+        """
+
         return self.__internal
 
     @internal.setter
@@ -815,6 +823,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     @property
     def createSfDict(self):
+        """ Whether to create saveframe dictionary.
+        """
+
         return self.__createSfDict
 
     @createSfDict.setter
@@ -823,6 +834,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     @property
     def originalFileName(self):
+        """ Retrieve the original file name.
+        """
+
         return self.__originalFileName
 
     @originalFileName.setter
@@ -831,6 +845,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     @property
     def listIdCounter(self):
+        """ Retrieve list ID counter dictionary.
+        """
+
         return self.__listIdCounter
 
     @listIdCounter.setter
@@ -839,6 +856,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     @property
     def entryId(self):
+        """ Retrieve entry ID.
+        """
+
         return self.__entryId
 
     @entryId.setter
@@ -846,10 +866,12 @@ class AmberMRParserListener(ParseTreeListener):
         self.__entryId = entryId
 
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#amber_mr.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#amber_mr.
     def exitAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#amber_mr.
+        """
 
         try:
 
@@ -1052,12 +1074,14 @@ class AmberMRParserListener(ParseTreeListener):
             translateToStdAtomNameNoRef.cache_clear()
             translateToStdAtomNameWithRef.cache_clear()
 
-    # Enter a parse tree produced by AmberMRParser#comment.
     def enterComment(self, ctx: AmberMRParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#comment.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#comment.
     def exitComment(self, ctx: AmberMRParser.CommentContext):
+        """ Exit a parse tree produced by AmberMRParser#comment.
+        """
+
         comment = []
         for col in range(20):
             if ctx.Any_name(col):
@@ -1085,58 +1109,60 @@ class AmberMRParserListener(ParseTreeListener):
                 g = self.__dihed_plane_residue_pat.search(self.lastComment).groups()
                 self.lastPlaneSeqId = int(g[0])
 
-    # Enter a parse tree produced by AmberMRParser#nmr_restraint.
     def enterNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#nmr_restraint.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#nmr_restraint.
     def exitNmr_restraint(self, ctx: AmberMRParser.Nmr_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AmberMRParser#nmr_restraint.
+        """
 
-    # Enter a parse tree produced by AmberMRParser#noesy_volume_restraint.
     def enterNoesy_volume_restraint(self, ctx: AmberMRParser.Noesy_volume_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#noesy_volume_restraint.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#noesy_volume_restraint.
     def exitNoesy_volume_restraint(self, ctx: AmberMRParser.Noesy_volume_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AmberMRParser#noesy_volume_restraint.
+        """
 
-    # Enter a parse tree produced by AmberMRParser#chemical_shift_restraint.
     def enterChemical_shift_restraint(self, ctx: AmberMRParser.Chemical_shift_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#chemical_shift_restraint.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#chemical_shift_restraint.
     def exitChemical_shift_restraint(self, ctx: AmberMRParser.Chemical_shift_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AmberMRParser#chemical_shift_restraint.
+        """
 
-    # Enter a parse tree produced by AmberMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: AmberMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#pcs_restraint.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: AmberMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AmberMRParser#pcs_restraint.
+        """
 
-    # Enter a parse tree produced by AmberMRParser#dipolar_coupling_restraint.
     def enterDipolar_coupling_restraint(self, ctx: AmberMRParser.Dipolar_coupling_restraintContext
                                         ):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#dipolar_coupling_restraint.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#dipolar_coupling_restraint.
     def exitDipolar_coupling_restraint(self, ctx: AmberMRParser.Dipolar_coupling_restraintContext
                                        ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AmberMRParser#dipolar_coupling_restraint.
+        """
 
-    # Enter a parse tree produced by AmberMRParser#csa_restraint.
     def enterCsa_restraint(self, ctx: AmberMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#csa_restraint.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#csa_restraint.
     def exitCsa_restraint(self, ctx: AmberMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AmberMRParser#csa_restraint.
+        """
 
-    # Enter a parse tree produced by AmberMRParser#restraint_statement.
     def enterRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#restraint_statement.
+        """
+
         self.nmrRestraints += 1
 
         self.__cur_subtype = ''
@@ -1174,12 +1200,13 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by AmberMRParser#restraint_statement.
     def exitRestraint_statement(self, ctx: AmberMRParser.Restraint_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#restraint_statement.
+        """
 
         try:
 
-            self.detectRestraintType(self.likeDist)
+            self.decideRestraintType(self.likeDist)
 
             if len(self.__cur_subtype) == 0:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -1319,6 +1346,8 @@ class AmberMRParserListener(ParseTreeListener):
                 self.lastComment = None
 
     def __evalRestraint(self):
+        """ Evaluate restraint.
+        """
 
         self.__hasComments = True
 
@@ -1965,6 +1994,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                    sf['list_id']])
 
     def __createAtomNumberDict(self):
+        """ Create atom number dictionary.
+        """
 
         self.__hasComments = True
 
@@ -2606,7 +2637,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if len(_atomId) > 0 and details is None:
                         _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId2, factor2['auth_atom_id'])
                         if len(_atomId) > 0 and details is None:
-                            self.checkDistSequenceOffset(factor1['auth_seq_id'], compId1, factor2['auth_seq_id'], compId2)
+                            self.__checkDistSequenceOffset(factor1['auth_seq_id'], compId1, factor2['auth_seq_id'], compId2)
 
         if self.__cur_subtype == 'ang':
             subtype_name = 'angle restraint'
@@ -3781,6 +3812,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                     f"based on Sander comment {' '.join(gwc[offsetwc:offsetwc+4])!r}.")
 
     def __evalRestraintWithAmbmask(self):
+        """ Evaluate restraint (Amber 10 ambmask),
+        """
 
         # 1st plane should be processed at first due to plane-point angle restraint
         if self.__cur_subtype == 'plane':
@@ -4439,6 +4472,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                    sf['list_id']])
 
     def __createAtomNumberDictWithAmbmask(self):
+        """ Create atom number dictionary from AMBER 10 ambmask.
+        """
 
         if self.__cur_subtype == 'dist' and not self.inGenDist:
             subtype_name = 'distance restraint'
@@ -5526,7 +5561,7 @@ class AmberMRParserListener(ParseTreeListener):
     def getAtomNumberDictFromAmbmaskInfo(self, seqId: int, atomId: str, order: int = 0,
                                          enableWarning: bool = True, useDefault: bool = True,
                                          authChainId: Optional[str] = None) -> Optional[dict]:
-        """ Return atom number dictionary like component from Amber 10 ambmask information.
+        """ Return atom number dictionary from Amber 10 ambmask information.
         """
 
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -5906,7 +5941,7 @@ class AmberMRParserListener(ParseTreeListener):
         return self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, order, enableWarning, False, authChainId)
 
     def reportSanderCommentIssue(self, subtype_name: str):
-        """ Report Sander comment issue.
+        """ Report Sander comment's issue.
         """
 
         if self.lastComment is None:
@@ -5934,7 +5969,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     def updateSanderAtomNumberDict(self, factor: dict, cifCheck: bool = True,
                                    useDefault: bool = True, useAuthSeqScheme: bool = False) -> bool:
-        """ Try to update Sander atom number dictionary.
+        """ Update Sander atom number dictionary.
         """
 
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -6604,7 +6639,7 @@ class AmberMRParserListener(ParseTreeListener):
     def updateSanderAtomNumberDictWithAmbigCode(self, factor: dict, cifCheck: bool = True,
                                                 useDefault: bool = True, useAuthSeqScheme: bool = False
                                                 ) -> bool:
-        """ Try to update Sander atom number dictionary.
+        """ Update Sander atom number dictionary allowing ambiguous atom name.
         """
 
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -7185,8 +7220,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return self.updateSanderAtomNumberDictWithAmbigCode(factor, cifCheck, False, useAuthSeqScheme)
 
-    def checkDistSequenceOffset(self, seqId1: int, compId1: str, seqId2: int, compId2: str) -> bool:
-        """ Try to find sequence offset from Sander comments.
+    def __checkDistSequenceOffset(self, seqId1: int, compId1: str, seqId2: int, compId2: str) -> bool:
+        """ Find sequence offset from tentative distance restraint.
         """
 
         if not self.__hasPolySeq or self.__cur_subtype != 'dist':
@@ -7341,7 +7376,7 @@ class AmberMRParserListener(ParseTreeListener):
                         atom2['auth_atom_id'] = atom2['atom_id']
                     atom2['atom_id'] = alt_atom_id2
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
@@ -7516,14 +7551,14 @@ class AmberMRParserListener(ParseTreeListener):
                 if upper_linear_limit is not None:
                     dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 
     def getNeighborCandidateAtom(self, factor: dict, src_atom: dict, around: float) -> Optional[dict]:
-        """ Try to find neighbor atom from given conditions.
+        """ Get the nearest neighbor atom for given conditions.
         """
 
         if not self.__hasCoord:
@@ -7597,7 +7632,7 @@ class AmberMRParserListener(ParseTreeListener):
             factor['auth_atom_id'] = p['atom_id']
             return factor
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose:
                 self.__log.write(f"+{self.__class_name__}.getNeighborCandidateAtom() ++ Error  - {str(e)}")
 
@@ -7605,6 +7640,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     @functools.lru_cache(maxsize=256)
     def guessChainIdFromCompId(self, seqId: int, compId: str) -> List[str]:
+        """ Get possible chain IDs from sequence code and residue name.
+        """
+
         chainIds = [ps['auth_chain_id'] for ps in self.__polySeq if compId in ps['comp_id']]
         if len(chainIds) > 1:
             min_gap = GLOBAL_OFFSET_ATTEMPT
@@ -7647,6 +7685,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
+        """ A wrapper function to retrieve sequence key and coordinates for given conditions.
+        """
+
         return self.__getCoordAtomSiteOf(chainId, seqId, cifCheck, asis, self.__preferAuthSeq)
 
     @functools.lru_cache(maxsize=2048)
@@ -7668,8 +7709,10 @@ class AmberMRParserListener(ParseTreeListener):
                         coordAtomSite = self.__coordAtomSite[seqKey]
         return seqKey, coordAtomSite
 
-    # Enter a parse tree produced by AmberMRParser#restraint_factor.
     def enterRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):
+        """ Enter a parse tree produced by AmberMRParser#restraint_factor.
+        """
+
         if ctx.IAT():
             varName = 'iat'
 
@@ -7768,8 +7811,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             f"'{str(ctx.MultiplicativeInt())}' must be non-zero integer.")
                             break
                         offset += numIatCol
-                    if self.numIatCol in (2, 3, 5, 6):  # possible to specify restraint type, see also detectRestraintType()
-                        self.detectRestraintType(self.numIatCol in (2, 6))
+                    if self.numIatCol in (2, 3, 5, 6):  # possible to specify restraint type, see also decideRestraintType()
+                        self.decideRestraintType(self.numIatCol in (2, 6))
 
         elif ctx.IGR1() or ctx.IGR2() or ctx.IGR3() or ctx.IGR4()\
                 or ctx.IGR5() or ctx.IGR6() or ctx.IGR7() or ctx.IGR8():
@@ -7911,7 +7954,7 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.RSTWT():
             varName = 'rstwt'
 
-            self.detectRestraintType(False)
+            self.decideRestraintType(False)
 
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
@@ -7923,7 +7966,7 @@ class AmberMRParserListener(ParseTreeListener):
                 val = float(rawRealArray[0])
                 self.rstwt[decimal - 1] = val
                 if decimal == 1:
-                    self.detectRestraintType(True)
+                    self.decideRestraintType(True)
 
             else:
                 if ctx.Reals():
@@ -7936,7 +7979,7 @@ class AmberMRParserListener(ParseTreeListener):
                         val = float(rawReal)
                         self.rstwt[col] = val
                         if col == 1:
-                            self.detectRestraintType(True)
+                            self.decideRestraintType(True)
                 elif ctx.MultiplicativeReal():
                     offset = 0
                     for multiplicativeReal in str(ctx.MultiplicativeReal()).split(','):
@@ -7951,14 +7994,14 @@ class AmberMRParserListener(ParseTreeListener):
                         for col in range(0, numCol):
                             self.rstwt[offset + col] = val
                             if offset + col == 1:
-                                self.detectRestraintType(True)
+                                self.decideRestraintType(True)
                         offset += numCol
 
         elif ctx.IALTD():
-            self.detectRestraintType(True)
+            self.decideRestraintType(True)
 
         elif ctx.RJCOEF():
-            self.detectRestraintType(False)
+            self.decideRestraintType(False)
 
         # Amber 10: ambmask
         elif ctx.RESTRAINT():
@@ -8152,7 +8195,10 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.numGrnamCol[varNum] >= decimal:
                         self.numGrnamCol[varNum] = decimal - 1
 
-    def detectRestraintType(self, likeDist: bool):
+    def decideRestraintType(self, likeDist: bool):
+        """ Decide restraint type by the size of 'iat' terms in a restraint.
+        """
+
         self.likeDist = likeDist
 
         if len(self.__cur_subtype) > 0:
@@ -8190,12 +8236,14 @@ class AmberMRParserListener(ParseTreeListener):
                 self.planeRestraints += 1
                 self.__cur_subtype = 'plane'
 
-    # Exit a parse tree produced by AmberMRParser#restraint_factor.
     def exitRestraint_factor(self, ctx: AmberMRParser.Restraint_factorContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AmberMRParser#restraint_factor.
+        """
 
-    # Enter a parse tree produced by AmberMRParser#noeexp_statement.
     def enterNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#noeexp_statement.
+        """
+
         self.noepkRestraints += 1
         self.__cur_subtype = 'noepk'
 
@@ -8216,8 +8264,10 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             self.__addSf()
 
-    # Exit a parse tree produced by AmberMRParser#noeexp_statement.
     def exitNoeexp_statement(self, ctx: AmberMRParser.Noeexp_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#noeexp_statement.
+        """
+
         try:
 
             imixes = self.npeak.keys()
@@ -8397,12 +8447,14 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    # Enter a parse tree produced by AmberMRParser#noeexp_factor.
     def enterNoeexp_factor(self, ctx: AmberMRParser.Noeexp_factorContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#noeexp_factor.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#noeexp_factor.
     def exitNoeexp_factor(self, ctx: AmberMRParser.Noeexp_factorContext):
+        """ Exit a parse tree produced by AmberMRParser#noeexp_factor.
+        """
+
         if ctx.IHP():
             varName = 'ihp'
 
@@ -8588,8 +8640,10 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.ID2O():
             self.id2o = int(str(ctx.BoolInt()))
 
-    # Enter a parse tree produced by AmberMRParser#shf_statement.
     def enterShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#shf_statement.
+        """
+
         self.procsRestraints += 1
         self.__cur_subtype = 'procs'
 
@@ -8610,11 +8664,13 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             self.__addSf()
 
-    # Exit a parse tree produced by AmberMRParser#shf_statement.
     def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#shf_statement.
+        """
+
         try:
 
-            if self.nprot < 0 and len(self.iprot) > 0:  # pylint: disable=chained-comparison
+            if self.nprot < 0 < len(self.iprot) > 0:
                 self.nprot = max(self.iprot.keys())
 
             if self.nprot <= 0:
@@ -8833,12 +8889,14 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    # Enter a parse tree produced by AmberMRParser#shf_factor.
     def enterShf_factor(self, ctx: AmberMRParser.Shf_factorContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#shf_factor.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#shf_factor.
     def exitShf_factor(self, ctx: AmberMRParser.Shf_factorContext):
+        """ Exit a parse tree produced by AmberMRParser#shf_factor.
+        """
+
         if ctx.IPROT():
             varName = 'iprot'
 
@@ -9109,8 +9167,10 @@ class AmberMRParserListener(ParseTreeListener):
                     return
                 self.namr[decimal] = str(ctx.Qstring()).strip()
 
-    # Enter a parse tree produced by AmberMRParser#pcshf_statement.
     def enterPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#pcshf_statement.
+        """
+
         self.pcsRestraints += 1
         self.__cur_subtype = 'pcs'
 
@@ -9129,9 +9189,11 @@ class AmberMRParserListener(ParseTreeListener):
         self.optkon = 0.0
         self.nme = -1
 
-    # Exit a parse tree produced by AmberMRParser#pcshf_statement.
     def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
-        if self.nprot < 0 and len(self.iprot) > 0:  # pylint: disable=chained-comparison
+        """ Exit a parse tree produced by AmberMRParser#pcshf_statement.
+        """
+
+        if self.nprot < 0 < len(self.iprot):
             self.nprot = max(self.iprot.keys())
 
         if self.nprot <= 0:
@@ -9139,7 +9201,7 @@ class AmberMRParserListener(ParseTreeListener):
                             "The number of observed PCS values 'nprot' is the mandatory variable.")
             return
 
-        if self.nme < 0 and len(self.optphi) > 0:  # pylint: disable=chained-comparison
+        if self.nme < 0 < len(self.optphi):
             self.nme = max(self.optphi.keys())
         # """
         # if self.nme <= 0:
@@ -9257,12 +9319,14 @@ class AmberMRParserListener(ParseTreeListener):
                                 "because AMBER parameter/topology file is not available.")
                 return
 
-    # Enter a parse tree produced by AmberMRParser#pcshf_factor.
     def enterPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#pcshf_factor.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#pcshf_factor.
     def exitPcshf_factor(self, ctx: AmberMRParser.Pcshf_factorContext):
+        """ Exit a parse tree produced by AmberMRParser#pcshf_factor.
+        """
+
         if ctx.IPROT():
             varName = 'iprot'
 
@@ -9500,8 +9564,10 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.NMPMC():
             self.nmpmc = str(ctx.Qstring()).strip()
 
-    # Enter a parse tree produced by AmberMRParser#align_statement.
     def enterAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#align_statement.
+        """
+
         self.rdcRestraints += 1
         self.__cur_subtype = 'rdc'
 
@@ -9524,11 +9590,13 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             self.__addSf()
 
-    # Exit a parse tree produced by AmberMRParser#align_statement.
     def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#align_statement.
+        """
+
         try:
 
-            if self.ndip < 0 and len(self.id) > 0:  # pylint: disable=chained-comparison
+            if self.ndip < 0 < len(self.id):
                 self.ndip = max(self.id.keys())
 
             if self.ndip <= 0:
@@ -9792,12 +9860,14 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 self.__trimSfWoLp()
 
-        # Enter a parse tree produced by AmberMRParser#align_factor.
     def enterAlign_factor(self, ctx: AmberMRParser.Align_factorContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#align_factor.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#align_factor.
     def exitAlign_factor(self, ctx: AmberMRParser.Align_factorContext):
+        """ Exit a parse tree produced by AmberMRParser#align_factor.
+        """
+
         if ctx.ID():
             varName = 'id'
 
@@ -10022,14 +10092,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 f"The argument value of '{varName}={self.dataset}' must be a positive integer.")
                 return
 
-            if self.dataset > self.numDatasets:
-                self.numDatasets = self.dataset
-                # """
-                # self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                #                 f"The argument value of '{varName}={self.dataset}' must be in the range 1-{self.numDatasets}, "
-                #                 f"regulated by 'num_dataset={self.numDatasets}'.")
-                # return
-                # """
+            self.numDatasets = max(self.numDatasets, self.dataset)
+
         elif ctx.NUM_DATASETS():
             self.numDatasets = int(str(ctx.Integer()))
             if self.numDatasets <= 0:
@@ -10152,8 +10216,10 @@ class AmberMRParserListener(ParseTreeListener):
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         self.s23[col] = float(rawReal)
 
-    # Enter a parse tree produced by AmberMRParser#csa_statement.
     def enterCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#csa_statement.
+        """
+
         self.csaRestraints += 1
         self.__cur_subtype = 'csa'
 
@@ -10169,11 +10235,13 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__createSfDict:
             self.__addSf()
 
-    # Exit a parse tree produced by AmberMRParser#csa_statement.
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#csa_statement.
+        """
+
         try:
 
-            if self.ncsa < 0 and len(self.icsa) > 0:  # pylint: disable=chained-comparison
+            if self.ncsa < 0 < len(self.icsa):
                 self.ncsa = max(self.icsa.keys())
 
             if self.ncsa <= 0:
@@ -10477,12 +10545,14 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 self.__trimSfWoLp()
 
-    # Enter a parse tree produced by AmberMRParser#csa_factor.
     def enterCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#csa_factor.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#csa_factor.
     def exitCsa_factor(self, ctx: AmberMRParser.Csa_factorContext):
+        """ Exit a parse tree produced by AmberMRParser#csa_factor.
+        """
+
         if ctx.ICSA():
             varName = 'icsa'
 
@@ -10650,8 +10720,10 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.FIELD():
             self.field = float(str(ctx.Real()))
 
-    # Enter a parse tree produced by AmberMRParser#distance_rst_func_call.
     def enterDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#distance_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_distance_rst_func")
 
@@ -10661,14 +10733,18 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by AmberMRParser#distance_rst_func_call.
     def exitDistance_rst_func_call(self, ctx: AmberMRParser.Distance_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#distance_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_distance_rst_func")
 
-    # Enter a parse tree produced by AmberMRParser#angle_rst_func_call.
     def enterAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#angle_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_angle_rst_func")
 
@@ -10678,15 +10754,19 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by AmberMRParser#angle_rst_func_call.
     def exitAngle_rst_func_call(self, ctx: AmberMRParser.Angle_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#angle_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_angle_rst_func")
 
-    # Enter a parse tree produced by AmberMRParser#plane_point_angle_rst_func_call.
     def enterPlane_point_angle_rst_func_call(self, ctx: AmberMRParser.Plane_point_angle_rst_func_callContext
                                              ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#plane_point_angle_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_plane_point_angle_rst_func")
 
@@ -10696,16 +10776,20 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by AmberMRParser#plane_point_angle_rst_func_call.
     def exitPlane_point_angle_rst_func_call(self, ctx: AmberMRParser.Plane_point_angle_rst_func_callContext
                                             ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#plane_point_angle_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_plane_point_angle_rst_func")
 
-    # Enter a parse tree produced by AmberMRParser#plane_plane_angle_rst_func_call.
     def enterPlane_plane_angle_rst_func_call(self, ctx: AmberMRParser.Plane_plane_angle_rst_func_callContext
                                              ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#plane_plane_angle_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_plane_plane_angle_rst_func")
 
@@ -10715,15 +10799,19 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by AmberMRParser#plane_plane_angle_rst_func_call.
     def exitPlane_plane_angle_rst_func_call(self, ctx: AmberMRParser.Plane_plane_angle_rst_func_callContext
                                             ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#plane_plane_angle_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_plane_plane_angle_rst_func")
 
-    # Enter a parse tree produced by AmberMRParser#torsion_rst_func_call.
     def enterTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#torsion_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_torsion_rst_func")
 
@@ -10733,15 +10821,19 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by AmberMRParser#torsion_rst_func_call.
     def exitTorsion_rst_func_call(self, ctx: AmberMRParser.Torsion_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#torsion_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_torsion_rst_func")
 
-    # Enter a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
     def enterCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_coordinate2_rst_func")
 
@@ -10756,15 +10848,19 @@ class AmberMRParserListener(ParseTreeListener):
         self.inGenDist_weight = [float(str(ctx.Real_F(0))),
                                  float(str(ctx.Real_F(1)))]
 
-    # Exit a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
     def exitCoordinate2_rst_func_call(self, ctx: AmberMRParser.Coordinate2_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#coordinate2_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_coordinate2_rst_func")
 
-    # Enter a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
     def enterCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_coordinate3_rst_func")
 
@@ -10780,15 +10876,19 @@ class AmberMRParserListener(ParseTreeListener):
                                  float(str(ctx.Real_F(1))),
                                  float(str(ctx.Real_F(2)))]
 
-    # Exit a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
     def exitCoordinate3_rst_func_call(self, ctx: AmberMRParser.Coordinate3_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#coordinate3_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_coordinate3_rst_func")
 
-    # Enter a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
     def enterCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_coordinate4_rst_func")
 
@@ -10805,18 +10905,22 @@ class AmberMRParserListener(ParseTreeListener):
                                  float(str(ctx.Real_F(2))),
                                  float(str(ctx.Real_F(3)))]
 
-    # Exit a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
     def exitCoordinate4_rst_func_call(self, ctx: AmberMRParser.Coordinate4_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#coordinate4_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_coordinate4_rst_func")
 
-    # Enter a parse tree produced by AmberMRParser#restraint_func_expr.
     def enterRestraint_func_expr(self, ctx: AmberMRParser.Restraint_func_exprContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#restraint_func_expr.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#restraint_func_expr.
     def exitRestraint_func_expr(self, ctx: AmberMRParser.Restraint_func_exprContext):
+        """ Exit a parse tree produced by AmberMRParser#restraint_func_expr.
+        """
+
         funcExpr = {}
 
         if ctx.Integer_F():
@@ -10847,8 +10951,10 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.funcExprs.append(funcExpr)
 
-    # Enter a parse tree produced by AmberMRParser#plane_rst_func_call.
     def enterPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#plane_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_plane_rst_func")
 
@@ -10862,16 +10968,20 @@ class AmberMRParserListener(ParseTreeListener):
         else:
             self.inPlane_funcExprs2 = []
 
-    # Exit a parse tree produced by AmberMRParser#plane_rst_func_call.
     def exitPlane_rst_func_call(self, ctx: AmberMRParser.Plane_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#plane_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_plane_rst_func")
 
         self.inPlane = False
 
-    # Enter a parse tree produced by AmberMRParser#com_rst_func_call.
     def enterCom_rst_func_call(self, ctx: AmberMRParser.Com_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by AmberMRParser#com_rst_func_call.
+        """
+
         if self.__debug:
             print("  " * self.depth + "enter_com_rst_func")
 
@@ -10880,8 +10990,10 @@ class AmberMRParserListener(ParseTreeListener):
         self.inCom = True
         self.inCom_funcExprs = []
 
-    # Exit a parse tree produced by AmberMRParser#com_rst_func_call.
     def exitCom_rst_func_call(self, ctx: AmberMRParser.Com_rst_func_callContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#com_rst_func_call.
+        """
+
         self.depth -= 1
         if self.__debug:
             print("  " * self.depth + "exit_com_rst_func")
@@ -10901,20 +11013,24 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.funcExprs.append(self.inCom_funcExprs)
 
-    # Enter a parse tree produced by AmberMRParser#unambig_atom_name_mapping.
     def enterUnambig_atom_name_mapping(self, ctx: AmberMRParser.Unambig_atom_name_mappingContext):
+        """ Enter a parse tree produced by AmberMRParser#unambig_atom_name_mapping.
+        """
+
         self.__cur_resname_for_mapping = str(ctx.Simple_name()).upper()
 
-    # Exit a parse tree produced by AmberMRParser#unambig_atom_name_mapping.
     def exitUnambig_atom_name_mapping(self, ctx: AmberMRParser.Unambig_atom_name_mappingContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by AmberMRParser#unambig_atom_name_mapping.
+        """
 
-    # Enter a parse tree produced by AmberMRParser#mapping_list.
     def enterMapping_list(self, ctx: AmberMRParser.Mapping_listContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#mapping_list.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#mapping_list.
     def exitMapping_list(self, ctx: AmberMRParser.Mapping_listContext):
+        """ Exit a parse tree produced by AmberMRParser#mapping_list.
+        """
+
         atomName = str(ctx.Simple_name_MP(0)).upper()
         iupacName = set()
 
@@ -10930,20 +11046,26 @@ class AmberMRParserListener(ParseTreeListener):
             self.unambigAtomNameMapping[self.__cur_resname_for_mapping] = {}
         self.unambigAtomNameMapping[self.__cur_resname_for_mapping][atomName] = list(iupacName)
 
-    # Enter a parse tree produced by AmberMRParser#ambig_atom_name_mapping.
     def enterAmbig_atom_name_mapping(self, ctx: AmberMRParser.Ambig_atom_name_mappingContext):
+        """ Enter a parse tree produced by AmberMRParser#ambig_atom_name_mapping.
+        """
+
         self.__cur_resname_for_mapping = str(ctx.Simple_name()).upper()
 
-    # Exit a parse tree produced by AmberMRParser#ambig_atom_name_mapping.
     def exitAmbig_atom_name_mapping(self, ctx: AmberMRParser.Ambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by AmberMRParser#ambig_atom_name_mapping.
+        """
+
         self.updateAmbigAtomNameMapping()
 
-    # Enter a parse tree produced by AmberMRParser#ambig_list.
     def enterAmbig_list(self, ctx: AmberMRParser.Ambig_listContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by AmberMRParser#ambig_list.
+        """
 
-    # Exit a parse tree produced by AmberMRParser#ambig_list.
     def exitAmbig_list(self, ctx: AmberMRParser.Ambig_listContext):
+        """ Exit a parse tree produced by AmberMRParser#ambig_list.
+        """
+
         if ctx.Ambig_code_MP():
             ambigCode = str(ctx.Ambig_code_MP())
             i = 0
@@ -10969,12 +11091,15 @@ class AmberMRParserListener(ParseTreeListener):
             self.ambigAtomNameMapping[self.__cur_resname_for_mapping][ambigCode] = mapName
 
     def updateAmbigAtomNameMapping(self):
+        """ Update ambiguous atom name mapping dictionary.
+        """
+
         if (not self.__hasPolySeq and not self.__hasNonPolySeq) or len(self.ambigAtomNameMapping) == 0:
             return
 
         unambigResidues = None
         if len(self.unambigAtomNameMapping) > 0:
-            unambigResidues = [translateToStdResName(residue, ccU=self.__ccU) for residue in self.unambigAtomNameMapping.keys()]
+            unambigResidues = [translateToStdResName(residue, ccU=self.__ccU) for residue in self.unambigAtomNameMapping]
 
         for ambigDict in self.ambigAtomNameMapping.values():
             for ambigList in ambigDict.values():
@@ -11045,6 +11170,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     @functools.lru_cache(maxsize=256)
     def translateToStdResNameWrapper(self, seqId: int, compId: str) -> str:
+        """ A wrapper function for ParserListenerUtil.translateToStdResName().
+        """
+
         _compId = compId
         refCompId = None
         for ps in self.__polySeq:
@@ -11066,6 +11194,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str] = None
                           ) -> Tuple[str, int, Optional[str]]:  # pylint: disable=no-self-use
+        """ Return a realistic sequence for a given polymer sequence, sequence code, and residue name.
+        """
+
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
             if len(_compId) == 2 and _compId.startswith('D'):
@@ -11089,7 +11220,7 @@ class AmberMRParserListener(ParseTreeListener):
         return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None) -> List[Tuple[str, int, str, bool]]:
-        """ Assign polymer sequences of the coordinates.
+        """ Assign polymer sequences of the coordinates for a given sequence code and atom name.
         """
 
         chainAssign = set()
@@ -11200,7 +11331,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
                          allowAmbig: bool = True, enableWarning: bool = True, offset: int = 0):
-        """ Select atoms of the coordinates.
+        """ Select atoms of the coordinates for given conditions.
         """
 
         atomSelection = []
@@ -11273,6 +11404,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
                                    seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning: bool = True):
+        """ Perform consistency test for each atom in reference to the coordinates.
+        """
+
         if not self.__hasCoord:
             return
 
@@ -11416,6 +11550,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 "is not present in the coordinates.")
 
     def __getCurrentRestraint(self, dataset: Optional[str] = None, n: Optional[int] = None) -> str:
+        """ Retrieve indicator of the current restraint.
+        """
+
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'ang':
@@ -11454,12 +11591,18 @@ class AmberMRParserListener(ParseTreeListener):
         return f"[Check the {self.nmrRestraints}th row of NMR restraints, {self.__def_err_sf_framecode}] "
 
     def __getNamedReasonsForReparsing(self, name: str) -> dict:
+        """ Retrieve reasons for re-parsing by name. create a dictionary if name does not exist.
+        """
+
         if name in self.reasonsForReParsing:
             return self.reasonsForReParsing[name]
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
     def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None, rdcCode: Optional[str] = None):
+        """ Add saveframe for given conditions if not exists.
+        """
+
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -11511,6 +11654,9 @@ class AmberMRParserListener(ParseTreeListener):
 
     def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                 rdcCode: Optional[str] = None) -> dict:
+        """ Retrieve saveframe for given conditions.
+        """
+
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
@@ -11547,6 +11693,9 @@ class AmberMRParserListener(ParseTreeListener):
         return self.sfDict[key][-1]
 
     def __trimSfWoLp(self):
+        """ Trim saveframe(s) without any loop.
+        """
+
         if self.__cur_subtype not in self.__lastSfDict:
             return
         if self.__lastSfDict[self.__cur_subtype]['index_id'] > 0:
@@ -11637,5 +11786,3 @@ class AmberMRParserListener(ParseTreeListener):
         for k in ign_keys:
             del self.sfDict[k]
         return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict
-
-# del AmberMRParser

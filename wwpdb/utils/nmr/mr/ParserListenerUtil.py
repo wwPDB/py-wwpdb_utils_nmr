@@ -26,12 +26,13 @@ import re
 import copy
 import collections
 import itertools
-import numpy
-import pynmrstar
 import functools
 
 from operator import itemgetter
 from typing import Any, IO, List, Set, Tuple, Optional
+
+import numpy
+import pynmrstar
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -184,6 +185,9 @@ def stripQuot(string: str) -> str:
 def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                            refAtomIdList: Optional[List[str]] = None,
                            ccU=None, unambig: bool = False) -> str:
+    """ A wrapper function to translateToStdAtomNameNoRef().
+    """
+
     atomId = atomId.upper()
     return translateToStdAtomNameNoRef(atomId, refCompId, ccU, unambig)\
         if refAtomIdList is None or len(refAtomIdList) == 0 else\
@@ -2479,7 +2483,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         del mis['test_auth_chain_id']
                         misPolyLink.append(mis)
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 if verbose:
                     log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
 
@@ -2802,7 +2806,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 if 'ins_code' in ps and len(collections.Counter(ps['ins_code']).most_common()) == 1:
                     del ps['ins_code']
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if verbose:
                 log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
 
@@ -4403,7 +4407,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                             break
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         if verbose:
             log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
 
@@ -4666,7 +4670,7 @@ def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None
                     if abs(_s1[0] - _s2[0]) > 1:
                         return True
 
-            except Exception:
+            except ValueError:
                 return True
 
     return False
@@ -5645,7 +5649,7 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
         else:
             struct_conn = []
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return False
 
     if len(struct_conn) == 0:
@@ -5668,7 +5672,7 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
             else:
                 close_contact = []
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
         if len(close_contact) == 0:
@@ -5728,7 +5732,7 @@ def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = Non
         if len(struct_conn) == 0:
             return None
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return None
 
     return [dict(s) for s in set(frozenset(sc.items()) for sc in struct_conn if isinstance(sc, dict))]
@@ -5764,7 +5768,7 @@ def getWatsonCrickPtnr(cR, authAsymId: str) -> Optional[List[str]]:
         if len(struct_conn) == 0:
             return None
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return None
 
     return list(set(sc['chain_id'] for sc in struct_conn))
@@ -5810,7 +5814,7 @@ def getStructConnPtnrAtom(cR, authAsymId: str, authSeqId: int, authAtomId: str) 
         if len(struct_conn) == 1:
             return struct_conn[0]
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return None
 
     return None
@@ -5858,7 +5862,7 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
         else:
             struct_conn = []
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return False
 
     if len(struct_conn) == 0:
@@ -5896,7 +5900,7 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
             else:
                 close_contact = []
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
         if len(close_contact) == 0:
@@ -5957,7 +5961,7 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return None
 
     model_ids = set(a['model_id'] for a in atom_site_1) | set(a['model_id'] for a in atom_site_2)
@@ -6689,7 +6693,7 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
     return None
 
 
-def getRow(mrSubtype: str, id: int, indexId: int,
+def getRow(mrSubtype: str, id: int, indexId: int,  # pylint: disable=redefined-builtin
            combinationId: Optional[int], memberId: Optional[int], code: Optional[str],
            listId: int, entryId: str, dstFunc: dict,
            authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict],
@@ -7198,7 +7202,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
     return row
 
 
-def getPkRow(pkSubtype: str, id: int, indexId: int,
+def getPkRow(pkSubtype: str, id: int, indexId: int,  # pylint: disable=redefined-builtin
              listId: int, entryId: str, dstFunc: dict,
              authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
              atom1: Optional[dict] = None, atom2: Optional[dict] = None,
@@ -7533,7 +7537,7 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
     return row
 
 
-def getSpectralDimRow(id: int, listId: int, entryId: str, meta: dict) -> List[Any]:
+def getSpectralDimRow(id: int, listId: int, entryId: str, meta: dict) -> List[Any]:  # pylint: disable=redefined-builtin
     """ Return row data for a _Spectral_dim loop.
         @return: data array
     """
@@ -7789,7 +7793,7 @@ def getDstFuncAsNoe() -> dict:
     return {'weight': '1.0', 'lower_limit': '2.0', 'upper_limit': str(DIST_AMBIG_MED)}
 
 
-def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optional[int], code: Optional[str],
+def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optional[int], code: Optional[str],  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
                    listId: int, entryId: str, originalTagNames: List[str], originalRow: List[Any],
                    authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict],
                    authToInsCode: Optional[dict], offsetHolder: dict,

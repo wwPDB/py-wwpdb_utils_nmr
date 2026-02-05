@@ -16,12 +16,13 @@ import sys
 import re
 import itertools
 import copy
-import numpy
 
-from antlr4 import ParseTreeListener
-from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 from operator import itemgetter
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
+from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module,import-error
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
@@ -126,8 +127,9 @@ except ImportError:
                                            getPotentialType)
 
 
-# This class defines a complete listener for a parse tree produced by CnsMRParser.
 class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by CnsMRParser.
+    """
     __slots__ = ()
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -146,16 +148,20 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.file_type = 'nm-res-cns'
         self.software_name = 'CNS'
 
-    # Enter a parse tree produced by CnsMRParser#cns_mr.
     def enterCns_mr(self, ctx: CnsMRParser.Cns_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#cns_mr.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#cns_mr.
     def exitCns_mr(self, ctx: CnsMRParser.Cns_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#cns_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by CnsMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: CnsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#distance_restraint.
+        """
+
         self.classification = '.'
 
         self.distStatements += 1
@@ -187,8 +193,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by CnsMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CnsMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#distance_restraint.
+        """
+
         if self.createSfDict and self.cur_subtype == 'dist':
             if self.cur_subtype not in self.lastSfDict:
                 return
@@ -251,8 +259,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#dihedral_angle_restraint.
+        """
+
         self.dihedStatements += 1
         self.cur_subtype = 'dihed'
 
@@ -261,26 +271,34 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by CnsMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: CnsMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#dihedral_angle_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#plane_restraint.
     def enterPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#plane_restraint.
+        """
+
         self.planeStatements += 1
         self.cur_subtype = 'plane'
 
         if self.createSfDict:
             self.addSf('planarity restraint')
 
-    # Exit a parse tree produced by CnsMRParser#plane_restraint.
     def exitPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#plane_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#harmonic_restraint.
+        """
+
         self.geoStatements += 1
         self.cur_subtype = 'geo'
 
@@ -290,13 +308,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('NCS restraint')
 
-    # Exit a parse tree produced by CnsMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: CnsMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#harmonic_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CnsMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#rdc_restraint.
+        """
+
         self.classification = '.'
 
         self.rdcStatements += 1
@@ -308,13 +330,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by CnsMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CnsMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#rdc_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: CnsMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#coupling_restraint.
+        """
+
         self.classification = '.'
 
         self.jcoupStatements += 1
@@ -323,13 +349,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by CnsMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: CnsMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#coupling_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: CnsMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#carbon_shift_restraint.
+        """
+
         self.classification = '.'
 
         self.hvycsStatements += 1
@@ -338,13 +368,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by CnsMRParser#carbon_shift_restraint.
     def exitCarbon_shift_restraint(self, ctx: CnsMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#carbon_shift_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: CnsMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_restraint.
+        """
+
         self.classification = '.'
 
         self.procsStatements += 1
@@ -353,13 +387,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_restraint.
     def exitProton_shift_restraint(self, ctx: CnsMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#conformation_db_restraint.
     def enterConformation_db_restraint(self, ctx: CnsMRParser.Conformation_db_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#conformation_db_restraint.
+        """
+
         self.classification = '.'
 
         self.ramaStatements += 1
@@ -368,13 +406,15 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('dihedral angle database restraint')
 
-    # Exit a parse tree produced by CnsMRParser#conformation_db_restraint.
     def exitConformation_db_restraint(self, ctx: CnsMRParser.Conformation_db_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#conformation_db_restraint.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
     def enterDiffusion_anisotropy_restraint(self, ctx: CnsMRParser.Diffusion_anisotropy_restraintContext
                                             ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
+        """
+
         self.classification = '.'
 
         self.diffStatements += 1
@@ -383,36 +423,38 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('diffusion anisotropy restraint')
 
-    # Exit a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: CnsMRParser.Diffusion_anisotropy_restraintContext
                                            ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#diffusion_anisotropy_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#one_bond_coupling_restraint.
     def enterOne_bond_coupling_restraint(self, ctx: CnsMRParser.One_bond_coupling_restraintContext
                                          ):  # pylint: disable=unused-argument
         """
         @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
         """
 
-    # Exit a parse tree produced by CnsMRParser#one_bond_coupling_restraint.
     def exitOne_bond_coupling_restraint(self, ctx: CnsMRParser.One_bond_coupling_restraintContext
                                         ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#one_bond_coupling_restraint.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#angle_db_restraint.
     def enterAngle_db_restraint(self, ctx: CnsMRParser.Angle_db_restraintContext):  # pylint: disable=unused-argument
         """
         @deprecated:  This term has not proved useful in practice and is only here for historical reasons.
         """
 
-    # Exit a parse tree produced by CnsMRParser#angle_db_restraint.
     def exitAngle_db_restraint(self, ctx: CnsMRParser.Angle_db_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#angle_db_restraint.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#noe_statement.
     def enterNoe_statement(self, ctx: CnsMRParser.Noe_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#noe_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('BIHA'):
@@ -678,13 +720,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.symmDminus = None
             self.symmDplus = None
 
-    # Exit a parse tree produced by CnsMRParser#noe_statement.
     def exitNoe_statement(self, ctx: CnsMRParser.Noe_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#noe_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (NOE) classification={self.classification!r}")
 
-    # Enter a parse tree produced by CnsMRParser#noe_assign.
     def enterNoe_assign(self, ctx: CnsMRParser.Noe_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#noe_assign.
+        """
+
         self.distRestraints += 1
         self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
         if self.cur_subtype_altered:
@@ -701,8 +747,9 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.scale_a = None
         self.has_nx = False
 
-    # Exit a parse tree produced by CnsMRParser#noe_assign.
     def exitNoe_assign(self, ctx: CnsMRParser.Noe_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#noe_assign.
+        """
 
         try:
 
@@ -927,25 +974,29 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#predict_statement.
     def enterPredict_statement(self, ctx: CnsMRParser.Predict_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#predict_statement.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#predict_statement.
     def exitPredict_statement(self, ctx: CnsMRParser.Predict_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#predict_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#noe_annotation.
     def enterNoe_annotation(self, ctx: CnsMRParser.Noe_annotationContext):
+        """ Enter a parse tree produced by CnsMRParser#noe_annotation.
+        """
+
         if ctx.Weight():
             self.scale_a = self.getNumber_a(ctx.number_a())
 
-    # Exit a parse tree produced by CnsMRParser#noe_annotation.
     def exitNoe_annotation(self, ctx: CnsMRParser.Noe_annotationContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#noe_annotation.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#dihedral_statement.
     def enterDihedral_statement(self, ctx: CnsMRParser.Dihedral_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#dihedral_statement.
+        """
+
         if ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
             if isinstance(self.scale, str):
@@ -969,12 +1020,14 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.Reset():
             self.scale = 1.0
 
-    # Exit a parse tree produced by CnsMRParser#dihedral_statement.
     def exitDihedral_statement(self, ctx: CnsMRParser.Dihedral_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#dihedral_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#dihedral_assign.
     def enterDihedral_assign(self, ctx: CnsMRParser.Dihedral_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#dihedral_assign.
+        """
+
         self.dihedRestraints += 1
         if self.cur_subtype != 'dihed':
             self.dihedStatements += 1
@@ -983,8 +1036,9 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: CnsMRParser.Dihedral_assignContext):
+        """ Exit a parse tree produced by CnsMRParser#dihedral_assign.
+        """
 
         try:
 
@@ -1142,25 +1196,29 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#plane_statement.
     def enterPlane_statement(self, ctx: CnsMRParser.Plane_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#plane_statement.
+        """
+
         if ctx.Initialize():
             self.planeWeight = 300.0
 
-    # Exit a parse tree produced by CnsMRParser#plane_statement.
     def exitPlane_statement(self, ctx: CnsMRParser.Plane_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#plane_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#plane_group.
     def enterPlane_group(self, ctx: CnsMRParser.Plane_groupContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#plane_group.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#plane_group.
     def exitPlane_group(self, ctx: CnsMRParser.Plane_groupContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#plane_group.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#group_statement.
     def enterGroup_statement(self, ctx: CnsMRParser.Group_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#group_statement.
+        """
+
         self.planeRestraints += 1
         if self.cur_subtype != 'plane':
             self.planeStatements += 1
@@ -1189,8 +1247,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                               f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "
                               "should be a positive value.")
 
-    # Exit a parse tree produced by CnsMRParser#group_statement.
     def exitGroup_statement(self, ctx: CnsMRParser.Group_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#group_statement.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -1216,8 +1276,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            sf['list_id']])
 
-    # Enter a parse tree produced by CnsMRParser#harmonic_statement.
     def enterHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#harmonic_statement.
+        """
+
         if ctx.Exponent():
             self.squareExponent = int(str(ctx.Integer()))
             if self.squareExponent <= 0.0:
@@ -1239,8 +1301,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 self.inVector3D_head = None
                 self.vector3D = None
 
-    # Exit a parse tree produced by CnsMRParser#harmonic_statement.
     def exitHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#harmonic_statement.
+        """
+
         if self.vector3D is None:
             self.vector3D = [0.0] * 3  # set default vector if not available
 
@@ -1261,8 +1325,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.vector3D['harm'] = []
 
-    # Enter a parse tree produced by CnsMRParser#harmonic_assign.
     def enterHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#harmonic_assign.
+        """
+
         self.geoRestraints += 1
         if self.cur_subtype != 'geo':
             self.geoStatements += 1
@@ -1271,8 +1337,9 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#harmonic_assign.
     def exitHarmonic_assign(self, ctx: CnsMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#harmonic_assign.
+        """
 
         try:
 
@@ -1293,8 +1360,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#sani_statement.
     def enterSani_statement(self, ctx: CnsMRParser.Sani_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#sani_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -1318,14 +1387,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  'rhombicity': self.getNumber_s(ctx.number_s(2))
                                  }
 
-    # Exit a parse tree produced by CnsMRParser#sani_statement.
     def exitSani_statement(self, ctx: CnsMRParser.Sani_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#sani_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (SANI) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by CnsMRParser#sani_assign.
     def enterSani_assign(self, ctx: CnsMRParser.Sani_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#sani_assign.
+        """
+
         self.rdcRestraints += 1
         if self.cur_subtype != 'rdc':
             self.rdcStatements += 1
@@ -1334,8 +1407,9 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#sani_assign.
     def exitSani_assign(self, ctx: CnsMRParser.Sani_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#sani_assign.
+        """
 
         try:
 
@@ -1436,7 +1510,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 if distance(to_np_array(_head[0]), to_np_array(_tail[0])) < 10.0:
                                     self.symmetric = 'circular'
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.__class_name__}.exitSani_assign() ++ Error  - {str(e)}")
 
@@ -1567,8 +1641,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#coupling_statement.
     def enterCoupling_statement(self, ctx: CnsMRParser.Coupling_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#coupling_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -1595,14 +1671,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  'Karplus_phase': self.getNumber_s(ctx.number_s(3))
                                  }
 
-    # Exit a parse tree produced by CnsMRParser#coupling_statement.
     def exitCoupling_statement(self, ctx: CnsMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#coupling_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (COUP) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by CnsMRParser#coup_assign.
     def enterCoup_assign(self, ctx: CnsMRParser.Coup_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#coup_assign.
+        """
+
         self.jcoupRestraints += 1
         if self.cur_subtype != 'jcoup':
             self.jcoupStatements += 1
@@ -1611,8 +1691,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#coup_assign.
     def exitCoup_assign(self, ctx: CnsMRParser.Coup_assignContext):  # pylint: disable=unused-argument
+
+        """ Exit a parse tree produced by CnsMRParser#coup_assign.
+        """
 
         try:
 
@@ -1818,8 +1900,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#carbon_shift_statement.
     def enterCarbon_shift_statement(self, ctx: CnsMRParser.Carbon_shift_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#carbon_shift_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -1845,22 +1929,27 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                              'cb_shift_error': self.getNumber_s(ctx.number_s(3))
                              }
 
-    # Exit a parse tree produced by CnsMRParser#carbon_shift_statement.
     def exitCarbon_shift_statement(self, ctx: CnsMRParser.Carbon_shift_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#carbon_shift_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (CARB) classification={self.classification!r} "
                   f"expectation={self.csExpect}")
 
-    # Enter a parse tree produced by CnsMRParser#carbon_shift_assign.
     def enterCarbon_shift_assign(self, ctx: CnsMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#carbon_shift_assign.
+        """
+
         self.hvycsRestraints += 1
         self.cur_subtype = 'hvycs'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: CnsMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#carbon_shift_assign.
+        """
 
         try:
 
@@ -2001,13 +2090,16 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#carbon_shift_rcoil.
     def enterCarbon_shift_rcoil(self, ctx: CnsMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#carbon_shift_rcoil.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#carbon_shift_rcoil.
     def exitCarbon_shift_rcoil(self, ctx: CnsMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#carbon_shift_rcoil.
+        """
 
         try:
 
@@ -2047,8 +2139,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_statement.
     def enterProton_shift_statement(self, ctx: CnsMRParser.Proton_shift_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -2068,21 +2162,26 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.potential = 'square'
             self.coefficients = None
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: CnsMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (PROTON) classification={self.classification!r}")
 
-    # Enter a parse tree produced by CnsMRParser#observed.
     def enterObserved(self, ctx: CnsMRParser.ObservedContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#observed.
+        """
+
         self.procsRestraints += 1
         self.cur_subtype = 'procs'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#observed.
     def exitObserved(self, ctx: CnsMRParser.ObservedContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#observed.
+        """
 
         try:
 
@@ -2169,13 +2268,16 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_rcoil.
     def enterProton_shift_rcoil(self, ctx: CnsMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_rcoil.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_rcoil.
     def exitProton_shift_rcoil(self, ctx: CnsMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_rcoil.
+        """
 
         try:
 
@@ -2207,13 +2309,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_anisotropy.
     def enterProton_shift_anisotropy(self, ctx: CnsMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_anisotropy.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_anisotropy.
     def exitProton_shift_anisotropy(self, ctx: CnsMRParser.Proton_shift_anisotropyContext):
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_anisotropy.
+        """
+
         co_or_cn = str(ctx.Simple_name(0))
         is_cooh = None
         if ctx.Logical():
@@ -2258,13 +2364,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 print(f"subtype={self.cur_subtype} (PROTON/ANIS) id={self.procsRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_amides.
     def enterProton_shift_amides(self, ctx: CnsMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_amides.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: CnsMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_amides.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'H':
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -2275,13 +2385,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/AMID) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_carbons.
     def enterProton_shift_carbons(self, ctx: CnsMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_carbons.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_carbons.
     def exitProton_shift_carbons(self, ctx: CnsMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_carbons.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'C':
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -2292,13 +2406,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/CARB) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_nitrogens.
     def enterProton_shift_nitrogens(self, ctx: CnsMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_nitrogens.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_nitrogens.
     def exitProton_shift_nitrogens(self, ctx: CnsMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_nitrogens.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'N':
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -2309,13 +2427,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/NITR) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_oxygens.
     def enterProton_shift_oxygens(self, ctx: CnsMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_oxygens.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_oxygens.
     def exitProton_shift_oxygens(self, ctx: CnsMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_oxygens.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'O':
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -2326,13 +2448,17 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/OXYG) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_ring_atoms.
     def enterProton_shift_ring_atoms(self, ctx: CnsMRParser.Proton_shift_ring_atomsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_ring_atoms.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_ring_atoms.
     def exitProton_shift_ring_atoms(self, ctx: CnsMRParser.Proton_shift_ring_atomsContext):
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_ring_atoms.
+        """
+
         ring_name = str(ctx.Simple_name())
 
         ringNames = ('PHE', 'TYR', 'HIS', 'TRP5', 'TRP6', 'ADE6', 'ADE5', 'GUA6', 'GUA5', 'THY', 'CYT', 'URA')
@@ -2373,15 +2499,19 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} "
                           f"atom4={atom4} atom5={atom5} atom6={atom6}")
 
-    # Enter a parse tree produced by CnsMRParser#proton_shift_alphas_and_amides.
     def enterProton_shift_alphas_and_amides(self, ctx: CnsMRParser.Proton_shift_alphas_and_amidesContext
                                             ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#proton_shift_alphas_and_amides.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#proton_shift_alphas_and_amides.
     def exitProton_shift_alphas_and_amides(self, ctx: CnsMRParser.Proton_shift_alphas_and_amidesContext
                                            ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#proton_shift_alphas_and_amides.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] == 'H' or atom1['atom_id'].startswith('HA'):
                 pass
@@ -2394,8 +2524,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/ALPH) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by CnsMRParser#conformation_statement.
     def enterConformation_statement(self, ctx: CnsMRParser.Conformation_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#conformation_statement.
+        """
+
         if ctx.Error():
             self.ramaError = self.getNumber_s(ctx.number_s())
             if isinstance(self.ramaError, str):
@@ -2470,23 +2602,29 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.ramaExpectGrid = None
             self.ramaExpectValue = None
 
-    # Exit a parse tree produced by CnsMRParser#conformation_statement.
     def exitConformation_statement(self, ctx: CnsMRParser.Conformation_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#conformation_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (CONF) classification={self.classification!r} "
                   f"error={self.ramaError} force_constant={self.ramaForceConst} potential={self.ramaPotential} "
                   f"size={self.ramaSize} phase={self.ramaSize} expectation={self.ramaExpectGrid} {self.ramaExpectValue}")
 
-    # Enter a parse tree produced by CnsMRParser#conf_assign.
     def enterConf_assign(self, ctx: CnsMRParser.Conf_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#conf_assign.
+        """
+
         self.ramaRestraints += 1
         self.cur_subtype = 'rama'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#conf_assign.
     def exitConf_assign(self, ctx: CnsMRParser.Conf_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#conf_assign.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -2607,8 +2745,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                                sf['list_id']])
 
-    # Enter a parse tree produced by CnsMRParser#diffusion_statement.
     def enterDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#diffusion_statement.
+        """
+
         if ctx.Coefficients():
             self.diffCoef = {'Tc': self.getNumber_s(ctx.number_s(0)),
                              'anisotropy': self.getNumber_s(ctx.number_s(1)),
@@ -2638,23 +2778,28 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.diffForceConst = 1.0
             self.diffPotential = 'square'
 
-    # Exit a parse tree produced by CnsMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#diffusion_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (DANI) classification={self.classification!r} "
                   f"coefficients={self.diffCoef} force_constant={self.diffForceConst} "
                   f"potential={self.diffPotential}")
 
-    # Enter a parse tree produced by CnsMRParser#dani_assign.
     def enterDani_assign(self, ctx: CnsMRParser.Dani_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#dani_assign.
+        """
+
         self.diffRestraints += 1
         self.cur_subtype = 'diff'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#dani_assign.
     def exitDani_assign(self, ctx: CnsMRParser.Dani_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#dani_assign.
+        """
 
         try:
 
@@ -2801,69 +2946,75 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#one_bond_coupling_statement.
     def enterOne_bond_coupling_statement(self, ctx: CnsMRParser.One_bond_coupling_statementContext
                                          ):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#one_bond_coupling_statement.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#one_bond_coupling_statement.
     def exitOne_bond_coupling_statement(self, ctx: CnsMRParser.One_bond_coupling_statementContext
                                         ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#one_bond_coupling_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#one_bond_assign.
     def enterOne_bond_assign(self, ctx: CnsMRParser.One_bond_assignContext):  # pylint: disable=unused-argument
-        """
-        @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
+        """ Enter a parse tree produced by CnsMRParser#one_bond_assign.
+            @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
         """
 
-    # Exit a parse tree produced by CnsMRParser#one_bond_assign.
     def exitOne_bond_assign(self, ctx: CnsMRParser.One_bond_assignContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#one_bond_assign.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#angle_db_statement.
     def enterAngle_db_statement(self, ctx: CnsMRParser.Angle_db_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#angle_db_statement.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#angle_db_statement.
     def exitAngle_db_statement(self, ctx: CnsMRParser.Angle_db_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#angle_db_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#angle_db_assign.
     def enterAngle_db_assign(self, ctx: CnsMRParser.Angle_db_assignContext):  # pylint: disable=unused-argument
-        """
-        @deprecated:  This term has not proved useful in practice and is only here for historical reasons.
+        """ Enter a parse tree produced by CnsMRParser#angle_db_assign.
+            @deprecated:  This term has not proved useful in practice and is only here for historical reasons.
         """
 
-    # Exit a parse tree produced by CnsMRParser#angle_db_assign.
     def exitAngle_db_assign(self, ctx: CnsMRParser.Angle_db_assignContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#angle_db_assign.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#ncs_restraint.
     def enterNcs_restraint(self, ctx: CnsMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#ncs_restraint.
+        """
+
         self.geoStatements += 1
         self.cur_subtype = 'geo'
 
         if self.createSfDict:
             self.addSf('NCS restraint')
 
-    # Exit a parse tree produced by CnsMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: CnsMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#ncs_restraint.
+        """
+
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by CnsMRParser#ncs_statement.
     def enterNcs_statement(self, ctx: CnsMRParser.Ncs_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#ncs_statement.
+        """
+
         if ctx.Initialize():
             self.ncsSigb = 2.0
             self.ncsWeight = 300.0
 
-    # Exit a parse tree produced by CnsMRParser#ncs_statement.
     def exitNcs_statement(self, ctx: CnsMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#ncs_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#ncs_group_statement.
     def enterNcs_group_statement(self, ctx: CnsMRParser.Ncs_group_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#ncs_group_statement.
+        """
+
         self.geoRestraints += 1
         if self.cur_subtype != 'geo':
             self.geoStatements += 1
@@ -2908,8 +3059,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                               f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "
                               "should be a positive value.")
 
-    # Exit a parse tree produced by CnsMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: CnsMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#ncs_group_statement.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -2938,8 +3091,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            sf['list_id']])
 
-    # Enter a parse tree produced by CnsMRParser#selection.
     def enterSelection(self, ctx: CnsMRParser.SelectionContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#selection.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + "enter_selection")
 
@@ -2951,8 +3106,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.stackTerms = []
             self.factor = {}
 
-    # Exit a parse tree produced by CnsMRParser#selection.
     def exitSelection(self, ctx: CnsMRParser.SelectionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#selection.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + "exit_selection")
 
@@ -3126,8 +3283,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.atomSelectionSet.append(atomSelection)
 
-    # Enter a parse tree produced by CnsMRParser#selection_expression.
     def enterSelection_expression(self, ctx: CnsMRParser.Selection_expressionContext):
+        """ Enter a parse tree produced by CnsMRParser#selection_expression.
+        """
+
         self.cur_union_expr = self.con_union_expr = bool(ctx.Or_op(0))
         if self.depth == 0:
             self.top_union_expr = self.cur_union_expr
@@ -3147,8 +3306,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by CnsMRParser#selection_expression.
     def exitSelection_expression(self, ctx: CnsMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#selection_expression.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_sel_expr")
@@ -3181,8 +3342,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.con_union_expr = False
             self.unionFactor = None
 
-    # Enter a parse tree produced by CnsMRParser#term.
     def enterTerm(self, ctx: CnsMRParser.TermContext):
+        """ Enter a parse tree produced by CnsMRParser#term.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
 
@@ -3191,8 +3354,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by CnsMRParser#term.
     def exitTerm(self, ctx: CnsMRParser.TermContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#term.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_term")
@@ -3260,8 +3425,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if 'atom_selection' in self.factor and not isinstance(self.factor['atom_selection'], str):
             self.stackTerms.append(self.factor['atom_selection'])
 
-    # Enter a parse tree produced by CnsMRParser#factor.
     def enterFactor(self, ctx: CnsMRParser.FactorContext):
+        """ Enter a parse tree produced by CnsMRParser#factor.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
@@ -3281,8 +3448,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by CnsMRParser#factor.
     def exitFactor(self, ctx: CnsMRParser.FactorContext):
+        """ Exit a parse tree produced by CnsMRParser#factor.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_factor")
@@ -3361,7 +3530,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if 'alt_atom_id' in self.factor:
                             del self.factor['alt_atom_id']
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -3430,7 +3599,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del atom['z']
                                 _atomSelection.append(atom)
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -3509,7 +3678,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                             del atom['z']
                                             _atomSelection.append(atom)
 
-                                    except Exception as e:
+                                    except Exception as e:  # pylint: disable=broad-exception-caught
                                         if self.verbose:
                                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -4335,7 +4504,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                         'enum': (self.representativeAltId,)}
                                                        ])
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -4382,7 +4551,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         del atom['z']
                                         _atomSelection.append(atom)
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -4545,7 +4714,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                     'enum': (self.representativeAltId,)}
                                                                    ])
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -4574,7 +4743,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                             'enum': (self.representativeAltId,)}
                                                            ])
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
                         if self.verbose:
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -4649,7 +4818,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         head = to_np_array(_head[0])
                                         self.vector3D = numpy.subtract(tail, head, dtype=float)
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -4701,7 +4870,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del atom['z']
                                 atomSelection.append(atom)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
                         if self.verbose:
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -4755,7 +4924,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if atomId in pseudoAtoms:
                             atomSelection.append(_atom)
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -5127,7 +5296,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         atomSelection.append(_atom)
                         _sequenceSelect.append(_sequence)
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -5146,12 +5315,14 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberFSelection.clear()
 
-    # Enter a parse tree produced by CnsMRParser#number.
     def enterNumber(self, ctx: CnsMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#number.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#number.
     def exitNumber(self, ctx: CnsMRParser.NumberContext):
+        """ Exit a parse tree produced by CnsMRParser#number.
+        """
+
         if ctx.Real():
             self.numberSelection.append(float(str(ctx.Real())))
 
@@ -5170,12 +5341,14 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.numberSelection.append(None)
 
-    # Enter a parse tree produced by CnsMRParser#number_f.
     def enterNumber_f(self, ctx: CnsMRParser.Number_fContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#number_f.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#number_f.
     def exitNumber_f(self, ctx: CnsMRParser.Number_fContext):
+        """ Exit a parse tree produced by CnsMRParser#number_f.
+        """
+
         if ctx.Real():
             self.numberFSelection.append(float(str(ctx.Real())))
 
@@ -5185,15 +5358,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.numberFSelection.append(None)
 
-    # Enter a parse tree produced by CnsMRParser#number_s.
     def enterNumber_s(self, ctx: CnsMRParser.Number_sContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#number_s.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#number_s.
     def exitNumber_s(self, ctx: CnsMRParser.Number_sContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#number_s.
+        """
 
     def getNumber_s(self, ctx: CnsMRParser.Number_sContext):  # pylint: disable=no-self-use
+        """ Retrieve context of Number_s.
+        """
+
         if ctx is None:
             return None
 
@@ -5208,15 +5384,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         return None
 
-    # Enter a parse tree produced by CnsMRParser#number_a.
     def enterNumber_a(self, ctx: CnsMRParser.Number_aContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#number_a.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#number_a.
     def exitNumber_a(self, ctx: CnsMRParser.Number_aContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#number_a.
+        """
 
     def getNumber_a(self, ctx: CnsMRParser.Number_aContext):  # pylint: disable=no-self-use
+        """ Retrieve context of Number a.
+        """
+
         if ctx is None:
             return None
 
@@ -5228,23 +5407,28 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         return None
 
-    # Enter a parse tree produced by CnsMRParser#classification.
     def enterClassification(self, ctx: CnsMRParser.ClassificationContext):
+        """ Enter a parse tree produced by CnsMRParser#classification.
+        """
+
         self.classification = self.getClass_name(ctx.class_name())
 
-    # Exit a parse tree produced by CnsMRParser#classification.
     def exitClassification(self, ctx: CnsMRParser.ClassificationContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#classification.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#class_name.
     def enterClass_name(self, ctx: CnsMRParser.Class_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#class_name.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#class_name.
     def exitClass_name(self, ctx: CnsMRParser.Class_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#class_name.
+        """
 
     def getClass_name(self, ctx: CnsMRParser.Class_nameContext):  # pylint: disable=no-self-use
+        """ Retrieve context of Class_name.
+        """
+
         if ctx is None:
             return None
 
@@ -5271,16 +5455,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         return None
 
-    # Enter a parse tree produced by CnsMRParser#flag_statement.
     def enterFlag_statement(self, ctx: CnsMRParser.Flag_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#flag_statement.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#flag_statement.
     def exitFlag_statement(self, ctx: CnsMRParser.Flag_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#flag_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#vector_statement.
     def enterVector_statement(self, ctx: CnsMRParser.Vector_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#vector_statement.
+        """
+
         self.cur_vector_mode = ''
         self.cur_vector_atom_prop_type = ''
 
@@ -5290,8 +5476,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#vector_statement.
     def exitVector_statement(self, ctx: CnsMRParser.Vector_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#vector_statement.
+        """
+
         if self.cur_vector_mode == 'identity':
             if self.cur_vector_atom_prop_type.startswith('store'):
                 self.storeSet[int(self.cur_vector_atom_prop_type[-1])] = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
@@ -5308,8 +5496,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     vector['value'] = self.stackVflc.pop()
                 self.vectorDo[vector_name].append(vector)
 
-    # Enter a parse tree produced by CnsMRParser#vector_mode.
     def enterVector_mode(self, ctx: CnsMRParser.Vector_modeContext):
+        """ Enter a parse tree produced by CnsMRParser#vector_mode.
+        """
+
         if ctx.Identity_Lp():
             self.cur_vector_mode = 'identity'
 
@@ -5319,33 +5509,37 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.Show():
             self.cur_vector_mode = 'show'
 
-    # Exit a parse tree produced by CnsMRParser#vector_mode.
     def exitVector_mode(self, ctx: CnsMRParser.Vector_modeContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#vector_mode.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#vector_expression.
     def enterVector_expression(self, ctx: CnsMRParser.Vector_expressionContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#vector_expression.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#vector_expression.
     def exitVector_expression(self, ctx: CnsMRParser.Vector_expressionContext):
+        """ Exit a parse tree produced by CnsMRParser#vector_expression.
+        """
+
         if ctx.Atom_properties_VE():
             self.cur_vector_atom_prop_type = str(ctx.Atom_properties_VE()).lower()
 
-    # Enter a parse tree produced by CnsMRParser#vector_operation.
     def enterVector_operation(self, ctx: CnsMRParser.Vector_operationContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#vector_operation.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#vector_operation.
     def exitVector_operation(self, ctx: CnsMRParser.Vector_operationContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#vector_operation.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#vflc.
     def enterVflc(self, ctx: CnsMRParser.VflcContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#vflc.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#vflc.
     def exitVflc(self, ctx: CnsMRParser.VflcContext):
+        """ Exit a parse tree produced by CnsMRParser#vflc.
+        """
+
         if ctx.Integer_VE():
             self.stackVflc.append(int(str(ctx.Integer_VE())))
         elif ctx.Real_VE():
@@ -5368,32 +5562,36 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.vector_func_call():
             pass
 
-    # Enter a parse tree produced by CnsMRParser#vector_func_call.
     def enterVector_func_call(self, ctx: CnsMRParser.Vector_func_callContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#vector_func_call.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#vector_func_call.
     def exitVector_func_call(self, ctx: CnsMRParser.Vector_func_callContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#vector_func_call.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#vector_show_property.
     def enterVector_show_property(self, ctx: CnsMRParser.Vector_show_propertyContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#vector_show_property.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#vector_show_property.
     def exitVector_show_property(self, ctx: CnsMRParser.Vector_show_propertyContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#vector_show_property.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#evaluate_statement.
     def enterEvaluate_statement(self, ctx: CnsMRParser.Evaluate_statementContext):
+        """ Enter a parse tree produced by CnsMRParser#evaluate_statement.
+        """
+
         if ctx.Symbol_name_VE():
             self.cur_symbol_name = str(ctx.Symbol_name_VE())
 
         self.cur_vflc_op_code = ''
         self.stackVflc = []
 
-    # Exit a parse tree produced by CnsMRParser#evaluate_statement.
     def exitEvaluate_statement(self, ctx: CnsMRParser.Evaluate_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CnsMRParser#evaluate_statement.
+        """
+
         if self.stackVflc:
             self.evaluate[self.cur_symbol_name] = self.stackVflc[0]
 
@@ -5447,12 +5645,14 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.stackVflc.clear()
 
-    # Enter a parse tree produced by CnsMRParser#evaluate_operation.
     def enterEvaluate_operation(self, ctx: CnsMRParser.Evaluate_operationContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#evaluate_operation.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#evaluate_operation.
     def exitEvaluate_operation(self, ctx: CnsMRParser.Evaluate_operationContext):
+        """ Exit a parse tree produced by CnsMRParser#evaluate_operation.
+        """
+
         if ctx.Add_op_VE():
             self.cur_vflc_op_code = '+'
         elif ctx.Sub_op_VE():
@@ -5464,37 +5664,43 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.Exp_op_VE():
             self.cur_vflc_op_code = '^'
 
-    # Enter a parse tree produced by CnsMRParser#patch_statement.
     def enterPatch_statement(self, ctx: CnsMRParser.Patch_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#patch_statement.
+        """
+
         self.geoRestraints += 1
         self.cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by CnsMRParser#patch_statement.
     def exitPatch_statement(self, ctx: CnsMRParser.Patch_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#patch_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#parameter_setting.
     def enterParameter_setting(self, ctx: CnsMRParser.Parameter_settingContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CnsMRParser#parameter_setting.
+        """
 
-    # Exit a parse tree produced by CnsMRParser#parameter_setting.
     def exitParameter_setting(self, ctx: CnsMRParser.Parameter_settingContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#parameter_setting.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#parameter_statement.
     def enterParameter_statement(self, ctx: CnsMRParser.Parameter_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CnsMRParser#parameter_statement.
+        """
+
         self.geoRestraints += 1
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by CnsMRParser#parameter_statement.
     def exitParameter_statement(self, ctx: CnsMRParser.Parameter_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CnsMRParser#parameter_statement.
+        """
 
-    # Enter a parse tree produced by CnsMRParser#noe_assign_loop.
     def enterNoe_assign_loop(self, ctx: CnsMRParser.Noe_assign_loopContext):
+        """ Enter a parse tree produced by CnsMRParser#noe_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -5537,8 +5743,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by CnsMRParser#noe_assign_loop.
     def exitNoe_assign_loop(self, ctx: CnsMRParser.Noe_assign_loopContext):
+        """ Exit a parse tree produced by CnsMRParser#noe_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -5546,8 +5754,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by CnsMRParser#dihedral_assign_loop.
     def enterDihedral_assign_loop(self, ctx: CnsMRParser.Dihedral_assign_loopContext):
+        """ Enter a parse tree produced by CnsMRParser#dihedral_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -5590,8 +5800,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by CnsMRParser#dihedral_assign_loop.
     def exitDihedral_assign_loop(self, ctx: CnsMRParser.Dihedral_assign_loopContext):
+        """ Exit a parse tree produced by CnsMRParser#dihedral_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -5599,8 +5811,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by CnsMRParser#sani_assign_loop.
     def enterSani_assign_loop(self, ctx: CnsMRParser.Sani_assign_loopContext):
+        """ Enter a parse tree produced by CnsMRParser#sani_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -5643,8 +5857,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by CnsMRParser#sani_assign_loop.
     def exitSani_assign_loop(self, ctx: CnsMRParser.Sani_assign_loopContext):
+        """ Exit a parse tree produced by CnsMRParser#sani_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -5652,8 +5868,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by CnsMRParser#coup_assign_loop.
     def enterCoup_assign_loop(self, ctx: CnsMRParser.Coup_assign_loopContext):
+        """ Enter a parse tree produced by CnsMRParser#coup_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -5696,8 +5914,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by CnsMRParser#coup_assign_loop.
     def exitCoup_assign_loop(self, ctx: CnsMRParser.Coup_assign_loopContext):
+        """ Exit a parse tree produced by CnsMRParser#coup_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -5705,8 +5925,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by CnsMRParser#carbon_shift_assign_loop.
     def enterCarbon_shift_assign_loop(self, ctx: CnsMRParser.Carbon_shift_assign_loopContext):
+        """ Enter a parse tree produced by CnsMRParser#carbon_shift_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -5749,8 +5971,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by CnsMRParser#carbon_shift_assign_loop.
     def exitCarbon_shift_assign_loop(self, ctx: CnsMRParser.Carbon_shift_assign_loopContext):
+        """ Exit a parse tree produced by CnsMRParser#carbon_shift_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -5758,8 +5982,10 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by CnsMRParser#plane_group_loop.
     def enterPlane_group_loop(self, ctx: CnsMRParser.Plane_group_loopContext):
+        """ Enter a parse tree produced by CnsMRParser#plane_group_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -5802,13 +6028,13 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by CnsMRParser#plane_group_loop.
     def exitPlane_group_loop(self, ctx: CnsMRParser.Plane_group_loopContext):
+        """ Exit a parse tree produced by CnsMRParser#plane_group_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
                 del self.evaluateFor[symbol_name]
 
         self.in_loop = False
-
-# del CnsMRParser

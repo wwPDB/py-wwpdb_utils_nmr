@@ -17,8 +17,8 @@ import collections
 import copy
 import functools
 
-from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 from typing import IO, List, Optional
+from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module,import-error
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
@@ -77,6 +77,8 @@ except ImportError:
 
 
 class BaseTopologyParserListener():
+    """ ParserLister base class for any topology files.
+    """
     __slots__ = ('mrAtomNameMapping',
                  'hasCoord',
                  'ccU',
@@ -162,6 +164,8 @@ class BaseTopologyParserListener():
         self.cur_nr = -1
 
     def exit(self, retrievedAtomNumList: List[int]):
+        """ Common function to exit a parse tree.
+        """
 
         try:
 
@@ -1022,6 +1026,9 @@ class BaseTopologyParserListener():
 
     @functools.lru_cache(maxsize=128)
     def isSegment(self, prev_comp_id: Optional[str], prev_atom_name: str, comp_id: str, atom_name: str) -> bool:
+        """ Return whether different segment starts.
+        """
+
         if prev_comp_id is None:
             return False
         is_prev_term_atom = prev_atom_name.endswith('T')
@@ -1038,6 +1045,9 @@ class BaseTopologyParserListener():
     @functools.lru_cache(maxsize=128)
     def isSegmentWithAsymHint(self, prev_asym_id: Optional[str], prev_comp_id: Optional[str], prev_atom_name: str,
                               asym_id: str, comp_id: str, atom_name: str) -> bool:
+        """ Return whether different segment starts.
+        """
+
         if prev_asym_id is None or prev_comp_id is None:
             return False
         if prev_asym_id != asym_id:
@@ -1055,6 +1065,9 @@ class BaseTopologyParserListener():
 
     @functools.lru_cache(maxsize=128)
     def isLigand(self, prev_comp_id: Optional[str], comp_id: str) -> bool:  # pylint: disable=no-self-use
+        """ Return whether ligand starts.
+        """
+
         if prev_comp_id is None or not self.hasNonPolyModel:
             return False
         prev_comp_id = prev_comp_id.upper()
@@ -1076,6 +1089,9 @@ class BaseTopologyParserListener():
 
     @functools.lru_cache(maxsize=128)
     def isMetalIon(self, comp_id: Optional[str], atom_name: str) -> bool:  # pylint: disable=no-self-use
+        """ Return whether metal ion starts.
+        """
+
         if comp_id is None:
             return False
         if not comp_id.startswith(atom_name):
@@ -1088,12 +1104,17 @@ class BaseTopologyParserListener():
 
     @functools.lru_cache(maxsize=128)
     def isMetalElem(self, prev_atom_name: str, prev_seq_id: int, seq_id: int) -> bool:  # pylint: disable=no-self-use
+        """ Return whether metal element starts.
+        """
+
         if len(prev_atom_name) == 0:
             return False
         return prev_seq_id != seq_id and prev_atom_name[0] not in NON_METAL_ELEMENTS\
             and (self.unambig or prev_atom_name[0] not in PSE_PRO_BEGIN_CODE)
 
     def assignMetalIon(self):
+        """ Assign metal ion if necessary.
+        """
 
         if not self.hasNonPolyModel:
             return
@@ -1128,6 +1149,8 @@ class BaseTopologyParserListener():
                 atomNum['seq_id'] = nonPoly['auth_seq_id'][0]
 
     def assignNonPolymer(self, nonPolyIndices: List[int]):
+        """ Assign non-polymer if necessary.
+        """
 
         if not self.hasNonPolyModel:
             return

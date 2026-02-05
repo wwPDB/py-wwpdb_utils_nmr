@@ -118,7 +118,7 @@ class mmCIFUtil:
                                 ext += 1
                     idx += 1
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.__verbose and 'loop_ declaration outside of data_ block or save_ frame' not in str(e):
                 self.__log.write(f"+{self.__class_name__} ++ Error  - Read {filePath} failed {str(e)}\n")
 

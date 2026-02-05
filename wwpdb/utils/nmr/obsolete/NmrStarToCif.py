@@ -134,15 +134,20 @@ class NmrStarToCif:
                                 entry_id = '?'
 
                             try:
-                                list_id = next(row[list_id_tags[content_subtype]] for row in dList if row[list_id_tags[content_subtype]] not in EMPTY_VALUE)
+                                list_id = next(row[list_id_tags[content_subtype]] for row in dList
+                                               if row[list_id_tags[content_subtype]] not in EMPTY_VALUE)
                             except (StopIteration, KeyError):
                                 list_id = '?'
 
                             if content_subtype == 'chem_shift':
-                                originalFileName = '?' if originalCsFileNameList is None or cs_list_id >= len(originalCsFileNameList) else originalCsFileNameList[cs_list_id]
+                                originalFileName =\
+                                    '?' if originalCsFileNameList is None or cs_list_id >= len(originalCsFileNameList)\
+                                    else originalCsFileNameList[cs_list_id]
                                 cs_list_id += 1
                             else:
-                                originalFileName = '?' if originalMrFileNameList is None or mr_list_id >= len(originalMrFileNameList) else originalMrFileNameList[mr_list_id]
+                                originalFileName =\
+                                    '?' if originalMrFileNameList is None or mr_list_id >= len(originalMrFileNameList)\
+                                    else originalMrFileNameList[mr_list_id]
                                 mr_list_id += 1
 
                             try:
@@ -177,7 +182,7 @@ class NmrStarToCif:
 
             return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"+ERROR- NmrStarToCif.clean() {str(e)}\n")
 
             return False
@@ -216,7 +221,8 @@ class NmrStarToCif:
 
                 # add Data_file_name item in the following saveframe tag
 
-                sf_tags = ['Assigned_chem_shift_list', 'Gen_dist_constraint_list', 'Torsion_angle_constraint_list', 'RDC_constraint_list', 'Spectral_peak_list']
+                sf_tags = ['Assigned_chem_shift_list', 'Gen_dist_constraint_list', 'Torsion_angle_constraint_list',
+                           'RDC_constraint_list', 'Spectral_peak_list']
                 data_file_name_tag = 'Data_file_name'
 
                 for sf_tag in sf_tags:
@@ -262,7 +268,8 @@ class NmrStarToCif:
                 # add _Atom_chem_shift.Original_PDB_* items
 
                 lp_category = 'Atom_chem_shift'
-                original_items = ['Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name']
+                original_items = ['Original_PDB_strand_ID', 'Original_PDB_residue_no',
+                                  'Original_PDB_residue_name', 'Original_PDB_atom_name']
                 original_auth_map = {'Original_PDB_strand_ID': 'Auth_asym_ID',
                                      'Original_PDB_residue_no': 'Auth_seq_ID',
                                      'Original_PDB_residue_name': 'Auth_comp_ID',
@@ -291,7 +298,8 @@ class NmrStarToCif:
                                 extended_data_list.append(dst)
 
                             if self.__insert_original_pdb_cs_items:
-                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID') + 1)
+                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list,
+                                                      items.index('Auth_atom_ID') + 1)
 
                         if overwrite_auth_atom_id:
                             cifObj.copyItemValues(k, lp_category, atom_id_tags, auth_atom_id_tags)
@@ -337,7 +345,8 @@ class NmrStarToCif:
                                 extended_data_list.append(dst)
 
                             if self.__insert_original_atom_name_items:
-                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
+                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list,
+                                                      items.index('Auth_atom_ID_2') + 1)
 
                         if overwrite_auth_atom_id:
                             cifObj.copyItemValues(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
@@ -355,7 +364,7 @@ class NmrStarToCif:
                     for k, v in original_auth_map.items():
                         _original_auth_map[f'{k}_{i}'] = f'{v}_{i}'
                     for atom_id_tag in atom_id_tags:
-                        _atom_id_tags.append(f'{atom_id_tag_{i}')
+                        _atom_id_tags.append(f'{atom_id_tag}_{i}')
                     for auth_atom_id_tag in auth_atom_id_tags:
                         _auth_atom_id_tags.append(f'{auth_atom_id_tag}_{i}')
 
@@ -380,7 +389,8 @@ class NmrStarToCif:
                                 extended_data_list.append(dst)
 
                             if self.__insert_original_atom_name_items:
-                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_4') + 1)
+                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list,
+                                                      items.index('Auth_atom_ID_4') + 1)
 
                         if overwrite_auth_atom_id:
                             cifObj.copyItemValues(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
@@ -423,7 +433,8 @@ class NmrStarToCif:
                                 extended_data_list.append(dst)
 
                             if self.__insert_original_atom_name_items:
-                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
+                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list,
+                                                      items.index('Auth_atom_ID_2') + 1)
 
                         if overwrite_auth_atom_id:
                             cifObj.copyItemValues(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
@@ -475,7 +486,8 @@ class NmrStarToCif:
                 #                     extended_data_list.append(dst)
 
                 #                 if has_auth_value:
-                #                     cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index(f"Auth_atom_ID_{max_dim - 1}") + 1)
+                #                     cifObj.extendCategory(k, lp_category, extended_items, extended_data_list,
+                #                                           items.index(f"Auth_atom_ID_{max_dim - 1}") + 1)
 
                 #             if overwrite_auth_atom_id and has_auth_value:
                 #                 cifObj.copyItemValues(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
@@ -484,7 +496,7 @@ class NmrStarToCif:
 
                 return True
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"+ERROR- NmrStarToCif.convert() {str(e)}\n")
 
         return False

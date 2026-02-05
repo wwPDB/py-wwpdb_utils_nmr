@@ -17,8 +17,8 @@ import re
 import itertools
 import copy
 
-from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -114,8 +114,9 @@ except ImportError:
                                            getDstFuncForSsBond)
 
 
-# This class defines a complete listener for a parse tree produced by CyanaMRParser.
 class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by CyanaMRParser.
+    """
     __slots__ = ('col_order_of_dist_w_chain', )
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -136,20 +137,24 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.col_order_of_dist_w_chain = {}
 
-    # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#cyana_mr.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#cyana_mr.
     def exitCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#cyana_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by CyanaMRParser#comment.
     def enterComment(self, ctx: CyanaMRParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#comment.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#comment.
     def exitComment(self, ctx: CyanaMRParser.CommentContext):
+        """ Exit a parse tree produced by CyanaMRParser#comment.
+        """
+
         if self.cur_comment_inlined:
             return
 
@@ -194,8 +199,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             else:
                 break
 
-    # Enter a parse tree produced by CyanaMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#distance_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
         if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
            or (self.reasons is not None and 'noepk' in self.reasons):
@@ -203,12 +210,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.cur_subtype_altered = False
 
-    # Exit a parse tree produced by CyanaMRParser#distance_restraints.
     def exitDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#distance_restraints.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#distance_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         elif self.cur_subtype == 'jcoup':
@@ -218,8 +227,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#distance_restraint.
+        """
 
         if self.cur_subtype in ('dist', 'noepk') and (self.cur_dist_type == 'cco' or len(self.numberSelection) == 6):
             if self.cur_subtype == 'dist':
@@ -904,9 +914,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genSimpleNameSelection.clear()
             self.genAtomNameSelection.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_wo_comp_restraint(self, chainId1: str, seqId1: int, atomId1: str,
                                        chainId2: str, seqId2: int, atomId2: str):
+        """ Exit a parse tree produced by CyanaMRParser#distance_restraint.
+        """
 
         try:
 
@@ -1532,25 +1543,30 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#torsion_angle_restraints.
     def enterTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#torsion_angle_restraints.
+        """
+
         self.cur_subtype = 'dihed'
         self.cur_dist_type = ''
 
         self.cur_subtype_altered = False
 
-    # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraints.
     def exitTorsion_angle_restraints(self, ctx: CyanaMRParser.Torsion_angle_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#torsion_angle_restraints.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#torsion_angle_restraint.
     def enterTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#torsion_angle_restraint.
+        """
+
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#torsion_angle_restraint.
     def exitTorsion_angle_restraint(self, ctx: CyanaMRParser.Torsion_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#torsion_angle_restraint.
+        """
 
         try:
 
@@ -1753,7 +1769,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     prevCifAtomId = None
                     prevOffset = None
 
-                    for ord, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
+                    for col, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
 
                         atomSelection = []
 
@@ -1804,14 +1820,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
                                                   if cca['atom_id'] == atomId), None)
                                 if cifAtomId is None:
-                                    if ord == 0:
-                                        _cifSeqId += seqOffset[ord + 1] - offset
-                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[ord + 1])
+                                    if col == 0:
+                                        _cifSeqId += seqOffset[col + 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[col + 1])
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
-                                    elif ord == 3:
-                                        _cifSeqId += seqOffset[ord - 1] - offset
-                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[ord - 1])
+                                    elif col == 3:
+                                        _cifSeqId += seqOffset[col - 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[col - 1])
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
                             else:
@@ -2128,8 +2144,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#rdc_restraints.
     def enterRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#rdc_restraints.
+        """
+
         self.cur_subtype = 'rdc'
         self.cur_dist_type = ''
 
@@ -2138,16 +2156,20 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.rdcParameterDict = {}
 
-    # Exit a parse tree produced by CyanaMRParser#rdc_restraints.
     def exitRdc_restraints(self, ctx: CyanaMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#rdc_restraints.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#rdc_parameter.
     def enterRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#rdc_parameter.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#rdc_parameter.
     def exitRdc_parameter(self, ctx: CyanaMRParser.Rdc_parameterContext):
+        """ Exit a parse tree produced by CyanaMRParser#rdc_parameter.
+        """
+
         orientation = self.cur_rdc_orientation = int(str(ctx.Integer(0)))
         magnitude = self.numberSelection[0]
         rhombicity = self.numberSelection[1]
@@ -2169,8 +2191,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         # if self.createSfDict:
         #     self.addSf(constraintType='RDC', orientationId=orientation, cyanaParameter=self.rdcParameterDict[orientation])
 
-    # Enter a parse tree produced by CyanaMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#rdc_restraint.
+        """
+
         self.rdcRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -2178,8 +2202,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Exit a parse tree produced by CyanaMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):
+        """ Exit a parse tree produced by CyanaMRParser#rdc_restraint.
+        """
 
         try:
 
@@ -2369,8 +2394,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#pcs_restraints.
     def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#pcs_restraints.
+        """
+
         self.cur_subtype = 'pcs'
         self.cur_dist_type = ''
 
@@ -2379,16 +2406,20 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.pcsParameterDict = {}
 
-    # Exit a parse tree produced by CyanaMRParser#pcs_restraints.
     def exitPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#pcs_restraints.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#pcs_parameter.
     def enterPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#pcs_parameter.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#pcs_parameter.
     def exitPcs_parameter(self, ctx: CyanaMRParser.Pcs_parameterContext):
+        """ Exit a parse tree produced by CyanaMRParser#pcs_parameter.
+        """
+
         orientation = int(str(ctx.Integer(0)))
         magnitude = self.numberSelection[0]
         rhombicity = self.numberSelection[1]
@@ -2410,8 +2441,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         # if self.createSfDict:
         #     self.addSf(orientationId=orientation, cyanaParameter=self.pcsParameterDict[orientation])
 
-    # Enter a parse tree produced by CyanaMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#pcs_restraint.
+        """
+
         self.pcsRestraints += 1
 
         self.atomSelectionSet.clear()
@@ -2419,8 +2452,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Exit a parse tree produced by CyanaMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#pcs_restraint.
+        """
 
         try:
 
@@ -2505,9 +2539,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def enterFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixres' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -2515,14 +2551,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
         self.cur_comment_inlined = True
 
-    # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraints.
     def exitFixres_distance_restraints(self, ctx: CyanaMRParser.Fixres_distance_restraintsContext
                                        ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixres_distance_restraints.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraint.
     def enterFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixres_distance_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -2530,8 +2570,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#fixres_distance_restraint.
     def exitFixres_distance_restraint(self, ctx: CyanaMRParser.Fixres_distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixres_distance_restraint.
+        """
 
         try:
 
@@ -2792,9 +2833,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
     def enterFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixresw' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -2802,14 +2845,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
         self.cur_comment_inlined = True
 
-    # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
     def exitFixresw_distance_restraints(self, ctx: CyanaMRParser.Fixresw_distance_restraintsContext
                                         ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraints.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
     def enterFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -2817,9 +2864,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
     def exitFixresw_distance_restraint(self, ctx: CyanaMRParser.Fixresw_distance_restraintContext
                                        ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixresw_distance_restraint.
+        """
 
         try:
 
@@ -3158,9 +3206,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
     def enterFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext
                                           ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixresw2' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -3168,14 +3218,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
         self.cur_comment_inlined = True
 
-    # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
     def exitFixresw2_distance_restraints(self, ctx: CyanaMRParser.Fixresw2_distance_restraintsContext
                                          ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraints.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
     def enterFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -3183,9 +3237,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
     def exitFixresw2_distance_restraint(self, ctx: CyanaMRParser.Fixresw2_distance_restraintContext
                                         ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixresw2_distance_restraint.
+        """
 
         try:
 
@@ -3430,9 +3485,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
     def enterFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixatm' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -3440,14 +3497,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
         self.cur_comment_inlined = True
 
-    # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
     def exitFixatm_distance_restraints(self, ctx: CyanaMRParser.Fixatm_distance_restraintsContext
                                        ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraints.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
     def enterFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -3455,8 +3516,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
     def exitFixatm_distance_restraint(self, ctx: CyanaMRParser.Fixatm_distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixatm_distance_restraint.
+        """
 
         try:
 
@@ -3717,9 +3779,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
     def enterFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixatmw' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -3727,14 +3791,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
         self.cur_comment_inlined = True
 
-    # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
     def exitFixatmw_distance_restraints(self, ctx: CyanaMRParser.Fixatmw_distance_restraintsContext
                                         ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraints.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
     def enterFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -3742,9 +3810,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
     def exitFixatmw_distance_restraint(self, ctx: CyanaMRParser.Fixatmw_distance_restraintContext
                                        ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixatmw_distance_restraint.
+        """
 
         try:
 
@@ -4083,9 +4152,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
     def enterFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext
                                           ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext not in ('upv', 'lov') else 'noepk'
         if self.reasons is not None and 'noepk_fixatmw2' in self.reasons:
             self.cur_subtype = 'noepk'
@@ -4093,14 +4164,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.cur_subtype_altered = False
         self.cur_comment_inlined = True
 
-    # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
     def exitFixatmw2_distance_restraints(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintsContext
                                          ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraints.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
     def enterFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         else:
@@ -4108,9 +4183,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
     def exitFixatmw2_distance_restraint(self, ctx: CyanaMRParser.Fixatmw2_distance_restraintContext
                                         ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#fixatmw2_distance_restraint.
+        """
 
         try:
 
@@ -4355,25 +4431,30 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
     def enterQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
+        """
+
         self.cur_subtype = 'dist'
 
-    # Exit a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
     def exitQconvr_distance_restraints(self, ctx: CyanaMRParser.Qconvr_distance_restraintsContext
                                        ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#qconvr_distance_restraints.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraint.
     def enterQconvr_distance_restraint(self, ctx: CyanaMRParser.Qconvr_distance_restraintContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#qconvr_distance_restraint.
+        """
+
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#qconvr_distance_restraint.
     def exitQconvr_distance_restraint(self, ctx: CyanaMRParser.Qconvr_distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#qconvr_distance_restraint.
+        """
 
         try:
 
@@ -4536,9 +4617,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
     def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
         if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
            or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
@@ -4546,14 +4629,16 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.cur_subtype_altered = False
 
-    # Exit a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
     def exitDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext
                                         ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraint.
     def enterDistance_w_chain_restraint(self, ctx: CyanaMRParser.Distance_w_chain_restraintContext
                                         ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         elif self.cur_subtype == 'jcoup':
@@ -4563,8 +4648,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#distance_w_chain_restraint.
     def exitDistance_w_chain_restraint(self, ctx: CyanaMRParser.Distance_w_chain_restraintContext):
+        """ Exit a parse tree produced by CyanaMRParser#distance_w_chain_restraint.
+        """
 
         if self.cur_subtype in ('dist', 'noepk') and (self.cur_dist_type == 'cco' or len(self.numberSelection) == 6):
             if self.cur_subtype == 'dist':
@@ -5468,9 +5554,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
     def enterDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext
                                           ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
         if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
            or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
@@ -5478,14 +5566,16 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.cur_subtype_altered = False
 
-    # Exit a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
     def exitDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext
                                          ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraint.
     def enterDistance_w_chain2_restraint(self, ctx: CyanaMRParser.Distance_w_chain2_restraintContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         elif self.cur_subtype == 'jcoup':
@@ -5495,13 +5585,17 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#distance_w_chain2_restraint.
     def exitDistance_w_chain2_restraint(self, ctx: CyanaMRParser.Distance_w_chain2_restraintContext):
+        """ Exit a parse tree produced by CyanaMRParser#distance_w_chain2_restraint.
+        """
+
         self.exitDistance_w_chain_restraint(ctx)
 
-    # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
     def enterDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext
                                           ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
+        """
+
         self.cur_subtype = 'dist' if self.file_ext is None or self.file_ext != 'cco' else 'jcoup'
         if (self.file_ext is not None and self.file_ext in ('upv', 'lov'))\
            or (self.reasons is not None and 'noepk_w_chain' in self.reasons):
@@ -5509,14 +5603,16 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.cur_subtype_altered = False
 
-    # Exit a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
     def exitDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext
                                          ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraint.
     def enterDistance_w_chain3_restraint(self, ctx: CyanaMRParser.Distance_w_chain3_restraintContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraint.
+        """
+
         if self.cur_subtype == 'dist':
             self.distRestraints += 1
         elif self.cur_subtype == 'jcoup':
@@ -5526,32 +5622,39 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#distance_w_chain3_restraint.
     def exitDistance_w_chain3_restraint(self, ctx: CyanaMRParser.Distance_w_chain3_restraintContext):
+        """ Exit a parse tree produced by CyanaMRParser#distance_w_chain3_restraint.
+        """
+
         self.exitDistance_w_chain_restraint(ctx)
 
-    # Enter a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraints.
     def enterTorsion_angle_w_chain_restraints(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintsContext
                                               ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraints.
+        """
+
         self.cur_subtype = 'dihed'
         self.cur_dist_type = ''
 
         self.cur_subtype_altered = False
 
-    # Exit a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraints.
     def exitTorsion_angle_w_chain_restraints(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintsContext
                                              ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraints.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraint.
     def enterTorsion_angle_w_chain_restraint(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintContext
                                              ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraint.
+        """
+
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraint.
     def exitTorsion_angle_w_chain_restraint(self, ctx: CyanaMRParser.Torsion_angle_w_chain_restraintContext):
+        """ Exit a parse tree produced by CyanaMRParser#torsion_angle_w_chain_restraint.
+        """
 
         try:
 
@@ -5742,7 +5845,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     prevCifAtomId = None
                     prevOffset = None
 
-                    for ord, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
+                    for col, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
 
                         atomSelection = []
 
@@ -5793,14 +5896,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 cifAtomId = next((cca['atom_id'] for cca in self.ccU.lastAtomDictList
                                                   if cca['atom_id'] == atomId), None)
                                 if cifAtomId is None:
-                                    if ord == 0:
-                                        _cifSeqId += seqOffset[ord + 1] - offset
-                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[ord + 1])
+                                    if col == 0:
+                                        _cifSeqId += seqOffset[col + 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[col + 1])
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
-                                    elif ord == 3:
-                                        _cifSeqId += seqOffset[ord - 1] - offset
-                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[ord - 1])
+                                    elif col == 3:
+                                        _cifSeqId += seqOffset[col - 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.cR, chainId, _cifSeqId, atomNames[col - 1])
                                         if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
                                             cifAtomId = ptnr['atom_id']
                             else:
@@ -6116,24 +6219,29 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#cco_restraints.
     def enterCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#cco_restraints.
+        """
+
         self.cur_subtype = 'jcoup'
 
         self.cur_subtype_altered = False
 
-    # Exit a parse tree produced by CyanaMRParser#cco_restraints.
     def exitCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#cco_restraints.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#cco_restraint.
     def enterCco_restraint(self, ctx: CyanaMRParser.Cco_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#cco_restraint.
+        """
+
         self.jcoupRestraints += 1
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#cco_restraint.
     def exitCco_restraint(self, ctx: CyanaMRParser.Cco_restraintContext):
+        """ Exit a parse tree produced by CyanaMRParser#cco_restraint.
+        """
 
         try:
 
@@ -6316,15 +6424,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#ssbond_macro.
     def enterSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#ssbond_macro.
+        """
+
         self.cur_subtype = 'ssbond'
         self.cur_dist_type = ''
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#ssbond_macro.
     def exitSsbond_macro(self, ctx: CyanaMRParser.Ssbond_macroContext):
+        """ Exit a parse tree produced by CyanaMRParser#ssbond_macro.
+        """
 
         try:
 
@@ -6412,7 +6523,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                       f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                       f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 if self.verbose:
                     self.log.write(f"+{self.__class_name__}.exitSsbond_macro() ++ Error  - {str(e)}")
 
@@ -6443,15 +6554,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.atomSelectionSet.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#hbond_macro.
     def enterHbond_macro(self, ctx: CyanaMRParser.Hbond_macroContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#hbond_macro.
+        """
+
         self.cur_subtype = 'hbond'
         self.cur_dist_type = ''
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#hbond_macro.
     def exitHbond_macro(self, ctx: CyanaMRParser.Hbond_macroContext):
+        """ Exit a parse tree produced by CyanaMRParser#hbond_macro.
+        """
 
         try:
 
@@ -6523,7 +6637,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                       f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                       f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 if self.verbose:
                     self.log.write(f"+{self.__class_name__}.exitHbond_macro() ++ Error  - {str(e)}")
 
@@ -6554,15 +6668,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.atomSelectionSet.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#link_statement.
     def enterLink_statement(self, ctx: CyanaMRParser.Link_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#link_statement.
+        """
+
         self.cur_subtype = 'geo'
         self.cur_dist_type = ''
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#link_statement.
     def exitLink_statement(self, ctx: CyanaMRParser.Link_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#link_statement.
+        """
 
         try:
 
@@ -6692,7 +6809,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                       f"The distance of the covalent bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                       f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 if self.verbose:
                     self.log.write(f"+{self.__class_name__}.exitLink_statement() ++ Error  - {str(e)}")
 
@@ -6728,15 +6845,18 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#stereoassign_macro.
     def enterStereoassign_macro(self, ctx: CyanaMRParser.Stereoassign_macroContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#stereoassign_macro.
+        """
+
         self.cur_subtype = 'fchiral'
         self.cur_dist_type = ''
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#stereoassign_macro.
     def exitStereoassign_macro(self, ctx: CyanaMRParser.Stereoassign_macroContext):
+        """ Exit a parse tree produced by CyanaMRParser#stereoassign_macro.
+        """
 
         try:
 
@@ -6953,41 +7073,43 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.atomSelectionSet.clear()
 
-    # Enter a parse tree produced by CyanaMRParser#declare_variable.
     def enterDeclare_variable(self, ctx: CyanaMRParser.Declare_variableContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#declare_variable.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#declare_variable.
     def exitDeclare_variable(self, ctx: CyanaMRParser.Declare_variableContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#declare_variable.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#set_variable.
     def enterSet_variable(self, ctx: CyanaMRParser.Set_variableContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#set_variable.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#set_variable.
     def exitSet_variable(self, ctx: CyanaMRParser.Set_variableContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#set_variable.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#unset_variable.
     def enterUnset_variable(self, ctx: CyanaMRParser.Unset_variableContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#unset_variable.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#unset_variable.
     def exitUnset_variable(self, ctx: CyanaMRParser.Unset_variableContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#unset_variable.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#print_macro.
     def enterPrint_macro(self, ctx: CyanaMRParser.Print_macroContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#print_macro.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#print_macro.
     def exitPrint_macro(self, ctx: CyanaMRParser.Print_macroContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by CyanaMRParser#print_macro.
+        """
 
-    # Enter a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
     def enterUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext
                                        ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
+        """
+
         if len(self.genSimpleNameSelection) == 0:
             return
 
@@ -6997,16 +7119,20 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.genSimpleNameSelection.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
     def exitUnambig_atom_name_mapping(self, ctx: CyanaMRParser.Unambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#unambig_atom_name_mapping.
+        """
+
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#mapping_list.
     def enterMapping_list(self, ctx: CyanaMRParser.Mapping_listContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#mapping_list.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#mapping_list.
     def exitMapping_list(self, ctx: CyanaMRParser.Mapping_listContext):
+        """ Exit a parse tree produced by CyanaMRParser#mapping_list.
+        """
+
         atomName = str(ctx.Simple_name_MP(0)).upper()
         iupacName = set()
 
@@ -7022,8 +7148,10 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.unambigAtomNameMapping[self.cur_resname_for_mapping] = {}
         self.unambigAtomNameMapping[self.cur_resname_for_mapping][atomName] = list(iupacName)
 
-    # Enter a parse tree produced by CyanaMRParser#ambig_atom_name_mapping.
     def enterAmbig_atom_name_mapping(self, ctx: CyanaMRParser.Ambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#ambig_atom_name_mapping.
+        """
+
         if len(self.genSimpleNameSelection) == 0:
             return
 
@@ -7033,18 +7161,22 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.genSimpleNameSelection.clear()
 
-    # Exit a parse tree produced by CyanaMRParser#ambig_atom_name_mapping.
     def exitAmbig_atom_name_mapping(self, ctx: CyanaMRParser.Ambig_atom_name_mappingContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#ambig_atom_name_mapping.
+        """
+
         self.updateAmbigAtomNameMapping()
 
         self.cur_comment_inlined = False
 
-    # Enter a parse tree produced by CyanaMRParser#ambig_list.
     def enterAmbig_list(self, ctx: CyanaMRParser.Ambig_listContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#ambig_list.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#ambig_list.
     def exitAmbig_list(self, ctx: CyanaMRParser.Ambig_listContext):
+        """ Exit a parse tree produced by CyanaMRParser#ambig_list.
+        """
+
         if ctx.Ambig_code_MP():
             ambigCode = str(ctx.Ambig_code_MP())
             i = 0
@@ -7069,12 +7201,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.ambigAtomNameMapping[self.cur_resname_for_mapping] = {}
             self.ambigAtomNameMapping[self.cur_resname_for_mapping][ambigCode] = mapName
 
-    # Enter a parse tree produced by CyanaMRParser#number.
     def enterNumber(self, ctx: CyanaMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#number.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#number.
     def exitNumber(self, ctx: CyanaMRParser.NumberContext):
+        """ Exit a parse tree produced by CyanaMRParser#number.
+        """
+
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
 
@@ -7087,12 +7221,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         else:
             self.numberSelection.append(None)
 
-    # Enter a parse tree produced by CyanaMRParser#gen_res_num.
     def enterGen_res_num(self, ctx: CyanaMRParser.Gen_res_numContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#gen_res_num.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#gen_res_num.
     def exitGen_res_num(self, ctx: CyanaMRParser.Gen_res_numContext):
+        """ Exit a parse tree produced by CyanaMRParser#gen_res_num.
+        """
+
         if ctx.Integer():
             self.genResNumSelection.append((int(str(ctx.Integer())), None))
 
@@ -7105,12 +7241,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         else:
             self.genResNumSelection.append((None, None))
 
-    # Enter a parse tree produced by CyanaMRParser#gen_simple_name.
     def enterGen_simple_name(self, ctx: CyanaMRParser.Gen_simple_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#gen_simple_name.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#gen_simple_name.
     def exitGen_simple_name(self, ctx: CyanaMRParser.Gen_simple_nameContext):
+        """ Exit a parse tree produced by CyanaMRParser#gen_simple_name.
+        """
+
         if ctx.Simple_name():
             self.genSimpleNameSelection.append(str(ctx.Simple_name()))
 
@@ -7123,12 +7261,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         else:
             self.genSimpleNameSelection.append(None)
 
-    # Enter a parse tree produced by CyanaMRParser#gen_atom_name.
     def enterGen_atom_name(self, ctx: CyanaMRParser.Gen_atom_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by CyanaMRParser#gen_atom_name.
+        """
 
-    # Exit a parse tree produced by CyanaMRParser#gen_atom_name.
     def exitGen_atom_name(self, ctx: CyanaMRParser.Gen_atom_nameContext):
+        """ Exit a parse tree produced by CyanaMRParser#gen_atom_name.
+        """
+
         if ctx.Simple_name():
             self.genAtomNameSelection.append(str(ctx.Simple_name()))
 
@@ -7143,5 +7283,3 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         else:
             self.genAtomNameSelection.append(None)
-
-# del CyanaMRParser

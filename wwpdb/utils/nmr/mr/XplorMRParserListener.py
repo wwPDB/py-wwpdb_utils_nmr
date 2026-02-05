@@ -16,12 +16,13 @@ import sys
 import re
 import itertools
 import copy
-import numpy
 
-from antlr4 import ParseTreeListener
-from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 from operator import itemgetter
 from typing import IO, List, Optional
+from antlr4 import ParseTreeListener
+from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module,import-error
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,
@@ -146,8 +147,9 @@ except ImportError:
                                            getDstFuncAsNoe)
 
 
-# This class defines a complete listener for a parse tree produced by XplorMRParser.
 class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
+    """ This class defines a complete listener for a parse tree produced by XplorMRParser.
+    """
     __slots__ = ()
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -166,16 +168,20 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.file_type = 'nm-res-xpl'
         self.software_name = 'XPLOR-NIH/CNS' if self.remediate else 'XPLOR-NIH'
 
-    # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
     def enterXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#xplor_nih_mr.
     def exitXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#xplor_nih_mr.
+        """
+
         self.exit()
 
-    # Enter a parse tree produced by XplorMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#distance_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -209,8 +215,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#distance_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict and self.cur_subtype == 'dist':
@@ -276,8 +284,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#dihedral_angle_restraint.
+        """
+
         self.in_block = True
 
         self.dihedStatements += 1
@@ -288,15 +298,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#dihedral_angle_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#rdc_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -315,8 +329,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):
+        """ Exit a parse tree produced by XplorMRParser#rdc_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
@@ -328,8 +344,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             else:
                 self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#planar_restraint.
     def enterPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#planar_restraint.
+        """
+
         self.in_block = True
 
         self.planeStatements += 1
@@ -338,15 +356,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('planarity restraint')
 
-    # Exit a parse tree produced by XplorMRParser#planar_restraint.
     def exitPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#planar_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#harmonic_restraint.
+        """
+
         self.in_block = True
 
         self.geoStatements += 1
@@ -358,15 +380,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('NCS restraint')
 
-    # Exit a parse tree produced by XplorMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#harmonic_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#antidistance_restraint.
     def enterAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#antidistance_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -377,15 +403,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('anti-distance restraint')
 
-    # Exit a parse tree produced by XplorMRParser#antidistance_restraint.
     def exitAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#antidistance_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#coupling_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -396,15 +426,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#coupling_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#carbon_shift_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -415,15 +449,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def exitCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#carbon_shift_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -434,16 +472,20 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_restraint.
     def exitProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def enterDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext
                                          ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -455,17 +497,21 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             # statement_name = 'RAMAchandran/CONFormation' if self.remediate else 'RAMAchandran'
             self.addSf('dihedral angle database restraint')
 
-    # Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext
                                         ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def enterRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext
                                           ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
+        """
+
         self.in_block = True
 
         self.radiStatements += 1
@@ -474,17 +520,21 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('radius of gyration restraint')
 
-    # Exit a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def exitRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext
                                          ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def enterDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext
                                             ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -495,16 +545,20 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('diffusion anisotropy restraint')
 
-    # Exit a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext
                                            ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#orientation_db_restraint.
     def enterOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#orientation_db_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -515,15 +569,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('orientation database restraint')
 
-    # Exit a parse tree produced by XplorMRParser#orientation_db_restraint.
     def exitOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#orientation_db_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#csa_restraint.
     def enterCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#csa_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -534,15 +592,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#csa_restraint.
     def exitCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#csa_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#pcsa_restraint.
     def enterPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#pcsa_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -553,37 +615,39 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#pcsa_restraint.
     def exitPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pcsa_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#one_bond_coupling_restraint.
     def enterOne_bond_coupling_restraint(self, ctx: XplorMRParser.One_bond_coupling_restraintContext
                                          ):  # pylint: disable=unused-argument
         """
         @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
         """
 
-    # Exit a parse tree produced by XplorMRParser#one_bond_coupling_restraint.
     def exitOne_bond_coupling_restraint(self, ctx: XplorMRParser.One_bond_coupling_restraintContext
                                         ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#one_bond_coupling_restraint.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#angle_db_restraint.
     def enterAngle_db_restraint(self, ctx: XplorMRParser.Angle_db_restraintContext):  # pylint: disable=unused-argument
         """
         @deprecated:  This term has not proved useful in practice and is only here for historical reasons.
         """
 
-    # Exit a parse tree produced by XplorMRParser#angle_db_restraint.
     def exitAngle_db_restraint(self, ctx: XplorMRParser.Angle_db_restraintContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#angle_db_restraint.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#pre_restraint.
     def enterPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#pre_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -594,15 +658,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#pre_restraint.
     def exitPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pre_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#pcs_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -613,15 +681,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pcs_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#prdc_restraint.
     def enterPrdc_restraint(self, ctx: XplorMRParser.Prdc_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#prdc_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -633,12 +705,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         # do not add saveframe here which requires paramagnetic center information
 
-    # Exit a parse tree produced by XplorMRParser#prdc_restraint.
     def exitPrdc_restraint(self, ctx: XplorMRParser.Prdc_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#prdc_restraint.
+        """
+
         self.in_block = False
 
-    # Enter a parse tree produced by XplorMRParser#porientation_restraint.
     def enterPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#porientation_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -649,15 +725,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('paramagnetic orientation restraint')
 
-    # Exit a parse tree produced by XplorMRParser#porientation_restraint.
     def exitPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#porientation_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#pccr_restraint.
     def enterPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#pccr_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -670,15 +750,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#pccr_restraint.
     def exitPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pccr_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#hbond_restraint.
     def enterHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#hbond_restraint.
+        """
+
         self.in_block = True
 
         self.classification = '.'
@@ -689,15 +773,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#hbond_restraint.
     def exitHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#hbond_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#hbond_db_restraint.
     def enterHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#hbond_db_restraint.
+        """
+
         self.in_block = True
 
         self.hbondStatements += 1
@@ -706,15 +794,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf()
 
-    # Exit a parse tree produced by XplorMRParser#hbond_db_restraint.
     def exitHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#hbond_db_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#noe_statement.
     def enterNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#noe_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('BIHA'):
@@ -980,13 +1072,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.symmDminus = None
             self.symmDplus = None
 
-    # Exit a parse tree produced by XplorMRParser#noe_statement.
     def exitNoe_statement(self, ctx: XplorMRParser.Noe_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#noe_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (NOE) classification={self.classification!r}")
 
-    # Enter a parse tree produced by XplorMRParser#noe_assign.
     def enterNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#noe_assign.
+        """
+
         self.distRestraints += 1
         self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
         if self.cur_subtype != 'dist':
@@ -1010,8 +1106,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.donor_columnSel = self.acceptor_columnSel = -1
 
-    # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#noe_assign.
+        """
 
         try:
 
@@ -1308,25 +1405,29 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#predict_statement.
     def enterPredict_statement(self, ctx: XplorMRParser.Predict_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#predict_statement.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#predict_statement.
     def exitPredict_statement(self, ctx: XplorMRParser.Predict_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#predict_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#noe_annotation.
     def enterNoe_annotation(self, ctx: XplorMRParser.Noe_annotationContext):
+        """ Enter a parse tree produced by XplorMRParser#noe_annotation.
+        """
+
         if ctx.Weight():
             self.scale_a = self.getNumber_a(ctx.number_a())
 
-    # Exit a parse tree produced by XplorMRParser#noe_annotation.
     def exitNoe_annotation(self, ctx: XplorMRParser.Noe_annotationContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#noe_annotation.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#dihedral_statement.
     def enterDihedral_statement(self, ctx: XplorMRParser.Dihedral_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#dihedral_statement.
+        """
+
         if ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
             if isinstance(self.scale, str):
@@ -1350,12 +1451,14 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.Reset():
             self.scale = 1.0
 
-    # Exit a parse tree produced by XplorMRParser#dihedral_statement.
     def exitDihedral_statement(self, ctx: XplorMRParser.Dihedral_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#dihedral_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#dihedral_assign.
     def enterDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#dihedral_assign.
+        """
+
         self.dihedRestraints += 1
         if self.cur_subtype != 'dihed':
             self.dihedStatements += 1
@@ -1366,8 +1469,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):
+        """ Exit a parse tree produced by XplorMRParser#dihedral_assign.
+        """
 
         try:
 
@@ -1525,8 +1629,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#sani_statement.
     def enterSani_statement(self, ctx: XplorMRParser.Sani_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#sani_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -1550,14 +1656,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  'rhombicity': self.getNumber_s(ctx.number_s(2))
                                  }
 
-    # Exit a parse tree produced by XplorMRParser#sani_statement.
     def exitSani_statement(self, ctx: XplorMRParser.Sani_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#sani_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (SANI) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by XplorMRParser#sani_assign.
     def enterSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#sani_assign.
+        """
+
         self.rdcRestraints += 1
         self.cur_subtype_altered = self.cur_subtype != 'rdc' and len(self.cur_subtype) > 0
         if self.cur_subtype != 'rdc':
@@ -1569,8 +1679,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#sani_assign.
     def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#sani_assign.
+        """
 
         def proc_as_if_pcs_assign(_target_value, _lower_limit, _upper_limit):
 
@@ -1710,7 +1821,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 if distance(to_np_array(_head[0]), to_np_array(_tail[0])) < 10.0:
                                     self.symmetric = 'circular'
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.__class_name__}.exitSani_assign() ++ Error  - {str(e)}")
 
@@ -1839,8 +1950,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#xdip_statement.
     def enterXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#xdip_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -1900,14 +2013,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  'rhombicity': self.getNumber_s(ctx.number_s(2))
                                  }
 
-    # Exit a parse tree produced by XplorMRParser#xdip_statement.
     def exitXdip_statement(self, ctx: XplorMRParser.Xdip_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#xdip_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (XDIP) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by XplorMRParser#xdip_assign.
     def enterXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#xdip_assign.
+        """
+
         self.rdcRestraints += 1
         self.cur_subtype = 'rdc'
 
@@ -1916,8 +2033,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#xdip_assign.
     def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#xdip_assign.
+        """
 
         try:
 
@@ -2102,18 +2220,24 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#vean_statement.
     def enterVean_statement(self, ctx: XplorMRParser.Vean_statementContext):  # pylint: disable=no-self-use
+        """ Enter a parse tree produced by XplorMRParser#vean_statement.
+        """
+
         if ctx.Reset():
             pass
 
-    # Exit a parse tree produced by XplorMRParser#vean_statement.
     def exitVean_statement(self, ctx: XplorMRParser.Vean_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#vean_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (VEAN) classification={self.classification!r}")
 
-    # Enter a parse tree produced by XplorMRParser#vean_assign.
     def enterVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#vean_assign.
+        """
+
         self.rdcStatements += 1
         self.cur_subtype = 'rdc'
 
@@ -2122,8 +2246,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#vean_assign.
     def exitVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#vean_assign.
+        """
 
         try:
 
@@ -2289,8 +2414,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#tenso_statement.
     def enterTenso_statement(self, ctx: XplorMRParser.Tenso_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#tenso_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -2312,14 +2439,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.coefficients = {'DFS': self.getNumber_s(ctx.number_s())
                                  }
 
-    # Exit a parse tree produced by XplorMRParser#tenso_statement.
     def exitTenso_statement(self, ctx: XplorMRParser.Tenso_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#tenso_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (TENSO) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by XplorMRParser#tenso_assign.
     def enterTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#tenso_assign.
+        """
+
         self.rdcRestraints += 1
         self.cur_subtype = 'rdc'
 
@@ -2328,8 +2459,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#tenso_assign.
     def exitTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#tenso_assign.
+        """
 
         try:
 
@@ -2484,8 +2616,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#anis_statement.
     def enterAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#anis_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -2510,14 +2644,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  'a3': self.getNumber_s(ctx.number_s(3))
                                  }
 
-    # Exit a parse tree produced by XplorMRParser#anis_statement.
     def exitAnis_statement(self, ctx: XplorMRParser.Anis_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#anis_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (ANIS) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by XplorMRParser#anis_assign.
     def enterAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#anis_assign.
+        """
+
         self.rdcRestraints += 1
         self.cur_subtype = 'rdc'
 
@@ -2526,8 +2664,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#anis_assign.
     def exitAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#anis_assign.
+        """
 
         try:
 
@@ -2675,25 +2814,29 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#planar_statement.
     def enterPlanar_statement(self, ctx: XplorMRParser.Planar_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#planar_statement.
+        """
+
         if ctx.Initialize():
             self.planeWeight = 300.0
 
-    # Exit a parse tree produced by XplorMRParser#planar_statement.
     def exitPlanar_statement(self, ctx: XplorMRParser.Planar_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#planar_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#planar_group.
     def enterPlanar_group(self, ctx: XplorMRParser.Planar_groupContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#planar_group.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#planar_group.
     def exitPlanar_group(self, ctx: XplorMRParser.Planar_groupContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#planar_group.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#group_statement.
     def enterGroup_statement(self, ctx: XplorMRParser.Group_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#group_statement.
+        """
+
         self.planeRestraints += 1
         if self.cur_subtype != 'plane':
             self.planeStatements += 1
@@ -2722,8 +2865,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                               f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "
                               "should be a positive value.")
 
-    # Exit a parse tree produced by XplorMRParser#group_statement.
     def exitGroup_statement(self, ctx: XplorMRParser.Group_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#group_statement.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -2749,8 +2894,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            sf['list_id']])
 
-    # Enter a parse tree produced by XplorMRParser#harmonic_statement.
     def enterHarmonic_statement(self, ctx: XplorMRParser.Harmonic_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#harmonic_statement.
+        """
+
         if ctx.Exponent():
             self.squareExponent = int(str(ctx.Integer()))
             if self.squareExponent <= 0.0:
@@ -2771,8 +2918,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 self.inVector3D_head = None
                 self.vector3D = None
 
-    # Exit a parse tree produced by XplorMRParser#harmonic_statement.
     def exitHarmonic_statement(self, ctx: XplorMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#harmonic_statement.
+        """
+
         if self.vector3D is None:
             self.vector3D = [0.0] * 3  # set default vector if not available
 
@@ -2793,8 +2942,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.vector3D['harm'] = []
 
-    # Enter a parse tree produced by XplorMRParser#harmonic_assign.
     def enterHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#harmonic_assign.
+        """
+
         self.geoRestraints += 1
         if self.cur_subtype != 'geo':
             self.geoStatements += 1
@@ -2805,8 +2956,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#harmonic_assign.
     def exitHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#harmonic_assign.
+        """
 
         try:
 
@@ -2827,8 +2979,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#antidistance_statement.
     def enterAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#antidistance_statement.
+        """
+
         if ctx.Reset():
             self.adistExpectGrid = None
             self.adistExpectValue = 0.0
@@ -2879,16 +3033,20 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.ForceConstant():
             self.adistForceConst = self.getNumber_s(ctx.number_s())
 
-    # Exit a parse tree produced by XplorMRParser#antidistance_statement.
     def exitAntidistance_statement(self, ctx: XplorMRParser.Antidistance_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#antidistance_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (XADC) classification={self.classification!r} "
                   f"expectation={self.adistExpectGrid} {self.adistExpectValue} "
                   f"size={self.adistSizeMaxDist} {self.adistSizeStep} "
                   f"force_constant={self.adistForceConst}")
 
-    # Enter a parse tree produced by XplorMRParser#xadc_assign.
     def enterXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#xadc_assign.
+        """
+
         self.adistRestraints += 1
         if self.cur_subtype != 'adist':
             self.adistStatements += 1
@@ -2899,8 +3057,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#xadc_assign.
     def exitXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#xadc_assign.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -2938,8 +3098,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                            sf['list_id']])
 
-    # Enter a parse tree produced by XplorMRParser#coupling_statement.
     def enterCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#coupling_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -2964,14 +3126,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  'Karplus_phase': self.getNumber_s(ctx.number_s(3))
                                  }
 
-    # Exit a parse tree produced by XplorMRParser#coupling_statement.
     def exitCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#coupling_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (COUP) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by XplorMRParser#coup_assign.
     def enterCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#coup_assign.
+        """
+
         self.jcoupRestraints += 1
         self.cur_subtype_altered = self.cur_subtype != 'jcoup' and len(self.cur_subtype) > 0
         self.cur_subtype = 'jcoup' if self.cur_subtype != 'rdc' else 'rdc'  # set 'rdc' for error message
@@ -2981,8 +3147,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#coup_assign.
     def exitCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#coup_assign.
+        """
 
         try:
 
@@ -3222,8 +3389,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#carbon_shift_statement.
     def enterCarbon_shift_statement(self, ctx: XplorMRParser.Carbon_shift_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#carbon_shift_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -3249,14 +3418,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                              'cb_shift_error': self.getNumber_s(ctx.number_s(3))
                              }
 
-    # Exit a parse tree produced by XplorMRParser#carbon_shift_statement.
     def exitCarbon_shift_statement(self, ctx: XplorMRParser.Carbon_shift_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#carbon_shift_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (CARB) classification={self.classification!r} "
                   f"expectation={self.csExpect}")
 
-    # Enter a parse tree produced by XplorMRParser#carbon_shift_assign.
     def enterCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#carbon_shift_assign.
+        """
+
         self.hvycsRestraints += 1
         self.cur_subtype = 'hvycs'
 
@@ -3265,8 +3438,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
+        """
 
         try:
 
@@ -3407,13 +3581,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def enterCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#carbon_shift_rcoil.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def exitCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#carbon_shift_rcoil.
+        """
 
         try:
 
@@ -3453,8 +3630,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_statement.
     def enterProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_statement.
+        """
+
         if ctx.Potential_types():
             code = str(ctx.Potential_types()).upper()
             if code.startswith('SQUA'):
@@ -3472,21 +3651,26 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.potential = 'square'
             self.coefficients = None
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_statement.
     def exitProton_shift_statement(self, ctx: XplorMRParser.Proton_shift_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (PROTON) classification={self.classification!r}")
 
-    # Enter a parse tree produced by XplorMRParser#observed.
     def enterObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#observed.
+        """
+
         self.procsRestraints += 1
         self.cur_subtype = 'procs'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#observed.
     def exitObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#observed.
+        """
 
         try:
 
@@ -3573,13 +3757,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def enterProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_rcoil.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_rcoil.
+        """
 
         try:
 
@@ -3611,13 +3798,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def enterProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def exitProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_anisotropy.
+        """
+
         co_or_cn = str(ctx.Simple_name(0))
         is_cooh = None
         if ctx.Logical():
@@ -3662,13 +3853,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 print(f"subtype={self.cur_subtype} (PROTON/ANIS) id={self.procsRestraints} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_amides.
     def enterProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_amides.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_amides.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'H':
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -3679,13 +3874,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/AMID) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_carbons.
     def enterProton_shift_carbons(self, ctx: XplorMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_carbons.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_carbons.
     def exitProton_shift_carbons(self, ctx: XplorMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_carbons.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'C':
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -3696,13 +3895,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/CARB) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_nitrogens.
     def enterProton_shift_nitrogens(self, ctx: XplorMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_nitrogens.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_nitrogens.
     def exitProton_shift_nitrogens(self, ctx: XplorMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_nitrogens.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'N':
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -3713,13 +3916,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/NITR) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_oxygens.
     def enterProton_shift_oxygens(self, ctx: XplorMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_oxygens.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_oxygens.
     def exitProton_shift_oxygens(self, ctx: XplorMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_oxygens.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'O':
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
@@ -3730,13 +3937,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/OXYG) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
     def enterProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
     def exitProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
+        """
+
         ring_name = str(ctx.Simple_name())
 
         ringNames = ('PHE', 'TYR', 'HIS', 'TRP5', 'TRP6', 'ADE6', 'ADE5', 'GUA6', 'GUA5', 'THY', 'CYT', 'URA')
@@ -3777,15 +3988,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                           f"ring_name={ring_name} atom1={atom1} atom2={atom2} atom3={atom3} "
                           f"atom4={atom4} atom5={atom5} atom6={atom6}")
 
-    # Enter a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def enterProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext
                                             ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
+        """
+
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def exitProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext
                                            ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
+        """
+
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] == 'H' or atom1['atom_id'].startswith('HA'):
                 pass
@@ -3798,8 +4013,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             print(f"subtype={self.cur_subtype} (PROTON/ALPH) id={self.procsRestraints} "
                   f"atom={atom1}")
 
-    # Enter a parse tree produced by XplorMRParser#ramachandran_statement.
     def enterRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#ramachandran_statement.
+        """
+
         if ctx.Scale():
             self.ramaScale = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.ramaScale, str):
@@ -3905,16 +4122,20 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.ramaGaussian = None
             self.ramaQuartic = None
 
-    # Exit a parse tree produced by XplorMRParser#ramachandran_statement.
     def exitRamachandran_statement(self, ctx: XplorMRParser.Ramachandran_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#ramachandran_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (RAMA) classification={self.classification!r} "
                   f"scale={self.ramaScale} cutoff={self.ramaCutoff} force_constant={self.ramaForceConst} "
                   f"shape={self.ramaShape} size={self.ramaSize} phase={self.ramaPhase} "
                   f"gaussian={self.ramaGaussian} quartic={self.ramaQuartic}")
 
-    # Enter a parse tree produced by XplorMRParser#rama_assign.
     def enterRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#rama_assign.
+        """
+
         self.ramaRestraints += 1
         self.cur_subtype = 'rama'
 
@@ -3923,8 +4144,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#rama_assign.
     def exitRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#rama_assign.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -4047,8 +4270,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                                sf['list_id']])
 
-    # Enter a parse tree produced by XplorMRParser#collapse_statement.
     def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#collapse_statement.
+        """
+
         if ctx.Scale():
             self.radiScale = self.getNumber_s(ctx.number_s(0))
             if isinstance(self.radiScale, str):
@@ -4072,14 +4297,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.Reset():
             self.radiScale = 1.0
 
-    # Exit a parse tree produced by XplorMRParser#collapse_statement.
     def exitCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#collapse_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (COLL) classification={self.classification!r} "
                   f"scale={self.radiScale}")
 
-    # Enter a parse tree produced by XplorMRParser#coll_assign.
     def enterColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#coll_assign.
+        """
+
         self.radiRestraints += 1
         if self.cur_subtype != 'radi':
             self.radiStatements += 1
@@ -4090,8 +4319,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#coll_assign.
     def exitColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#coll_assign.
+        """
 
         try:
 
@@ -4144,8 +4374,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#diffusion_statement.
     def enterDiffusion_statement(self, ctx: XplorMRParser.Diffusion_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#diffusion_statement.
+        """
+
         if ctx.Coefficients():
             self.diffCoef = {'Tc': self.getNumber_s(ctx.number_s(0)),
                              'anisotropy': self.getNumber_s(ctx.number_s(1)),
@@ -4179,15 +4411,19 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.diffPotential = 'square'
             self.diffType = None
 
-    # Exit a parse tree produced by XplorMRParser#diffusion_statement.
     def exitDiffusion_statement(self, ctx: XplorMRParser.Diffusion_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#diffusion_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (DANI) classification={self.classification!r} "
                   f"coefficients={self.diffCoef} force_constant={self.diffForceConst} "
                   f"potential={self.diffPotential} type={self.diffType}")
 
-    # Enter a parse tree produced by XplorMRParser#dani_assign.
     def enterDani_assign(self, ctx: XplorMRParser.Dani_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#dani_assign.
+        """
+
         self.diffRestraints += 1
         self.cur_subtype = 'diff'
 
@@ -4196,8 +4432,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#dani_assign.
     def exitDani_assign(self, ctx: XplorMRParser.Dani_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#dani_assign.
+        """
 
         try:
 
@@ -4343,8 +4580,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#orientation_statement.
     def enterOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=no-self-use
+        """ Enter a parse tree produced by XplorMRParser#orientation_statement.
+        """
+
         if ctx.Cutoff():
             self.nbaseCutoff = self.getNumber_s(ctx.number_s(0))
 
@@ -4413,8 +4652,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.nbaseNewGauss = None
             self.nbaseQuartic = None
 
-    # Exit a parse tree produced by XplorMRParser#orientation_statement.
     def exitOrientation_statement(self, ctx: XplorMRParser.Orientation_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#orientation_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (ORIE) classification={self.classification!r} "
                   f"cutoff={self.nbaseCutoff} height={self.nbaseHeight} force_constant={self.nbaseForceConst} "
@@ -4422,8 +4663,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                   f"quartic={self.nbaseQuartic} residues={self.nbaseResidues} "
                   f"cubic_size={self.nbaseCubicSize}")
 
-    # Enter a parse tree produced by XplorMRParser#orie_assign.
     def enterOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#orie_assign.
+        """
+
         self.nbaseRestraints += 1
         self.cur_subtype = 'nbase'
 
@@ -4432,8 +4675,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#orie_assign.
     def exitOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#orie_assign.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -4550,8 +4795,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                            sf['list_id']])
 
-    # Enter a parse tree produced by XplorMRParser#csa_statement.
     def enterCsa_statement(self, ctx: XplorMRParser.Csa_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#csa_statement.
+        """
+
         if ctx.Csa_types():
             code = str(ctx.Csa_types()).upper()
             if code.startswith('PHOS'):
@@ -4613,14 +4860,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                              's33': self.getNumber_s(ctx.number_s(2))
                              }
 
-    # Exit a parse tree produced by XplorMRParser#csa_statement.
     def exitCsa_statement(self, ctx: XplorMRParser.Csa_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#csa_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (DCSA) classification={self.classification!r} "
                   f"type={self.csaType} scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
-    # Enter a parse tree produced by XplorMRParser#csa_assign.
     def enterCsa_assign(self, ctx: XplorMRParser.Csa_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#csa_assign.
+        """
+
         self.csaRestraints += 1
         if self.cur_subtype != 'csa':
             self.csaStatements += 1
@@ -4631,8 +4882,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#csa_assign.
     def exitCsa_assign(self, ctx: XplorMRParser.Csa_assignContext):  # pylint: disable=unused-argument
+
+        """ Exit a parse tree produced by XplorMRParser#csa_assign.
+        """
 
         try:
 
@@ -4846,8 +5099,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#pcsa_statement.
     def enterPcsa_statement(self, ctx: XplorMRParser.Pcsa_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#pcsa_statement.
+        """
+
         self.csaType = None
 
         if ctx.Potential_types():
@@ -4902,52 +5157,54 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                              'theta': self.getNumber_s(ctx.number_s(3))
                              }
 
-    # Exit a parse tree produced by XplorMRParser#pcsa_statement.
     def exitPcsa_statement(self, ctx: XplorMRParser.Pcsa_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pcsa_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (PCSA) classification={self.classification!r} "
                   f"scale={self.scale} coefficients={self.coefficients} sigma={self.csaSigma}")
 
-    # Enter a parse tree produced by XplorMRParser#one_bond_coupling_statement.
     def enterOne_bond_coupling_statement(self, ctx: XplorMRParser.One_bond_coupling_statementContext
                                          ):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#one_bond_coupling_statement.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#one_bond_coupling_statement.
     def exitOne_bond_coupling_statement(self, ctx: XplorMRParser.One_bond_coupling_statementContext
                                         ):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#one_bond_coupling_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#one_bond_assign.
     def enterOne_bond_assign(self, ctx: XplorMRParser.One_bond_assignContext):  # pylint: disable=unused-argument
         """
         @deprecated: This restraint has not been useful in practice, but has been preserved for historical reasons.
         """
 
-    # Exit a parse tree produced by XplorMRParser#one_bond_assign.
     def exitOne_bond_assign(self, ctx: XplorMRParser.One_bond_assignContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#one_bond_assign.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#angle_db_statement.
     def enterAngle_db_statement(self, ctx: XplorMRParser.Angle_db_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#angle_db_statement.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#angle_db_statement.
     def exitAngle_db_statement(self, ctx: XplorMRParser.Angle_db_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#angle_db_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#angle_db_assign.
     def enterAngle_db_assign(self, ctx: XplorMRParser.Angle_db_assignContext):  # pylint: disable=unused-argument
         """
         @deprecated:  This term has not proved useful in practice and is only here for historical reasons.
         """
 
-    # Exit a parse tree produced by XplorMRParser#angle_db_assign.
     def exitAngle_db_assign(self, ctx: XplorMRParser.Angle_db_assignContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#angle_db_assign.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#pre_statement.
     def enterPre_statement(self, ctx: XplorMRParser.Pre_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#pre_statement.
+        """
+
         if self.preParameterDict is None:
             self.preParameterDict = {}
 
@@ -4997,16 +5254,20 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 return
             self.preParameterDict[_classification]['tauc'] = self.getNumber_s(ctx.number_s(0))
 
-    # Exit a parse tree produced by XplorMRParser#pre_statement.
     def exitPre_statement(self, ctx: XplorMRParser.Pre_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pre_statement.
+        """
+
         if self.debug:
             parameters = f' parameters={self.preParameterDict[self.classification]}'\
                 if self.classification in self.preParameterDict and len(self.preParameterDict[self.classification]) > 0\
                 else ''
             print(f"subtype={self.cur_subtype} (PMAG) classification={self.classification!r}{parameters}")
 
-    # Enter a parse tree produced by XplorMRParser#pre_assign.
     def enterPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#pre_assign.
+        """
+
         self.preRestraints += 1
         if self.cur_subtype != 'pre':
             self.preStatements += 1
@@ -5017,8 +5278,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_noe = False
 
-    # Exit a parse tree produced by XplorMRParser#pre_assign.
     def exitPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pre_assign.
+        """
 
         try:
 
@@ -5083,8 +5345,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#pcs_statement.
     def enterPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#pcs_statement.
+        """
+
         if ctx.Reset():
             self.coefficients = None
 
@@ -5093,14 +5357,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  'a2': self.getNumber_s(ctx.number_s(1))
                                  }
 
-    # Exit a parse tree produced by XplorMRParser#pcs_statement.
     def exitPcs_statement(self, ctx: XplorMRParser.Pcs_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pcs_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (XPCS) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by XplorMRParser#pcs_assign.
     def enterPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#pcs_assign.
+        """
+
         self.pcsRestraints += 1
         self.cur_subtype_altered = self.cur_subtype != 'pcs' and len(self.cur_subtype) > 0
         self.cur_subtype = 'pcs' if self.cur_subtype != 'hvycs' else 'hvycs'  # set 'hvycs' for error message
@@ -5108,8 +5376,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#pcs_assign.
     def exitPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pcs_assign.
+        """
 
         try:
 
@@ -5215,8 +5484,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#prdc_statement.
     def enterPrdc_statement(self, ctx: XplorMRParser.Prdc_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#prdc_statement.
+        """
+
         if ctx.Reset():
             self.potential = 'square'
             self.coefficients = None
@@ -5226,22 +5497,27 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  'a2': self.getNumber_s(ctx.number_s(1))
                                  }
 
-    # Exit a parse tree produced by XplorMRParser#prdc_statement.
     def exitPrdc_statement(self, ctx: XplorMRParser.Prdc_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#prdc_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (XRDC) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by XplorMRParser#prdc_assign.
     def enterPrdc_assign(self, ctx: XplorMRParser.Prdc_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#prdc_assign.
+        """
+
         self.prdcRestraints += 1
         self.cur_subtype = 'prdc'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#prdc_assign.
     def exitPrdc_assign(self, ctx: XplorMRParser.Prdc_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#prdc_assign.
+        """
 
         try:
 
@@ -5389,30 +5665,37 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#porientation_statement.
     def enterPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):  # pylint: disable=no-self-use
+        """ Enter a parse tree produced by XplorMRParser#porientation_statement.
+        """
+
         if ctx.ForceConstant():
             self.pangForceConst = self.getNumber_s(ctx.number_s())
 
         elif ctx.Reset():
             self.pangForceConst = 1.0
 
-    # Exit a parse tree produced by XplorMRParser#porientation_statement.
     def exitPorientation_statement(self, ctx: XplorMRParser.Porientation_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#porientation_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (XANG) classification={self.classification!r} "
                   f"force_constant={self.pangForceConst}")
 
-    # Enter a parse tree produced by XplorMRParser#porientation_assign.
     def enterPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#porientation_assign.
+        """
+
         self.pangRestraints += 1
         self.cur_subtype = 'pang'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#porientation_assign.
     def exitPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#porientation_assign.
+        """
 
         try:
 
@@ -5559,30 +5842,37 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#pccr_statement.
     def enterPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#pccr_statement.
+        """
+
         if ctx.Reset():
             self.coefficients = None
 
         elif ctx.Coefficients():
             self.coefficients = {'proportionality': self.getNumber_s(ctx.number_s())}
 
-    # Exit a parse tree produced by XplorMRParser#pccr_statement.
     def exitPccr_statement(self, ctx: XplorMRParser.Pccr_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pccr_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (XCCR) classification={self.classification!r} "
                   f"coefficients={self.coefficients}")
 
-    # Enter a parse tree produced by XplorMRParser#pccr_assign.
     def enterPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#pccr_assign.
+        """
+
         self.pccrRestraints += 1
         self.cur_subtype = 'pccr'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#pccr_assign.
     def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#pccr_assign.
+        """
 
         try:
 
@@ -5720,18 +6010,24 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#hbond_statement.
     def enterHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=no-self-use
+        """ Enter a parse tree produced by XplorMRParser#hbond_statement.
+        """
+
         if ctx.Reset():
             pass
 
-    # Exit a parse tree produced by XplorMRParser#hbond_statement.
     def exitHbond_statement(self, ctx: XplorMRParser.Hbond_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#hbond_statement.
+        """
+
         if self.debug:
             print(f"subtype={self.cur_subtype} (HBDA) classification={self.classification!r}")
 
-    # Enter a parse tree produced by XplorMRParser#hbond_assign.
     def enterHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#hbond_assign.
+        """
+
         self.hbondRestraints += 1
         if self.cur_subtype != 'hbond':
             self.hbondStatements += 1
@@ -5740,8 +6036,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#hbond_assign.
     def exitHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#hbond_assign.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -5882,7 +6180,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                   f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                   f"{chain_id_3}:{seq_id_3}:{atom_id_3}) is too far apart in the coordinates ({dist:.3f}Å).")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.verbose:
                 self.log.write(f"+{self.__class_name__}.exitHbond_assign() ++ Error  - {str(e)}")
 
@@ -5924,19 +6222,25 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if not is_hbond:
             self.cur_subtype = 'hbond'
 
-    # Enter a parse tree produced by XplorMRParser#hbond_db_statement.
     def enterHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#hbond_db_statement.
+        """
+
         self.in_hbdb_statement = True
         self.cur_dist_type = False
 
-    # Exit a parse tree produced by XplorMRParser#hbond_db_statement.
     def exitHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#hbond_db_statement.
+        """
+
         self.in_hbdb_statement = False
         if self.debug:
             print(f"subtype={self.cur_subtype} (HBDB)")
 
-    # Enter a parse tree produced by XplorMRParser#hbond_db_assign.
     def enterHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#hbond_db_assign.
+        """
+
         if self.cur_dist_type:
             self.distRestraints += 1
             self.cur_subtype_altered = self.cur_subtype != 'dist' and len(self.cur_subtype) > 0
@@ -5955,8 +6259,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.donor_columnSel = self.acceptor_columnSel = -1
 
-    # Exit a parse tree produced by XplorMRParser#hbond_db_assign.
     def exitHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#hbond_db_assign.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -6196,7 +6502,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                   f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
                                   f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             if self.verbose:
                 self.log.write(f"+{self.__class_name__}.exitHbond_db_assign() ++ Error  - {str(e)}")
 
@@ -6231,8 +6537,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                              atom1, atom2)
                 sf['loop'].add_data(row)
 
-    # Enter a parse tree produced by XplorMRParser#ncs_restraint.
     def enterNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#ncs_restraint.
+        """
+
         self.in_block = True
 
         self.geoStatements += 1
@@ -6241,25 +6549,31 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if self.createSfDict:
             self.addSf('NCS restraint')
 
-    # Exit a parse tree produced by XplorMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#ncs_restraint.
+        """
+
         self.in_block = False
 
         if self.createSfDict:
             self.trimSfWoLp()
 
-    # Enter a parse tree produced by XplorMRParser#ncs_statement.
     def enterNcs_statement(self, ctx: XplorMRParser.Ncs_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#ncs_statement.
+        """
+
         if ctx.Initialize():
             self.ncsSigb = 2.0
             self.ncsWeight = 300.0
 
-    # Exit a parse tree produced by XplorMRParser#ncs_statement.
     def exitNcs_statement(self, ctx: XplorMRParser.Ncs_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#ncs_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#ncs_group_statement.
     def enterNcs_group_statement(self, ctx: XplorMRParser.Ncs_group_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#ncs_group_statement.
+        """
+
         self.geoRestraints += 1
         if self.cur_subtype != 'geo':
             self.geoStatements += 1
@@ -6304,8 +6618,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                               f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "
                               "should be a positive value.")
 
-    # Exit a parse tree produced by XplorMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: XplorMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#ncs_group_statement.
+        """
+
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
@@ -6334,8 +6650,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            sf['list_id']])
 
-    # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#selection.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + "enter_selection")
 
@@ -6347,8 +6665,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.stackTerms = []
             self.factor = {}
 
-    # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#selection.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + "exit_selection")
 
@@ -6522,8 +6842,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.atomSelectionSet.append(atomSelection)
 
-    # Enter a parse tree produced by XplorMRParser#selection_expression.
     def enterSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):
+        """ Enter a parse tree produced by XplorMRParser#selection_expression.
+        """
+
         self.cur_union_expr = self.con_union_expr = bool(ctx.Or_op(0))
         if self.depth == 0:
             self.top_union_expr = self.cur_union_expr
@@ -6543,8 +6865,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by XplorMRParser#selection_expression.
     def exitSelection_expression(self, ctx: XplorMRParser.Selection_expressionContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#selection_expression.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_sel_expr")
@@ -6577,8 +6901,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.con_union_expr = False
             self.unionFactor = None
 
-    # Enter a parse tree produced by XplorMRParser#term.
     def enterTerm(self, ctx: XplorMRParser.TermContext):
+        """ Enter a parse tree produced by XplorMRParser#term.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + f"enter_term, intersection: {bool(ctx.And_op(0))}")
 
@@ -6587,8 +6913,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by XplorMRParser#term.
     def exitTerm(self, ctx: XplorMRParser.TermContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#term.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_term")
@@ -6656,8 +6984,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         if 'atom_selection' in self.factor and not isinstance(self.factor['atom_selection'], str):
             self.stackTerms.append(self.factor['atom_selection'])
 
-    # Enter a parse tree produced by XplorMRParser#factor.
     def enterFactor(self, ctx: XplorMRParser.FactorContext):
+        """ Enter a parse tree produced by XplorMRParser#factor.
+        """
+
         if self.verbose_debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
@@ -6677,8 +7007,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.depth += 1
 
-    # Exit a parse tree produced by XplorMRParser#factor.
     def exitFactor(self, ctx: XplorMRParser.FactorContext):
+        """ Exit a parse tree produced by XplorMRParser#factor.
+        """
+
         self.depth -= 1
         if self.verbose_debug:
             print("  " * self.depth + "exit_factor")
@@ -6757,7 +7089,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if 'alt_atom_id' in self.factor:
                             del self.factor['alt_atom_id']
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -6826,7 +7158,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del atom['z']
                                 _atomSelection.append(atom)
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -6905,7 +7237,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                             del atom['z']
                                             _atomSelection.append(atom)
 
-                                    except Exception as e:
+                                    except Exception as e:  # pylint: disable=broad-exception-caught
                                         if self.verbose:
                                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -7840,7 +8172,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                                     'enum': (self.representativeAltId,)}
                                                                    ])
 
-                            except Exception as e:
+                            except Exception as e:  # pylint: disable=broad-exception-caught
                                 if self.verbose:
                                     self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -7869,7 +8201,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                             'enum': (self.representativeAltId,)}
                                                            ])
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
                         if self.verbose:
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -7944,7 +8276,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         head = to_np_array(_head[0])
                                         self.vector3D = numpy.subtract(tail, head, dtype=float)
 
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-exception-caught
                             if self.verbose:
                                 self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -7996,7 +8328,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 del atom['z']
                                 atomSelection.append(atom)
 
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
                         if self.verbose:
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -8050,7 +8382,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if atomId in pseudoAtoms:
                             atomSelection.append(_atom)
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -8431,7 +8763,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         atomSelection.append(_atom)
                         _sequenceSelect.append(_sequence)
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.verbose:
                         self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
@@ -8456,12 +8788,14 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         finally:
             self.numberFSelection.clear()
 
-    # Enter a parse tree produced by XplorMRParser#number.
     def enterNumber(self, ctx: XplorMRParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#number.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#number.
     def exitNumber(self, ctx: XplorMRParser.NumberContext):
+        """ Exit a parse tree produced by XplorMRParser#number.
+        """
+
         if ctx.Real():
             self.numberSelection.append(float(str(ctx.Real())))
 
@@ -8480,12 +8814,14 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.numberSelection.append(None)
 
-    # Enter a parse tree produced by XplorMRParser#number_f.
     def enterNumber_f(self, ctx: XplorMRParser.Number_fContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#number_f.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#number_f.
     def exitNumber_f(self, ctx: XplorMRParser.Number_fContext):
+        """ Exit a parse tree produced by XplorMRParser#number_f.
+        """
+
         if ctx.Real():
             self.numberFSelection.append(float(str(ctx.Real())))
 
@@ -8495,15 +8831,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         else:
             self.numberFSelection.append(None)
 
-    # Enter a parse tree produced by XplorMRParser#number_s.
     def enterNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#number_s.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#number_s.
     def exitNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#number_s.
+        """
 
     def getNumber_s(self, ctx: XplorMRParser.Number_sContext):  # pylint: disable=no-self-use
+        """ Retrieve context of Number_s.
+        """
+
         if ctx is None:
             return None
 
@@ -8518,15 +8857,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         return None
 
-    # Enter a parse tree produced by XplorMRParser#number_a.
     def enterNumber_a(self, ctx: XplorMRParser.Number_aContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#number_a.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#number_a.
     def exitNumber_a(self, ctx: XplorMRParser.Number_aContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#number_a.
+        """
 
     def getNumber_a(self, ctx: XplorMRParser.Number_aContext):  # pylint: disable=no-self-use
+        """ Retrieve context of Number_a.
+        """
+
         if ctx is None:
             return None
 
@@ -8538,23 +8880,28 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         return None
 
-    # Enter a parse tree produced by XplorMRParser#classification.
     def enterClassification(self, ctx: XplorMRParser.ClassificationContext):
+        """ Enter a parse tree produced by XplorMRParser#classification.
+        """
+
         self.classification = self.getClass_name(ctx.class_name())
 
-    # Exit a parse tree produced by XplorMRParser#classification.
     def exitClassification(self, ctx: XplorMRParser.ClassificationContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#classification.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#class_name.
     def enterClass_name(self, ctx: XplorMRParser.Class_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#class_name.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#class_name.
     def exitClass_name(self, ctx: XplorMRParser.Class_nameContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#class_name.
+        """
 
     def getClass_name(self, ctx: XplorMRParser.Class_nameContext):  # pylint: disable=no-self-use
+        """ Retrieve context of Class_name.
+        """
+
         if ctx is None:
             return None
 
@@ -8581,16 +8928,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         return None
 
-    # Enter a parse tree produced by XplorMRParser#flag_statement.
     def enterFlag_statement(self, ctx: XplorMRParser.Flag_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#flag_statement.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#flag_statement.
     def exitFlag_statement(self, ctx: XplorMRParser.Flag_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#flag_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#vector_statement.
     def enterVector_statement(self, ctx: XplorMRParser.Vector_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#vector_statement.
+        """
+
         self.cur_vector_mode = ''
         self.cur_vector_atom_prop_type = ''
 
@@ -8600,8 +8949,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#vector_statement.
     def exitVector_statement(self, ctx: XplorMRParser.Vector_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#vector_statement.
+        """
+
         if self.cur_vector_mode == 'identity':
             if self.cur_vector_atom_prop_type.startswith('store'):
                 self.storeSet[int(self.cur_vector_atom_prop_type[-1])] = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
@@ -8622,8 +8973,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         self.stackTerms = []
         self.factor = {}
 
-    # Enter a parse tree produced by XplorMRParser#vector_mode.
     def enterVector_mode(self, ctx: XplorMRParser.Vector_modeContext):
+        """ Enter a parse tree produced by XplorMRParser#vector_mode.
+        """
+
         if ctx.Identity_Lp():
             self.cur_vector_mode = 'identity'
 
@@ -8633,33 +8986,37 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.Show():
             self.cur_vector_mode = 'show'
 
-    # Exit a parse tree produced by XplorMRParser#vector_mode.
     def exitVector_mode(self, ctx: XplorMRParser.Vector_modeContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#vector_mode.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#vector_expression.
     def enterVector_expression(self, ctx: XplorMRParser.Vector_expressionContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#vector_expression.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#vector_expression.
     def exitVector_expression(self, ctx: XplorMRParser.Vector_expressionContext):
+        """ Exit a parse tree produced by XplorMRParser#vector_expression.
+        """
+
         if ctx.Atom_properties_VE():
             self.cur_vector_atom_prop_type = str(ctx.Atom_properties_VE()).lower()
 
-    # Enter a parse tree produced by XplorMRParser#vector_operation.
     def enterVector_operation(self, ctx: XplorMRParser.Vector_operationContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#vector_operation.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#vector_operation.
     def exitVector_operation(self, ctx: XplorMRParser.Vector_operationContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#vector_operation.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#vflc.
     def enterVflc(self, ctx: XplorMRParser.VflcContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#vflc.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#vflc.
     def exitVflc(self, ctx: XplorMRParser.VflcContext):
+        """ Exit a parse tree produced by XplorMRParser#vflc.
+        """
+
         if ctx.Integer_VE():
             self.stackVflc.append(int(str(ctx.Integer_VE())))
         elif ctx.Real_VE():
@@ -8682,32 +9039,36 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.vector_func_call():
             pass
 
-    # Enter a parse tree produced by XplorMRParser#vector_func_call.
     def enterVector_func_call(self, ctx: XplorMRParser.Vector_func_callContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#vector_func_call.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#vector_func_call.
     def exitVector_func_call(self, ctx: XplorMRParser.Vector_func_callContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#vector_func_call.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#vector_show_property.
     def enterVector_show_property(self, ctx: XplorMRParser.Vector_show_propertyContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#vector_show_property.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#vector_show_property.
     def exitVector_show_property(self, ctx: XplorMRParser.Vector_show_propertyContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#vector_show_property.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#evaluate_statement.
     def enterEvaluate_statement(self, ctx: XplorMRParser.Evaluate_statementContext):
+        """ Enter a parse tree produced by XplorMRParser#evaluate_statement.
+        """
+
         if ctx.Symbol_name_VE():
             self.cur_symbol_name = str(ctx.Symbol_name_VE())
 
         self.cur_vflc_op_code = ''
         self.stackVflc = []
 
-    # Exit a parse tree produced by XplorMRParser#evaluate_statement.
     def exitEvaluate_statement(self, ctx: XplorMRParser.Evaluate_statementContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by XplorMRParser#evaluate_statement.
+        """
+
         if self.stackVflc:
             self.evaluate[self.cur_symbol_name] = self.stackVflc[0]
 
@@ -8761,12 +9122,14 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.stackVflc.clear()
 
-    # Enter a parse tree produced by XplorMRParser#evaluate_operation.
     def enterEvaluate_operation(self, ctx: XplorMRParser.Evaluate_operationContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#evaluate_operation.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#evaluate_operation.
     def exitEvaluate_operation(self, ctx: XplorMRParser.Evaluate_operationContext):
+        """ Exit a parse tree produced by XplorMRParser#evaluate_operation.
+        """
+
         if ctx.Add_op_VE():
             self.cur_vflc_op_code = '+'
         elif ctx.Sub_op_VE():
@@ -8778,37 +9141,43 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         elif ctx.Exp_op_VE():
             self.cur_vflc_op_code = '^'
 
-    # Enter a parse tree produced by XplorMRParser#patch_statement.
     def enterPatch_statement(self, ctx: XplorMRParser.Patch_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#patch_statement.
+        """
+
         self.geoRestraints += 1
         self.cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
         self.g.clear()
 
-    # Exit a parse tree produced by XplorMRParser#patch_statement.
     def exitPatch_statement(self, ctx: XplorMRParser.Patch_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#patch_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#parameter_setting.
     def enterParameter_setting(self, ctx: XplorMRParser.Parameter_settingContext):  # pylint: disable=unused-argument
-        pass
+        """ Enter a parse tree produced by XplorMRParser#parameter_setting.
+        """
 
-    # Exit a parse tree produced by XplorMRParser#parameter_setting.
     def exitParameter_setting(self, ctx: XplorMRParser.Parameter_settingContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#parameter_setting.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#parameter_statement.
     def enterParameter_statement(self, ctx: XplorMRParser.Parameter_statementContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by XplorMRParser#parameter_statement.
+        """
+
         self.geoRestraints += 1
         self.cur_subtype = 'geo'
 
-    # Exit a parse tree produced by XplorMRParser#parameter_statement.
     def exitParameter_statement(self, ctx: XplorMRParser.Parameter_statementContext):  # pylint: disable=unused-argument
-        pass
+        """ Exit a parse tree produced by XplorMRParser#parameter_statement.
+        """
 
-    # Enter a parse tree produced by XplorMRParser#noe_assign_loop.
     def enterNoe_assign_loop(self, ctx: XplorMRParser.Noe_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#noe_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -8851,8 +9220,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#noe_assign_loop.
     def exitNoe_assign_loop(self, ctx: XplorMRParser.Noe_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#noe_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -8860,8 +9231,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#dihedral_assign_loop.
     def enterDihedral_assign_loop(self, ctx: XplorMRParser.Dihedral_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#dihedral_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -8904,8 +9277,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#dihedral_assign_loop.
     def exitDihedral_assign_loop(self, ctx: XplorMRParser.Dihedral_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#dihedral_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -8913,8 +9288,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#sani_assign_loop.
     def enterSani_assign_loop(self, ctx: XplorMRParser.Sani_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#sani_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -8957,8 +9334,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#sani_assign_loop.
     def exitSani_assign_loop(self, ctx: XplorMRParser.Sani_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#sani_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -8966,8 +9345,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#xadc_assign_loop.
     def enterXadc_assign_loop(self, ctx: XplorMRParser.Xadc_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#xadc_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9010,8 +9391,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#xadc_assign_loop.
     def exitXadc_assign_loop(self, ctx: XplorMRParser.Xadc_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#xadc_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -9019,8 +9402,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#coup_assign_loop.
     def enterCoup_assign_loop(self, ctx: XplorMRParser.Coup_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#coup_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9063,8 +9448,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#coup_assign_loop.
     def exitCoup_assign_loop(self, ctx: XplorMRParser.Coup_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#coup_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -9072,8 +9459,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#coll_assign_loop.
     def enterColl_assign_loop(self, ctx: XplorMRParser.Coll_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#coll_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9116,8 +9505,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#coll_assign_loop.
     def exitColl_assign_loop(self, ctx: XplorMRParser.Coll_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#coll_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -9125,8 +9516,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#csa_assign_loop.
     def enterCsa_assign_loop(self, ctx: XplorMRParser.Csa_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#csa_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9169,8 +9562,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#csa_assign_loop.
     def exitCsa_assign_loop(self, ctx: XplorMRParser.Csa_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#csa_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -9178,8 +9573,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#pre_assign_loop.
     def enterPre_assign_loop(self, ctx: XplorMRParser.Pre_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#pre_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9222,8 +9619,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#pre_assign_loop.
     def exitPre_assign_loop(self, ctx: XplorMRParser.Pre_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#pre_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -9231,8 +9630,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#pcs_assign_loop.
     def enterPcs_assign_loop(self, ctx: XplorMRParser.Pcs_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#pcs_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9275,8 +9676,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#pcs_assign_loop.
     def exitPcs_assign_loop(self, ctx: XplorMRParser.Pcs_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#pcs_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -9284,8 +9687,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#hbond_assign_loop.
     def enterHbond_assign_loop(self, ctx: XplorMRParser.Hbond_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#hbond_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9328,8 +9733,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#hbond_assign_loop.
     def exitHbond_assign_loop(self, ctx: XplorMRParser.Hbond_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#hbond_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -9337,8 +9744,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#hbond_db_assign_loop.
     def enterHbond_db_assign_loop(self, ctx: XplorMRParser.Hbond_db_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#hbond_db_assign_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9381,8 +9790,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#hbond_db_assign_loop.
     def exitHbond_db_assign_loop(self, ctx: XplorMRParser.Hbond_db_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#hbond_db_assign_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
@@ -9390,8 +9801,10 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         self.in_loop = False
 
-    # Enter a parse tree produced by XplorMRParser#planar_group_loop.
     def enterPlanar_group_loop(self, ctx: XplorMRParser.Planar_group_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#planar_group_loop.
+        """
+
         self.in_loop = True
 
         symbol_name = None
@@ -9434,13 +9847,13 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
-    # Exit a parse tree produced by XplorMRParser#planar_group_loop.
     def exitPlanar_group_loop(self, ctx: XplorMRParser.Planar_group_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#planar_group_loop.
+        """
+
         if ctx.Symbol_name_CF():
             symbol_name = str(ctx.Symbol_name_CF())
             if symbol_name in self.evaluateFor:
                 del self.evaluateFor[symbol_name]
 
         self.in_loop = False
-
-# del XplorMRParser

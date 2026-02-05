@@ -19,10 +19,11 @@ __license__ = "General Public License (GPL) v2"
 __version__ = "v_1n_10_6_12_A"
 
 import sys
-import numpy as np
 
 from math import pow, exp, log  # pylint: disable=redefined-builtin
 from typing import IO, List, Tuple
+
+import numpy as np
 
 
 def lmean(list: list) -> float:  # pylint: disable=redefined-builtin

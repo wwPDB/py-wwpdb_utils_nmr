@@ -2818,7 +2818,7 @@ class NmrDpValidation:
 
             for model_id in model_ids:
 
-                rc = numpy.array([0.0] * 3)
+                rc = numpy.array([0.0] * 3, dtype=float)
 
                 total = 0
 

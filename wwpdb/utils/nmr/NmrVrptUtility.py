@@ -33,7 +33,7 @@ import copy
 from operator import itemgetter
 from typing import Any, IO, List, Tuple, Optional
 
-import numpy as np
+import numpy
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -163,14 +163,14 @@ def distance(p0: list, p1: list) -> float:
     """ Return distance between two points.
     """
 
-    return np.linalg.norm(p0 - p1)
+    return numpy.linalg.norm(p0 - p1)
 
 
 def to_unit_vector(a: list) -> list:
     """ Return unit vector of a given vector.
     """
 
-    return a / np.linalg.norm(a)
+    return a / numpy.linalg.norm(a)
 
 
 def dihedral_angle(p0: list, p1: list, p2: list, p3: list) -> float:
@@ -190,15 +190,15 @@ def dihedral_angle(p0: list, p1: list, p2: list, p3: list) -> float:
     #   = b0 minus component that aligns with b1
     # w = projection of b2 onto plane perpendicular to b1
     #   = b2 minus component that aligns with b1
-    v = b0 - np.dot(b0, b1) * b1
-    w = b2 - np.dot(b2, b1) * b1
+    v = b0 - numpy.dot(b0, b1) * b1
+    w = b2 - numpy.dot(b2, b1) * b1
 
     # angle between v and w in a plane is the torsion angle
     # v and w may not be normalized but that's fine since tan is y/x
-    x = np.dot(v, w)
-    y = np.dot(np.cross(b1, v), w)
+    x = numpy.dot(v, w)
+    y = numpy.dot(numpy.cross(b1, v), w)
 
-    return np.degrees(np.arctan2(y, x))
+    return numpy.degrees(numpy.arctan2(y, x))
 
 
 def dist_inv_6_summed(r_list: List[float]) -> float:
@@ -2121,20 +2121,20 @@ class NmrVrptUtility:
                         ref_atom_ids.append(_ref_atom_id)
                         ref_atoms_xyz.append(self.__coordinates[model_id][__atom_key])
 
-                src_ccd_xyz = np.asarray([cca['x'], cca['y'], cca['z']], dtype=float)
+                src_ccd_xyz = numpy.asarray([cca['x'], cca['y'], cca['z']], dtype=float)
 
                 ccd_atoms_xyz = []
                 for _ref_atom_id in ref_atom_ids:
                     _cca = next((_cca for _cca in self.__ccU.lastAtomDictList if _cca['atom_id'] == _ref_atom_id), None)
                     if _cca is not None:
-                        ccd_atoms_xyz.append(np.asarray([_cca['x'], _cca['y'], _cca['z']], dtype=float))
+                        ccd_atoms_xyz.append(numpy.asarray([_cca['x'], _cca['y'], _cca['z']], dtype=float))
 
                 if len(ref_atoms_xyz) != len(ccd_atoms_xyz):
                     return None
 
-                dst_ccd_xyz, rmsd = calculate_uninstanced_coord(np.asarray(ccd_atoms_xyz),
-                                                                np.asarray(ref_atoms_xyz),
-                                                                np.asarray([src_ccd_xyz]))
+                dst_ccd_xyz, rmsd = calculate_uninstanced_coord(numpy.asarray(ccd_atoms_xyz),
+                                                                numpy.asarray(ref_atoms_xyz),
+                                                                numpy.asarray([src_ccd_xyz]))
 
                 if rmsd > 0.1:
                     return None
@@ -2421,7 +2421,7 @@ class NmrVrptUtility:
                                 continue
 
                             lower_bound, upper_bound, target_value = bound_key
-                            avr_a = np.mean(np.array(angle_list)) - 180.0
+                            avr_a = numpy.mean(numpy.array(angle_list, dtype=float)) - 180.0
 
                             _error = angle_error(lower_bound, upper_bound, target_value, avr_a)
 
@@ -2584,7 +2584,7 @@ class NmrVrptUtility:
                                 continue
 
                             lower_bound, upper_bound = bound_key
-                            avr_r = np.mean(np.array(rdc_list))
+                            avr_r = numpy.mean(numpy.array(rdc_list, dtype=float))
 
                             _error = rdc_error(lower_bound, upper_bound, avr_r)
 
@@ -2824,7 +2824,7 @@ class NmrVrptUtility:
                 vm = get_violated_model_ids(viol_per_model)
 
                 if len(vm) > 1:
-                    e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
+                    e = numpy.array([err for err in viol_per_model.values() if err is not None and err > 0.0], dtype=float)
 
                     comb_keys = []
                     for _m in set(vm):
@@ -2846,11 +2846,11 @@ class NmrVrptUtility:
                                                            r['bond_flag'],
                                                            len(vm),
                                                            vm,
-                                                           np.min(e),
-                                                           np.max(e),
-                                                           np.mean(e),
-                                                           np.std(e),
-                                                           np.median(e)])
+                                                           numpy.min(e),
+                                                           numpy.max(e),
+                                                           numpy.mean(e),
+                                                           numpy.std(e),
+                                                           numpy.median(e)])
 
             self.__results['most_violated_distance'] =\
                 sorted(most_violated_distance, reverse=True, key=itemgetter(6, 10))
@@ -3073,7 +3073,7 @@ class NmrVrptUtility:
                 vm = get_violated_model_ids(viol_per_model)
 
                 if len(vm) > 1:
-                    e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
+                    e = numpy.array([err for err in viol_per_model.values() if err is not None and err > 0.0], dtype=float)
 
                     comb_keys = []
                     for _m in set(vm):
@@ -3095,11 +3095,11 @@ class NmrVrptUtility:
                                                         r['angle_type'],
                                                         len(vm),
                                                         vm,
-                                                        np.min(e),
-                                                        np.max(e),
-                                                        np.mean(e),
-                                                        np.std(e),
-                                                        np.median(e)])
+                                                        numpy.min(e),
+                                                        numpy.max(e),
+                                                        numpy.mean(e),
+                                                        numpy.std(e),
+                                                        numpy.median(e)])
 
             self.__results['most_violated_angle'] =\
                 sorted(most_violated_angle, reverse=True, key=itemgetter(6, 10))
@@ -3314,7 +3314,7 @@ class NmrVrptUtility:
                 vm = get_violated_model_ids(viol_per_model)
 
                 if len(vm) > 1:
-                    e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
+                    e = numpy.array([err for err in viol_per_model.values() if err is not None and err > 0.0], dtype=float)
 
                     comb_keys = []
                     for _m in set(vm):
@@ -3334,11 +3334,11 @@ class NmrVrptUtility:
                                                       r['rdc_type'],
                                                       len(vm),
                                                       vm,
-                                                      np.min(e),
-                                                      np.max(e),
-                                                      np.mean(e),
-                                                      np.std(e),
-                                                      np.median(e)])
+                                                      numpy.min(e),
+                                                      numpy.max(e),
+                                                      numpy.mean(e),
+                                                      numpy.std(e),
+                                                      numpy.median(e)])
 
             self.__results['most_violated_rdc'] =\
                 sorted(most_violated_rdc, reverse=True, key=itemgetter(4, 8))

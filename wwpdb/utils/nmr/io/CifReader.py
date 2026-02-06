@@ -60,7 +60,7 @@ import pickle
 from operator import itemgetter
 from typing import IO, List, Tuple, Optional
 
-import numpy as np
+import numpy
 
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
@@ -115,16 +115,16 @@ def M(axis: list, theta: float) -> list:
         about the given axis by theta radians.
     """
 
-    axis = np.asarray(axis)
-    axis = axis / math.sqrt(np.dot(axis, axis))
+    axis = numpy.asarray(axis)
+    axis = axis / math.sqrt(numpy.dot(axis, axis))
     a = math.cos(theta / 2.0)
     b, c, d = -axis * math.sin(theta / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
     bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
 
-    return np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
-                     [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
-                     [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
+    return numpy.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
+                        [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
+                        [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]], dtype=float)
 
 
 def to_np_array(a: dict) -> list:
@@ -132,7 +132,7 @@ def to_np_array(a: dict) -> list:
         in {'x': float, 'y': float, 'z': float} format.
     """
 
-    return np.asarray([a['x'], a['y'], a['z']], dtype=float)
+    return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
 
 
 def get_coordinates(p: list) -> [list, list]:
@@ -147,8 +147,8 @@ def get_coordinates(p: list) -> [list, list]:
 
     atoms = [ELEMENT_SYMBOLS[a['element']] for a in p]
 
-    V = np.asarray(V)
-    atoms = np.asarray(atoms)
+    V = numpy.asarray(V)
+    atoms = numpy.asarray(atoms)
 
     assert V.shape[0] == atoms.size
 
@@ -169,7 +169,7 @@ def calculate_rmsd(p: list, q: list) -> float:
     assert p_size > 0 and q_size > 0
     assert p_size == q_size
     assert p_coord.shape[0] == q_coord.shape[0]
-    assert np.count_nonzero(p_atoms != q_atoms) == 0 or REORDER
+    assert numpy.count_nonzero(p_atoms != q_atoms) == 0 or REORDER
 
     p_cent = centroid(p_coord)
     q_cent = centroid(q_coord)
@@ -197,7 +197,7 @@ def calculate_rmsd(p: list, q: list) -> float:
         q_review = REORDER_METHOD(p_atoms, q_atoms, p_coord, q_coord)
         q_coord = q_coord[q_review]
         q_atoms = q_atoms[q_review]
-        assert np.count_nonzero(p_atoms != q_atoms) == 0
+        assert numpy.count_nonzero(p_atoms != q_atoms) == 0
 
     if result_rmsd is not None:
         pass
@@ -227,9 +227,9 @@ def calculate_uninstanced_coord(p_coord: list, q_coord: list, s_coord: list) -> 
     q_coord -= q_cent
 
     rot = quaternion_rotate(p_coord, q_coord)
-    p_coord = np.dot(p_coord, rot)
+    p_coord = numpy.dot(p_coord, rot)
 
-    s_coord = np.dot(s_coord, rot)
+    s_coord = numpy.dot(s_coord, rot)
     s_coord += q_cent
 
     return s_coord, quaternion_rmsd(p_coord, q_coord)
@@ -1140,7 +1140,7 @@ class CifReader:
                                                                 ])
 
                                 if len(_beg) == 1 and len(_end) == 1\
-                                   and np.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
+                                   and numpy.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
                                     for auth_seq_id_ in range(auth_seq_id_1 + 1, auth_seq_id_2):
                                         auth_seq_id_list = list(filter(None, authSeqDict[c]))
 
@@ -1282,9 +1282,9 @@ class CifReader:
                         for model_id in effModelIds:
                             axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
                             if self.__single_model_rotation_test:
-                                theta = 0.0 if model_id > 1 else np.pi / 4.0
+                                theta = 0.0 if model_id > 1 else numpy.pi / 4.0
                             else:
-                                theta = random.uniform(-np.pi, np.pi)
+                                theta = random.uniform(-numpy.pi, numpy.pi)
                             randomM[model_id] = M(axis, theta)
 
                     if 'polypeptide' in etype:
@@ -1523,7 +1523,7 @@ class CifReader:
 
         matrix_size = (size, size)
 
-        d_avr = np.zeros(matrix_size, dtype=float)
+        d_avr = numpy.zeros(matrix_size, dtype=float)
 
         _total_models = 0
 
@@ -1541,7 +1541,7 @@ class CifReader:
                 i = _atom_site.index(a_i)
                 j = _atom_site.index(a_j)
 
-                d = np.linalg.norm(to_np_array(a_i) - to_np_array(a_j))
+                d = numpy.linalg.norm(to_np_array(a_i) - to_np_array(a_j))
 
                 if i < j:
                     d_avr[i, j] += d
@@ -1553,9 +1553,9 @@ class CifReader:
 
         factor = 1.0 / _total_models
 
-        d_avr = np.multiply(d_avr, factor)
+        d_avr = numpy.multiply(d_avr, factor)
 
-        d_var = np.zeros(matrix_size, dtype=float)
+        d_var = numpy.zeros(matrix_size, dtype=float)
 
         for model_id in eff_model_ids:
 
@@ -1569,7 +1569,7 @@ class CifReader:
                 i = _atom_site.index(a_i)
                 j = _atom_site.index(a_j)
 
-                d = np.linalg.norm(to_np_array(a_i) - to_np_array(a_j))
+                d = numpy.linalg.norm(to_np_array(a_i) - to_np_array(a_j))
 
                 if i < j:
                     d -= d_avr[i, j]
@@ -1578,11 +1578,11 @@ class CifReader:
                     d -= d_avr[j, i]
                     d_var[j, i] += d * d
 
-        d_var = np.multiply(d_var, factor)
+        d_var = numpy.multiply(d_var, factor)
 
-        max_d_var = min(np.max(d_var), RMSD_CUTOFF_FOR_DOMAIN * RMSD_CUTOFF_FOR_DOMAIN)
+        max_d_var = min(numpy.max(d_var), RMSD_CUTOFF_FOR_DOMAIN * RMSD_CUTOFF_FOR_DOMAIN)
 
-        d_ord = np.ones(matrix_size, dtype=float)
+        d_ord = numpy.ones(matrix_size, dtype=float)
 
         if max_d_var > 0.0:
 
@@ -1595,7 +1595,7 @@ class CifReader:
 
                 d_ord[i, j] = d_ord[j, i] = q
 
-        _, v = np.linalg.eig(d_ord)
+        _, v = numpy.linalg.eig(d_ord)
 
         md5_set = set()
 
@@ -1613,7 +1613,7 @@ class CifReader:
 
             for features in range(self.__min_features_for_clustering, self.__max_features_for_clustering + 1):
 
-                x = np.delete(v, np.s_[features:], 1)
+                x = numpy.delete(v, numpy.s_[features:], 1)
 
                 if min_samples >= features:
                     continue
@@ -1628,7 +1628,7 @@ class CifReader:
                     try:
                         db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
                     except ValueError:
-                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(np.real(x))
+                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
 
                     labels = db.labels_
 
@@ -1694,7 +1694,10 @@ class CifReader:
 
                             _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
 
-                        mean_rmsd = np.mean(np.array(_rmsd))
+                        if len(_rmsd) == 0:
+                            continue
+
+                        mean_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
 
                         score += mean_rmsd * fraction
 
@@ -1719,12 +1722,12 @@ class CifReader:
         if min_result is None:
             return None, None
 
-        x = np.delete(v, np.s_[min_result['features']:], 1)
+        x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
 
         try:
             db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
         except ValueError:
-            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(np.real(x))
+            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
 
         labels = db.labels_
 
@@ -1813,29 +1816,34 @@ class CifReader:
 
                         ref_v = to_np_array(ref_atom)
                         if self.__random_rotaion_test:
-                            ref_v = np.dot(randomM[ref_model_id], ref_v)
+                            ref_v = numpy.dot(randomM[ref_model_id], ref_v)
 
                         test_v = to_np_array(test_atom)
                         if self.__random_rotaion_test:
-                            test_v = np.dot(randomM[test_model_id], test_v)
+                            test_v = numpy.dot(randomM[test_model_id], test_v)
                         d = test_v - ref_v
-                        _core_rmsd.append(np.dot(d, d))
+                        _core_rmsd.append(numpy.dot(d, d))
 
-                    core_rmsd.append(math.sqrt(np.mean(np.array(_core_rmsd))))
+                    if len(_core_rmsd) == 0:
+                        continue
+
+                    core_rmsd.append(math.sqrt(numpy.mean(numpy.array(_core_rmsd, dtype=float))))
                     _rmsd = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q)
                     align_rmsd.append(_rmsd)
                     if _rmsd < RMSD_OVERLAID_EXACTLY and ref_model_id < test_model_id:
                         exact_overlaid_model_ids.append({'ref_model_id': ref_model_id,
                                                          'test_model_id': test_model_id,
                                                          'rmsd_in_well_defined_region': float(f"{_rmsd:.4f}")})
+                if len(core_rmsd) == 0:
+                    continue
 
-                mean_core_rmsd = np.mean(np.array(core_rmsd))
+                mean_core_rmsd = numpy.mean(numpy.array(core_rmsd, dtype=float))
 
                 if mean_core_rmsd < min_core_rmsd:
                     dst_chain_ids = _dst_chain_ids
                     min_label = _label
                     min_core_rmsd = mean_core_rmsd
-                    mean_align_rmsd = np.mean(np.array(align_rmsd))
+                    mean_align_rmsd = numpy.mean(numpy.array(align_rmsd, dtype=float))
 
             if min_label != -1:
                 item['domain_id'] = eff_domain_id[min_label]
@@ -1856,7 +1864,7 @@ class CifReader:
 
             item = {}
 
-            r = np.full((_total_models, _total_models), RMSD_CUTOFF_FOR_DOMAIN, dtype=float)
+            r = numpy.full((_total_models, _total_models), RMSD_CUTOFF_FOR_DOMAIN, dtype=float)
 
             _rmsd = []
 
@@ -1898,11 +1906,11 @@ class CifReader:
                     _rmsd.append(_rmsd_)
 
             if len(_rmsd) > 0:
-                item['mean_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
+                item['mean_rmsd'] = float(f"{numpy.mean(numpy.array(_rmsd, dtype=float)):.4f}")
 
-            _, v = np.linalg.eig(r)
-            x = np.delete(np.abs(v), np.s_[1:], 1)
-            ref_model_id = int(np.argmin(x, axis=0)[0]) + 1
+            _, v = numpy.linalg.eig(r)
+            x = numpy.delete(numpy.abs(v), numpy.s_[1:], 1)
+            ref_model_id = int(numpy.argmin(x, axis=0)[0]) + 1
 
             item['medoid_model_id'] = ref_model_id
 
@@ -1933,7 +1941,7 @@ class CifReader:
                     _rmsd.append(calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q))
 
             if len(_rmsd) > 0:
-                item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
+                item['medoid_rmsd'] = float(f"{numpy.mean(numpy.array(_rmsd, dtype=float)):.4f}")
 
             _item = copy.copy(item)
 

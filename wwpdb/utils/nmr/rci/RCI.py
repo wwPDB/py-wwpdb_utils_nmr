@@ -23,16 +23,7 @@ import sys
 from math import pow, exp, log  # pylint: disable=redefined-builtin
 from typing import IO, List, Tuple
 
-import numpy as np
-
-
-def lmean(list: list) -> float:  # pylint: disable=redefined-builtin
-    """ Returns the average of the array elements.
-    """
-
-    a = np.array(list)
-
-    return np.mean(a)
+import numpy
 
 
 # pylint: disable=attribute-defined-outside-init
@@ -5111,7 +5102,7 @@ class RCI:
                 ]
             }
 
-        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil,  4 - Schwarzinger's, 5 - average of 1,2 & 3
+        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil, 4 - Schwarzinger's, 5 - average of 1,2 & 3
         if self.Random_coil_flag == 1:
             # Wishart random coil values
             self.random_coil_dic = {
@@ -5138,7 +5129,7 @@ class RCI:
                 "B": [118.6, 174.6, 55.4, 41.1, 8.43, 4.71]
             }
 
-        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil,  4 - Schwarzinger's, 5 - average of 1,2 & 3
+        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil, 4 - Schwarzinger's, 5 - average of 1,2 & 3
         elif self.Random_coil_flag == 2:
             # Wang's random coil values
             self.random_coil_dic = {
@@ -5603,7 +5594,7 @@ class RCI:
         l_atom_list = ["CA", "HA", "CO", "CB", "N", "H"]
         l_coef_list = [self.__coeff_dict[all_atoms_trigger][atom] for atom in l_atom_list]
 
-        return lmean(l_coef_list)
+        return numpy.mean(numpy.array(l_coef_list, dtype=float))
 
     def __read_csi_pseudo(self) -> List[list]:
         """ Create pseudo-CSI list to run the program without CSI/Dynamr.
@@ -5778,9 +5769,9 @@ class RCI:
 
                             if negative_found == 1 or positive_found == 1:
                                 if len(pos_neg_list_abs) > 0:
-                                    pos_neg_list_abs_ave = lmean(pos_neg_list_abs)
+                                    pos_neg_list_abs_ave = numpy.mean(numpy.array(pos_neg_list_abs, dtype=float))
                                 if len(pos_neg_list_true) > 0:
-                                    pos_neg_list_true_ave = lmean(pos_neg_list_true)
+                                    pos_neg_list_true_ave = numpy.mean(numpy.array(pos_neg_list_true, dtype=float))
                                 L_residue_number_found = 1
                                 L_bmrb_shift = L_item[2]
                                 L_simpred_shift = L_item[3]
@@ -5899,9 +5890,9 @@ class RCI:
                             minus_done = 1
                 N_chem_shift_diff_mean = N_chem_shift_diff_abs_mean = None
                 if len(L_chem_shift_diff_list) > 0:
-                    N_chem_shift_diff_mean = lmean(L_chem_shift_diff_list)
+                    N_chem_shift_diff_mean = numpy.mean(numpy.array(L_chem_shift_diff_list, dtype=float))
                 if len(L_chem_shift_diff_abs_list) > 0:
-                    N_chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_list)
+                    N_chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_list, dtype=float))
                 N_chem_shift_diff_len = len(L_chem_shift_diff_list)
 
                 L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
@@ -5941,8 +5932,8 @@ class RCI:
                             L_chem_shift_diff_abs = entry[5]
                             L_chem_shift_diff_tmp_list.append(L_chem_shift_diff)
                             L_chem_shift_diff_abs_tmp_list.append(L_chem_shift_diff_abs)
-                        chem_shift_diff_mean = lmean(L_chem_shift_diff_tmp_list)
-                        chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
+                        chem_shift_diff_mean = numpy.mean(numpy.array(L_chem_shift_diff_tmp_list, dtype=float))
+                        chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_tmp_list, dtype=float))
                         chem_shift_len = len(L_chem_shift_diff_tmp_list)
                         L_start += 1
                         L_end += 1
@@ -6040,9 +6031,9 @@ class RCI:
                             L_chem_shift_diff_abs_tmp_list.append(L_chem_shift_diff_abs)
                         chem_shift_diff_mean = chem_shift_diff_abs_mean = None
                         if len(L_chem_shift_diff_tmp_list) > 0:
-                            chem_shift_diff_mean = lmean(L_chem_shift_diff_tmp_list)
+                            chem_shift_diff_mean = numpy.mean(numpy.array(L_chem_shift_diff_tmp_list, dtype=float))
                         if len(L_chem_shift_diff_abs_tmp_list) > 0:
-                            chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
+                            chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_tmp_list, dtype=float))
                         chem_shift_diff_len = len(L_chem_shift_diff_tmp_list)
 
                         L_start += 1
@@ -6067,9 +6058,9 @@ class RCI:
                             L_chem_shift_diff_abs_tmp_list.append(L_chem_shift_diff_abs)
                         chem_shift_diff_mean = chem_shift_diff_abs_mean = None
                         if len(L_chem_shift_diff_tmp_list) > 0:
-                            chem_shift_diff_mean = lmean(L_chem_shift_diff_tmp_list)
+                            chem_shift_diff_mean = numpy.mean(numpy.array(L_chem_shift_diff_tmp_list, dtype=float))
                         if len(L_chem_shift_diff_abs_tmp_list) > 0:
-                            chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
+                            chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_tmp_list, dtype=float))
                         chem_shift_diff_len = len(L_chem_shift_diff_tmp_list)
                         L_start += 1
                         L_end += 1
@@ -6144,9 +6135,9 @@ class RCI:
                                 minus_done = 1
                     N_chem_shift_diff_mean = N_chem_shift_diff_abs_mean = None
                     if len(L_chem_shift_diff_list) > 0:
-                        N_chem_shift_diff_mean = lmean(L_chem_shift_diff_list)
+                        N_chem_shift_diff_mean = numpy.mean(numpy.array(L_chem_shift_diff_list, dtype=float))
                     if len(L_chem_shift_diff_abs_list) > 0:
-                        N_chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_list)
+                        N_chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_list, dtype=float))
                     N_chem_shift_diff_len = len(L_chem_shift_diff_list)
                     L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
                                   N_chem_shift_diff_mean, N_chem_shift_diff_abs_mean,
@@ -6542,9 +6533,11 @@ class RCI:
 
                                                                         atoms_abs.append(atomabs)
                                                                     if len(valueabs_list) > 0:
-                                                                        coef_local_mean = lmean(coef_list)
+                                                                        coef_local_mean =\
+                                                                            numpy.mean(numpy.array(coef_list, dtype=float))
                                                                         coef_offset = self.__coef_mean / coef_local_mean
-                                                                        valueabs_mean = lmean(valueabs_list)
+                                                                        valueabs_mean =\
+                                                                            numpy.mean(numpy.array(valueabs_list, dtype=float))
                                                                         if self.scale == 1:
                                                                             valueabs_mean *= coef_offset
                                                                         if valueabs_mean != 0:
@@ -6705,9 +6698,9 @@ class RCI:
             elif abs(self.__lastresidue - l_res_num) <= 4:  # 4 for DnaB
                 l_C_end_list.append(l_sigma)
         if len(l_N_end_list) > 0:
-            l_N_mean = lmean(l_N_end_list)
+            l_N_mean = numpy.mean(numpy.array(l_N_end_list, dtype=float))
         if len(l_C_end_list) > 0:
-            l_C_mean = lmean(l_C_end_list)
+            l_C_mean = numpy.mean(numpy.array(l_C_end_list, dtype=float))
         if self.N_term_low < l_N_mean < self.N_term_high:
             l_N_switch = 1
         if self.C_term_low < l_C_mean < self.C_term_high:
@@ -6757,9 +6750,9 @@ class RCI:
             elif abs(self.__lastresidue - l_res_num) <= 4:  # 4 for DnaB
                 l_C_end_list.append(l_sigma)
         if len(l_N_end_list) > 0:
-            l_N_mean = lmean(l_N_end_list)
+            l_N_mean = numpy.mean(numpy.array(l_N_end_list, dtype=float))
         if len(l_C_end_list) > 0:
-            l_C_mean = lmean(l_C_end_list)
+            l_C_mean = numpy.mean(numpy.array(l_C_end_list, dtype=float))
         if self.N_term_low < l_N_mean < self.N_term_high:
             l_N_switch = 1
         if self.C_term_low < l_C_mean < self.C_term_high:
@@ -7061,7 +7054,7 @@ class RCI:
                         else:
                             minus_done = 1
                 if len(L_chem_shift_diff_abs_list) > 0:
-                    N_chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_list)
+                    N_chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_list, dtype=float))
                     L_all.append([L_residue_number, L_residue_name, N_chem_shift_diff_abs_mean,
                                   L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
                 negative_switch = 1
@@ -7106,7 +7099,7 @@ class RCI:
                                 L_chem_shift_diff_abs_tmp_list.append(L_chem_shift_diff_abs)
 
                         if len(L_chem_shift_diff_abs_tmp_list) > 0:
-                            chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
+                            chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_tmp_list, dtype=float))
                             L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean,
                                           L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
 
@@ -7224,7 +7217,7 @@ class RCI:
 
                         if len(L_chem_shift_diff_abs_tmp_list) > 0\
                            and L_residue_number != Real_first_residue and L_residue_number != Real_last_residue:
-                            chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
+                            chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_tmp_list, dtype=float))
                             L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean,
                                           L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
 
@@ -7248,7 +7241,7 @@ class RCI:
 
                         if len(L_chem_shift_diff_abs_tmp_list) > 0\
                            and L_residue_number != Real_first_residue and L_residue_number != Real_last_residue:
-                            chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
+                            chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_tmp_list, dtype=float))
                             L_all.append([L_residue_number, L_residue_name, chem_shift_diff_abs_mean,
                                           L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
 
@@ -7318,7 +7311,7 @@ class RCI:
                             minus_done = 1
 
                 if len(L_chem_shift_diff_abs_list) > 0:
-                    N_chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_list)
+                    N_chem_shift_diff_abs_mean = numpy.mean(numpy.array(L_chem_shift_diff_abs_list, dtype=float))
                     L_all.append([L_residue_number, L_residue_name, N_chem_shift_diff_abs_mean,
                                   L_used_atoms, L_complete_atoms, L_abs_or_true, L_first_smooth])
 

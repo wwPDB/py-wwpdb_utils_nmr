@@ -798,7 +798,8 @@ class BaseStackedMRParserListener():
                     if chainId not in self.atomIdSetPerChain:
                         self.atomIdSetPerChain[chainId] = set()
             for k, v in self.__coordAtomSite.items():
-                self.atomIdSetPerChain[k[0]] |= set(v['atom_id'])
+                if k[0] in self.atomIdSetPerChain:  # 9uv6 (internal annotation model file)
+                    self.atomIdSetPerChain[k[0]] |= set(v['atom_id'])
 
         if self.hasPolySeq:
             self.gapInAuthSeq = any(True for ps in self.polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])

@@ -2787,11 +2787,9 @@ class BMRBAnnTasks:
                             mol_com_name_col = tags.index('Mol_common_name') if 'Mol_common_name' in tags else -1
                             atom_grp_col = tags.index('Atom_group') if 'Atom_group' in tags else -1
 
-                            tmp = lp.data[0]
-
                             for n in isotope_number_not_in_lp:
                                 if n in ALLOWED_ISOTOPE_NUMBERS:
-                                    row = copy.copy(tmp)
+                                    row = copy.copy(lp.data[0])
 
                                     if atom_type_col != -1:
                                         row[atom_type_col] = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if n in v)
@@ -3052,7 +3050,83 @@ class BMRBAnnTasks:
                             if exp_id not in EMPTY_VALUE and int(exp_id) in exp_id_mapping:
                                 set_sf_tag(_sf, 'Experiment_ID', exp_id_mapping[int(exp_id)])
 
-                            exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
+                tags = ['ID', 'Name']
+
+                dat = lp.get_tag(tags)
+
+                ref_row = lp.data[0]
+
+                _sf_category = 'assigned_chemical_shifts'
+
+                if _sf_category in self.__reg.sf_category_list:
+                    for _sf in master_entry.get_saveframes_by_category(_sf_category):
+
+                        _lp_category = '_Chem_shift_experiment'
+
+                        try:
+
+                            _lp = _sf.get_loop(_lp_category)
+
+                            _tags = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state']
+
+                            _dat = _lp.get_tag(_tags)
+
+                            for _idx, _row in enumerate(_dat):
+
+                                if _row[1] in EMPTY_VALUE or any(True for row in dat if row[1] == _row[1]):
+                                    continue
+
+                                new_exp_id = str(max(int(row[0]) for row in dat) + 1)
+
+                                tmp = copy.copy(ref_row)
+                                tmp[lp.tags.index('ID')] = new_exp_id
+                                tmp[lp.tags.index('Name')] = _row[1]
+                                tmp[lp.tags.index('Sample_ID')] = _row[2]
+                                tmp[lp.tags.index('Sample_label')] = _row[3]
+                                tmp[lp.tags.index('Sample_state')] = _row[4]
+                                tmp[lp.tags.index('Sample_condition_list_ID')] =\
+                                    get_first_sf_tag(_sf, 'Sample_condition_list_ID',
+                                                     ref_row[lp.tags.index('Sample_condition_list_ID')])
+                                tmp[lp.tags.index('Sample_condition_list_label')] = '$'\
+                                    + get_first_sf_tag(_sf, 'Sample_condition_list_label',
+                                                       ref_row[lp.tags.index('Sample_condition_list_label')])
+
+                                lp.add_data(tmp)
+                                dat = lp.get_tag(tags)
+
+                                _lp.data[_idx][_lp.tags.index('Experiment_ID')] = new_exp_id
+
+                        except KeyError:
+                            continue
+
+                _sf_category = 'spectral_peak_list'
+
+                if _sf_category in self.__reg.sf_category_list:
+                    for _sf in master_entry.get_saveframes_by_category(_sf_category):
+                        exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
+                        exp_name = get_first_sf_tag(_sf, 'Experiment_name')
+
+                        if exp_name in EMPTY_VALUE or any(True for row in dat if row[1] == exp_name):
+                            continue
+
+                        new_exp_id = str(max(int(row[0]) for row in dat) + 1)
+
+                        tmp = copy.copy(ref_row)
+                        tmp[lp.tags.index('ID')] = new_exp_id
+                        tmp[lp.tags.index('Name')] = exp_name
+                        tmp[lp.tags.index('Sample_ID')] = get_first_sf_tag(_sf, 'Sample_ID')
+                        tmp[lp.tags.index('Sample_label')] = get_first_sf_tag(_sf, 'Sample_label')
+                        tmp[lp.tags.index('Sample_condition_list_ID')] =\
+                            get_first_sf_tag(_sf, 'Sample_condition_list_ID',
+                                             ref_row[lp.tags.index('Sample_condition_list_ID')])
+                        tmp[lp.tags.index('Sample_condition_list_label')] = '$'\
+                            + get_first_sf_tag(_sf, 'Sample_condition_list_label',
+                                               ref_row[lp.tags.index('Sample_condition_list_label')])
+
+                        lp.add_data(tmp)
+                        dat = lp.get_tag(tags)
+
+                        set_sf_tag(_sf, 'Experiment_ID', new_exp_id)
 
                 exp_tags = ['ID', 'Name', 'NMR_spectrometer_ID']
 

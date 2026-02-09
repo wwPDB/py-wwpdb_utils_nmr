@@ -2741,6 +2741,13 @@ class NmrDpUtility:
                             if chain_id not in ref_chain_ids\
                                and not ('identical_chain_id' in ps2 and chain_id not in ps2['identical_chain_id']):
 
+                                if self.__reg.op == 'nmr-str-replace-cs':
+                                    seq_align, _ = alignPolymerSequence(self.__reg.pA, [poly_seq1[0]], [poly_seq2[0]])
+                                    if len(seq_align) > 0:
+                                        sa = seq_align[0]
+                                        if sa['matched'] > 0 and sa['conflict'] == 0:
+                                            continue
+
                                 err = f"Invalid chain_id {chain_id!r} in a loop {lp_category2}."
 
                                 single_poly = False

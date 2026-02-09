@@ -3309,16 +3309,19 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                            and c['seq_id'] == seqId and c['comp_id'] == compId)
                     coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId,
                                              'atom_id': atomIds, 'type_symbol': typeSymbols}
+
                     if altAuthCompId is not None:
                         altCompIds = [c['comp_id'] for c in coord
                                       if c['chain_id'] == chainId and c['seq_id'] is not None
                                       and c['seq_id'] == seqId and c['comp_id'] == compId]
                         coordAtomSite[seqKey]['alt_comp_id'] = altCompIds
+
                     if altAuthAtomId is not None:
                         altAtomIds = [c['alt_atom_id'] for c in coord
                                       if c['chain_id'] == chainId and c['seq_id'] is not None
                                       and c['seq_id'] == seqId and c['comp_id'] == compId]
                         coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
+
                     altSeqId = next((c['alt_seq_id'] for c in coord
                                      if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                     if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
@@ -3340,7 +3343,11 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             labelToAuthSeq[seqKey] = seqKey
                         if chainId != authChainId:
                             altKey = (authChainId, seqId)
-                            coordAtomSite[altKey] = coordAtomSite[seqKey]
+                            if altKey not in coordAtomSite or compId not in STD_MON_DICT\
+                               or (altKey in coordAtomSite and coordAtomSite[altKey]['comp_id'] in STD_MON_DICT):
+                                # 9uv6 (internal annotation model file)
+                                coordAtomSite[altKey] = coordAtomSite[seqKey]
+
                     if splitLigand is not None and len(splitLigand) > 0:
                         found = False
                         for (_authChainId, _, _), ligList in splitLigand.items():
@@ -3607,6 +3614,45 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             authToLabelSeq[authSeqKey] = labelSeqKey
                         if labelSeqKey not in labelToAuthSeq:
                             labelToAuthSeq[labelSeqKey] = authSeqKey
+
+        # 9uv6 (internal annotation model file)
+        for k, v in coordAtomSite.items():
+
+            if k in authToLabelSeq:
+                continue
+
+            dataItems = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                         {'name': 'type_symbol', 'type': 'str'},
+                         ]
+
+            if altAuthCompId is not None:
+                dataItems.append({'name': altAuthCompId, 'type': 'str', 'alt_name': 'alt_comp_id'})
+            if altAuthAtomId is not None:
+                dataItems.append({'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'})
+
+            filterItems = [{'name': modelNumName, 'type': 'int',
+                            'value': representativeModelId},
+                           {'name': authAsymId, 'type': 'str', 'value': k[0]},
+                           {'name': authSeqId, 'type': 'int', 'value': k[1]},
+                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
+                           ]
+
+            coord = cR.getDictListWithFilter('atom_site', dataItems, filterItems)
+
+            for c in coord:
+                _k = (c['auth_chain_id'], c['auth_seq_id'])
+
+                if _k in coordAtomSite and coordAtomSite[_k]['comp_id'] == c['comp_id']\
+                   and c['atom_id'] not in coordAtomSite[_k]['atom_id']:
+                    coordAtomSite[_k]['atom_id'].append(c['atom_id'])
+                    coordAtomSite[_k]['type_symbol'].append(c['type_symbol'])
+                    if 'alt_comp_id' in coordAtomSite[_k]:
+                        coordAtomSite[_k]['alt_comp_id'].append(c['alt_comp_id'] if altAuthCompId is not None else c['comp_id'])
+                    if 'alt_atom_id' in coordAtomSite[_k]:
+                        coordAtomSite[_k]['alt_atom_id'].append(c['alt_atom_id'] if altAuthCompId is not None else c['atom_id'])
 
         if None in (authToStarSeq, authToEntityType, entityAssembly, authToStarSeqAnn):
             changed = True

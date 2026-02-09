@@ -6180,17 +6180,17 @@ class BaseStackedMRParserListener():
                     if not isPolySeq:
                         replacedBy = self.getRealCompId(compId)
                         if replacedBy != compId:
-                            compId = replacedBy
                             _coordAtomSite = deepcopy(coordAtomSite)
-                            _coordAtomSite['comp_id'] = compId
+                            _coordAtomSite['comp_id'] = replacedBy
                             _coordAtomSite['atom_id'] = [cca['atom_id'] for cca in self.ccU.lastAtomDictList
                                                          if cca['leaving_atom_flag'] != 'Y']
                             _coordAtomSite['alt_atom_id'] = [cca['alt_atom_id'] for cca in self.ccU.lastAtomDictList
                                                              if cca['leaving_atom_flag'] != 'Y']
                             _coordAtomSite['type_symbol'] = [cca['type_symbol'] for cca in self.ccU.lastAtomDictList
                                                              if cca['leaving_atom_flag'] != 'Y']
-                            _coordAtomSite['alt_comp_id'] = [coordAtomSite['alt_comp_id'][0]] * len(_coordAtomSite['atom_id'])
+                            _coordAtomSite['alt_comp_id'] = [compId] * len(_coordAtomSite['atom_id'])
                             coordAtomSite = _coordAtomSite
+                            compId = replacedBy
 
                     foundCompId = True
 

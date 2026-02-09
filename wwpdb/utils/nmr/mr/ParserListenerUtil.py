@@ -3307,18 +3307,20 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         authChainId = next(c['auth_chain_id'] for c in coord
                                            if c['chain_id'] == chainId and c['seq_id'] is not None
                                            and c['seq_id'] == seqId and c['comp_id'] == compId)
-                    if seqKey not in coordAtomSite:
-                        coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId,
-                                                 'atom_id': atomIds, 'type_symbol': typeSymbols}
+                    coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId,
+                                             'atom_id': atomIds, 'type_symbol': typeSymbols}
 
                     if altAuthCompId is not None:
                         altCompIds = [c['comp_id'] for c in coord
                                       if c['chain_id'] == chainId and c['seq_id'] is not None
                                       and c['seq_id'] == seqId and c['comp_id'] == compId]
+                        coordAtomSite[seqKey]['alt_comp_id'] = altCompIds
+
                     if altAuthAtomId is not None:
                         altAtomIds = [c['alt_atom_id'] for c in coord
                                       if c['chain_id'] == chainId and c['seq_id'] is not None
                                       and c['seq_id'] == seqId and c['comp_id'] == compId]
+                        coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
 
                     altSeqId = next((c['alt_seq_id'] for c in coord
                                      if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)

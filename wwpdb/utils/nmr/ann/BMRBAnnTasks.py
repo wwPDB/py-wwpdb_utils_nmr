@@ -3087,9 +3087,9 @@ class BMRBAnnTasks:
                                 tmp[lp.tags.index('Sample_condition_list_ID')] =\
                                     get_first_sf_tag(_sf, 'Sample_condition_list_ID',
                                                      ref_row[lp.tags.index('Sample_condition_list_ID')])
-                                tmp[lp.tags.index('Sample_condition_list_label')] =\
-                                    get_first_sf_tag(_sf, 'Sample_condition_list_label',
-                                                     ref_row[lp.tags.index('Sample_condition_list_label')])
+                                tmp[lp.tags.index('Sample_condition_list_label')] = '$'\
+                                    + get_first_sf_tag(_sf, 'Sample_condition_list_label',
+                                                       ref_row[lp.tags.index('Sample_condition_list_label')])
 
                                 lp.add_data(tmp)
                                 dat = lp.get_tag(tags)
@@ -3119,9 +3119,9 @@ class BMRBAnnTasks:
                         tmp[lp.tags.index('Sample_condition_list_ID')] =\
                             get_first_sf_tag(_sf, 'Sample_condition_list_ID',
                                              ref_row[lp.tags.index('Sample_condition_list_ID')])
-                        tmp[lp.tags.index('Sample_condition_list_label')] =\
-                            get_first_sf_tag(_sf, 'Sample_condition_list_label',
-                                             ref_row[lp.tags.index('Sample_condition_list_label')])
+                        tmp[lp.tags.index('Sample_condition_list_label')] = '$'\
+                            + get_first_sf_tag(_sf, 'Sample_condition_list_label',
+                                               ref_row[lp.tags.index('Sample_condition_list_label')])
 
                         lp.add_data(tmp)
                         dat = lp.get_tag(tags)

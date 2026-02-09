@@ -13,6 +13,7 @@
 # 30-May-2024  M. Yokochi - resolve duplication of datablock/saveframe name (DAOTHER-9437)
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 # 07-Jan-2025  M. Yokochi - retrieve symbolic label representations (DAOTHER-1728, 9846)
+# 09-Feb-2026  M. Yokochi - update schema file 'xlschem_ann.csv' and set the schema for sorting tags
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -21,11 +22,10 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 import sys
 import os
-import pickle
 import logging
 import hashlib
 import collections
@@ -223,6 +223,7 @@ class CifToNmrStar:
                  '__version__',
                  '__log',
                  'schema_dir',
+                 'pynmrstar_schema',
                  'schema',
                  'category_order',
                  'category_order_nef')
@@ -236,30 +237,10 @@ class CifToNmrStar:
         # directory
         self.schema_dir = os.path.join(os.path.dirname(__file__), 'nmr-star_schema')
 
-        def load_schema_from_pickle(file_name):
-            """ Load NMR-STAR schema from pickle file.
-            """
+        self.pynmrstar_schema = pynmrstar.Schema(os.path.join(self.schema_dir, 'xlschem_ann.csv'))
 
-            if os.path.exists(file_name):
-
-                with open(file_name, 'rb') as ifh:
-                    return pickle.load(ifh)
-
-            return None
-
-        # NMR-STAR schema
-        self.schema = load_schema_from_pickle(os.path.join(self.schema_dir, 'schema.pkl'))
-
-        # NMR-STAR schema order
-        # self.schema_order = load_schema_from_pickle(os.path.join(self.schema_dir, 'schema_order.pkl'))
-
-        # NMR-STAR category order
-        self.category_order = load_schema_from_pickle(os.path.join(self.schema_dir, 'category_order.pkl'))
-
-        if self.schema is None:
-            schema = pynmrstar.Schema()  # network latency occurs if pickle resource files are not available
-            self.schema = schema.schema
-            self.category_order = schema.category_order
+        self.schema = self.pynmrstar_schema.schema
+        self.category_order = self.pynmrstar_schema.category_order
 
         # NEF category order
         self.category_order_nef = ('_nef_nmr_meta_data',
@@ -270,45 +251,6 @@ class CifToNmrStar:
                                    '_nef_rdc_restraint_list',
                                    '_nef_nmr_spectrum',
                                    '_nef_peak_restraint_links')
-
-    def write_schema_as_pickles(self):
-        """ Retrieve NMR-STAR schema from pynmrstar.Schema, then write schema objects as each pickle file.
-        """
-
-        def write_schema_as_pickle(obj, file_name):
-            """ Write NMR-STAR schema as pickle file.
-            """
-
-            with open(file_name, 'wb') as ofh:
-                pickle.dump(obj, ofh)
-
-        schema = pynmrstar.Schema()  # retrieve the latest schema via internet access
-
-        # print(schema.headers)
-        with open(os.path.join(self.schema_dir, 'headers.txt'), 'w', encoding='utf-8') as ofh:
-            for header in schema.headers:
-                ofh.write(header + '\n')
-        self.__log.write('headers.txt: Done.\n')
-
-        # print(schema.schema)
-        write_schema_as_pickle(schema.schema, os.path.join(self.schema_dir, 'schema.pkl'))
-        self.__log.write('schema.pkl: Done.\n')
-
-        # print(schema.schema_order)
-        write_schema_as_pickle(schema.schema_order, os.path.join(self.schema_dir, 'schema_order.pkl'))
-        self.__log.write('schema_order.pkl: Done.\n')
-
-        # print(schema.category_order)
-        write_schema_as_pickle(schema.category_order, os.path.join(self.schema_dir, 'category_order.pkl'))
-        self.__log.write('category_order.pkl: Done.\n')
-
-        # print(schema.data_types)
-        write_schema_as_pickle(schema.data_types, os.path.join(self.schema_dir, 'data_types.pkl'))
-        self.__log.write('data_types.pkl: Done.\n')
-
-        with open(os.path.join(self.schema_dir, 'version.txt'), 'w', encoding='utf-8') as ofh:
-            ofh.write(schema.version)
-        self.__log.write(f"version: {schema.version}\n")
 
     def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None,
                 datablockName: Optional[str] = None, originalFileName: Optional[str] = None, maxRepeat: int = 1) -> bool:
@@ -961,12 +903,12 @@ class CifToNmrStar:
             strData.frame_list.sort(key=sf_key)
 
             for sf in strData.frame_list:
-                sf.sort_tags()
+                sf.sort_tags(self.pynmrstar_schema)
                 if len(sf.loops) > 1:
                     sf.loops.sort(key=lp_key)
                 # Iterate through the loops
                 for lp in sf:
-                    lp.sort_tags()
+                    lp.sort_tags(self.pynmrstar_schema)
 
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"+{self.__class_name__}.normalize() ++ Error  - {str(e)}\n")

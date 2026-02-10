@@ -1044,6 +1044,7 @@ class BMRBAnnTasks:
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
                                                   'mutation': get_first_sf_tag(sf, 'Mutation'),
+                                                  'details': get_first_sf_tag(sf, 'Details'),
                                                   'common_names': common_names,
                                                   'gene_mnemonic': gene_mnemonic,
                                                   'total_cys': total_cys
@@ -1065,6 +1066,7 @@ class BMRBAnnTasks:
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
                                                   'mutation': get_first_sf_tag(sf, 'Mutation'),
+                                                  'details': get_first_sf_tag(sf, 'Details'),
                                                   'common_names': common_names,
                                                   'gene_mnemonic': gene_mnemonic
                                                   }
@@ -1078,6 +1080,7 @@ class BMRBAnnTasks:
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
                                                   'mutation': get_first_sf_tag(sf, 'Mutation'),
+                                                  'details': get_first_sf_tag(sf, 'Details'),
                                                   'common_names': common_names,
                                                   'gene_mnemonic': gene_mnemonic
                                                   }
@@ -1092,6 +1095,7 @@ class BMRBAnnTasks:
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
                                                   'mutation': get_first_sf_tag(sf, 'Mutation'),
+                                                  'details': get_first_sf_tag(sf, 'Details'),
                                                   'common_names': common_names,
                                                   'gene_mnemonic': gene_mnemonic
                                                   }
@@ -1388,6 +1392,10 @@ class BMRBAnnTasks:
             for f in entity['mutation'].split():
                 _f = f.lower()
                 if len(f) > 2 and (_f in key or key in _f):
+                    return True
+            for f in entity['details'].split():
+                _f = f.lower()
+                if len(f) > 3 and (_f in key or key in _f):
                     return True
             for n in entity['common_names']:
                 for f in n.split():

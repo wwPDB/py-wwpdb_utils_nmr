@@ -1684,7 +1684,7 @@ class BMRBAnnTasks:
                                          or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
                                          or 'lipid' in mol_common_name):
                                     lp.data[idx][type_col] = 'phospholipid'
-                                elif mol_common_name in ('tfe', 'trifluoroethanol'):
+                                elif mol_common_name in ('tfe', 'trifluoroethanol', 'glycerol'):
                                     lp.data[idx][type_col] = 'solvent'
                                 elif 'deuterate' in mol_common_name and 'd2o' in mol_common_name:
                                     lp.data[idx][mol_common_name_col] = 'D2O'

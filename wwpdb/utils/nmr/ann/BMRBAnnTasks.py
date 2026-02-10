@@ -1657,7 +1657,8 @@ class BMRBAnnTasks:
                                 elif mol_common_name in ('nacl', 'kcl', 'na2so4',
                                                          'cacl2', 'zncl2', 'mgcl2',
                                                          'ca+2', 'zn+2', 'mg+2',
-                                                         'ca2+', 'zn2+', 'mg2+')\
+                                                         'ca2+', 'zn2+', 'mg2+',
+                                                         'sodium sulfate')\
                                         or 'chloride' in mol_common_name:
                                     lp.data[idx][type_col] = 'salt'
                                     lp.data[idx][isotopic_labeling_col] = 'natural abundance'

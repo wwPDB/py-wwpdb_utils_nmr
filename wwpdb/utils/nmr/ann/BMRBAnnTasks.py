@@ -1685,6 +1685,9 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'G-quadruplex stabilizing agent'
                                 elif 'bicelle' in mol_common_name or 'phage' in mol_common_name:
                                     lp.data[idx][type_col] = 'molecular alignment inductor'
+                                elif mol_common_name == 'dpc' or 'dodecylphosphocholine' in mol_common_name\
+                                        or 'micelle' in mol_common_name:
+                                    lp.data[idx][type_col] = 'micelles'
                                 elif 'lps' in mol_common_name or 'lipopolysaccharide' in mol_common_name:
                                     lp.data[idx][type_col] = 'bacterial outer membrane'
                                 elif 'phosph' in mol_common_name\

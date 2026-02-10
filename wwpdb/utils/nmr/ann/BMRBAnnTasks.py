@@ -1695,8 +1695,16 @@ class BMRBAnnTasks:
                                 elif mol_common_name == 'dmso-d6':
                                     lp.data[idx][isotopic_labeling_col] = '[U-2H]'
                                     lp.data[idx][type_col] = 'solvent'
-                                elif mol_common_name in ('dmso', 'glycerol', 'tfe', 'trifluoroethanol'):
+                                    solvent_in_sample_loop.append('DMSO')
+                                elif mol_common_name == 'dmso':
                                     lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('DMSO')
+                                elif mol_common_name == 'glycerol':
+                                    lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('Glycerol')
+                                elif mol_common_name in ('tfe', 'trifluoroethanol'):
+                                    lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('TFE')
                                 elif 'deuterate' in mol_common_name and 'd2o' in mol_common_name:
                                     lp.data[idx][mol_common_name_col] = 'D2O'
                                     lp.data[idx][type_col] = 'solvent'

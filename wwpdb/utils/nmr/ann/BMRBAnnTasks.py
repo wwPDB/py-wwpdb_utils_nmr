@@ -163,7 +163,7 @@ class BMRBAnnTasks:
                         for _idx in dup_idx:
                             del lp.data[_idx]
 
-                        lp.renumber_rows('ID')
+                lp.renumber_rows('ID')
 
             except KeyError:
                 pass
@@ -192,7 +192,7 @@ class BMRBAnnTasks:
                         for _idx in dup_idx:
                             del lp.data[_idx]
 
-                        lp.renumber_rows('Ordinal')
+                lp.renumber_rows('Ordinal')
 
             except KeyError:
                 pass

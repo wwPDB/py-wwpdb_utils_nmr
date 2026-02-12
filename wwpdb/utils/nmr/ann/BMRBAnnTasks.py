@@ -1378,7 +1378,7 @@ class BMRBAnnTasks:
         def is_natural_abundance(isotopic_labeling: str):
             isotopic_labeling = isotopic_labeling.lower()
             return 'abundance' in isotopic_labeling\
-                or isotopic_labeling.startswith('none') or isotopic_labeling.startswith('not ')\
+                or isotopic_labeling.startswith('non') or isotopic_labeling.startswith('not ')\
                 or isotopic_labeling.startswith('n/a') or isotopic_labeling.startswith('natural')\
                 or isotopic_labeling.startswith('na ') or isotopic_labeling.startswith('na-')\
                 or isotopic_labeling in ('na', 'no', '/', '1h')\

@@ -36,7 +36,8 @@ try:
                                                RNA_RELATED_WORDS,
                                                ALLOWED_THIOL_STATES)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
-    from wwpdb.utils.nmr.AlignUtil import getOneLetterCodeCan
+    from wwpdb.utils.nmr.AlignUtil import (getOneLetterCodeCan,
+                                           getScoreOfSeqAlign)
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
@@ -57,7 +58,8 @@ except ImportError:
                                    RNA_RELATED_WORDS,
                                    ALLOWED_THIOL_STATES)
     from nmr.NmrDpRegistry import NmrDpRegistry
-    from nmr.AlignUtil import getOneLetterCodeCan
+    from nmr.AlignUtil import (getOneLetterCodeCan,
+                               getScoreOfSeqAlign)
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
     from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
@@ -1412,7 +1414,15 @@ class BMRBAnnTasks:
                 if any((k in _f or _f in k) for _f in entity['sf_framecode'].lower().split() if len(_f) > 3)\
                    or any((k in _f or _f in k) for _f in entity['name'].lower().split() if len(_f) > 3):
                     return True
-            return False
+
+            self.__reg.pA.setReferenceSequence(list(entity['name'].replace(' ', '').lower()), 'REFNAME')
+            self.__reg.pA.addTestSequence(list(key.replace(' ', '').lower()), 'NAME')
+            self.__reg.pA.doAlign()
+
+            myAlign = self.__reg.pA.getAlignment('NAME')
+            matched, _, _, _, _ = getScoreOfSeqAlign(myAlign)
+
+            return matched > 3
 
         if sf_category in self.__reg.sf_category_list:
             sf_list = master_entry.get_saveframes_by_category(sf_category)
@@ -1687,7 +1697,6 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'G-quadruplex stabilizing agent'
                                 elif 'bicelle' in mol_common_name or 'phage' in mol_common_name:
                                     lp.data[idx][type_col] = 'molecular alignment inductor'
-                                
                                 elif mol_common_name in ('dpc', 'dpc-d38') or 'dodecylphosphocholine' in mol_common_name\
                                         or 'micelle' in mol_common_name:
                                     lp.data[idx][type_col] = 'micelles'

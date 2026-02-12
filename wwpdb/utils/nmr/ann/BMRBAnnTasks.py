@@ -1782,6 +1782,9 @@ class BMRBAnnTasks:
                                 if effective_labeling:
                                     lp.data[idx][isotopic_labeling_col] = f'[{"; ".join(isotopic_labelings)}]'
 
+                        elif isinstance(row[2], str) and is_natural_abundance(row[2]):
+                            lp.data[idx][isotopic_labeling_col] = 'natural abundance'
+
                         if row[8] not in EMPTY_VALUE and isinstance(row[8], str):
                             for delimiter in ('-', '/', ':', ',', '~'):
                                 if delimiter not in row[8]:

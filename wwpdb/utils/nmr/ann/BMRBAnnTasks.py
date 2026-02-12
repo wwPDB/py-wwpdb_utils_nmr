@@ -1378,7 +1378,8 @@ class BMRBAnnTasks:
             return 'abundance' in isotopic_labeling\
                 or isotopic_labeling.startswith('none') or isotopic_labeling.startswith('not ')\
                 or isotopic_labeling.startswith('n/a') or isotopic_labeling.startswith('natural')\
-                or isotopic_labeling.startswith('na ') or isotopic_labeling in ('na', 'no')\
+                or isotopic_labeling.startswith('na ') or isotopic_labeling.startswith('na-')\
+                or isotopic_labeling in ('na', 'no')\
                 or isotopic_labeling.startswith('non-lab')\
                 or isotopic_labeling.startswith('nonlab')\
                 or isotopic_labeling.startswith('unlab')\
@@ -1698,6 +1699,8 @@ class BMRBAnnTasks:
                                     and ('ylethanolamine' in mol_common_name or 'ylcholine' in mol_common_name
                                          or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
                                          or 'lipid' in mol_common_name):
+                                    lp.data[idx][type_col] = 'phospholipid'
+                                elif mol_common_name in ('popc', 'pope', 'popg', 'popg-na'):
                                     lp.data[idx][type_col] = 'phospholipid'
                                 elif mol_common_name == 'dmso-d6':
                                     lp.data[idx][isotopic_labeling_col] = '[U-2H]'

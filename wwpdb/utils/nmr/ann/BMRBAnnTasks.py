@@ -1695,7 +1695,7 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'internal reference'
                                     lp.data[idx][isotopic_labeling_col] = 'natural abundance'
                                     default_internal_reference = mol_common_name.upper()
-                                elif 'pyridostatin' in mol_common_name:
+                                elif 'pyridostatin' in mol_common_name or mol_common_name == 'pds':
                                     lp.data[idx][type_col] = 'G-quadruplex stabilizing agent'
                                 elif 'bicelle' in mol_common_name or 'phage' in mol_common_name:
                                     lp.data[idx][type_col] = 'molecular alignment inductor'

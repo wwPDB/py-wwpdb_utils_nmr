@@ -1803,6 +1803,18 @@ class BMRBAnnTasks:
                                     except ValueError:
                                         pass
 
+                    if len(lp) == 1 and len(entity_dict) == 1 and not has_poly_entity and dat[0][7] in EMPTY_VALUE:
+                        for entity_id, entity in entity_dict.items():
+                            if entity['sample_type'] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid'):
+                                lp.data[idx][entity_id_col] = entity_id
+                                lp.data[idx][assembly_id_col] = entity['assembly_id']
+                                lp.data[idx][assembly_label_col] = entity['assembly_label']
+                                lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
+                                lp.data[idx][type_col] = entity['sample_type']
+                                if row[8] in EMPTY_VALUE and (row[9] in EMPTY_VALUE or row[10] in EMPTY_VALUE):
+                                    has_mand_concentration_val = False
+                                has_poly_entity = True
+
                     cur_id = len(lp) + 1
 
                     if not has_poly_entity:

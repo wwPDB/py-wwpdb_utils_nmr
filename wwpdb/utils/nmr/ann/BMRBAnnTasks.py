@@ -1576,6 +1576,8 @@ class BMRBAnnTasks:
                             entity_id = entity_id_remap.get(entity_id, entity_id)
                             if entity_id in entity_dict:
                                 entity = entity_dict[entity_id]
+                                if row[1] in EMPTY_VALUE:
+                                    lp.data[idx][mol_common_name_col] = entity['name']
                                 lp.data[idx][entity_id_col] = entity_id
                                 lp.data[idx][assembly_id_col] = entity['assembly_id']
                                 lp.data[idx][assembly_label_col] = entity['assembly_label']
@@ -1806,11 +1808,13 @@ class BMRBAnnTasks:
                     if len(lp) == 1 and len(entity_dict) == 1 and not has_poly_entity and dat[0][7] in EMPTY_VALUE:
                         for entity_id, entity in entity_dict.items():
                             if entity['sample_type'] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid'):
-                                lp.data[idx][entity_id_col] = entity_id
-                                lp.data[idx][assembly_id_col] = entity['assembly_id']
-                                lp.data[idx][assembly_label_col] = entity['assembly_label']
-                                lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
-                                lp.data[idx][type_col] = entity['sample_type']
+                                if dat[0][1] in EMPTY_VALUE:
+                                    lp.data[0][mol_common_name_col] = entity['name']
+                                lp.data[0][entity_id_col] = entity_id
+                                lp.data[0][assembly_id_col] = entity['assembly_id']
+                                lp.data[0][assembly_label_col] = entity['assembly_label']
+                                lp.data[0][entity_label_col] = f"${entity['sf_framecode']}"
+                                lp.data[0][type_col] = entity['sample_type']
                                 if row[8] in EMPTY_VALUE and (row[9] in EMPTY_VALUE or row[10] in EMPTY_VALUE):
                                     has_mand_concentration_val = False
                                 has_poly_entity = True

@@ -1697,7 +1697,7 @@ class BMRBAnnTasks:
                                     default_internal_reference = mol_common_name.upper()
                                 elif 'pyridostatin' in mol_common_name or mol_common_name in ('pds', 'pypds'):
                                     lp.data[idx][type_col] = 'G-quadruplex stabilizing agent'
-                                elif 'bicelle' in mol_common_name or 'phage' in mol_common_name:
+                                elif 'bicelle' in mol_common_name or 'phage' in mol_common_name or mol_common_name == 'pf1':
                                     lp.data[idx][type_col] = 'molecular alignment inductor'
                                 elif mol_common_name in ('dpc', 'dpc-d38') or 'dodecylphosphocholine' in mol_common_name\
                                         or 'micelle' in mol_common_name:

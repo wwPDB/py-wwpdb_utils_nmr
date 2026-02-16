@@ -16659,6 +16659,7 @@ class NmrDpUtility:
             return False
 
         sf_category = SF_CATEGORIES[file_type][content_subtype]
+        lp_category = LP_CATEGORIES[file_type][content_subtype]
 
         removed_sf_framecode = []
         for sf in master_entry.get_saveframes_by_category(sf_category):
@@ -16690,6 +16691,8 @@ class NmrDpUtility:
             if self.__reg.star_data_type[fileListId] not in ('Saveframe', 'Entry'):
                 continue
 
+            _list_id = list_id
+
             if isinstance(self.__reg.star_data[fileListId], pynmrstar.Saveframe):
                 self.__reg.c2S.set_local_sf_id(self.__reg.star_data[fileListId], list_id)
 
@@ -16702,6 +16705,22 @@ class NmrDpUtility:
 
                 for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
                     self.__reg.c2S.set_local_sf_id(sf, list_id)
+
+                    added_sf_framecode.append(sf.name)
+                    master_entry.add_saveframe(sf)
+
+                    list_id += 1
+
+            if list_id == _list_id:
+
+                for lp in self.__reg.star_data[fileListId].get_loops_by_category(lp_category):
+                    sf = pynmrstar.Saveframe.from_scratch(f'assigned_chemical_shift_{list_id}', '_Assigned_chem_shift_list')
+                    sf.add_tag('Sf_category', sf_category)
+                    sf.add_tag('Sf_framecode', f'assigned_chemical_shift_{list_id}')
+                    sf.add_tag('Entry_ID', self.__reg.entry_id)
+                    sf.add_tag('ID', list_id)
+                    sf.add_tag('Data_file_name', input_source_dic['file_name'])
+                    sf.add_loop(lp)
 
                     added_sf_framecode.append(sf.name)
                     master_entry.add_saveframe(sf)

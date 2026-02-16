@@ -134,21 +134,25 @@ class NmrDpFirstAid:
 
                 if not self.__reg.remediation_mode or not missing_loop or file_list_id > 0:
 
-                    self.__reg.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
-                                                              {'file_name': file_name, 'description': err})
+                    if self.__reg.op != 'nmr-str-replace-cs' or not self.__reg.bmrb_only:
 
-                    self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - "
-                                         f"{file_name} {err}\n")
+                        self.__reg.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
+                                                                  {'file_name': file_name, 'description': err})
+
+                        self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - "
+                                             f"{file_name} {err}\n")
 
                 else:
 
                     self.__reg.has_star_chem_shift = False
 
-                    self.__reg.suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
-                                                                      {'file_name': file_name, 'description': err}})
+                    if self.__reg.op != 'nmr-str-replace-cs' or not self.__reg.bmrb_only:
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                        self.__reg.suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                                          {'file_name': file_name, 'description': err}})
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
             if not hasLegacySfIssue and fileSubType in ('S', 'R', 'O'):
                 return False
@@ -720,11 +724,13 @@ class NmrDpFirstAid:
 
             if not self.__reg.remediation_mode or not missing_loop or file_list_id > 0:
 
-                self.__reg.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
-                                                          {'file_name': file_name, 'description': err})
+                if self.__reg.op != 'nmr-str-replace-cs' or not self.__reg.bmrb_only:
 
-                self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - "
-                                     f"{file_name} {err}\n")
+                    self.__reg.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue',
+                                                              {'file_name': file_name, 'description': err})
+
+                    self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - "
+                                         f"{file_name} {err}\n")
 
                 is_done = False
 
@@ -732,11 +738,13 @@ class NmrDpFirstAid:
 
                 self.__reg.has_star_chem_shift = False
 
-                self.__reg.suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
-                                                                  {'file_name': file_name, 'description': err}})
+                if self.__reg.op != 'nmr-str-replace-cs' or not self.__reg.bmrb_only:
 
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                    self.__reg.suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                                      {'file_name': file_name, 'description': err}})
+
+                    if self.__reg.verbose:
+                        self.__reg.log.write(f"+{self.__class_name__}.fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
         try:
 

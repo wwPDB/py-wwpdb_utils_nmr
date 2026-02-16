@@ -12340,7 +12340,7 @@ class NmrDpUtility:
 
                 poly_seq = input_source_dic['polymer_sequence']
 
-                single_ligand = len(poly_seq) == 1 and len(poly_seq[0]['seq_id']) == 1\
+                single_ligand = poly_seq is not None and len(poly_seq) == 1 and len(poly_seq[0]['seq_id']) == 1\
                     and poly_seq[0]['comp_id'][0] not in STD_MON_DICT
 
                 if single_ligand:

@@ -1990,14 +1990,16 @@ class NmrDpValidation:
             sf_category = SF_CATEGORIES[file_type][content_subtype]
             lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-            err = f"The saveframe with a category {sf_category!r} is missing, "\
-                f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
+            if self.__reg.op != 'nmr-str-replace-cs' or not self.__reg.bmrb_only:
 
-            self.__reg.report.error.appendDescription('missing_mandatory_content',
-                                                      {'file_name': file_name, 'description': err})
+                err = f"The saveframe with a category {sf_category!r} is missing, "\
+                    f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
+                self.__reg.report.error.appendDescription('missing_mandatory_content',
+                                                          {'file_name': file_name, 'description': err})
+
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
 
             if self.__reg.remediation_mode:
                 dir_path = os.path.dirname(self.__reg.dstPath)

@@ -1415,6 +1415,24 @@ class BMRBAnnTasks:
                    or any((k in _f or _f in k) for _f in entity['name'].lower().split() if len(_f) > 3):
                     return True
 
+            if key in ('k-pi', 'na-pi', 'kpi', 'napi')\
+               or 'buffer' in key\
+               or 'acetate' in key\
+               or 'acetic' in key\
+               or 'ch3coo' in key\
+               or 'citric' in key\
+               or 'hepes' in key\
+               or 'pipes' in key\
+               or 'mes' in key\
+               or 'mops' in key\
+               or 'pbs' in key\
+               or 'tris' in key\
+               or 'phosphate' in key\
+               or 'po4' in key\
+               or 'kphos' in key\
+               or 'naphos' in key:
+                return False
+
             self.__reg.pA.setReferenceSequence(list(entity['name'].replace(' ', '').lower()), 'REFNAME')
             self.__reg.pA.addTestSequence(list(key.replace(' ', '').lower()), 'NAME')
             self.__reg.pA.doAlign()

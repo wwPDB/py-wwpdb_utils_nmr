@@ -1420,9 +1420,9 @@ class BMRBAnnTasks:
             self.__reg.pA.doAlign()
 
             myAlign = self.__reg.pA.getAlignment('NAME')
-            matched, _, _, _, _ = getScoreOfSeqAlign(myAlign)
+            matched, _, conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
-            return matched > 3
+            return matched > 3 and matched > conflict
 
         if sf_category in self.__reg.sf_category_list:
             sf_list = master_entry.get_saveframes_by_category(sf_category)

@@ -82,7 +82,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.nmr_dp_util.op('nmr-cs-str-consistency-check')
 
-        with open(self.data_dir_path + entry_id.lower() + '-cs-str-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id.lower() + '-cs-str-consistency-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is not None:

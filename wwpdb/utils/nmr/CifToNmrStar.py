@@ -903,8 +903,7 @@ class CifToNmrStar:
             strData.frame_list.sort(key=sf_key)
 
             for sf in strData.frame_list:
-                if sf.category not in ('entry_interview', 'experiment_list'):
-                    sf.sort_tags(self.pynmrstar_schema)
+                sf.sort_tags(self.pynmrstar_schema)
                 if len(sf.loops) > 1:
                     sf.loops.sort(key=lp_key)
                 # Iterate through the loops

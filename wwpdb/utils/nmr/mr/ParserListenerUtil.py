@@ -3351,7 +3351,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             if altKey not in coordAtomSite or compId not in STD_MON_DICT\
                                or (altKey in coordAtomSite and coordAtomSite[altKey]['comp_id'] in STD_MON_DICT):
                                 # 9uv6 (internal annotation model file)
-                                coordAtomSite[altKey] = deepcopy(coordAtomSite[seqKey])
+                                coordAtomSite[altKey] = coordAtomSite[seqKey]
 
                     if splitLigand is not None and len(splitLigand) > 0:
                         found = False

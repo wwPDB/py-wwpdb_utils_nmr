@@ -4,8 +4,8 @@
 #
 # Updates:
 #
-import unittest
 import json
+import unittest
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 

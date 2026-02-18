@@ -6,7 +6,6 @@
 ##
 """Test cases for NEFTranslator - simply import everything to ensure imports work"""
 import sys
-
 import unittest
 
 from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator

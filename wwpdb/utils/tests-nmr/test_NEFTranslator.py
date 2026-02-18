@@ -19,12 +19,11 @@
 ##
 import os
 import sys
+import unittest
 
 from packaging import version
 
 import pynmrstar
-
-import unittest
 
 try:
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator

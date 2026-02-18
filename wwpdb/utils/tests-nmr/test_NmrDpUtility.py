@@ -16,7 +16,6 @@
 # 20-Oct-2022  M. Yokochi - add support for CYANA/ROSETTA disulfide bond restraint (NMR restraint remediation)
 #
 import os
-
 import unittest
 
 try:

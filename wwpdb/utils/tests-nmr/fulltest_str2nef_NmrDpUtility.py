@@ -5,9 +5,9 @@
 # Updates:
 # 21-Feb-2020  M. Yokochi - change name of workflow operation (nmr-str2nef-release)
 ##
-import unittest
-import os
 import json
+import os
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility

@@ -1,7 +1,8 @@
 import os
+import shutil
 import sys
 import traceback
-import shutil
+
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 
 

@@ -16,10 +16,9 @@
 #
 import os
 import sys
+import unittest
 
 from testfixtures import LogCapture
-
-import unittest
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 

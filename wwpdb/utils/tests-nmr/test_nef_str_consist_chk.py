@@ -4,9 +4,8 @@
 #
 # Updates:
 ##
-import os
 import json
-
+import os
 import unittest
 
 try:

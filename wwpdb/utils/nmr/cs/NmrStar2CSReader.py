@@ -13,8 +13,8 @@ __version__ = "1.1.1"
 
 import os
 import sys
-
 from typing import IO, List, Optional, Tuple
+
 from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker
 
 try:

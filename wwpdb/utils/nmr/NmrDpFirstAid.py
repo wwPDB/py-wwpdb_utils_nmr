@@ -18,8 +18,9 @@ import re
 import shutil
 from typing import List, Optional, Union
 
-import pynmrstar
 from packaging import version
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,

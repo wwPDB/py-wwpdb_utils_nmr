@@ -15,6 +15,7 @@ import copy
 import os
 import sys
 from typing import IO, List, Optional, Tuple
+
 from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker, PredictionMode
 
 try:

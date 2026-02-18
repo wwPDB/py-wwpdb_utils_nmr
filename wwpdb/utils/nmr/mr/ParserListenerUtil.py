@@ -31,7 +31,9 @@ from operator import itemgetter
 from typing import Any, IO, List, Optional, Set, Tuple
 
 import numpy
+
 import pynmrstar
+
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:

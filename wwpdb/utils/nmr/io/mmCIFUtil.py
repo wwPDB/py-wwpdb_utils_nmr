@@ -20,7 +20,7 @@ import copy
 import os
 import re
 import sys
-from typing import Any, IO, Optional, List
+from typing import Any, IO, List, Optional
 
 from mmcif.api.DataCategory import DataCategory
 from mmcif.api.PdbxContainers import DataContainer

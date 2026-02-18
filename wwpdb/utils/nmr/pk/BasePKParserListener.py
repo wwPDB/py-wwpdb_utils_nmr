@@ -21,6 +21,7 @@ import sys
 from typing import IO, List, Optional, Tuple, Union
 
 import numpy
+
 import pynmrstar
 
 try:

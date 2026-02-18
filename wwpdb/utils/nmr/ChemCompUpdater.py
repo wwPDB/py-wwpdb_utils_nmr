@@ -19,11 +19,13 @@ import gzip
 import logging
 import os
 import shutil
+
 from dateutil.parser import parse as parsedate
 
-import requests
 from mmcif.io.PdbxReader import PdbxReader
 from mmcif.io.PdbxWriter import PdbxWriter
+
+import requests
 
 
 def uncompress_gzip_file(inPath: str, outPath: str):

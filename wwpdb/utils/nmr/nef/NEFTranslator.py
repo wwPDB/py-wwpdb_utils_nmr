@@ -147,10 +147,12 @@ import os
 import re
 import sys
 from operator import itemgetter
+from typing import IO, List, Optional, Tuple, Union
+
 from packaging import version
-from typing import IO, List, Tuple, Optional, Union
 
 import pynmrstar
+
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:

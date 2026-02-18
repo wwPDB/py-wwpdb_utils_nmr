@@ -33,8 +33,9 @@ import sys
 from operator import itemgetter
 from typing import Any, IO, Optional, Union
 
-import pynmrstar
 from packaging import version
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

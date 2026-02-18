@@ -21,7 +21,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from operator import itemgetter
-from typing import List, Tuple, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import pynmrstar
 

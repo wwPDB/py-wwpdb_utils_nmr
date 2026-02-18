@@ -300,9 +300,12 @@ from datetime import datetime
 from operator import itemgetter
 from typing import Any, IO, List, Optional, Union
 
-import pynmrstar
 from mmcif.io.IoAdapterPy import IoAdapterPy
+
 from munkres import Munkres
+
+import pynmrstar
+
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:

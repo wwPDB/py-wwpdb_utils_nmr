@@ -21,8 +21,9 @@ import sys
 from operator import itemgetter
 from typing import IO, List, Optional, Tuple
 
-import numpy
 from antlr4 import ParseTreeListener
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,

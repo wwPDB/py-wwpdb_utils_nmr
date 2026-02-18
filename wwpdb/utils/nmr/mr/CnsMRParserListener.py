@@ -19,8 +19,10 @@ import sys
 from operator import itemgetter
 from typing import IO, List, Optional
 
-import numpy
 from antlr4 import ParseTreeListener
+
+import numpy
+
 from rmsd.calculate_rmsd import ELEMENT_WEIGHTS, int_atom  # noqa: F401 pylint: disable=no-name-in-module,import-error
 
 try:

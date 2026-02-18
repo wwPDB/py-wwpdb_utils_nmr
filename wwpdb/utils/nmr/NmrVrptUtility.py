@@ -32,9 +32,9 @@ import time
 from operator import itemgetter
 from typing import Any, IO, List, Optional, Tuple
 
-import numpy
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,

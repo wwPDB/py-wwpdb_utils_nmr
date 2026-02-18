@@ -16,7 +16,6 @@ import collections
 import copy
 import functools
 import sys
-
 from typing import IO, List, Optional, Tuple, Union
 
 try:

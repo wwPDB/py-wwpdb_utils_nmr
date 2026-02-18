@@ -21,6 +21,7 @@ from operator import itemgetter
 from typing import IO, List, Optional
 
 from antlr4 import ParseTreeListener
+
 from rmsd.calculate_rmsd import ELEMENT_WEIGHTS, int_atom  # noqa: F401 pylint: disable=no-name-in-module,import-error
 
 try:

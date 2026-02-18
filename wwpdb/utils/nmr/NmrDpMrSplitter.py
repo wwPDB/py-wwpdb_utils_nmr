@@ -22,6 +22,7 @@ from operator import itemgetter
 from typing import Any, List, Optional, Tuple
 
 import chardet
+
 from striprtf.striprtf import rtf_to_text
 
 try:

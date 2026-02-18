@@ -16,11 +16,10 @@ import copy
 import io
 import json
 import os
-import sys
 import re
+import sys
 from itertools import zip_longest
 from typing import Any, List, Optional, Tuple
-
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LOW_SEQ_COVERAGE,

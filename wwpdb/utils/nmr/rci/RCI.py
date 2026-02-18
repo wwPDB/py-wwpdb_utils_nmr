@@ -19,11 +19,10 @@ __license__ = "General Public License (GPL) v2"
 __version__ = "v_1n_10_6_12_A"
 
 import sys
-from math import pow, exp, log  # pylint: disable=redefined-builtin
+from math import exp, log, pow  # pylint: disable=redefined-builtin
 from typing import IO, List, Tuple
 
 import numpy
-
 
 # pylint: disable=attribute-defined-outside-init
 class RCI:

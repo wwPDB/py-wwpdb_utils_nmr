@@ -4,8 +4,6 @@
 #
 # Updates:
 #
-import sys
-
 import unittest
 
 try:

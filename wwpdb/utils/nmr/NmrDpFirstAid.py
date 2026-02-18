@@ -1283,15 +1283,20 @@ class NmrDpFirstAid:
 
                 elif not self.__reg.combined_mode:
 
-                    atom_type_col = loop.tags.index('Atom_type')
-                    atom_name_col = loop.tags.index('Atom_ID')
+                    try:
 
-                    for row in loop:
-                        if row[atom_type_col] in EMPTY_VALUE:
-                            atom_type = row[atom_name_col][0]
-                            if atom_type in ('Q', 'M'):
-                                atom_type = 'H'
-                            row[atom_type_col] = atom_type
+                        atom_type_col = loop.tags.index('Atom_type')
+                        atom_name_col = loop.tags.index('Atom_ID')
+
+                        for row in loop:
+                            if row[atom_type_col] in EMPTY_VALUE:
+                                atom_type = row[atom_name_col][0]
+                                if atom_type in ('Q', 'M'):
+                                    atom_type = 'H'
+                                row[atom_type_col] = atom_type
+
+                    except ValueError:
+                        pass
 
                 if 'Atom_isotope_number' not in loop.tags:
 

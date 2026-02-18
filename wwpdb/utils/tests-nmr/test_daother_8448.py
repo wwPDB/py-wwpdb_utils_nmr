@@ -4,10 +4,10 @@
 #
 # Updates:
 #
-import unittest
-import os
 import json
+import os
 from shutil import copyfile
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility

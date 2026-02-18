@@ -8,7 +8,6 @@
 """Test cases for NEF conversion"""
 import os
 import platform
-
 import unittest
 
 try:

@@ -5,10 +5,11 @@
 # Updates:
 # 20-Oct-2021  M. Yokochi - add unit test for case-sensitive saveframe name (DAOTHER-7398, 7407)
 #
-import unittest
 import os
 import sys
 from shutil import copyfile
+
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif

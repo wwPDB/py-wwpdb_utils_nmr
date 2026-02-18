@@ -4,22 +4,14 @@
 #
 # Updates:
 #
-import unittest
 import sys
+
+import unittest
 
 try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
-
-
-if __package__ is None or __package__ == "":
-    from os import path
-
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=import-error,unused-import
-else:
-    from .commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=relative-beyond-top-level
 
 
 class TestChemCompUtil(unittest.TestCase):

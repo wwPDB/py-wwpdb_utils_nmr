@@ -15,15 +15,14 @@
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraint (DAOTHER-7690, NMR restraint remediation)
 # 20-Oct-2022  M. Yokochi - add support for CYANA/ROSETTA disulfide bond restraint (NMR restraint remediation)
 #
-import unittest
 import os
+
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-    # from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
 except ImportError:
     from nmr.NmrDpUtility import NmrDpUtility
-    # from nmr.NmrDpReport import NmrDpReportInputSource
 
 
 class TestNmrDpUtility(unittest.TestCase):

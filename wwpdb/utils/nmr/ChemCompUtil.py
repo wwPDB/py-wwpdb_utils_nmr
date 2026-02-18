@@ -592,6 +592,6 @@ class ChemCompUtil:
             if isinstance(obj, dict):
 
                 with open(file_name, 'wb') as ofh:
-                    pickle.dump(obj, ofh)
+                    pickle.dump(obj, ofh, protocol=4)
 
         write_dict_as_pickle(self.__cachedDict, self.__cacheFile)

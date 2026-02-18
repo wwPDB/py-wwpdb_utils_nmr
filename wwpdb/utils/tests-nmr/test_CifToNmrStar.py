@@ -5,28 +5,15 @@
 # Updates:
 # 10-Nov-2022  M. Yokochi re-write unit test for cs validation code
 #
-import unittest
 import os
 import sys
-import pynmrstar
-from packaging import version
+
+import unittest
 
 try:
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
 except ImportError:
     from nmr.CifToNmrStar import CifToNmrStar
-
-
-__pynmrstar_v3_3_4__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.4")
-
-
-if __package__ is None or __package__ == "":
-    from os import path
-
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=import-error,unused-import
-else:
-    from .commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=relative-beyond-top-level
 
 
 class TestCifToNmrStar(unittest.TestCase):

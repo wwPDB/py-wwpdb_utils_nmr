@@ -2385,7 +2385,7 @@ class BMRBChemShiftStat:
             if isinstance(obj, list):
 
                 with open(file_name, 'wb') as ofh:
-                    pickle.dump(obj, ofh)
+                    pickle.dump(obj, ofh, protocol=4)
 
         write_stat_as_pickle(self.aa_filt, os.path.join(self.__work_dir, 'aa_filt.pkl'))
         write_stat_as_pickle(self.aa_full, os.path.join(self.__work_dir, 'aa_full.pkl'))

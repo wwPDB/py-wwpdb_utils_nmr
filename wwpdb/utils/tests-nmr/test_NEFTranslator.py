@@ -96,7 +96,7 @@ class TestNEFTranslator(unittest.TestCase):
             ("B", 1): (2, 1), ("B", 2): (2, 2), ("B", 3): (2, 3), ("B", 4): (2, 4), ("B", 5): (2, 5),
             ("C", 1): (3, 1), ("C", 2): (3, 2), ("C", 3): (3, 3), ("C", 4): (3, 4), ("C", 5): (3, 5)
         }
-        self.neft.selfSeqMap = {k: k for k in self.neft.authSeqMap.keys()}
+        self.neft.selfSeqMap = {k: k for k in self.neft.authSeqMap}
 
     def tearDown(self):
         pass

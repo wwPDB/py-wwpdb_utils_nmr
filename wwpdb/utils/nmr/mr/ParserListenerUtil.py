@@ -3307,8 +3307,13 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         authChainId = next(c['auth_chain_id'] for c in coord
                                            if c['chain_id'] == chainId and c['seq_id'] is not None
                                            and c['seq_id'] == seqId and c['comp_id'] == compId)
-                    coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId,
-                                             'atom_id': atomIds, 'type_symbol': typeSymbols}
+
+                    if seqKey in coordAtomSite:  # 9uv6 (internal annotation model file)
+                        coordAtomSite[seqKey]['atom_id'].extend(atomIds)
+                        coordAtomSite[seqKey]['type_symbol'].extend(typeSymbols)
+                    else:
+                        coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId,
+                                                 'atom_id': atomIds, 'type_symbol': typeSymbols}
 
                     if altAuthCompId is not None:
                         altCompIds = [c['comp_id'] for c in coord
@@ -3346,7 +3351,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             if altKey not in coordAtomSite or compId not in STD_MON_DICT\
                                or (altKey in coordAtomSite and coordAtomSite[altKey]['comp_id'] in STD_MON_DICT):
                                 # 9uv6 (internal annotation model file)
-                                coordAtomSite[altKey] = coordAtomSite[seqKey]
+                                coordAtomSite[altKey] = deepcopy(coordAtomSite[seqKey])
 
                     if splitLigand is not None and len(splitLigand) > 0:
                         found = False

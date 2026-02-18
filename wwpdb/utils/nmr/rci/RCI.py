@@ -24,6 +24,7 @@ from typing import IO, List, Tuple
 
 import numpy
 
+
 # pylint: disable=attribute-defined-outside-init
 class RCI:
     """ Wrapper class for Random Coil Index calculation.

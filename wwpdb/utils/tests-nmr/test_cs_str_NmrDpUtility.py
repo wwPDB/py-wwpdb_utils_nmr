@@ -18,9 +18,10 @@
 # 20-May-2021  M. Yokochi - add unit tests for DAOTHER-6834 and 6855
 # 24-May-2021  M. Yokochi - add unit test for DAOTHER-6809
 #
-import unittest
-import os
 import json
+import os
+
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility

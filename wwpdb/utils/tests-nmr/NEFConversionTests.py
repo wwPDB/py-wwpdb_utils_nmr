@@ -6,10 +6,10 @@
 # 07-Feb-2020  M. Yokochi - update mock-data directory and include inverse translation NMR-STAR to NEF
 ##
 """Test cases for NEF conversion"""
-
-import unittest
 import os
 import platform
+
+import unittest
 
 try:
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator

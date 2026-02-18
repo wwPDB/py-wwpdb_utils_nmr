@@ -17,27 +17,25 @@
 # 24-Feb-2022  M. Yokochi - support NEFTranslator v3.0.9
 # 16-Dec-2022  M. Yokochi - support NEFTranslator v3.3.2
 ##
-import unittest
 import os
 import sys
-import pynmrstar
 
 from packaging import version
+
+import pynmrstar
+
+import unittest
 
 try:
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
 
-
 if __package__ is None or __package__ == "":
-    from os import path
-
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=import-error,unused-import
 else:
     from .commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=relative-beyond-top-level
-
 
 __pynmrstar_v3_4__ = version.parse(pynmrstar.__version__) >= version.parse("3.4.0")
 

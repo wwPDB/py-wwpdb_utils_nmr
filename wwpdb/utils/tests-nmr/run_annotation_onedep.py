@@ -1,16 +1,12 @@
-import sys
-import os
-import json
 import hashlib
-
-from typing import List, Tuple, Union, Optional
-
-import pynmrstar
-# import requests
-# import datetime
+import json
+import os
+import sys
+from typing import List, Optional, Tuple, Union
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
-# from dateutil.parser import parse as parsedate
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

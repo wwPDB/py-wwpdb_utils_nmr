@@ -109,7 +109,8 @@ class ChemCompUtil:
             return False
 
         if compId != self.lastCompId:
-            self.lastStatus = False if '_' in compId else self.__ccR.setCompId(compId, ligand)
+            self.lastStatus = False if '_' in compId\
+                else True if compId in self.__cachedDict else self.__ccR.setCompId(compId, ligand)
             self.lastCompId = compId
 
             if self.lastStatus:

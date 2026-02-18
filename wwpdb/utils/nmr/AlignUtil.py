@@ -12,15 +12,14 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.2"
 
-import sys
-import os
 import copy
-import json
-import re
 import io
-
+import json
+import os
+import sys
+import re
 from itertools import zip_longest
-from typing import Any, List, Tuple, Optional
+from typing import Any, List, Optional, Tuple
 
 
 try:

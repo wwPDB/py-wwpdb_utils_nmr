@@ -13,11 +13,10 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import sys
 import copy
-
-from typing import IO, List, Union
+import sys
 from dataclasses import dataclass, field
+from typing import IO, List, Union
 
 import pynmrstar
 

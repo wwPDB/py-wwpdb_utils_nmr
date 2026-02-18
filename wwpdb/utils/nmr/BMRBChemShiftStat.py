@@ -29,18 +29,17 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.2"
 
-import sys
-import os
-import csv
-import re
-import copy
-import pickle
 import collections
-import shutil
+import copy
+import csv
 import functools
-
+import os
+import pickle
+import re
+import shutil
+import sys
 from operator import itemgetter
-from typing import IO, List, Set, Tuple, Optional
+from typing import IO, List, Optional, Set, Tuple
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

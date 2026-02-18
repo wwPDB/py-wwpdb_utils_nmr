@@ -13,8 +13,8 @@ __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
 import sys
-
 from typing import IO, List, Optional
+
 from antlr4 import ParseTreeListener
 
 try:

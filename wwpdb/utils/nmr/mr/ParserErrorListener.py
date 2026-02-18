@@ -13,8 +13,8 @@ __license__ = "Apache License 2.0"
 __version__ = "1.0.2"
 
 import re
-
 from typing import List, Optional
+
 from antlr4.error.ErrorListener import ErrorListener
 
 try:

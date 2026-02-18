@@ -12,18 +12,17 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import os
-import re
 import codecs
-import shutil
 import hashlib
 import itertools
-
+import os
+import re
+import shutil
 from operator import itemgetter
-from typing import Any, List, Tuple, Optional
-from striprtf.striprtf import rtf_to_text
+from typing import Any, List, Optional, Tuple
 
 import chardet
+from striprtf.striprtf import rtf_to_text
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,

@@ -17,9 +17,8 @@ __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "1.0.6"
 
-import sys
 import os
-
+import sys
 from typing import IO, List, Optional
 
 from mmcif.api.PdbxContainers import DataContainer

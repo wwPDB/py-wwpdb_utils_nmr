@@ -11,11 +11,11 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import sys
 import os
+import sys
+from typing import IO, List, Optional, Tuple
 
-from typing import IO, List, Tuple, Optional
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT

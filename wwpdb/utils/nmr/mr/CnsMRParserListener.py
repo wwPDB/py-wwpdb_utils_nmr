@@ -12,17 +12,16 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import sys
-import re
-import itertools
 import copy
-
+import itertools
+import re
+import sys
 from operator import itemgetter
 from typing import IO, List, Optional
-from antlr4 import ParseTreeListener
-from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module,import-error
 
 import numpy
+from antlr4 import ParseTreeListener
+from rmsd.calculate_rmsd import ELEMENT_WEIGHTS, int_atom  # noqa: F401 pylint: disable=no-name-in-module,import-error
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_MAG_IDENT_ASYM_ID,

@@ -16,11 +16,10 @@ __version__ = "5.0.0"
 import os
 import re
 import shutil
-
-from typing import List, Union, Optional
-from packaging import version
+from typing import List, Optional, Union
 
 import pynmrstar
+from packaging import version
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,

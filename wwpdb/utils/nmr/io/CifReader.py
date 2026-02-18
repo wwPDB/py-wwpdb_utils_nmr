@@ -45,31 +45,28 @@ __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "1.0.6"
 
-import sys
-import os
-import math
-import random
-import itertools
-import hashlib
 import collections
-import re
 import copy
+import hashlib
 import inspect
+import itertools
+import math
+import os
 import pickle
-
+import random
+import re
+import sys
 from operator import itemgetter
-from typing import IO, List, Tuple, Optional
+from typing import IO, List, Optional, Tuple
 
 import numpy
-
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
-
+from rmsd.calculate_rmsd import (centroid, check_reflections,  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,unused-import,line-too-long
+                                 kabsch_rmsd, quaternion_rmsd, quaternion_rotate,
+                                 reorder_brute, reorder_distance, reorder_hungarian,
+                                 rmsd)
 from sklearn.cluster import DBSCAN
-from rmsd.calculate_rmsd import (centroid, check_reflections, rmsd,  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,unused-import,line-too-long
-                                 kabsch_rmsd, quaternion_rmsd,
-                                 reorder_hungarian, reorder_brute, reorder_distance,
-                                 quaternion_rotate)
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

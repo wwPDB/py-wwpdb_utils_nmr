@@ -13,20 +13,19 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import os
-import itertools
-import copy
 import collections
+import copy
+import functools
+import itertools
+import math
+import os
 import re
 import shutil
-import math
-import functools
-
 from operator import itemgetter
-from typing import List, Union, Set, Tuple, Optional
+from typing import List, Optional, Set, Tuple, Union
 
-import pynmrstar
 import numpy
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,

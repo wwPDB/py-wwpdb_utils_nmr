@@ -12,18 +12,17 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import sys
-import copy
 import collections
-import re
-import itertools
+import copy
 import functools
-
+import itertools
+import re
+import sys
 from operator import itemgetter
-from typing import IO, List, Tuple, Optional
-from antlr4 import ParseTreeListener
+from typing import IO, List, Optional, Tuple
 
 import numpy
+from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,

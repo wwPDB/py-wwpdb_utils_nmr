@@ -13,11 +13,11 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import re
-import collections
 # import csv
-import pynmrstar
+import collections
+import re
 
+import pynmrstar
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:

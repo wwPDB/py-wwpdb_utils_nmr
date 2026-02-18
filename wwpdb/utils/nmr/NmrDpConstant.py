@@ -13,8 +13,8 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import re
 import copy
+import re
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module,import-error
 

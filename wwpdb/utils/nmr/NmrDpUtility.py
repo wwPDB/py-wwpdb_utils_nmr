@@ -287,24 +287,22 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import sys
-import os
-import itertools
-import copy
 import collections
+import copy
+import hashlib
+import itertools
+import os
 import re
 import shutil
+import sys
 import time
-import hashlib
-
-from operator import itemgetter
-from typing import Any, IO, List, Union, Optional
 from datetime import datetime
+from operator import itemgetter
+from typing import Any, IO, List, Optional, Union
 
 import pynmrstar
-
-from munkres import Munkres
 from mmcif.io.IoAdapterPy import IoAdapterPy
+from munkres import Munkres
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:

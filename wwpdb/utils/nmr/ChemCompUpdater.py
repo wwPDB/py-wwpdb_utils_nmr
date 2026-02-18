@@ -13,15 +13,15 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
-import os
-import shutil
-import logging
+import argparse
 import datetime
 import gzip
-import argparse
-import requests
-
+import logging
+import os
+import shutil
 from dateutil.parser import parse as parsedate
+
+import requests
 from mmcif.io.PdbxReader import PdbxReader
 from mmcif.io.PdbxWriter import PdbxWriter
 

@@ -12,10 +12,9 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import re
 import copy
 import itertools
-
+import re
 from operator import itemgetter
 from typing import Optional
 

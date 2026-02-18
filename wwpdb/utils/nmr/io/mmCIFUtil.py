@@ -16,12 +16,11 @@ __email__ = "zfeng@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "1.0.6"
 
-import sys
-import os
 import copy
+import os
 import re
-
-from typing import Any, IO, List, Optional
+import sys
+from typing import Any, IO, Optional, List
 
 from mmcif.api.DataCategory import DataCategory
 from mmcif.api.PdbxContainers import DataContainer

@@ -13,16 +13,15 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
+import collections
+import copy
+import functools
+import itertools
 import os
 import re
-import itertools
-import copy
-import collections
-import functools
-
+from datetime import datetime, timedelta
 from operator import itemgetter
-from typing import List, Tuple, Union, Optional
-from datetime import (datetime, timedelta)
+from typing import List, Tuple, Optional, Union
 
 import pynmrstar
 

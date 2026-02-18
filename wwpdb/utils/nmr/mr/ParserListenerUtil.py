@@ -20,20 +20,18 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.2"
 
-import sys
+import collections
+import copy
+import functools
+import itertools
 import os
 import re
-import copy
-import collections
-import itertools
-import functools
-
+import sys
 from operator import itemgetter
-from typing import Any, IO, List, Set, Tuple, Optional
+from typing import Any, IO, List, Optional, Set, Tuple
 
 import numpy
 import pynmrstar
-
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:

@@ -1036,7 +1036,7 @@ class gen_auth_view_onedep:
         except Exception:  # pylint: disable=broad-exception-caught
             pass
 
-        with open(self.__annotated_log_file_path) as file:
+        with open(self.__annotated_log_file_path, 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is None:

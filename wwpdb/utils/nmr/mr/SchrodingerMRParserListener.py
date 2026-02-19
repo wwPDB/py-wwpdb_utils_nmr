@@ -1944,7 +1944,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                         if chain_id not in weight_per_chain:
                             weight_per_chain[chain_id] = 0.0
                         common_types = collections.Counter(v['type_symbol']).most_common()
-                        weight_per_chain[chain_id] += sum(ELEMENT_WEIGHTS[int_atom[t]] * count for t, count in common_types)
+                        weight_per_chain[chain_id] += sum(ELEMENT_WEIGHTS[int_atom(t)] * count for t, count in common_types)
 
                     chain_ids = []
                     if 'range' in int_range:
@@ -2242,6 +2242,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
             elif ctx.Residue_secondary_structure():
                 clauseName = 'residue.secondary_structure'
+                subClauseName = None
                 if self.verbose_debug:
                     print("  " * self.depth + f"--> {clauseName}")
                 if not self.hasCoord:

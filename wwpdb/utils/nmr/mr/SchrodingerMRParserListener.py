@@ -12,16 +12,17 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import sys
-import re
-import itertools
-import copy
 import collections
-
+import copy
+import itertools
+import re
+import sys
 from operator import itemgetter
 from typing import IO, List, Optional
+
 from antlr4 import ParseTreeListener
-from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module,import-error
+
+from rmsd.calculate_rmsd import ELEMENT_WEIGHTS, int_atom  # noqa: F401 pylint: disable=no-name-in-module,import-error
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -1943,7 +1944,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                         if chain_id not in weight_per_chain:
                             weight_per_chain[chain_id] = 0.0
                         common_types = collections.Counter(v['type_symbol']).most_common()
-                        weight_per_chain[chain_id] += sum(ELEMENT_WEIGHTS[int_atom[t]] * count for t, count in common_types)
+                        weight_per_chain[chain_id] += sum(ELEMENT_WEIGHTS[int_atom(t)] * count for t, count in common_types)
 
                     chain_ids = []
                     if 'range' in int_range:
@@ -2241,6 +2242,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
             elif ctx.Residue_secondary_structure():
                 clauseName = 'residue.secondary_structure'
+                subClauseName = None
                 if self.verbose_debug:
                     print("  " * self.depth + f"--> {clauseName}")
                 if not self.hasCoord:

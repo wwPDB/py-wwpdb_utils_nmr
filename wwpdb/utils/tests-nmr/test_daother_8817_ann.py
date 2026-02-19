@@ -4,9 +4,9 @@
 #
 # Updates:
 ##
-import unittest
-import os
 import json
+import os
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
@@ -58,7 +58,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-str2cif-annotate')
 
-        with open(self.data_dir_path + entry_id + '-str2cif-annotate-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-str2cif-annotate-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         self.assertIsNone(report['error'])

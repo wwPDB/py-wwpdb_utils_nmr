@@ -11,12 +11,7 @@ ignore=CVS
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=wwpdb/utils/nmr/mr/*Parser.py,
-                wwpdb/utils/nmr/mr/*Lexer.py,
-                wwpdb/utils/nmr/pk/*Parser.py,
-                wwpdb/utils/nmr/pk/*Lexer.py,
-                wwpdb/utils/nmr/cs/*Parser.py,
-                wwpdb/utils/nmr/cs/*Lexer.py
+ignore-patterns=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().

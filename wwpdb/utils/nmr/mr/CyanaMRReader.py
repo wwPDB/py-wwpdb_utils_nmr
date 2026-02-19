@@ -11,11 +11,11 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import sys
 import os
+import sys
+from typing import IO, List, Optional, Tuple
 
-from typing import IO, List, Tuple, Optional
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
+from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker, PredictionMode
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -270,6 +270,17 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36518/data/D_1300033571_mr-upload_P1.cyana.V1',
+                     '../../tests-nmr/mock-data-combine-at-upload/bmr36518/data/D_1300033571_model-release_P1.cif.V1')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36518/data/D_1300033571_mr-upload_P1.cyana.V1',
+                 '../../tests-nmr/mock-data-combine-at-upload/bmr36518/data/D_1300033571_model-release_P1.cif.V1')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2lk6/2lk6-corrected.mr',

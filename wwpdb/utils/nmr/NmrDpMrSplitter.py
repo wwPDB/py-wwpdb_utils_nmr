@@ -12,18 +12,18 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import os
-import re
 import codecs
-import shutil
 import hashlib
 import itertools
-
+import os
+import re
+import shutil
 from operator import itemgetter
-from typing import Any, List, Tuple, Optional
-from striprtf.striprtf import rtf_to_text
+from typing import Any, List, Optional, Tuple
 
 import chardet
+
+from striprtf.striprtf import rtf_to_text
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MR_FILE_PATH_LIST_KEY,
@@ -525,6 +525,9 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
     """ Return peak list format for a input file.
     """
 
+    if not os.path.exists(fPath):
+        return None
+
     header = None
 
     with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:
@@ -1000,7 +1003,7 @@ def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]
     """ Return number of dimensions for a input peak list file.
     """
 
-    if file_format is None:
+    if file_format is None or not os.path.exists(fPath):
         return None
 
     with open(fPath, 'r', encoding='utf-8') as ifh:

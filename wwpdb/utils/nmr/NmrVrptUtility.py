@@ -22,20 +22,19 @@ __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
 __version__ = "v1.2"
 
-import os
-import sys
+import copy
 import gzip
+import os
+import pickle
+import sys
 import tempfile
 import time
-import pickle
-import copy
-
 from operator import itemgetter
-from typing import Any, IO, List, Tuple, Optional
-
-import numpy
+from typing import Any, IO, List, Optional, Tuple
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
+
+import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,

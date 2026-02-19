@@ -1,16 +1,12 @@
-import sys
-import os
-import json
 import hashlib
-
-from typing import List, Tuple, Union, Optional
-
-import pynmrstar
-# import requests
-# import datetime
+import json
+import os
+import sys
+from typing import List, Optional, Tuple, Union
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
-# from dateutil.parser import parse as parsedate
+
+import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -107,7 +103,7 @@ def has_cs_loop(file_path: str) -> bool:
 
         return not is_empty_loop(star_data, lp_category)
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         return False
 
 
@@ -179,7 +175,7 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
 
                 return combined, original_file_name
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         pass
 
     return False, None
@@ -265,7 +261,7 @@ class gen_auth_view_onedep:
         #         cif_file = cif_file[:-3]
         #         if os.path.exists(os.path.join(work_dir, cif_file)):
         #             os.remove(os.path.join(work_dir, cif_file))
-        #     except Exception as e:
+        #     except Exception as e:  # pylint: disable=broad-exception-caught
         #         print(str(e))
         #
         # pdb_id = None
@@ -287,7 +283,7 @@ class gen_auth_view_onedep:
                 # """
                 pk_file_lists = cR.getDictList('pdbx_nmr_spectral_peak_list')
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             pass
         # """
         # if pdb_id is not None:
@@ -317,7 +313,7 @@ class gen_auth_view_onedep:
         #
         #         # self.__cif_file_path = os.path.join(work_dir, cif_file)
         #
-        #     except Exception as e:
+        #     except Exception as e:  # pylint: disable=broad-exception-caught
         #         print(str(e))
         # """
         self.__nmr_cif_file_path = None
@@ -1037,10 +1033,10 @@ class gen_auth_view_onedep:
 
                 myIo.writeFile(self.__annotated_cif_file_path, containerList=containerList[1:])
 
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             pass
 
-        with open(self.__annotated_log_file_path) as file:
+        with open(self.__annotated_log_file_path, 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is None:

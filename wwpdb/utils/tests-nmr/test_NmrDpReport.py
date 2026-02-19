@@ -23,7 +23,6 @@
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraint (DAOTHER-7690, NMR restraint remediation)
 ##
 import unittest
-# import json
 
 try:
     from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,

@@ -12,10 +12,9 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import re
 import copy
 import itertools
-
+import re
 from operator import itemgetter
 from typing import Optional
 
@@ -36,7 +35,8 @@ try:
                                                RNA_RELATED_WORDS,
                                                ALLOWED_THIOL_STATES)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
-    from wwpdb.utils.nmr.AlignUtil import getOneLetterCodeCan
+    from wwpdb.utils.nmr.AlignUtil import (getOneLetterCodeCan,
+                                           getScoreOfSeqAlign)
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
@@ -57,7 +57,8 @@ except ImportError:
                                    RNA_RELATED_WORDS,
                                    ALLOWED_THIOL_STATES)
     from nmr.NmrDpRegistry import NmrDpRegistry
-    from nmr.AlignUtil import getOneLetterCodeCan
+    from nmr.AlignUtil import (getOneLetterCodeCan,
+                               getScoreOfSeqAlign)
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
     from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
@@ -163,7 +164,7 @@ class BMRBAnnTasks:
                         for _idx in dup_idx:
                             del lp.data[_idx]
 
-                        lp.renumber_rows('ID')
+                lp.renumber_rows('ID')
 
             except KeyError:
                 pass
@@ -192,7 +193,7 @@ class BMRBAnnTasks:
                         for _idx in dup_idx:
                             del lp.data[_idx]
 
-                        lp.renumber_rows('Ordinal')
+                lp.renumber_rows('Ordinal')
 
             except KeyError:
                 pass
@@ -1044,6 +1045,7 @@ class BMRBAnnTasks:
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
                                                   'mutation': get_first_sf_tag(sf, 'Mutation'),
+                                                  'details': get_first_sf_tag(sf, 'Details'),
                                                   'common_names': common_names,
                                                   'gene_mnemonic': gene_mnemonic,
                                                   'total_cys': total_cys
@@ -1065,6 +1067,7 @@ class BMRBAnnTasks:
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
                                                   'mutation': get_first_sf_tag(sf, 'Mutation'),
+                                                  'details': get_first_sf_tag(sf, 'Details'),
                                                   'common_names': common_names,
                                                   'gene_mnemonic': gene_mnemonic
                                                   }
@@ -1078,6 +1081,7 @@ class BMRBAnnTasks:
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
                                                   'mutation': get_first_sf_tag(sf, 'Mutation'),
+                                                  'details': get_first_sf_tag(sf, 'Details'),
                                                   'common_names': common_names,
                                                   'gene_mnemonic': gene_mnemonic
                                                   }
@@ -1092,6 +1096,7 @@ class BMRBAnnTasks:
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
                                                   'mutation': get_first_sf_tag(sf, 'Mutation'),
+                                                  'details': get_first_sf_tag(sf, 'Details'),
                                                   'common_names': common_names,
                                                   'gene_mnemonic': gene_mnemonic
                                                   }
@@ -1372,9 +1377,10 @@ class BMRBAnnTasks:
         def is_natural_abundance(isotopic_labeling: str):
             isotopic_labeling = isotopic_labeling.lower()
             return 'abundance' in isotopic_labeling\
-                or isotopic_labeling.startswith('none') or isotopic_labeling.startswith('not ')\
+                or isotopic_labeling.startswith('non') or isotopic_labeling.startswith('not ')\
                 or isotopic_labeling.startswith('n/a') or isotopic_labeling.startswith('natural')\
-                or isotopic_labeling.startswith('na ') or isotopic_labeling in ('na', 'no')\
+                or isotopic_labeling.startswith('na ') or isotopic_labeling.startswith('na-')\
+                or isotopic_labeling in ('na', 'no', '/', '1h')\
                 or isotopic_labeling.startswith('non-lab')\
                 or isotopic_labeling.startswith('nonlab')\
                 or isotopic_labeling.startswith('unlab')\
@@ -1388,6 +1394,10 @@ class BMRBAnnTasks:
             for f in entity['mutation'].split():
                 _f = f.lower()
                 if len(f) > 2 and (_f in key or key in _f):
+                    return True
+            for f in entity['details'].split():
+                _f = f.lower()
+                if len(f) > 3 and (_f in key or key in _f):
                     return True
             for n in entity['common_names']:
                 for f in n.split():
@@ -1403,7 +1413,33 @@ class BMRBAnnTasks:
                 if any((k in _f or _f in k) for _f in entity['sf_framecode'].lower().split() if len(_f) > 3)\
                    or any((k in _f or _f in k) for _f in entity['name'].lower().split() if len(_f) > 3):
                     return True
-            return False
+
+            if key in ('k-pi', 'na-pi', 'kpi', 'napi')\
+               or 'buffer' in key\
+               or 'acetate' in key\
+               or 'acetic' in key\
+               or 'ch3coo' in key\
+               or 'citric' in key\
+               or 'hepes' in key\
+               or 'pipes' in key\
+               or 'mes' in key\
+               or 'mops' in key\
+               or 'pbs' in key\
+               or 'tris' in key\
+               or 'phosphate' in key\
+               or 'po4' in key\
+               or 'kphos' in key\
+               or 'naphos' in key:
+                return False
+
+            self.__reg.pA.setReferenceSequence(list(entity['name'].replace(' ', '').lower()), 'REFNAME')
+            self.__reg.pA.addTestSequence(list(key.replace(' ', '').lower()), 'NAME')
+            self.__reg.pA.doAlign()
+
+            myAlign = self.__reg.pA.getAlignment('NAME')
+            matched, _, conflict, _, _ = getScoreOfSeqAlign(myAlign)
+
+            return matched > 3 and matched > conflict
 
         if sf_category in self.__reg.sf_category_list:
             sf_list = master_entry.get_saveframes_by_category(sf_category)
@@ -1557,6 +1593,8 @@ class BMRBAnnTasks:
                             entity_id = entity_id_remap.get(entity_id, entity_id)
                             if entity_id in entity_dict:
                                 entity = entity_dict[entity_id]
+                                if row[1] in EMPTY_VALUE:
+                                    lp.data[idx][mol_common_name_col] = entity['name']
                                 lp.data[idx][entity_id_col] = entity_id
                                 lp.data[idx][assembly_id_col] = entity['assembly_id']
                                 lp.data[idx][assembly_label_col] = entity['assembly_label']
@@ -1649,7 +1687,8 @@ class BMRBAnnTasks:
                                 elif mol_common_name in ('nacl', 'kcl', 'na2so4',
                                                          'cacl2', 'zncl2', 'mgcl2',
                                                          'ca+2', 'zn+2', 'mg+2',
-                                                         'ca2+', 'zn2+', 'mg2+')\
+                                                         'ca2+', 'zn2+', 'mg2+',
+                                                         'sodium sulfate')\
                                         or 'chloride' in mol_common_name:
                                     lp.data[idx][type_col] = 'salt'
                                     lp.data[idx][isotopic_labeling_col] = 'natural abundance'
@@ -1673,10 +1712,15 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'internal reference'
                                     lp.data[idx][isotopic_labeling_col] = 'natural abundance'
                                     default_internal_reference = mol_common_name.upper()
-                                elif 'pyridostatin' in mol_common_name:
+                                elif 'pyridostatin' in mol_common_name or mol_common_name in ('pds', 'pypds'):
                                     lp.data[idx][type_col] = 'G-quadruplex stabilizing agent'
-                                elif 'bicelle' in mol_common_name or 'phage' in mol_common_name:
+                                elif 'bicelle' in mol_common_name or 'phage' in mol_common_name or mol_common_name == 'pf1':
                                     lp.data[idx][type_col] = 'molecular alignment inductor'
+                                elif mol_common_name in ('dpc', 'dpc-d38') or 'dodecylphosphocholine' in mol_common_name\
+                                        or 'micelle' in mol_common_name:
+                                    lp.data[idx][type_col] = 'micelles'
+                                elif mol_common_name in ('chaps', 'chapso') or mol_common_name.startswith('zwittergent'):
+                                    lp.data[idx][type_col] = 'detergent'
                                 elif 'lps' in mol_common_name or 'lipopolysaccharide' in mol_common_name:
                                     lp.data[idx][type_col] = 'bacterial outer membrane'
                                 elif 'phosph' in mol_common_name\
@@ -1684,8 +1728,21 @@ class BMRBAnnTasks:
                                          or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
                                          or 'lipid' in mol_common_name):
                                     lp.data[idx][type_col] = 'phospholipid'
+                                elif mol_common_name in ('popc', 'pope', 'popg', 'popg-na'):
+                                    lp.data[idx][type_col] = 'phospholipid'
+                                elif mol_common_name == 'dmso-d6':
+                                    lp.data[idx][isotopic_labeling_col] = '[U-2H]'
+                                    lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('DMSO')
+                                elif mol_common_name == 'dmso':
+                                    lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('DMSO')
+                                elif mol_common_name == 'glycerol':
+                                    lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('Glycerol')
                                 elif mol_common_name in ('tfe', 'trifluoroethanol'):
                                     lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('TFE')
                                 elif 'deuterate' in mol_common_name and 'd2o' in mol_common_name:
                                     lp.data[idx][mol_common_name_col] = 'D2O'
                                     lp.data[idx][type_col] = 'solvent'
@@ -1744,6 +1801,9 @@ class BMRBAnnTasks:
                                 if effective_labeling:
                                     lp.data[idx][isotopic_labeling_col] = f'[{"; ".join(isotopic_labelings)}]'
 
+                        else:
+                            lp.data[idx][isotopic_labeling_col] = 'natural abundance'
+
                         if row[8] not in EMPTY_VALUE and isinstance(row[8], str):
                             for delimiter in ('-', '/', ':', ',', '~'):
                                 if delimiter not in row[8]:
@@ -1761,6 +1821,20 @@ class BMRBAnnTasks:
                                         break
                                     except ValueError:
                                         pass
+
+                    if len(lp) == 1 and len(entity_dict) == 1 and not has_poly_entity and dat[0][7] in EMPTY_VALUE:
+                        for entity_id, entity in entity_dict.items():
+                            if entity['sample_type'] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid'):
+                                if dat[0][1] in EMPTY_VALUE:
+                                    lp.data[0][mol_common_name_col] = entity['name']
+                                lp.data[0][entity_id_col] = entity_id
+                                lp.data[0][assembly_id_col] = entity['assembly_id']
+                                lp.data[0][assembly_label_col] = entity['assembly_label']
+                                lp.data[0][entity_label_col] = f"${entity['sf_framecode']}"
+                                lp.data[0][type_col] = entity['sample_type']
+                                if row[8] in EMPTY_VALUE and (row[9] in EMPTY_VALUE or row[10] in EMPTY_VALUE):
+                                    has_mand_concentration_val = False
+                                has_poly_entity = True
 
                     cur_id = len(lp) + 1
 

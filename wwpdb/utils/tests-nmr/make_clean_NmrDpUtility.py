@@ -6,9 +6,9 @@
 # 09-Oct-2019  M. Yokochi - add 'resolve_conflict' option in __test_nmr_nef_consistency and rename log file
 # 05-Feb-2020  M. Yokochi - add 'check_mandatory_tag' option
 ##
-import unittest
-import os
 import json
+import os
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
@@ -37,7 +37,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
-        with open(self.data_dir_path + entry_id + '-clean-nef-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-clean-nef-consistency-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is not None:
@@ -68,13 +68,13 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef2str-deposit')
 
-        with open(self.data_dir_path + entry_id + '-clean-deposit-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-clean-deposit-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is not None and os.path.exists(self.data_dir_path + entry_id + '-clean.nef'):
             os.remove(self.data_dir_path + entry_id + '-clean.nef')
 
-        with open(self.data_dir_path + entry_id + '-clean-str-deposit-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-clean-str-deposit-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is not None and os.path.exists(self.data_dir_path + entry_id + '-clean.str'):

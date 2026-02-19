@@ -21,13 +21,13 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.2"
 
-import os
-import sys
-import pickle
 import functools
+import os
+import pickle
+import sys
+from typing import IO, List, Optional, Tuple
 
-from typing import IO, List, Tuple, Optional
-from rmsd.calculate_rmsd import NAMES_ELEMENT, ELEMENT_WEIGHTS  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,line-too-long
+from rmsd.calculate_rmsd import ELEMENT_WEIGHTS, NAMES_ELEMENT  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,line-too-long
 
 
 try:
@@ -109,7 +109,8 @@ class ChemCompUtil:
             return False
 
         if compId != self.lastCompId:
-            self.lastStatus = False if '_' in compId else self.__ccR.setCompId(compId, ligand)
+            self.lastStatus = False if '_' in compId\
+                else True if compId in self.__cachedDict else self.__ccR.setCompId(compId, ligand)
             self.lastCompId = compId
 
             if self.lastStatus:
@@ -592,6 +593,6 @@ class ChemCompUtil:
             if isinstance(obj, dict):
 
                 with open(file_name, 'wb') as ofh:
-                    pickle.dump(obj, ofh)
+                    pickle.dump(obj, ofh, protocol=4)
 
         write_dict_as_pickle(self.__cachedDict, self.__cacheFile)

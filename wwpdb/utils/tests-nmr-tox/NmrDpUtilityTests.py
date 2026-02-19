@@ -14,22 +14,19 @@
 # 27-Jan-2022  M. Yokochi - add restraint types described by XPLOR-NIH, CNS, CYANA, and AMBER systems (NMR restraint remediation)
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraint (DAOTHER-7690, NMR restraint remediation)
 #
-import unittest
 import os
 import sys
+import unittest
 
-from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-# from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
 from testfixtures import LogCapture
 
-if __package__ is None or __package__ == "":
-    from os import path
+from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+if __package__ is None or __package__ == "":
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
 else:
     from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
-
 
 skipsome = True
 if os.getenv("FULLTEST") is not None:

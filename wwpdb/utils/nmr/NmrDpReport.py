@@ -147,13 +147,12 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import sys
-import json
 import copy
+import json
 import re
-
+import sys
 from operator import itemgetter
-from typing import Any, IO, List, Tuple, Optional
+from typing import Any, IO, List, Optional, Tuple
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,

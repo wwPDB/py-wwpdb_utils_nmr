@@ -4,9 +4,9 @@
 #
 # Updates:
 #
-import unittest
-import os
 import json
+import os
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
@@ -64,7 +64,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-cs-str-consistency-check')
 
-        with open(self.data_dir_path + entry_id + '-cs-str-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-cs-str-consistency-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is not None:
@@ -83,7 +83,7 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{entry_id}: {status}, {error_type}")
 
-        with open(self.data_dir_path + entry_id + '-cs-str-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-cs-str-consistency-log.json', 'r', encoding='utf-8') as file:
             data = json.load(file)
             report = NmrDpReport()
             report.load(data)

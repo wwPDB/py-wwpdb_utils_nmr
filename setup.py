@@ -11,7 +11,7 @@ from setuptools import setup
 packages = []
 thisPackage = 'wwpdb.utils.nmr'
 
-with open('wwpdb/utils/nmr/__init__.py', 'r') as fd:
+with open('wwpdb/utils/nmr/__init__.py', 'r', encoding='utf-8') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         fd.read(), re.MULTILINE).group(1)
 

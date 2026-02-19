@@ -1,6 +1,6 @@
-import sys
 import os
 import platform
+import sys
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))

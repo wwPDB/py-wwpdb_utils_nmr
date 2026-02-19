@@ -13,20 +13,20 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import os
-import itertools
-import copy
 import collections
+import copy
+import functools
+import itertools
+import math
+import os
 import re
 import shutil
-import math
-import functools
-
 from operator import itemgetter
-from typing import List, Union, Set, Tuple, Optional
+from typing import List, Optional, Set, Tuple, Union
+
+import numpy
 
 import pynmrstar
-import numpy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (CS_FILE_PATH_LIST_KEY,
@@ -1990,14 +1990,16 @@ class NmrDpValidation:
             sf_category = SF_CATEGORIES[file_type][content_subtype]
             lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-            err = f"The saveframe with a category {sf_category!r} is missing, "\
-                f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
+            if self.__reg.op != 'nmr-str-replace-cs' or not self.__reg.bmrb_only:
 
-            self.__reg.report.error.appendDescription('missing_mandatory_content',
-                                                      {'file_name': file_name, 'description': err})
+                err = f"The saveframe with a category {sf_category!r} is missing, "\
+                    f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
+                self.__reg.report.error.appendDescription('missing_mandatory_content',
+                                                          {'file_name': file_name, 'description': err})
+
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
 
             if self.__reg.remediation_mode:
                 dir_path = os.path.dirname(self.__reg.dstPath)

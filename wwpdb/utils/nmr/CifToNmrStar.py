@@ -24,15 +24,15 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.3"
 
-import sys
-import os
-import logging
-import hashlib
 import collections
+import hashlib
 import json
-
+import logging
+import os
+import sys
 from operator import itemgetter
-from typing import Any, IO, Union, Optional
+from typing import Any, IO, Optional, Union
+
 from packaging import version
 
 import pynmrstar

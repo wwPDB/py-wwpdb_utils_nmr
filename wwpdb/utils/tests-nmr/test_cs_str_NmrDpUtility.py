@@ -18,9 +18,9 @@
 # 20-May-2021  M. Yokochi - add unit tests for DAOTHER-6834 and 6855
 # 24-May-2021  M. Yokochi - add unit test for DAOTHER-6809
 #
-import unittest
-import os
 import json
+import os
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
@@ -134,7 +134,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-cs-str-consistency-check')
 
-        with open(self.data_dir_path + entry_id + '-cs-str-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-cs-str-consistency-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is not None:

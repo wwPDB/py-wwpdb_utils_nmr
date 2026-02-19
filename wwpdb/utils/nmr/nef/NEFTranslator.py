@@ -135,22 +135,22 @@ __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import sys
-import os
-import ntpath
-import logging
-import re
+import collections
+import copy
+# import csv
+import functools
 import io
 import itertools
-import copy
-import collections
-import functools
-
+import logging
+import ntpath
+import os
+import re
+import sys
 from operator import itemgetter
-from typing import IO, List, Tuple, Union, Optional
+from typing import IO, List, Optional, Tuple, Union
+
 from packaging import version
 
-# import csv
 import pynmrstar
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module

@@ -12,14 +12,13 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import sys
-import re
-import itertools
-import copy
 import collections
+import copy
 import functools
-
-from typing import IO, List, Tuple, Optional
+import itertools
+import re
+import sys
+from typing import IO, List, Optional, Tuple
 
 import numpy
 

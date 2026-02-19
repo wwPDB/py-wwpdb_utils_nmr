@@ -287,24 +287,25 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.0.0"
 
-import sys
-import os
-import itertools
-import copy
 import collections
+import copy
+import hashlib
+import itertools
+import os
 import re
 import shutil
+import sys
 import time
-import hashlib
-
-from operator import itemgetter
-from typing import Any, IO, List, Union, Optional
 from datetime import datetime
+from operator import itemgetter
+from typing import Any, IO, List, Optional, Union
+
+from mmcif.io.IoAdapterPy import IoAdapterPy
+
+from munkres import Munkres
 
 import pynmrstar
 
-from munkres import Munkres
-from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
@@ -12340,7 +12341,7 @@ class NmrDpUtility:
 
                 poly_seq = input_source_dic['polymer_sequence']
 
-                single_ligand = len(poly_seq) == 1 and len(poly_seq[0]['seq_id']) == 1\
+                single_ligand = poly_seq is not None and len(poly_seq) == 1 and len(poly_seq[0]['seq_id']) == 1\
                     and poly_seq[0]['comp_id'][0] not in STD_MON_DICT
 
                 if single_ligand:
@@ -16659,6 +16660,7 @@ class NmrDpUtility:
             return False
 
         sf_category = SF_CATEGORIES[file_type][content_subtype]
+        lp_category = LP_CATEGORIES[file_type][content_subtype]
 
         removed_sf_framecode = []
         for sf in master_entry.get_saveframes_by_category(sf_category):
@@ -16690,6 +16692,8 @@ class NmrDpUtility:
             if self.__reg.star_data_type[fileListId] not in ('Saveframe', 'Entry'):
                 continue
 
+            _list_id = list_id
+
             if isinstance(self.__reg.star_data[fileListId], pynmrstar.Saveframe):
                 self.__reg.c2S.set_local_sf_id(self.__reg.star_data[fileListId], list_id)
 
@@ -16702,6 +16706,22 @@ class NmrDpUtility:
 
                 for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
                     self.__reg.c2S.set_local_sf_id(sf, list_id)
+
+                    added_sf_framecode.append(sf.name)
+                    master_entry.add_saveframe(sf)
+
+                    list_id += 1
+
+            if list_id == _list_id:
+
+                for lp in self.__reg.star_data[fileListId].get_loops_by_category(lp_category):
+                    sf = pynmrstar.Saveframe.from_scratch(f'assigned_chemical_shift_{list_id}', '_Assigned_chem_shift_list')
+                    sf.add_tag('Sf_category', sf_category)
+                    sf.add_tag('Sf_framecode', f'assigned_chemical_shift_{list_id}')
+                    sf.add_tag('Entry_ID', self.__reg.entry_id)
+                    sf.add_tag('ID', list_id)
+                    sf.add_tag('Data_file_name', input_source_dic['file_name'])
+                    sf.add_loop(lp)
 
                     added_sf_framecode.append(sf.name)
                     master_entry.add_saveframe(sf)

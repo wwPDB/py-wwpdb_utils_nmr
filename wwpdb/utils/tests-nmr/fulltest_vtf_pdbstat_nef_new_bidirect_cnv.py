@@ -4,9 +4,9 @@
 #
 # Updates:
 ##
-import unittest
-import os
 import json
+import os
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
@@ -37,7 +37,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
-        with open(self.data_dir_path + entry_id + '-nef-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-nef-consistency-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         status = report['information']['status']
@@ -79,7 +79,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef2str-deposit')
 
-        with open(self.data_dir_path + entry_id + '-nef2str-str-deposit-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-nef2str-str-deposit-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         status = report['information']['status']
@@ -111,7 +111,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-str-consistency-check')
 
-        with open(self.data_dir_path + entry_id + '-str2nef-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-str2nef-consistency-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         status = report['information']['status']
@@ -153,7 +153,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-str2nef-release')
 
-        with open(self.data_dir_path + entry_id + '-str2nef-nef-release-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-str2nef-nef-release-log.json', 'r', encoding='utf-8') as file:
             report = json.loads(file.read())
 
         if report['error'] is not None:

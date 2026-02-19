@@ -12,10 +12,10 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.1.1"
 
-import sys
 import copy
-
+import sys
 from typing import IO, List, Optional
+
 from antlr4 import ParseTreeListener
 
 try:

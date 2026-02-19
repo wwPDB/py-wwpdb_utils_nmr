@@ -5,17 +5,16 @@
 # Updates:
 ##
 """Test cases for NEFTranslator - simply import everything to ensure imports work"""
-
-import unittest
 import sys
+import unittest
 
-from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 # DAOTHER-9714: NmrStarToCif class has been deprecated
 # from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
+from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.rci.RCI import RCI
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 if __package__ is None or __package__ == "":
     from os import path

@@ -4,9 +4,9 @@
 #
 # Updates:
 #
-import unittest
 import os
-import shutil
+from shutil import copyfile
+import unittest
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
@@ -28,7 +28,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         inputNmrDataStrFile = os.path.join(data_dir_path, 'D_8000212194_nmr-data-str_P1.cif.V2')
 
-        shutil.copyfile(inputNmrDataStrFile + '.bk', inputNmrDataStrFile)
+        copyfile(inputNmrDataStrFile + '.bk', inputNmrDataStrFile)
 
         outputNmrDataNefFile = os.path.join(data_dir_path, 'D_8000212194_nmr-data-nef_P1.cif.V2')
 

@@ -5,7 +5,6 @@
 # Updates:
 ##
 """Test cases for NEFTranslator - simply import everything to ensure imports work"""
-
 import unittest
 
 try:

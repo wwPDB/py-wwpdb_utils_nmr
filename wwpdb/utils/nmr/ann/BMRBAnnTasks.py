@@ -1728,7 +1728,7 @@ class BMRBAnnTasks:
                                          or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
                                          or 'lipid' in mol_common_name):
                                     lp.data[idx][type_col] = 'phospholipid'
-                                elif mol_common_name in ('popc', 'pope', 'popg', 'popg-na'):
+                                elif mol_common_name in ('popc', 'pope', 'popg', 'popg-na') or 'lipids' in mol_common_name:
                                     lp.data[idx][type_col] = 'phospholipid'
                                 elif mol_common_name == 'dmso-d6':
                                     lp.data[idx][isotopic_labeling_col] = '[U-2H]'

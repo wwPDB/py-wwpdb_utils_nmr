@@ -3067,6 +3067,20 @@ class BMRBAnnTasks:
 
                 _sf.add_loop(lp)
 
+        sf_wo_lp = []
+
+        for sf in master_entry.get_saveframes_by_category(sf_category):
+            try:
+                lp = sf.get_loop_by_category('_Chem_shift_ref')
+                if len(lp) == 0:
+                    sf_wo_lp.append(sf.name)
+            except KeyError:
+                sf_wo_lp.append(sf.name)
+
+        if len(sf_wo_lp) > 0:
+            for sf_framecode in sf_wo_lp:
+                master_entry.remove_saveframe(sf_framecode)
+
         # check order of experiment id and synchronize them in the entry
 
         sf_category = 'experiment_list'

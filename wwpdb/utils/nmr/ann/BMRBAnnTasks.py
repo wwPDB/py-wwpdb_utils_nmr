@@ -1414,7 +1414,7 @@ class BMRBAnnTasks:
                    or any((k in _f or _f in k) for _f in entity['name'].lower().split() if len(_f) > 3):
                     return True
 
-            if key in ('k-pi', 'na-pi', 'kpi', 'napi')\
+            if key in ('k-pi', 'na-pi', 'na-p', 'kpi', 'napi', 'nap')\
                or 'buffer' in key\
                or 'acetate' in key\
                or 'acetic' in key\
@@ -1662,7 +1662,7 @@ class BMRBAnnTasks:
                                 mol_common_name = row[1].lower()
                                 if mol_common_name in ('nan3', 'nano3') or 'azide' in mol_common_name:
                                     lp.data[idx][type_col] = 'cytocide'
-                                elif mol_common_name in ('k-pi', 'na-pi', 'kpi', 'napi')\
+                                elif mol_common_name in ('k-pi', 'na-pi', 'na-p', 'kpi', 'napi', 'nap')\
                                         or 'buffer' in mol_common_name\
                                         or 'acetate' in mol_common_name\
                                         or 'acetic' in mol_common_name\

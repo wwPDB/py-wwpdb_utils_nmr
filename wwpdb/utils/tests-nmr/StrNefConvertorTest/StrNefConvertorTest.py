@@ -9,15 +9,15 @@ from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 def getNmrDataNefFile(workingDirPath, pdb_id, inputNmrDataStrFile, outputNmrDataNetFile):
     """ get nmr-data-nef file
     """
+
     try:
         logOutPath1 = os.path.join(workingDirPath, pdb_id + "-logstrstr.json")
         logOutPath2 = os.path.join(workingDirPath, pdb_id + "-logstrnef.json")
-        #
+
         for filePath in (logOutPath1, logOutPath2):
             if os.access(filePath, os.F_OK):
                 os.remove(filePath)
-            #
-        #
+
         np = NmrDpUtility()
         np.setSource(inputNmrDataStrFile)
         np.addOutput(name="nef_file_path", value=outputNmrDataNetFile, type="file")
@@ -28,9 +28,8 @@ def getNmrDataNefFile(workingDirPath, pdb_id, inputNmrDataStrFile, outputNmrData
         np.setLog(logOutPath1)
         np.setVerbose(False)
         np.op("nmr-str2nef-release")
-    except Exception as _e:  # noqa: F841
+    except Exception:  # pylint: disable=broad-exception-caught
         traceback.print_exc(file=sys.stderr)
-    #
 
 
 if __name__ == '__main__':

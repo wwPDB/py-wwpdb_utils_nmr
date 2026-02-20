@@ -7,11 +7,11 @@ extension-pkg-allow-list=MySQLdb,math
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
-ignore=CVS
+ignore=wwpdb/utils/tests-nmr/test-output,wwpdb/utils/nmr/obsolete,wwpdb/utils/tests-nmr/obsolete
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=
+ignore-patterns=^wwpdb/utils/nmr/mr/.*(Parser|Lexer)\.py$,^wwpdb/utils/nmr/pk/.*(Parser|Lexer)\.py$,^wwpdb/utils/nmr/cs/.*(Parser|Lexer)\.py$
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -60,7 +60,18 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=
+disable=invalid-name,
+        too-few-public-methods,
+        too-many-arguments,
+        too-many-boolean-expressions,
+        too-many-branches,
+        too-many-instance-attributes,
+        too-many-lines,
+        too-many-locals,
+        too-many-nested-blocks,
+        too-many-public-methods,
+        too-many-return-statements,
+        too-many-statements
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

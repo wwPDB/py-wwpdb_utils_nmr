@@ -3071,7 +3071,7 @@ class BMRBAnnTasks:
 
         for sf in master_entry.get_saveframes_by_category(sf_category):
             try:
-                lp = sf.get_loop_by_category('_Chem_shift_ref')
+                lp = sf.get_loop('_Chem_shift_ref')
                 if len(lp) == 0:
                     sf_wo_lp.append(sf.name)
             except KeyError:

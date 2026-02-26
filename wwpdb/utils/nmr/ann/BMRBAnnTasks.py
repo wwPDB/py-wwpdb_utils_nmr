@@ -601,6 +601,8 @@ class BMRBAnnTasks:
                                                 zero_shift_val_err = row[1]
                                             if isotope_number in ALLOWED_ISOTOPE_NUMBERS:
                                                 isotope_nums_with_zero_val_err.add(isotope_number)
+                                            if row[1][0] == '-':
+                                                lp.data[idx][val_err_col] = row[1][1:]
                                         else:
                                             lp.data[idx][val_err_col] = abs(val_err)
                                     except ValueError:

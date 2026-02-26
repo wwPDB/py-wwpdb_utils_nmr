@@ -1,5 +1,11 @@
-# recursive-include wwpdb/utils/nmr/nef/NEFTranslator/lib *.csv
-# recursive-include wwpdb/utils/nmr/ann/lib *.csv
 recursive-include wwpdb/utils/nmr/bmrb_cs_stat *.csv *.pkl
-# recursive-include wwpdb/utils/nmr/nmr-star_schema *.csv
-# recursive-include wwpdb/utils/nmr/chem_comp_util *.pkl
+recursive-include wwpdb/utils/nmr/nmr-star_schema *.csv
+recursive-include wwpdb/utils/nmr/chem_comp_util *.pkl
+
+prune wwpdb/utils/nmr/obsolete
+prune wwpdb/utils/tests-nmr/obsolete
+prune wwpdb/utils/nmr/nef/NEFTranslator/lib
+prune wwpdb/utils/nmr/ann/lib
+
+global-exclude */__pycache__/*
+global-exclude *.pyc

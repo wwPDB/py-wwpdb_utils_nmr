@@ -3350,6 +3350,9 @@ class BMRBAnnTasks:
                                     set_sf_tag(_sf, 'Experiment_ID', exp_row[0])
                                     set_sf_tag(_sf, 'Experiment_name', exp_row[1])
 
+                                if exp_row is None:
+                                    continue
+
                                 spectrometer_id = exp_row[2]
 
                                 if spectrometer_id in EMPTY_VALUE:

@@ -16363,6 +16363,7 @@ class NmrDpRemediation:
             cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)
 
         lp_category = '_Constraint_file'
+
         cf_loop = pynmrstar.Loop.from_scratch(lp_category)
 
         cf_key_items = [{'name': 'ID', 'type': 'int'},
@@ -16731,8 +16732,6 @@ class NmrDpRemediation:
                     set_sf_tag(sf_list[0], 'View_mode', 'PDB/BMRB')
 
         # refresh _Constraint_stat_list saveframe
-
-        sf_framecode = 'constraint_statistics'
 
         cst_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
         cst_sf.set_tag_prefix('_Constraint_stat_list')
@@ -18093,8 +18092,11 @@ class NmrDpRemediation:
 
         cst_sf.add_loop(cf_loop)
 
-        if len(cf_loop) > 0:
-            master_entry.add_saveframe(cst_sf)
+        if self.__reg.orig_cst_sf is None:
+            if len(cf_loop) > 0:
+                master_entry.add_saveframe(cst_sf)
+        else:
+            master_entry.add_saveframe(self.__reg.orig_cst_sf)
 
         # resolve CYANA distance subtype
 

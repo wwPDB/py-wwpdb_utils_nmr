@@ -1671,15 +1671,16 @@ class BMRBAnnTasks:
                                         or 'ch3coo' in mol_common_name\
                                         or 'citric' in mol_common_name\
                                         or 'hepes' in mol_common_name\
-                                        or 'pipes' in mol_common_name\
+                                        or 'kphos' in mol_common_name\
                                         or 'mes' in mol_common_name\
                                         or 'mops' in mol_common_name\
+                                        or 'naphos' in mol_common_name\
                                         or 'pbs' in mol_common_name\
-                                        or 'tris' in mol_common_name\
                                         or 'phosphate' in mol_common_name\
+                                        or 'pipes' in mol_common_name\
                                         or 'po4' in mol_common_name\
-                                        or 'kphos' in mol_common_name\
-                                        or 'naphos' in mol_common_name:
+                                        or 'tricine' in mol_common_name\
+                                        or 'tris' in mol_common_name:
                                     lp.data[idx][type_col] = 'buffer'
                                     lp.data[idx][isotopic_labeling_col] = '[U-2H]'\
                                         if mol_common_name.startswith('d-')\

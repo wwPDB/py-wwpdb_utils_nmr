@@ -1675,7 +1675,8 @@ class BMRBAnnTasks:
                                 if row[1] in solvent_isotope:
                                     lp.data[idx][isotopic_labeling_col] = solvent_isotope[row[1]]
                                 lp.data[idx][type_col] = 'solvent'
-                                lp.data[idx][concentration_val_col] = solvent_system[row[1]]
+                                if row[8] in EMPTY_VALUE or row[11] in EMPTY_VALUE or row[11] == '%':
+                                    lp.data[idx][concentration_val_col] = solvent_system[row[1]]
                                 if row[11] in EMPTY_VALUE:
                                     lp.data[idx][concentration_val_units_col] = '%'
                                 if row[1] not in solvent_in_sample_loop:

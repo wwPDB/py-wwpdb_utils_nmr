@@ -1459,6 +1459,8 @@ class BMRBAnnTasks:
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
+                                if solvent_name == 'water':
+                                    sovent_name = 'H2O'
                                 if redundant_solvent_pat.match(solvent_name):
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
@@ -1487,6 +1489,8 @@ class BMRBAnnTasks:
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
+                                if solvent_name == 'water':
+                                    sovent_name = 'H2O'
                                 if redundant_solvent_pat.match(solvent_name):
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
@@ -1512,6 +1516,8 @@ class BMRBAnnTasks:
                         if solvent_with_percent_pat.match(_solvent_system):
                             g = solvent_with_percent_pat.search(_solvent_system).groups()
                             solvent_name = g[1].strip()
+                            if solvent_name == 'water':
+                                sovent_name = 'H2O'
                             if redundant_solvent_pat.match(solvent_name):
                                 h = redundant_solvent_pat.search(solvent_name)
                                 if h[1] == h[2]:

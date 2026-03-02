@@ -38,7 +38,8 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (getOneLetterCodeCan,
                                            getScoreOfSeqAlign)
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
-                                              set_sf_tag)
+                                              set_sf_tag,
+                                              has_key_value)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                                        roundString,
                                                        retrieveOriginalFileName)
@@ -60,7 +61,8 @@ except ImportError:
     from nmr.AlignUtil import (getOneLetterCodeCan,
                                getScoreOfSeqAlign)
     from nmr.CifToNmrStar import (get_first_sf_tag,
-                                  set_sf_tag)
+                                  set_sf_tag,
+                                  has_key_value)
     from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                            roundString,
                                            retrieveOriginalFileName)
@@ -83,7 +85,8 @@ class BMRBAnnTasks:
                  '__reg',
                  '__derivedEntryId',
                  '__derivedEntryTitle',
-                 '__defSfLabelTag')
+                 '__defSfLabelTag',
+                 '__update_related_entries')
 
     def __init__(self, registry: NmrDpRegistry):
         self.__class_name__ = self.__class__.__name__
@@ -94,6 +97,11 @@ class BMRBAnnTasks:
         # provenance information to be included in _Related_entries loop if it is not exists
         self.__derivedEntryId = None
         self.__derivedEntryTitle = None
+
+        self.__update_related_entries = True
+        if has_key_value(self.__reg.inputParamDict, 'update_related_entries'):
+            if isinstance(self.__reg.inputParamDict['update_related_entries'], bool):
+                self.__update_related_entries = self.__reg.inputParamDict['update_related_entries']
 
     def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]):
         """ Set provenance information.
@@ -198,7 +206,7 @@ class BMRBAnnTasks:
             except KeyError:
                 pass
 
-            if not self.__reg.internal_mode and self.__derivedEntryId not in EMPTY_VALUE:
+            if not self.__reg.internal_mode and self.__derivedEntryId not in EMPTY_VALUE and self.__update_related_entries:
 
                 lp_category = '_Related_entries'
 
@@ -1459,8 +1467,8 @@ class BMRBAnnTasks:
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
-                                if solvent_name == 'water':
-                                    sovent_name = 'H2O'
+                                if solvent_name.lower() == 'water':
+                                    solvent_name = 'H2O'
                                 if redundant_solvent_pat.match(solvent_name):
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
@@ -1470,6 +1478,8 @@ class BMRBAnnTasks:
                                     and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
+                                if _solvent.lower() == 'water':
+                                    _solvent = 'H2O'
                                 solvent_system[_solvent] = 0
                                 solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent)\
                                     and not perdeuterated_pat.match(_solvent)\
@@ -1489,8 +1499,8 @@ class BMRBAnnTasks:
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
-                                if solvent_name == 'water':
-                                    sovent_name = 'H2O'
+                                if solvent_name.lower() == 'water':
+                                    solvent_name = 'H2O'
                                 if redundant_solvent_pat.match(solvent_name):
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
@@ -1500,6 +1510,8 @@ class BMRBAnnTasks:
                                     and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
+                                if _solvent.lower() == 'water':
+                                    _solvent = 'H2O'
                                 solvent_system[_solvent] = 100
                                 solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent)\
                                     and not perdeuterated_pat.match(_solvent)\
@@ -1516,8 +1528,8 @@ class BMRBAnnTasks:
                         if solvent_with_percent_pat.match(_solvent_system):
                             g = solvent_with_percent_pat.search(_solvent_system).groups()
                             solvent_name = g[1].strip()
-                            if solvent_name == 'water':
-                                sovent_name = 'H2O'
+                            if solvent_name.lower() == 'water':
+                                solvent_name = 'H2O'
                             if redundant_solvent_pat.match(solvent_name):
                                 h = redundant_solvent_pat.search(solvent_name)
                                 if h[1] == h[2]:
@@ -1527,6 +1539,8 @@ class BMRBAnnTasks:
                                 and not perdeuterated_pat.match(solvent_name)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                         else:
+                            if _solvent_system.lower() == 'water':
+                                _solvent_system = 'H2O'
                             solvent_system[_solvent_system] = 100
                             solvent_isotope[_solvent_system] = '[U-2H]' if deuterated_pat.match(_solvent_system)\
                                 and not perdeuterated_pat.match(_solvent_system)\

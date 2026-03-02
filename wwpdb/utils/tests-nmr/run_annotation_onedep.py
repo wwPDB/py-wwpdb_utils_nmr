@@ -1012,7 +1012,8 @@ class gen_auth_view_onedep:
         if len(sys.argv) > 2:
             utility.addInput(name='elec_dep_hash_code', value=sys.argv[2], type='param')
         if len(sys.argv) > 3:
-            utility.addInput(name='update_related_entries', value=bool(sys.argv[3]), type='param')
+            update_related_entries = sys.argv[3][0] in ('T', 't', 'Y', 'y', '1')
+            utility.addInput(name='update_related_entries', value=update_related_entries, type='param')
         utility.addOutput(name='leave_intl_note', value=False, type='param')
         utility.addOutput(name='return_letter_path', value=self.__return_letter_path, type='file')
         utility.setDestination(self.__annotated_star_file_path)

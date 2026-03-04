@@ -1640,12 +1640,6 @@ class NmrDpValidation:
                                                 self.__reg.star_data[0].remove_saveframe(_sf.name)
                                                 break
                                         self.__reg.star_data[0].add_saveframe(_sf)
-                                elif AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict\
-                                        and src_sf_category in ('general_distance_constraints',
-                                                                'torsion_angle_constraints',
-                                                                'RDC_constraints'):
-                                    for sf in self.__reg.star_data[0].get_saveframes_by_category(src_sf_category):
-                                        self.__reg.star_data[0].remove_saveframe(sf.name)
 
         return is_done
 

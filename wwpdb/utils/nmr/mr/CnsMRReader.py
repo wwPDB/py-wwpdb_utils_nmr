@@ -274,8 +274,19 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
-    reader = CnsMRReader(True)
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36570/data/D_1300038268_mr-upload_P1.cns.V7',
+                     '../../tests-nmr/mock-data-combine-at-upload/bmr36570/data/D_1300038268_model-release_P1.cif.V1')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36570/data/D_1300038268_mr-upload_P1.cns.V7',
+                 '../../tests-nmr/mock-data-combine-at-upload/bmr36570/data/D_1300038268_model-release_P1.cif.V1')
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
     reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36699/data/D_1300052942_mr-upload_P1.cns.V1',
                  '../../tests-nmr/mock-data-combine-at-upload/bmr36699/data/D_1300052942_model-release_P1.cif.V1')
 

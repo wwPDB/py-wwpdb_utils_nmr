@@ -8217,7 +8217,7 @@ class NEFTranslator:
                         # Reconciled fix for DAOTHER-10105 and D-1300057999, 'MN'
                         # should not be mapped to 'HN%' because real 'MN' exists
                         pass
-                    else:
+                    elif atom_id[-1] != "'":
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, f'H{atom_id[1:] if len(atom_id) < 3 else atom_id[1:-1]}*',
                                                details, leave_unmatched, methyl_only)
@@ -8726,7 +8726,7 @@ class NEFTranslator:
                         elif atom_id.startswith('M') or (atom_id.startswith('Q') and self.__remediation_mode):  # DAOTHER-8663, 8751
                             if atom_id[-1].isalnum():
                                 _atom_id = f'H{atom_id[1:]}%'
-                            else:
+                            elif atom_id[-1] != "'":
                                 _atom_id = f'H{atom_id[1:-1]}*'
                         elif f'{atom_id}2' in self.__csStat.getAllAtoms(comp_id):
                             _atom_id = f'{atom_id}%'

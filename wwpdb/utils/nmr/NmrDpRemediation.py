@@ -63,6 +63,7 @@ try:
                                                PERIPH_OFFSET_ATTEMPT,
                                                WORK_MODEL_FILE_NAME_PAT,
                                                INTNL_ANY_MR_FILE_NAME_PAT,
+                                               PDB_MR_FILE_NAME_PAT,
                                                COMMENT_PAT,
                                                SEQ_MISMATCH_WARNING_PAT,
                                                INCONSISTENT_RESTRAINT_WARNING_PAT,
@@ -196,6 +197,7 @@ except ImportError:
                                    PERIPH_OFFSET_ATTEMPT,
                                    WORK_MODEL_FILE_NAME_PAT,
                                    INTNL_ANY_MR_FILE_NAME_PAT,
+                                   PDB_MR_FILE_NAME_PAT,
                                    COMMENT_PAT,
                                    SEQ_MISMATCH_WARNING_PAT,
                                    INCONSISTENT_RESTRAINT_WARNING_PAT,
@@ -3468,7 +3470,7 @@ class NmrDpRemediation:
 
         for sf in master_entry.frame_list:
             if sf.name == sf_framecode:
-                master_entry.remove_saveframe(sf_framecode)
+                master_entry.remove_saveframe(sf.name)
                 break
 
         master_entry.add_saveframe(asm_sf)
@@ -3496,8 +3498,7 @@ class NmrDpRemediation:
         ent_sfs = master_entry.get_saveframes_by_category(SF_CATEGORIES[file_type][content_subtype])
 
         for sf in reversed(ent_sfs):
-            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-            master_entry.remove_saveframe(sf_framecode)
+            master_entry.remove_saveframe(sf.name)
 
         entity_ids = []
 
@@ -18102,7 +18103,8 @@ class NmrDpRemediation:
             replace_data_file_name = False
             if len(_data_file_name) > 0:
                 replace_data_file_name = any(True for _file_name in _data_file_name.split(',')
-                                             if INTNL_ANY_MR_FILE_NAME_PAT.match(_file_name))
+                                             if INTNL_ANY_MR_FILE_NAME_PAT.match(_file_name)
+                                             or PDB_MR_FILE_NAME_PAT.match(_file_name))
             for tag in cst_sf.tags:
                 if tag[0] == 'Data_file_name' and not replace_data_file_name:
                     continue
@@ -18144,7 +18146,7 @@ class NmrDpRemediation:
                         _filename_col = _cf_loop.tags.index('Constraint_filename')
                         filename_col = cf_loop.tags.index('Constraint_filename')
                         for idx, _row in enumerate(_dat):
-                            if INTNL_ANY_MR_FILE_NAME_PAT.match(_row):
+                            if INTNL_ANY_MR_FILE_NAME_PAT.match(_row) or PDB_MR_FILE_NAME_PAT.match(_row):
                                 _cf_loop.data[idx][_filename_col] = cf_loop.data[idx][filename_col]
             except KeyError:
                 replace_cf_loop = True

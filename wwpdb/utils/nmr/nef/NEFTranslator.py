@@ -125,6 +125,7 @@
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
 # 27-Jan-2026  M. Yokochi - convert one-letter-code in CS loop if possible (DAOTHER-10487)
+# 05-Mar-2026  M. Yokochi - provide instruction to depositor in case of missing mandatory item error (DAOTHER-10547)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -434,9 +435,9 @@ def specify_missing_tags(lp_category: str, current_tags: List[str], missing_tags
         len_extra_tags = len(extra_tags)
         if len_extra_tags > 0:
             if len_extra_tags == 1:
-                msg += f" On the other hand, aucillary data tag, {extra_tags[0]!r}, is present"
+                msg += f" On the other hand, ancillary data tag, {extra_tags[0]!r}, is present"
             else:
-                msg += f" On the other hand, aucillary data tags, {extra_tags}, are present"
+                msg += f" On the other hand, ancillary data tags, {extra_tags}, are present"
 
             msg += f" for the missing mandatory tag{'' if len_missing_tags == 0 else 's'}. Did you use the tags incorrectly?"
 
